@@ -46,6 +46,14 @@ jobs:
           python scripts/smash/combine.py scripts/smash/data/national.json scripts/smash/data/abroad.json scripts/smash/data/combined.json
           python scripts/smash/rank.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json --curation scripts/smash/curation.json --points-csv scripts/smash/data/ultrank_players.csv
           python scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json
+      - name: Auditar cobertura y sensibilidad del corte
+        run: python scripts/smash/audit.py scripts/smash/data/combined.json scripts/smash/curation.json scripts/smash/data/auditoria.md --points-csv scripts/smash/data/ultrank_players.csv
+      - name: Guardar auditoría para revisión
+        uses: actions/upload-artifact@v4
+        with:
+          name: smash-gt-auditoria
+          path: scripts/smash/data/auditoria.md
+          retention-days: 30
       - name: Publicar en la subcarpeta del ranking con FTP
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}

@@ -12,6 +12,7 @@ Esta es la implementación activa. El prototipo anterior de datos se conserva en
 - Exportación pública separada de las capturas crudas: solo alias, perfil público, resultados presenciales completados y metadatos necesarios. Descarta byes, marcadores DQ reconocibles y participantes desconocidos. La elegibilidad final de eventos y DQ ambiguos aún requiere revisión.
 - Publicación por el mismo FTP que usa el portafolio, limitada a una carpeta fija, con sustitución de cada archivo después de completar su subida. `public.json` se sube al final; no se borran archivos existentes de otros proyectos. La raíz de la cuenta se verifica en la primera ejecución real.
 - El ranking usa un método propio transparente y puntos TTS estimados desde el [tierer público de UltRank](https://github.com/kenniky/ultrank-scoring). No calcula la posición exacta de UltRank ni confirma la elegibilidad nacional. El rastreo internacional solo alcanza a jugadores descubiertos localmente o añadidos con fuente documentada.
+- [Plan de criterios para una lista nacional verificable](PLAN-RANKING.md) y [auditoría reproducible de la captura inicial](AUDITORIA-PILOTO-2026-09-28.md). El flujo diario guarda una auditoría de cada corte como artefacto de GitHub Actions.
 
 ## Vista local
 
@@ -66,5 +67,7 @@ git diff --check
 Veinte pruebas de datos y publicación local, incluidas las exclusiones DQ, la cobertura internacional, el requisito de captura completa y las candidaturas documentadas. Vista local revisada con 100 posiciones, búsqueda y detalle de jugador.
 
 `STARTGG_TOKEN` está guardado en GitHub Secrets y la captura completa pasó en GitHub Actions. Conviene rotarlo porque se compartió en el chat: primero sustituir el secreto de GitHub por el token nuevo y después revocar el anterior en start.gg. No se guarda el valor en archivos del repositorio ni se incluye en la exportación.
+
+La ejecución completa del 29 de septiembre de 2026 importó y calculó de nuevo el piloto y publicó por FTP: [registro de GitHub Actions](https://github.com/Bucaro-19/rsvp-graduacion/actions/runs/36524751923). El JSON servido en el dominio confirma la actualización de ese corte.
 
 Pendientes: revisar la elegibilidad de jugadores y eventos con la comunidad, localizar jugadores guatemaltecos que compiten solo en el extranjero, rotar el token y reexaminar las fuentes TTS cuando cambie la temporada.
