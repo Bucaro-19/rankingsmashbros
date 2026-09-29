@@ -104,7 +104,7 @@ def fetch_event(client, event):
     return record, players, matches
 
 
-def discover(client, start, end, *, max_events=None):
+def discover(client, start, end, *, max_events=None, include_small=False):
     tournaments = []
     for page in range(1, 101):
         data = client.query(TOURNAMENTS, {"page": page, "after": start, "before": end})["tournaments"]
@@ -131,7 +131,7 @@ def discover(client, start, end, *, max_events=None):
                 reason = "unfinished_event"
             elif event.get("type") != 1:
                 reason = "not_singles"
-            elif not isinstance(event.get("numEntrants"), int) or event["numEntrants"] < 32:
+            elif not isinstance(event.get("numEntrants"), int) or event["numEntrants"] < 1 or (not include_small and event["numEntrants"] < 32):
                 reason = "under_32_entrants"
             elif not isinstance(event.get("startAt"), int) or not start <= event["startAt"] < end:
                 reason = "outside_window"
@@ -159,7 +159,8 @@ def discover(client, start, end, *, max_events=None):
             "tournamentsFound": len(tournaments), "candidateEventsFound": len([e for t in tournaments for e in t.get("events") or [] if str((e.get("videogame") or {}).get("id")) == str(GAME_ID)]),
             "excludedEvents": excluded, "events": event_records, "players": players, "sets": matches,
             "countryCounts": dict(countries), "requests": client.calls,
-            "selectionNote": "Provisional: eventos presenciales singles con al menos 32 inscritos; faltan DQ, excepciones por valor de jugadores y exclusiones editoriales de UltRank."}
+            "selectionNote": ("Estudio: todos los eventos presenciales singles con inscritos conocidos; aún requieren evaluación de DQ, puntos y exclusiones editoriales."
+                              if include_small else "Provisional: eventos presenciales singles con al menos 32 inscritos; faltan DQ, excepciones por valor de jugadores y exclusiones editoriales de UltRank.")}
 
 
 def main():
@@ -167,6 +168,7 @@ def main():
     parser.add_argument("--start", default="2026-01-01")
     parser.add_argument("--end", required=True)
     parser.add_argument("--max-events", type=int, help="Para una muestra reciente; la captura se marca incompleta")
+    parser.add_argument("--include-small", action="store_true", help="Capturar también singles locales con menos de 32 inscritos para un estudio; no modifica el ranking publicado")
     args = parser.parse_args()
     try:
         start, end = season_timestamp(args.start), season_timestamp(args.end)
@@ -175,7 +177,7 @@ def main():
         token = os.environ.get("STARTGG_TOKEN") or getpass.getpass("Token start.gg (entrada oculta): ")
         if not token.strip():
             raise ValueError("Se requiere un token de start.gg.")
-        result = discover(Client(token.strip()), start, end, max_events=args.max_events)
+        result = discover(Client(token.strip()), start, end, max_events=args.max_events, include_small=args.include_small)
         target = Path(__file__).parent / "data" / "national.json"
         target.parent.mkdir(exist_ok=True)
         tmp = target.with_suffix(".tmp")

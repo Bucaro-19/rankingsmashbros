@@ -1,0 +1,35 @@
+name: Estudiar torneos locales pequeños
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verificar el importador y el cálculo
+        run: python -m unittest discover -s scripts/smash -q
+      - name: Capturar todos los singles presenciales de Guatemala
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+          SMASH_START: ${{ vars.SMASH_START || '2026-01-01' }}
+        run: |
+          if [ -z "$STARTGG_TOKEN" ]; then
+            echo 'Falta STARTGG_TOKEN; no se puede hacer el estudio.'
+            exit 1
+          fi
+          end_date=$(date -u -d tomorrow +%F)
+          season_end="$((${SMASH_START%%-*} + 1))-01-01"
+          if [[ "$end_date" > "$season_end" ]]; then end_date="$season_end"; fi
+          python scripts/smash/discover.py --start "$SMASH_START" --end "$end_date" --include-small
+      - name: Guardar la captura para una comparación sin publicación
+        uses: actions/upload-artifact@v4
+        with:
+          name: smash-gt-torneos-pequenos
+          path: scripts/smash/data/national.json
+          retention-days: 7

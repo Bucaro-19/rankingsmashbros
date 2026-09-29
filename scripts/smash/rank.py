@@ -6,7 +6,7 @@ import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from tiering import guatemala_points, parse_values, SOURCE_URL
+from tiering import guatemala_points, parse_values, value_at, SOURCE_URL
 
 BAD_SCORE = re.compile(r"\b(?:DQ|BYE|W/?O|FORFEIT|DESCALIFICAD[OA])\b|(?<!\d)-1(?!\d)", re.I)
 
@@ -45,13 +45,26 @@ def competitive_set(match):
     return (winners[0], next(pid for _, pid in entrants if pid != winners[0])) if len(winners) == 1 else None
 
 
-def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table=None, player_aliases=None):
+def local_event_evidence(active_player_ids, timestamp, values):
+    """Conservative TTS estimate: only people with a competitive set count."""
+    if values is None:
+        return {"estimatedPoints": None, "valuedPlayers": 0}
+    return {"estimatedPoints": guatemala_points(active_player_ids, timestamp, values),
+            "valuedPlayers": sum(value_at(values.get(pid, ()), timestamp) > 0 for pid in active_player_ids)}
+
+
+def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table=None, player_aliases=None,
+            *, local_minimum=32, allow_points_exception=False):
     if snapshot.get("kind") != "national_discovery" or not snapshot.get("catalogComplete") or not snapshot.get("eventsComplete"):
         raise ValueError("Solo se calcula una captura nacional completa.")
     excluded = {str(id_) for id_ in excluded_event_ids}
     player_overrides = player_overrides or {}
     player_aliases = player_aliases or {}
     values = parse_values(points_table) if points_table is not None else None
+    if not isinstance(local_minimum, int) or local_minimum < 2:
+        raise ValueError("El mínimo local debe ser al menos dos jugadores activos.")
+    if allow_points_exception and values is None:
+        raise ValueError("La excepción por puntos requiere la tabla TTS fijada.")
     events = {str(e["id"]): e for e in snapshot["events"]}
     by_event = defaultdict(list)
     rejected = Counter()
@@ -65,19 +78,28 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
 
     eligible_events = {}
     event_reasons = {}
+    event_qualifications = {}
     for eid, event in events.items():
         active = {pid for _, winner, loser in by_event[eid] for pid in (winner, loser)}
         country = (event.get("tournament") or {}).get("countryCode")
-        minimum = 32 if country == "GT" else 64
+        evidence = local_event_evidence(active, event["startAt"], values) if country == "GT" else {"estimatedPoints": None, "valuedPlayers": 0}
+        qualifies_by_points = (country == "GT" and allow_points_exception
+                               and evidence["estimatedPoints"] >= 200 and evidence["valuedPlayers"] >= 2)
+        minimum = local_minimum if country == "GT" else 64
         if eid in excluded:
             event_reasons[eid] = "manual_exclusion"
-        elif len(active) < minimum:
+        elif len(active) < minimum and not qualifies_by_points:
             event_reasons[eid] = "under_minimum_active_players"
         elif not by_event[eid]:
             event_reasons[eid] = "no_valid_sets"
         else:
             eligible_events[eid] = {**event, "activePlayers": len(active),
-                                    "ttsPointsEstimate": guatemala_points(active, event["startAt"], values) if values is not None and country == "GT" else None}
+                                    "ttsPointsEstimate": evidence["estimatedPoints"]}
+        if country == "GT":
+            event_qualifications[eid] = {"entrants": event.get("numEntrants"), "activePlayers": len(active),
+                                         **evidence, "path": ("excluded" if eid not in eligible_events else
+                                                               "players" if len(active) >= minimum else "points"),
+                                         "decision": "included" if eid in eligible_events else event_reasons[eid]}
 
     edge_counts = Counter()
     for eid in eligible_events:
@@ -152,7 +174,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
     rows.sort(key=lambda row: (-row["rating"], -row["wins"], -row["events"], row["tag"].casefold(), row["id"]))
     for index, row in enumerate(rows[:100], 1):
         row["rank"] = index
-    return {"kind": "smash_gt_provisional", "methodVersion": "BT-PILOTO-1", "generatedAt": snapshot["generatedAt"],
+    return {"kind": "smash_gt_provisional", "methodVersion": "BT-PILOTO-2" if allow_points_exception else "BT-PILOTO-1", "generatedAt": snapshot["generatedAt"],
             "season": snapshot["season"], "ranking": rows[:100],
             "counts": {"eligiblePlayers": len(rows), "rankedPlayers": min(100, len(rows)),
                        "eligibleEvents": len(eligible_events), "competitiveSets": len(games),
@@ -160,6 +182,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
                        "internationalEvents": sum((event.get("tournament") or {}).get("countryCode") != "GT" for event in eligible_events.values()),
                        "excludedDQOrUnknown": rejected["invalid_or_unscored"]},
             "eventDecisions": event_reasons,
+            "eventQualifications": event_qualifications,
             "ttsPointsEstimate": {eid: event["ttsPointsEstimate"] for eid, event in eligible_events.items() if event["ttsPointsEstimate"] is not None},
             "eventIds": sorted(eligible_events),
             "method": "Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos, 4 sets válidos y un evento GT con set válido. No equivale a UltRank.",

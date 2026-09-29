@@ -43,6 +43,30 @@ class PilotRankingTests(unittest.TestCase):
         self.assertEqual(value_at(values["1"], 1783000000), 50)
         self.assertEqual(guatemala_points({"1", "2"}, 1768000000, values), 106)
 
+    def test_small_event_needs_200_points_and_two_valued_active_players(self):
+        snapshot = fixture()
+        snapshot["events"][1]["numEntrants"] = 8
+        snapshot["sets"] = {sid: row for sid, row in snapshot["sets"].items()
+                            if str(row["event"]["id"]) == "10" or int(sid) % 100 <= 8}
+        header = "Category,Note,Player,Start.gg Hex ID,Start.gg Num ID,Points,Start Date,End Date,Midpt Date,Source\n"
+        two_valued = (header + "rank,test,P1,hex,1,100,2026-01-01,2027-01-01,,test\n"
+                      + "rank,test,P2,hex,2,100,2026-01-01,2027-01-01,,test\n")
+        baseline = compute(snapshot, points_table=two_valued)
+        self.assertEqual(baseline["eventIds"], ["10"])
+        exception = compute(snapshot, points_table=two_valued, allow_points_exception=True)
+        self.assertEqual(exception["eventIds"], ["10", "11"])
+        self.assertEqual(exception["eventQualifications"]["11"]["path"], "points")
+        self.assertEqual(exception["eventQualifications"]["11"]["estimatedPoints"], 224)
+        self.assertEqual(exception["eventQualifications"]["11"]["valuedPlayers"], 2)
+        one_valued = header + "rank,test,P1,hex,1,200,2026-01-01,2027-01-01,,test\n"
+        result = compute(snapshot, points_table=one_valued, allow_points_exception=True)
+        self.assertEqual(result["eventIds"], ["10"])
+        self.assertEqual(result["eventQualifications"]["11"]["valuedPlayers"], 1)
+        low_points = header + "rank,test,P1,hex,1,50,2026-01-01,2027-01-01,,test\n" + "rank,test,P2,hex,2,50,2026-01-01,2027-01-01,,test\n"
+        self.assertEqual(compute(snapshot, points_table=low_points, allow_points_exception=True)["eventIds"], ["10"])
+        with self.assertRaisesRegex(ValueError, "tabla TTS"):
+            compute(snapshot, allow_points_exception=True)
+
     def test_dq_and_unknown_winner_are_not_competitive(self):
         row = match("1", 10, "1", "2")
         self.assertEqual(competitive_set(row), ("1", "2"))
