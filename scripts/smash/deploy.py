@@ -8,8 +8,9 @@ import re
 import uuid
 from pathlib import Path
 
-FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css", "opiniones.css",
-         "app.js", "metodologia.js", ".htaccess", "encuesta.php", "opiniones.php", "index.html", "metodologia.html", "data/public.json")
+FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css", "opiniones.css", "analisis-torneos.css",
+         "app.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "encuesta.php", "opiniones.php", "index.html", "metodologia.html",
+         "analisis-torneos.html", "data/analisis-torneos.json", "data/public.json")
 HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 
@@ -28,6 +29,14 @@ def validate_public_data(data):
                        and isinstance(event.get("activePlayers"), int) for event in events)
             or sum(event["validSets"] for event in events) != counts["sets"]):
         raise ValueError("Se requiere un top 100 piloto completo con eventos internacionales antes de publicar.")
+
+
+def validate_study_data(data):
+    if (data.get("schemaVersion") != 1 or data.get("status") != "simulacion_sin_cambio_de_regla"
+            or not isinstance(data.get("baselineVerifiedAsOf"), str)
+            or not isinstance(data.get("smallEvents"), list) or not isinstance(data.get("scenarios"), dict)
+            or not all(key in data["scenarios"] for key in ("pointsException", "min24", "min16"))):
+        raise ValueError("Se requiere un estudio completo de torneos pequeños antes de publicar.")
 
 
 def deploy(ftp, source, *, assets_only=False, admin_hash=None):
@@ -87,6 +96,10 @@ def main():
     parser.add_argument("--assets-only", action="store_true", help="Publicar la página sin sustituir el corte de datos")
     args = parser.parse_args()
     source = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate"
+    try:
+        validate_study_data(json.loads((source / "data/analisis-torneos.json").read_text()))
+    except (OSError, json.JSONDecodeError, ValueError) as error:
+        raise SystemExit(str(error)) from None
     if not args.assets_only:
         data = json.loads((source / "data/public.json").read_text())
         try:

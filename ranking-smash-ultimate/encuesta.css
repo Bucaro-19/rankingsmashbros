@@ -5,6 +5,9 @@
 .survey-form{display:grid;gap:18px}
 .survey-form fieldset,.survey-text{border:1px solid #3c4e68;background:#151e30;padding:22px;margin:0}
 .survey-form legend,.survey-text>label{color:#ffe364;font-family:'Barlow Condensed',Impact,sans-serif;font-size:24px;font-weight:700;font-style:italic;text-transform:uppercase;padding:0 8px}
+.question-help{max-width:760px;color:#c4d1e4;font-size:13px;line-height:1.6;margin:5px 0 14px}
+.question-help strong{color:#fff}
+.question-help a{color:#ffe364;font-weight:700}
 .choices{display:grid;gap:8px;margin-top:12px}
 .choices label{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:#1d2a3f;border:1px solid #354760;cursor:pointer;line-height:1.35}
 .choices label:has(input:checked){border-color:#ffe364;background:#313244}

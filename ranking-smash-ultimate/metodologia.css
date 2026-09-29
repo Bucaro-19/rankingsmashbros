@@ -14,6 +14,7 @@
 .methodology-cards strong{font-family:'Barlow Condensed',Impact,sans-serif;font-size:25px;font-style:italic;text-transform:uppercase;color:#fff}
 .methodology-cards p{margin-top:13px;font-size:13px}
 .methodology-note{margin-top:21px;max-width:880px}
+.methodology-note a{color:#ffe364;font-weight:700}
 .calculation-steps{list-style:none;padding:0;margin:0;display:grid;gap:0;border:1px solid #354760;background:#131b2b}
 .calculation-steps li{display:grid;grid-template-columns:70px 1fr;gap:16px;padding:23px 28px;border-bottom:1px solid #354760}
 .calculation-steps li:last-child{border-bottom:0}

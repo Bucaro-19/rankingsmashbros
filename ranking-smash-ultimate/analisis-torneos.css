@@ -1,0 +1,32 @@
+.analysis-page .methodology-hero h1{max-width:1050px}
+.analysis-page .methodology-hero h1 em{color:#ffe364}
+.analysis-page .methodology-lead strong{color:#ffe364}
+.analysis-scenarios{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-top:26px}
+.analysis-scenario{border:1px solid #3c4e68;border-top:3px solid #e6576c;background:#151e30;padding:23px;min-height:220px}
+.analysis-scenario[data-kind="pointsException"]{border-top-color:#ffe364}
+.analysis-scenario h3{margin:0 0 16px;font-size:23px}
+.analysis-scenario strong{display:block;font-family:'Barlow Condensed',Impact,sans-serif;font-size:54px;line-height:1;color:#fff}
+.analysis-scenario span{display:block;font-size:12px;color:#aabbd2;margin-top:3px}
+.analysis-scenario p{margin:18px 0 0;font-size:12px;line-height:1.5;color:#c3d0e2}
+.analysis-scenario b{color:#ffe364}
+.analysis-tops{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding-top:15px}
+.analysis-tops>div{border:1px solid #354760;background:#172131;padding:16px}
+.analysis-tops h3{font-size:19px;margin:0 0 10px}
+.analysis-tops ol{padding-left:24px;margin:0;display:grid;gap:7px}
+.analysis-tops li{font-size:12px;color:#c3d0e2;line-height:1.4}
+.analysis-tops li strong{color:#fff}
+.analysis-tops li small{color:#9eb3d0;margin-left:6px}
+.analysis-table-wrap{overflow-x:auto;border:1px solid #354760;background:#111a2a}
+.analysis-table{width:100%;border-collapse:collapse;min-width:760px}
+.analysis-table th{text-align:left;font-size:10px;letter-spacing:.7px;color:#d9e5f5;text-transform:uppercase;background:#1d2a3f;padding:13px 10px}
+.analysis-table td{border-top:1px solid #304056;padding:12px 10px;font-size:11px;color:#b9c9dd;vertical-align:top}
+.analysis-table td:nth-child(n+3):nth-child(-n+6),.analysis-table th:nth-child(n+3):nth-child(-n+6){text-align:right}
+.analysis-table a{color:#ffe364;font-weight:700}
+.analysis-table small{display:block;color:#91a5be;margin-top:4px}
+.analysis-table .passes{color:#a8e6c2;font-weight:700}
+.analysis-table .fails{color:#edabb5}
+.analysis-table tr:hover td{background:#1b273a}
+.analysis-page .excluded-detail{padding-bottom:0}
+.analysis-page .excluded-detail .analysis-table-wrap{border:0;border-top:1px solid #354760}
+@media(max-width:950px){.analysis-scenarios{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.analysis-scenarios,.analysis-tops{grid-template-columns:1fr}.analysis-scenario{min-height:auto}.analysis-page .methodology-hero h1{font-size:58px}}

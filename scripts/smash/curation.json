@@ -2,7 +2,10 @@
   "note": "Candidaturas para revisión: la ubicación de start.gg no determina nacionalidad ni residencia. La lista de 2025 y los asientos regionales de UltRank 2026.1 son antecedentes, no elegibilidad verificada para este ranking.",
   "sources": ["https://liquipedia.net/smash/Guatemala_Power_Rankings/Ultimate", "https://github.com/kenniky/ultrank-scoring/blob/61eaa8828eff709ffbfbabeefdaf062dac48095e/ultrank_players.csv"],
   "excludedEventIds": {
-    "1533740": "Squad Strike, formato distinto a singles estándar"
+    "1533740": "Squad Strike, formato distinto a singles estándar",
+    "1552956": "Ultimate Squad Strike, formato distinto a singles estándar",
+    "1606057": "Fijo No Sale Mi Main, formato especial de personajes; pendiente de revisar, no se simula como singles estándar",
+    "1623104": "Esta a 1 de vida, formato especial; pendiente de revisar, no se simula como singles estándar"
   },
   "excludedForeignEventIds": {
     "1640091": "Squad Strike de Pre S Factor X3, formato distinto a singles estándar",

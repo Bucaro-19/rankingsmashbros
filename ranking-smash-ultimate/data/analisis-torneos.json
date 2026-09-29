@@ -1,0 +1,1006 @@
+{
+  "schemaVersion": 1,
+  "snapshotAt": "2026-09-29T16:05:57.917107+00:00",
+  "foreignResultsAsOf": "2026-09-28T23:15:46.880714+00:00",
+  "baselineVerifiedAsOf": "2026-09-29T05:49:11.470098+00:00",
+  "status": "simulacion_sin_cambio_de_regla",
+  "baseline": {
+    "events": 26,
+    "sets": 6739,
+    "players": 100,
+    "top10": [
+      {
+        "tag": "Schatzally",
+        "rank": 1,
+        "rating": 2484
+      },
+      {
+        "tag": "ShinyMark",
+        "rank": 2,
+        "rating": 2428
+      },
+      {
+        "tag": "Eman",
+        "rank": 3,
+        "rating": 2313
+      },
+      {
+        "tag": "Crisam",
+        "rank": 4,
+        "rating": 2305
+      },
+      {
+        "tag": "Krlos04",
+        "rank": 5,
+        "rating": 2260
+      },
+      {
+        "tag": "Finn",
+        "rank": 6,
+        "rating": 2259
+      },
+      {
+        "tag": "DragonSlayer",
+        "rank": 7,
+        "rating": 2184
+      },
+      {
+        "tag": "Delisaster.",
+        "rank": 8,
+        "rating": 2169
+      },
+      {
+        "tag": "Hanma",
+        "rank": 9,
+        "rating": 2083
+      },
+      {
+        "tag": "Daak.RD",
+        "rank": 10,
+        "rating": 2067
+      }
+    ]
+  },
+  "scenarios": {
+    "pointsException": {
+      "events": 28,
+      "sets": 6836,
+      "players": 100,
+      "addedEvents": 2,
+      "newTop100": [
+        {
+          "tag": "MARS",
+          "rank": 33
+        },
+        {
+          "tag": "Paper",
+          "rank": 65
+        },
+        {
+          "tag": "Kings-Chis",
+          "rank": 81
+        },
+        {
+          "tag": "Funtown!",
+          "rank": 93
+        }
+      ],
+      "leftTop100": [
+        {
+          "tag": "Spk",
+          "rank": 97
+        },
+        {
+          "tag": "Riu9440",
+          "rank": 98
+        },
+        {
+          "tag": "VicZero",
+          "rank": 99
+        },
+        {
+          "tag": "W H I T E",
+          "rank": 100
+        }
+      ],
+      "commonPlayersMoved": 69,
+      "largestMove": 15,
+      "top10": [
+        {
+          "tag": "Schatzally",
+          "oldRank": 1,
+          "rank": 1,
+          "rating": 2496
+        },
+        {
+          "tag": "ShinyMark",
+          "oldRank": 2,
+          "rank": 2,
+          "rating": 2442
+        },
+        {
+          "tag": "Crisam",
+          "oldRank": 4,
+          "rank": 3,
+          "rating": 2320
+        },
+        {
+          "tag": "Eman",
+          "oldRank": 3,
+          "rank": 4,
+          "rating": 2317
+        },
+        {
+          "tag": "Krlos04",
+          "oldRank": 5,
+          "rank": 5,
+          "rating": 2277
+        },
+        {
+          "tag": "Finn",
+          "oldRank": 6,
+          "rank": 6,
+          "rating": 2257
+        },
+        {
+          "tag": "Delisaster.",
+          "oldRank": 8,
+          "rank": 7,
+          "rating": 2197
+        },
+        {
+          "tag": "DragonSlayer",
+          "oldRank": 7,
+          "rank": 8,
+          "rating": 2192
+        },
+        {
+          "tag": "Nepeta",
+          "oldRank": 11,
+          "rank": 9,
+          "rating": 2088
+        },
+        {
+          "tag": "Hanma",
+          "oldRank": 9,
+          "rank": 10,
+          "rating": 2081
+        }
+      ]
+    },
+    "min24": {
+      "events": 31,
+      "sets": 7003,
+      "players": 100,
+      "addedEvents": 5,
+      "newTop100": [
+        {
+          "tag": "MARS",
+          "rank": 33
+        },
+        {
+          "tag": "MORSECODE",
+          "rank": 69
+        },
+        {
+          "tag": "Francio",
+          "rank": 93
+        },
+        {
+          "tag": "joshmi",
+          "rank": 98
+        },
+        {
+          "tag": "Funtown!",
+          "rank": 100
+        }
+      ],
+      "leftTop100": [
+        {
+          "tag": "tilin",
+          "rank": 96
+        },
+        {
+          "tag": "Spk",
+          "rank": 97
+        },
+        {
+          "tag": "Riu9440",
+          "rank": 98
+        },
+        {
+          "tag": "VicZero",
+          "rank": 99
+        },
+        {
+          "tag": "W H I T E",
+          "rank": 100
+        }
+      ],
+      "commonPlayersMoved": 76,
+      "largestMove": 27,
+      "top10": [
+        {
+          "tag": "Schatzally",
+          "oldRank": 1,
+          "rank": 1,
+          "rating": 2501
+        },
+        {
+          "tag": "ShinyMark",
+          "oldRank": 2,
+          "rank": 2,
+          "rating": 2446
+        },
+        {
+          "tag": "Crisam",
+          "oldRank": 4,
+          "rank": 3,
+          "rating": 2329
+        },
+        {
+          "tag": "Eman",
+          "oldRank": 3,
+          "rank": 4,
+          "rating": 2325
+        },
+        {
+          "tag": "Krlos04",
+          "oldRank": 5,
+          "rank": 5,
+          "rating": 2283
+        },
+        {
+          "tag": "Finn",
+          "oldRank": 6,
+          "rank": 6,
+          "rating": 2275
+        },
+        {
+          "tag": "DragonSlayer",
+          "oldRank": 7,
+          "rank": 7,
+          "rating": 2197
+        },
+        {
+          "tag": "Delisaster.",
+          "oldRank": 8,
+          "rank": 8,
+          "rating": 2195
+        },
+        {
+          "tag": "Hanma",
+          "oldRank": 9,
+          "rank": 9,
+          "rating": 2087
+        },
+        {
+          "tag": "Nepeta",
+          "oldRank": 11,
+          "rank": 10,
+          "rating": 2085
+        }
+      ]
+    },
+    "min16": {
+      "events": 49,
+      "sets": 7734,
+      "players": 100,
+      "addedEvents": 23,
+      "newTop100": [
+        {
+          "tag": "Alex_mmD",
+          "rank": 33
+        },
+        {
+          "tag": "G-ZERO",
+          "rank": 34
+        },
+        {
+          "tag": "MARS",
+          "rank": 35
+        },
+        {
+          "tag": "Falcone",
+          "rank": 42
+        },
+        {
+          "tag": "Jossol",
+          "rank": 47
+        },
+        {
+          "tag": "IvannVz",
+          "rank": 54
+        },
+        {
+          "tag": "Paper",
+          "rank": 63
+        },
+        {
+          "tag": "Dragneel1505",
+          "rank": 77
+        },
+        {
+          "tag": "MORSECODE",
+          "rank": 79
+        },
+        {
+          "tag": "Funtown!",
+          "rank": 92
+        },
+        {
+          "tag": "Kings-Chis",
+          "rank": 96
+        }
+      ],
+      "leftTop100": [
+        {
+          "tag": "Bankai",
+          "rank": 83
+        },
+        {
+          "tag": "Taylor Swift",
+          "rank": 87
+        },
+        {
+          "tag": "Andrew",
+          "rank": 88
+        },
+        {
+          "tag": "Zacker",
+          "rank": 90
+        },
+        {
+          "tag": "Jando34",
+          "rank": 93
+        },
+        {
+          "tag": "aacota00",
+          "rank": 95
+        },
+        {
+          "tag": "tilin",
+          "rank": 96
+        },
+        {
+          "tag": "Spk",
+          "rank": 97
+        },
+        {
+          "tag": "Riu9440",
+          "rank": 98
+        },
+        {
+          "tag": "VicZero",
+          "rank": 99
+        },
+        {
+          "tag": "W H I T E",
+          "rank": 100
+        }
+      ],
+      "commonPlayersMoved": 79,
+      "largestMove": 25,
+      "top10": [
+        {
+          "tag": "Schatzally",
+          "oldRank": 1,
+          "rank": 1,
+          "rating": 2520
+        },
+        {
+          "tag": "ShinyMark",
+          "oldRank": 2,
+          "rank": 2,
+          "rating": 2462
+        },
+        {
+          "tag": "Crisam",
+          "oldRank": 4,
+          "rank": 3,
+          "rating": 2359
+        },
+        {
+          "tag": "Eman",
+          "oldRank": 3,
+          "rank": 4,
+          "rating": 2343
+        },
+        {
+          "tag": "Krlos04",
+          "oldRank": 5,
+          "rank": 5,
+          "rating": 2303
+        },
+        {
+          "tag": "Finn",
+          "oldRank": 6,
+          "rank": 6,
+          "rating": 2285
+        },
+        {
+          "tag": "Delisaster.",
+          "oldRank": 8,
+          "rank": 7,
+          "rating": 2237
+        },
+        {
+          "tag": "DragonSlayer",
+          "oldRank": 7,
+          "rank": 8,
+          "rating": 2216
+        },
+        {
+          "tag": "Nepeta",
+          "oldRank": 11,
+          "rank": 9,
+          "rating": 2116
+        },
+        {
+          "tag": "Hanma",
+          "oldRank": 9,
+          "rank": 10,
+          "rating": 2099
+        }
+      ]
+    }
+  },
+  "smallEvents": [
+    {
+      "id": "1538785",
+      "name": "Freddy's house",
+      "eventName": "Singles",
+      "date": "2026-01-13",
+      "url": "https://www.start.gg/tournament/freddy-s-house/event/singles",
+      "entrants": 18,
+      "activePlayers": 18,
+      "validSets": 33,
+      "estimatedPoints": 54,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1539534",
+      "name": "The Oven 1",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-01-18",
+      "url": "https://www.start.gg/tournament/the-oven-1-1/event/smash-ultimate-singles",
+      "entrants": 28,
+      "activePlayers": 21,
+      "validSets": 40,
+      "estimatedPoints": 93,
+      "valuedPlayers": 1,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1552956",
+      "name": "Kizuna Ranbu – Doubles & Squad Strike Random",
+      "eventName": "Ultimate Squad Strike @ 11:00 AM",
+      "date": "2026-02-15",
+      "url": "https://www.start.gg/tournament/kizuna-ranbu-doubles-squad-strike-random/event/ultimate-squad-strike-11-00-am",
+      "entrants": 22,
+      "activePlayers": 21,
+      "validSets": 40,
+      "estimatedPoints": 333,
+      "valuedPlayers": 5,
+      "qualifiesByException": false,
+      "decision": "manual_exclusion",
+      "exclusionReason": "Ultimate Squad Strike, formato distinto a singles estándar"
+    },
+    {
+      "id": "1559366",
+      "name": "NECKOH DOJO 5",
+      "eventName": "Restaurante Retro",
+      "date": "2026-02-15",
+      "url": "https://www.start.gg/tournament/neckoh-dojo-5/event/restaurante-retro",
+      "entrants": 24,
+      "activePlayers": 24,
+      "validSets": 46,
+      "estimatedPoints": 72,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1560820",
+      "name": "The Oven 2",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/the-oven-2/event/smash-ultimate-singles",
+      "entrants": 17,
+      "activePlayers": 17,
+      "validSets": 33,
+      "estimatedPoints": 51,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1577120",
+      "name": "Smash Club Ascension - Marzo",
+      "eventName": "Singles Clase A @ 11:00 AM",
+      "date": "2026-03-08",
+      "url": "https://www.start.gg/tournament/smash-club-ascension-marzo/event/singles-clase-a-11-00-am",
+      "entrants": 22,
+      "activePlayers": 21,
+      "validSets": 41,
+      "estimatedPoints": 63,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1580663",
+      "name": "Gordiel House",
+      "eventName": "Singles",
+      "date": "2026-03-12",
+      "url": "https://www.start.gg/tournament/gordiel-house/event/singles",
+      "entrants": 9,
+      "activePlayers": 8,
+      "validSets": 14,
+      "estimatedPoints": 24,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1582329",
+      "name": "Eman cumpleaños",
+      "eventName": "Ruseet 🏟️",
+      "date": "2026-03-14",
+      "url": "https://www.start.gg/tournament/eman-cumplea-os/event/ruseet",
+      "entrants": 10,
+      "activePlayers": 10,
+      "validSets": 19,
+      "estimatedPoints": 30,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1587712",
+      "name": "Smash Series",
+      "eventName": "Singles",
+      "date": "2026-03-22",
+      "url": "https://www.start.gg/tournament/smash-series-2/event/singles",
+      "entrants": 17,
+      "activePlayers": 17,
+      "validSets": 32,
+      "estimatedPoints": 51,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1568869",
+      "name": "The Oven 3",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-03-22",
+      "url": "https://www.start.gg/tournament/the-oven-3/event/smash-ultimate-singles",
+      "entrants": 23,
+      "activePlayers": 23,
+      "validSets": 43,
+      "estimatedPoints": 69,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1596027",
+      "name": "Torneo Santo",
+      "eventName": "NECKOH chill",
+      "date": "2026-04-03",
+      "url": "https://www.start.gg/tournament/torneo-santo/event/neckoh-chill",
+      "entrants": 22,
+      "activePlayers": 22,
+      "validSets": 41,
+      "estimatedPoints": 66,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1603079",
+      "name": "Magia Smash",
+      "eventName": "Haciendo Magia",
+      "date": "2026-04-11",
+      "url": "https://www.start.gg/tournament/magia-smash-1/event/haciendo-magia",
+      "entrants": 10,
+      "activePlayers": 10,
+      "validSets": 43,
+      "estimatedPoints": 30,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1600636",
+      "name": "Smash Club Ascension - Abril",
+      "eventName": "Singles Clase A @ 11:00 AM",
+      "date": "2026-04-12",
+      "url": "https://www.start.gg/tournament/smash-club-ascension-abril-1/event/singles-clase-a-11-00-am",
+      "entrants": 20,
+      "activePlayers": 20,
+      "validSets": 38,
+      "estimatedPoints": 60,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1600637",
+      "name": "Smash Club Ascension - Abril",
+      "eventName": "Singles Clase S @ 1:00 PM",
+      "date": "2026-04-12",
+      "url": "https://www.start.gg/tournament/smash-club-ascension-abril-1/event/singles-clase-s-1-00-pm",
+      "entrants": 28,
+      "activePlayers": 27,
+      "validSets": 53,
+      "estimatedPoints": 381,
+      "valuedPlayers": 6,
+      "qualifiesByException": true,
+      "decision": "included",
+      "exclusionReason": null
+    },
+    {
+      "id": "1608598",
+      "name": "CS Meet",
+      "eventName": "Singles ultimate",
+      "date": "2026-04-18",
+      "url": "https://www.start.gg/tournament/cs-meet/event/singles-ultimate",
+      "entrants": 11,
+      "activePlayers": 11,
+      "validSets": 19,
+      "estimatedPoints": 153,
+      "valuedPlayers": 4,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1601622",
+      "name": "The Oven 4",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/the-oven-4/event/smash-ultimate-singles",
+      "entrants": 26,
+      "activePlayers": 23,
+      "validSets": 44,
+      "estimatedPoints": 129,
+      "valuedPlayers": 2,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1606057",
+      "name": "The Oven 4",
+      "eventName": "Fijo No Sale Mi Main",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/the-oven-4/event/fijo-no-sale-mi-main",
+      "entrants": 23,
+      "activePlayers": 19,
+      "validSets": 34,
+      "estimatedPoints": 117,
+      "valuedPlayers": 2,
+      "qualifiesByException": false,
+      "decision": "manual_exclusion",
+      "exclusionReason": "Fijo No Sale Mi Main, formato especial de personajes; pendiente de revisar, no se simula como singles estándar"
+    },
+    {
+      "id": "1622470",
+      "name": "Sukuna Round",
+      "eventName": "Sukuna Round",
+      "date": "2026-05-10",
+      "url": "https://www.start.gg/tournament/sukuna-round/event/sukuna-round",
+      "entrants": 8,
+      "activePlayers": 8,
+      "validSets": 42,
+      "estimatedPoints": 24,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1628224",
+      "name": "ComicCon Xela Día 1",
+      "eventName": "ComicCon Xela Smash Primer Dia",
+      "date": "2026-05-16",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-1/event/comiccon-xela-smash-primer-dia",
+      "entrants": 31,
+      "activePlayers": 31,
+      "validSets": 60,
+      "estimatedPoints": 93,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1616735",
+      "name": "The Oven 5",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-05-17",
+      "url": "https://www.start.gg/tournament/the-oven-5/event/smash-ultimate-singles",
+      "entrants": 23,
+      "activePlayers": 20,
+      "validSets": 39,
+      "estimatedPoints": 60,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1623104",
+      "name": "The Oven 5",
+      "eventName": "Esta a 1 de vida",
+      "date": "2026-05-17",
+      "url": "https://www.start.gg/tournament/the-oven-5/event/esta-a-1-de-vida",
+      "entrants": 20,
+      "activePlayers": 16,
+      "validSets": 26,
+      "estimatedPoints": 48,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "manual_exclusion",
+      "exclusionReason": "Esta a 1 de vida, formato especial; pendiente de revisar, no se simula como singles estándar"
+    },
+    {
+      "id": "1635227",
+      "name": "Anime Street Fest",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/anime-street-fest/event/smash-ultimate-singles",
+      "entrants": 17,
+      "activePlayers": 17,
+      "validSets": 33,
+      "estimatedPoints": 51,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1636854",
+      "name": "Anime Street Fest",
+      "eventName": "Redencion Magica",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/anime-street-fest/event/redencion-magica",
+      "entrants": 9,
+      "activePlayers": 7,
+      "validSets": 9,
+      "estimatedPoints": 21,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1630968",
+      "name": "NECKOH CHILL 3",
+      "eventName": "NECKOH chill",
+      "date": "2026-06-14",
+      "url": "https://www.start.gg/tournament/neckoh-chill-3/event/neckoh-chill",
+      "entrants": 27,
+      "activePlayers": 27,
+      "validSets": 53,
+      "estimatedPoints": 81,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1650426",
+      "name": "Sukuna Round 2",
+      "eventName": "Singles",
+      "date": "2026-06-18",
+      "url": "https://www.start.gg/tournament/sukuna-round-2-1/event/singles",
+      "entrants": 14,
+      "activePlayers": 14,
+      "validSets": 54,
+      "estimatedPoints": 42,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1652501",
+      "name": "Torneo Rancked Jutiapa IV",
+      "eventName": "Torneo Rancked Jutiapa IV",
+      "date": "2026-06-21",
+      "url": "https://www.start.gg/tournament/torneo-rancked-jutiapa-iv/event/torneo-rancked-jutiapa-iv",
+      "entrants": 13,
+      "activePlayers": 12,
+      "validSets": 23,
+      "estimatedPoints": 36,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1655012",
+      "name": "BULLY SEASON",
+      "eventName": "Taco Nova: Bully Season",
+      "date": "2026-06-27",
+      "url": "https://www.start.gg/tournament/bully-season/event/taco-nova-bully-season",
+      "entrants": 16,
+      "activePlayers": 16,
+      "validSets": 30,
+      "estimatedPoints": 48,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1637763",
+      "name": "DEMI PLIE, GRAND JETE!",
+      "eventName": "Ultimate Singles",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/demi-plie-grand-jete/event/ultimate-singles",
+      "entrants": 18,
+      "activePlayers": 17,
+      "validSets": 32,
+      "estimatedPoints": 51,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1661353",
+      "name": "Sukuna Round 3",
+      "eventName": "Round SSBU",
+      "date": "2026-07-05",
+      "url": "https://www.start.gg/tournament/sukuna-round-3/event/round-ssbu",
+      "entrants": 21,
+      "activePlayers": 21,
+      "validSets": 110,
+      "estimatedPoints": 63,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1663736",
+      "name": "The Oven 6",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-07-12",
+      "url": "https://www.start.gg/tournament/the-oven-6/event/smash-ultimate-singles",
+      "entrants": 27,
+      "activePlayers": 27,
+      "validSets": 52,
+      "estimatedPoints": 171,
+      "valuedPlayers": 3,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1680464",
+      "name": "Kingdom Games Tournament",
+      "eventName": "Kingdom Game Tournament",
+      "date": "2026-08-02",
+      "url": "https://www.start.gg/tournament/kingdom-games-tournament/event/kingdom-game-tournament",
+      "entrants": 21,
+      "activePlayers": 21,
+      "validSets": 39,
+      "estimatedPoints": 63,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1679996",
+      "name": "Torneo Otaku Store Agosto 2025",
+      "eventName": "Ultimate Singles",
+      "date": "2026-08-02",
+      "url": "https://www.start.gg/tournament/torneo-otaku-store-agosto-2025/event/ultimate-singles",
+      "entrants": 23,
+      "activePlayers": 23,
+      "validSets": 44,
+      "estimatedPoints": 69,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1681494",
+      "name": "Smash After Coffee #1",
+      "eventName": "Torneo 1v1",
+      "date": "2026-08-09",
+      "url": "https://www.start.gg/tournament/smash-after-coffee-1/event/torneo-1v1",
+      "entrants": 11,
+      "activePlayers": 9,
+      "validSets": 15,
+      "estimatedPoints": 27,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1689430",
+      "name": "Torneo Conve ExpoGT Agosto 2026",
+      "eventName": "Ultimate Torneo 1",
+      "date": "2026-08-16",
+      "url": "https://www.start.gg/tournament/torneo-conve-expogt-agosto-2026/event/ultimate-torneo-1",
+      "entrants": 16,
+      "activePlayers": 16,
+      "validSets": 15,
+      "estimatedPoints": 48,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1689432",
+      "name": "Torneo Conve ExpoGT Agosto 2026",
+      "eventName": "Ultimate 2",
+      "date": "2026-08-16",
+      "url": "https://www.start.gg/tournament/torneo-conve-expogt-agosto-2026/event/ultimate-2",
+      "entrants": 15,
+      "activePlayers": 15,
+      "validSets": 14,
+      "estimatedPoints": 45,
+      "valuedPlayers": 0,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1687030",
+      "name": "The Oven 7",
+      "eventName": "Smash Ultimate Singles",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/the-oven-7/event/smash-ultimate-singles",
+      "entrants": 13,
+      "activePlayers": 13,
+      "validSets": 81,
+      "estimatedPoints": 69,
+      "valuedPlayers": 1,
+      "qualifiesByException": false,
+      "decision": "under_minimum_active_players",
+      "exclusionReason": null
+    },
+    {
+      "id": "1704343",
+      "name": "Torneo Otaku Store Septiembre 2026",
+      "eventName": "Ultimate Singles",
+      "date": "2026-09-06",
+      "url": "https://www.start.gg/tournament/torneo-otaku-store-septiembre-2026/event/ultimate-singles",
+      "entrants": 23,
+      "activePlayers": 23,
+      "validSets": 44,
+      "estimatedPoints": 219,
+      "valuedPlayers": 5,
+      "qualifiesByException": true,
+      "decision": "included",
+      "exclusionReason": null
+    }
+  ],
+  "source": "https://docs.google.com/document/d/1dC5oJaRfXITqlVMG8w6uZ1KGVjWxshbNqQzRD6zSXE8/edit"
+}

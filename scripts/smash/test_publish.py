@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock
 from publish_data import export
-from deploy import deploy, validate_public_data, FILES
+from deploy import deploy, validate_public_data, validate_study_data, FILES
 
 
 def snapshot():
@@ -91,6 +91,14 @@ class ExportTests(unittest.TestCase):
             else: altered["players"].pop()
             with self.subTest(change=change), self.assertRaises(ValueError):
                 validate_public_data(altered)
+
+    def test_study_must_be_a_separate_complete_simulation(self):
+        valid = {"schemaVersion": 1, "status": "simulacion_sin_cambio_de_regla", "baselineVerifiedAsOf": "2026-09-29T00:00:00Z", "smallEvents": [],
+                 "scenarios": {"pointsException": {}, "min24": {}, "min16": {}}}
+        validate_study_data(valid)
+        valid["status"] = "ranking_publicado"
+        with self.assertRaisesRegex(ValueError, "estudio completo"):
+            validate_study_data(valid)
 
 
 if __name__ == "__main__":
