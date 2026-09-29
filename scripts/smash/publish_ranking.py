@@ -76,7 +76,11 @@ def export(snapshot, ranking, curation=None):
             excluded_events.append({"id": eid, "name": f"Evento {eid}", "reason": reason, "url": None})
     excluded_events.sort(key=lambda row: row["id"])
     start = datetime.fromtimestamp(snapshot["season"]["startInclusive"], timezone.utc).strftime("%d/%m/%Y")
-    end = datetime.fromtimestamp(snapshot["season"]["endExclusive"] - 1, timezone.utc).strftime("%d/%m/%Y")
+    # The UTC search bound can extend into the following local day. The public
+    # label must not claim results from a day that had not begun at capture time.
+    captured_at = datetime.fromisoformat(snapshot["generatedAt"]).timestamp()
+    visible_end = min(captured_at, snapshot["season"]["endExclusive"] - 1)
+    end = datetime.fromtimestamp(visible_end, ZoneInfo("America/Guatemala")).strftime("%d/%m/%Y")
     international = snapshot.get("internationalComplete") is True
     countries = {event["country"] for event in events}
     countries.discard(None)

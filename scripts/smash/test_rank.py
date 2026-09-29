@@ -61,6 +61,7 @@ class PilotRankingTests(unittest.TestCase):
         self.assertEqual(len(public["results"]), 62)
         self.assertEqual(public["status"], "local_pilot")
         self.assertEqual(public["methodVersion"], "BT-PILOTO-1")
+        self.assertTrue(public["seasonLabel"].endswith("28/09/2026"))
         self.assertEqual(len(public["events"]), 2)
         self.assertEqual([event["validSets"] for event in public["events"]], [31, 31])
         self.assertEqual(public["events"][0]["activePlayers"], 32)
