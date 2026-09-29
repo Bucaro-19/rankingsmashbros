@@ -1,0 +1,35 @@
+# Top 100 piloto de Smash GT (2026)
+
+La lista de la página es **experimental**. No es el ranking oficial de Guatemala ni reproduce el algoritmo final de UltRank. El primer corte cubre del 1 de enero al 28 de septiembre de 2026, con resultados disputados en Guatemala, México y Estados Unidos.
+
+## Qué encontramos en las fuentes
+
+- La [metodología publicada de UltRank](https://docs.google.com/document/d/1dC5oJaRfXITqlVMG8w6uZ1KGVjWxshbNqQzRD6zSXE8/edit) define mínimos de participantes, multiplicadores regionales, valores de jugadores, categorías de torneos y causas de exclusión. Guatemala aparece en el grupo ×3, con mínimo de 32 participantes o 200 puntos y dos jugadores valorados. También describe conceptualmente victorias, derrotas, posiciones, volatilidad y ponderaciones. No publica todas las funciones y constantes necesarias para calcular los puntos finales de jugadores.
+- El [código público del tierer](https://github.com/kenniky/ultrank-scoring) y su [interfaz](https://kenniky.github.io/web_ultrank_scorer.html) permiten verificar los **puntos de un evento**, no el cálculo final de posiciones. Se usa una revisión fijada de su tabla de valores de jugadores. Esa tabla se descarga al generar los datos y no se incorpora al repositorio.
+- La [API de start.gg](https://developer.start.gg/docs/rate-limits/) limita a 80 solicitudes por minuto y 1,000 objetos por solicitud; el importador utiliza paginación y 1 solicitud por segundo.
+
+## Selección del piloto
+
+1. Consultar todos los torneos 2026 de Ultimate registrados con país `GT` en start.gg. La primera captura encontró 60 torneos y 73 eventos de Ultimate.
+2. Seleccionar eventos presenciales individuales con al menos 32 inscritos. Consultar todos sus participantes, posiciones y sets por páginas. La captura inicial obtuvo 24 eventos y 2,759 sets.
+3. Excluir el evento `1533740`, que es Squad Strike. Descartar DQ, bye, walkover, marcador ausente, ganador no verificable y encuentros sin dos jugadores identificados. Exigir al menos 32 jugadores con un set competitivo en el evento. Quedan 23 eventos y 2,331 sets para el cálculo inicial.
+4. Clasificar como candidato guatemalteco a quien tenga Guatemala en su perfil público. Añadir excepciones con ID documentadas en `curation.json`, basadas en el [PR Guatemala 2025](https://liquipedia.net/smash/Guatemala_Power_Rankings/Ultimate) y los asientos regionales Guatemala de la [tabla UltRank 2026.1](https://github.com/kenniky/ultrank-scoring/blob/61eaa8828eff709ffbfbabeefdaf062dac48095e/ultrank_players.csv). ShinyMark figura ahora con México, Krlos04 y Hanma con Estados Unidos, y Schatzally —registrado antes como HaunterGV— sin país en su perfil. Son pruebas de relación con la escena, no elegibilidad definitiva.
+5. Consultar el historial completo de los 455 jugadores candidatos descubiertos en torneos guatemaltecos. Se hallaron seis eventos extranjeros posibles. Se excluyeron un Squad Strike, un evento previo a S Factor X3 y un torneo salvadoreño en el que el jugador rastreado solo registró DQ. Se descargaron cuadros completos de los otros tres eventos: S Factor X3, Let's Make BIG Moves 2026 y Cavalier Clash 7. El filtro general descarta cualquier evento extranjero sin un set válido de al menos un candidato rastreado.
+6. Exigir al menos dos eventos considerados y cuatro sets competitivos en total. Hay 155 candidatos que cumplen; se muestran los 100 mejor puntuados. En conjunto entran 23 eventos guatemaltecos y tres extranjeros, con 6,739 sets competitivos.
+
+## Puntuación propia del piloto
+
+Cada resultado válido entra en una estimación Bradley–Terry regularizada. Para un evento guatemalteco, el cálculo orientativo de puntos TTS usa `participantes_activos + min(256, participantes_activos) + min(128, participantes_activos) + valores_de_jugadores_vigentes`. Se toma el mayor valor vigente de cada participante según la tabla pública de UltRank. Los puntos TTS son **estimados** porque DQ, formato y decisiones editoriales pueden cambiar la puntuación oficial.
+
+El peso de cada set guatemalteco es `min(2.5, sqrt(puntos_TTS_estimados / 96)) / sqrt(repeticiones_del_mismo_enfrentamiento)`. Para un evento extranjero se usa `min(2.5, sqrt(jugadores_activos / 64)) / sqrt(repeticiones_del_mismo_enfrentamiento)`. El modelo ajusta la probabilidad de cada victoria con una penalización cuadrática de 0.5 hacia un valor neutral. Convertimos el resultado a puntos visibles con `1500 + 400 / ln(10) × logit`, redondeado al entero. Así, derrotar a un rival bien valorado por sus propios resultados pesa más que vencer a alguien con resultados débiles; repetir muchas veces el mismo enfrentamiento aporta menos información.
+
+**Esto no equivale a UltRank.** No modela sus outplacements, volatilidad, ponderación de mejores/peores eventos, sanción por baja asistencia ni sus coeficientes privados. El puntaje tampoco es Elo oficial. El orden es un ensayo reproducible de una metodología propia.
+
+## Limitaciones que impiden llamarlo ranking nacional definitivo
+
+- La búsqueda internacional parte de jugadores encontrados primero en un torneo de Guatemala o añadidos como excepción documentada. Quien compite solo fuera del país puede faltar. También pueden faltar torneos sin país de sede en start.gg o no vinculados al usuario actual del jugador.
+- El país del perfil es editable y no representa necesariamente ciudadanía ni residencia. Los perfiles sin país quedan pendientes y los cambios de país pueden alterar candidaturas. La comunidad debe acordar el criterio de pertenencia al ranking.
+- Los nombres y reglamentos de eventos, DQ ambiguas, series semanales y torneos con reglas especiales necesitan revisión manual. El mínimo de participantes es conservador y puede excluir eventos que UltRank admitiría por puntos de jugadores.
+- Los valores TTS provienen de una revisión fijada de septiembre de 2026; deberán actualizarse conscientemente al cambiar de temporada. Los torneos extranjeros nuevos requieren aprobación o exclusión explícita antes de publicar una actualización automática.
+
+La página muestra explícitamente el estado **Top 100 piloto · Guatemala y el extranjero** y la fecha de consulta. La automatización diaria permanece desactivada hasta que se revise la primera publicación y su cobertura.

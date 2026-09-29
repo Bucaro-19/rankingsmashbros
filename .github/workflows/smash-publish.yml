@@ -1,0 +1,54 @@
+name: Actualizar y publicar Smash GT
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 12 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    # Scheduled updates stay inactive until the first real import has been reviewed.
+    if: github.event_name == 'workflow_dispatch' || vars.SMASH_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Comprobar conexión configurada
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        run: |
+          if [ -z "$STARTGG_TOKEN" ]; then
+            echo 'Falta el secreto STARTGG_TOKEN. No se publicará ningún cambio.'
+            exit 1
+          fi
+      - name: Verificar recopilación y exportación
+        run: python -m unittest discover -s scripts/smash -v
+      - name: Descubrir los torneos de Guatemala de la temporada
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+          SMASH_START: ${{ vars.SMASH_START || '2026-01-01' }}
+        run: |
+          end_date=$(date -u -d tomorrow +%F)
+          python scripts/smash/discover.py --start "$SMASH_START" --end "$end_date"
+      - name: Revisar y descargar torneos internacionales descubiertos
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        run: python scripts/smash/discover_abroad.py scripts/smash/data/national.json --curation scripts/smash/curation.json --fetch
+      - name: Calcular top 100 piloto con tabla TTS fijada
+        run: |
+          python scripts/smash/fetch_tts.py
+          python scripts/smash/combine.py scripts/smash/data/national.json scripts/smash/data/abroad.json scripts/smash/data/combined.json
+          python scripts/smash/rank.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json --curation scripts/smash/curation.json --points-csv scripts/smash/data/ultrank_players.csv
+          python scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json
+      - name: Publicar en la subcarpeta del ranking con FTPS
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: python scripts/smash/deploy.py

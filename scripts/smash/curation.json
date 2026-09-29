@@ -1,0 +1,26 @@
+{
+  "note": "Candidaturas para revisión: la ubicación de start.gg no determina nacionalidad ni residencia. La lista de 2025 y los asientos regionales de UltRank 2026.1 son antecedentes, no elegibilidad verificada para este ranking.",
+  "sources": ["https://liquipedia.net/smash/Guatemala_Power_Rankings/Ultimate", "https://github.com/kenniky/ultrank-scoring/blob/61eaa8828eff709ffbfbabeefdaf062dac48095e/ultrank_players.csv"],
+  "excludedEventIds": {
+    "1533740": "Squad Strike, formato distinto a singles estándar"
+  },
+  "excludedForeignEventIds": {
+    "1640091": "Squad Strike de Pre S Factor X3, formato distinto a singles estándar",
+    "1602278": "Pre S Factor X3 del miércoles, local previo al major; exclusión conservadora",
+    "1619708": "Torneo Mercado San Miguelito: el jugador guatemalteco hallado figura solo con dos DQ; sin set competitivo suyo"
+  },
+  "approvedForeignEventIds": {
+    "1428416": "Let's Make BIG Moves 2026, Ultimate singles presencial en Estados Unidos",
+    "1421380": "Cavalier Clash 7, Ultimate singles presencial en Estados Unidos",
+    "1531257": "S Factor X3, Ultimate singles presencial en México"
+  },
+  "playerOverrides": {
+    "184005": "PR Guatemala 2025 (#1); perfil actual de México; pertenencia pendiente de validar",
+    "3638851": "asiento regional Guatemala UltRank 2026.1; perfil actual de Estados Unidos; pertenencia pendiente de validar",
+    "2542108": "asiento regional Guatemala UltRank 2026.1; perfil actual de Estados Unidos; pertenencia pendiente de validar",
+    "1321023": "asiento regional Guatemala UltRank 2026.1 bajo el alias HaunterGV; perfil actual sin país; pertenencia pendiente de validar"
+  },
+  "playerAliases": {
+    "1321023": "HaunterGV"
+  }
+}
