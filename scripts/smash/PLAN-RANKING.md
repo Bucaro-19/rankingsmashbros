@@ -17,7 +17,7 @@ El top 100 publicado es un **piloto**, no un ranking oficial de la comunidad. Su
 - Crear un registro de eventos candidatos y decisiones. Guardar capturas originales, resultados válidos, DQ, motivo de descarte y versión de la tabla TTS. No publicar una actualización si la importación es parcial.
 - Comparar variantes del método con pruebas fuera de muestra por fecha y sensibilidad al quitar un evento, cambiar ponderaciones y revisar enfrentamientos repetidos. Evaluar con métricas predictivas y estabilidad del top, no escogiendo el orden que favorezca a un jugador. El [informe de auditoría](AUDITORIA-PILOTO-2026-09-28.md) ya permite repetir la prueba de quitar los eventos extranjeros.
 - Mostrar en la web, para cada edición, periodo, fecha de datos, reglas, torneos incluidos, sets válidos, mínimo de actividad, base de elegibilidad y cambios desde la edición anterior. Conservar ediciones congeladas y un formulario o canal para correcciones.
-- Repetir periódicamente la verificación del flujo de importación, cálculo y despliegue. La [ejecución completa del 29 de septiembre de 2026](https://github.com/Bucaro-19/rsvp-graduacion/actions/runs/36524751923) terminó correctamente: 26 eventos, 6,739 sets válidos y archivo público actualizado por FTP. Esto valida el transporte y la captura de ese corte, no la política editorial de un ranking definitivo.
+- Repetir periódicamente la verificación del flujo de importación, cálculo y despliegue. La ejecución completa del 29 de septiembre de 2026 terminó correctamente: 26 eventos, 6,739 sets válidos y archivo público actualizado por FTP. Esto valida el transporte y la captura de ese corte, no la política editorial de un ranking definitivo.
 
 ## Criterio de salida
 

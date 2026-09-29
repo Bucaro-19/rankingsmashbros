@@ -74,6 +74,6 @@ Veinte pruebas de datos y publicación local, incluidas las exclusiones DQ, la c
 
 `STARTGG_TOKEN` está guardado en GitHub Secrets y la captura completa pasó en GitHub Actions. Conviene rotarlo porque se compartió en el chat: primero sustituir el secreto de GitHub por el token nuevo y después revocar el anterior en start.gg. No se guarda el valor en archivos del repositorio ni se incluye en la exportación.
 
-La ejecución completa del 29 de septiembre de 2026 importó y calculó de nuevo el piloto y publicó por FTP: [registro de GitHub Actions](https://github.com/Bucaro-19/rsvp-graduacion/actions/runs/36524751923). El JSON servido en el dominio confirma la actualización de ese corte.
+La ejecución completa del 29 de septiembre de 2026 importó y calculó de nuevo el piloto y publicó por FTP. El JSON servido en el dominio confirma la actualización de ese corte.
 
 Pendientes: revisar la elegibilidad de jugadores y eventos con la comunidad, localizar jugadores guatemaltecos que compiten solo en el extranjero, rotar el token y reexaminar las fuentes TTS cuando cambie la temporada.
