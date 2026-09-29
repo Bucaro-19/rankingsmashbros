@@ -45,7 +45,7 @@ El final es exclusivo en UTC. Usar `STARTGG_TOKEN` en el entorno o la entrada oc
 
 `smash-publish.yml` descubre eventos guatemaltecos e internacionales completos, verifica que todos los internacionales hallados tengan decisión en `curation.json`, descarga la tabla TTS fijada, calcula el piloto y publica solo si todos los pasos anteriores terminan correctamente. Un evento extranjero nuevo detiene la actualización hasta su revisión. La programación exige `SMASH_SYNC_ENABLED=true`.
 
-`smash-deploy-snapshot.yml` permite publicar manualmente la captura pública ya versionada, sin consumir de nuevo la API de start.gg. Sirve para la primera publicación o para recuperar una subida fallida; el corte semanal usa el flujo completo.
+`smash-deploy-snapshot.yml` permite publicar manualmente la captura pública ya versionada, sin consumir de nuevo la API de start.gg. Su opción `assets_only=true` publica únicamente HTML, estilos, JavaScript y el formulario, conservando el corte actual en el servidor. Sin esa opción sirve para la primera publicación o para recuperar una subida fallida; el corte semanal usa el flujo completo.
 
 Configuración necesaria:
 

@@ -1,4 +1,5 @@
 """Publica solo los archivos de Smash GT; sustituye cada archivo al terminar su subida."""
+import argparse
 import ftplib
 import json
 import os
@@ -26,7 +27,7 @@ def validate_public_data(data):
         raise ValueError("Se requiere un top 100 piloto completo con eventos internacionales antes de publicar.")
 
 
-def deploy(ftp, source):
+def deploy(ftp, source, *, assets_only=False):
     # FTP credentials must have the same root as the existing portfolio workflow.
     # No deletion or recursive synchronization of the site's root.
     try:
@@ -52,7 +53,7 @@ def deploy(ftp, source):
         ftp.mkd("feedback-data")
         ftp.cwd("feedback-data")
     ftp.cwd("..")
-    for name in FILES:
+    for name in FILES[:-1] if assets_only else FILES:
         temporary = name + "." + uuid.uuid4().hex + ".tmp"
         try:
             with (source / name).open("rb") as file:
@@ -67,13 +68,17 @@ def deploy(ftp, source):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--assets-only", action="store_true", help="Publicar la página sin sustituir el corte de datos")
+    args = parser.parse_args()
     source = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate"
-    data = json.loads((source / "data/public.json").read_text())
-    try:
-        validate_public_data(data)
-    except ValueError as error:
-        raise SystemExit(str(error)) from None
-    for name in FILES:
+    if not args.assets_only:
+        data = json.loads((source / "data/public.json").read_text())
+        try:
+            validate_public_data(data)
+        except ValueError as error:
+            raise SystemExit(str(error)) from None
+    for name in FILES[:-1] if args.assets_only else FILES:
         if not (source / name).is_file():
             raise SystemExit("Faltan archivos de publicación.")
     required = ("FTP_SERVER", "FTP_USERNAME", "FTP_PASSWORD")
@@ -87,11 +92,11 @@ def main():
             phase = "autenticación"
             ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
             phase = "subida"
-            deploy(ftp, source)
+            deploy(ftp, source, assets_only=args.assets_only)
             ftp.quit()
     except (ftplib.Error, OSError, EOFError) as error:
         raise SystemExit(f"Publicación incompleta durante {phase}: {type(error).__name__}: {error}. No se eliminó el contenido anterior.") from None
-    print("Smash GT publicado en su subcarpeta; datos reemplazados después de completar la subida.")
+    print("Smash GT publicado en su subcarpeta; " + ("corte de datos conservado." if args.assets_only else "datos reemplazados después de completar la subida."))
 
 
 if __name__ == "__main__":

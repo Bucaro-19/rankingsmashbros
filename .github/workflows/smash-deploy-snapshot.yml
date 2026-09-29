@@ -1,6 +1,11 @@
 name: Publicar captura Smash GT
 on:
   workflow_dispatch:
+    inputs:
+      assets_only:
+        description: Publicar solo la página sin cambiar el corte actual
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -22,4 +27,10 @@ jobs:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: python scripts/smash/deploy.py
+          ASSETS_ONLY: ${{ inputs.assets_only }}
+        run: |
+          if [ "$ASSETS_ONLY" = 'true' ]; then
+            python scripts/smash/deploy.py --assets-only
+          else
+            python scripts/smash/deploy.py
+          fi
