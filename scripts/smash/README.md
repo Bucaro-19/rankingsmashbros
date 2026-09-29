@@ -10,7 +10,7 @@ Esta es la implementación activa. El prototipo anterior de datos se conserva en
 - Diseño de arena en `arena.css`: fondo oscuro, tipografía de combate, acentos rojo/azul/amarillo y una ilustración vectorial propia de dos figuras sobre una plataforma.
 - Importador nacional con paginación completa y deduplicación por set. País público como candidatura, no como nacionalidad verificada. El importador anterior de un perfil y sus rivales permanece para pruebas de cobertura.
 - Exportación pública separada de las capturas crudas: solo alias, perfil público, resultados presenciales completados y metadatos necesarios. Descarta byes, marcadores DQ reconocibles y participantes desconocidos. La elegibilidad final de eventos y DQ ambiguos aún requiere revisión.
-- Publicación por FTPS, limitada a una carpeta fija, con sustitución de cada archivo después de completar su subida. `public.json` se sube al final; no se borran archivos existentes de otros proyectos. El soporte de FTPS y la raíz de la cuenta deben verificarse en la primera ejecución real.
+- Publicación por el mismo FTP que usa el portafolio, limitada a una carpeta fija, con sustitución de cada archivo después de completar su subida. `public.json` se sube al final; no se borran archivos existentes de otros proyectos. La raíz de la cuenta se verifica en la primera ejecución real.
 - El ranking usa un método propio transparente y puntos TTS estimados desde el [tierer público de UltRank](https://github.com/kenniky/ultrank-scoring). No calcula la posición exacta de UltRank ni confirma la elegibilidad nacional. El rastreo internacional solo alcanza a jugadores descubiertos localmente o añadidos con fuente documentada.
 
 ## Vista local
@@ -42,10 +42,12 @@ El final es exclusivo en UTC. Usar `STARTGG_TOKEN` en el entorno o la entrada oc
 
 `smash-publish.yml` descubre eventos guatemaltecos e internacionales completos, verifica que todos los internacionales hallados tengan decisión en `curation.json`, descarga la tabla TTS fijada, calcula el piloto y publica solo si todos los pasos anteriores terminan correctamente. La programación sigue desactivada sin `SMASH_SYNC_ENABLED=true`. Un evento extranjero nuevo detiene la actualización hasta su revisión.
 
+`smash-deploy-snapshot.yml` permite publicar manualmente la captura pública ya versionada, sin consumir de nuevo la API de start.gg. Sirve para la primera publicación o para recuperar una subida fallida; la actualización diaria siempre usa el flujo completo.
+
 Configuración necesaria:
 
 - Secret `STARTGG_TOKEN`: Personal Access Token de start.gg.
-- Secrets existentes: `FTP_SERVER` (hostname sin protocolo), `FTP_USERNAME`, `FTP_PASSWORD`. Se espera el mismo directorio inicial usado por el workflow del portafolio y FTPS explícito en puerto 21 con certificado válido.
+- Secrets existentes: `FTP_SERVER` (hostname sin protocolo), `FTP_USERNAME`, `FTP_PASSWORD`. Se espera el mismo directorio inicial y el mismo protocolo FTP usado por el workflow del portafolio.
 - Variable opcional `SMASH_START`: inicio de consulta, por defecto `2026-01-01`. No es una declaración de temporada oficial.
 - Variable `SMASH_SYNC_ENABLED=true`: habilita la ejecución diaria de las 12:23 UTC / 06:23 Guatemala **después** de revisar la primera importación. Sin esta variable, el trabajo programado se omite. La ejecución manual sí funciona sin ella.
 

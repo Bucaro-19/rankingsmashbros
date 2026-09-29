@@ -2,7 +2,6 @@
 import ftplib
 import json
 import os
-import ssl
 import uuid
 from pathlib import Path
 
@@ -65,15 +64,18 @@ def main():
     required = ("FTP_SERVER", "FTP_USERNAME", "FTP_PASSWORD")
     if not all(os.environ.get(name) for name in required):
         raise SystemExit("Faltan secretos de publicación.")
+    phase = "conexión"
     try:
-        with ftplib.FTP_TLS(context=ssl.create_default_context(), timeout=45) as ftp:
+        # Match the FTP transport already used by the portfolio's working deploy.
+        with ftplib.FTP(timeout=45) as ftp:
             ftp.connect(os.environ["FTP_SERVER"], 21)
+            phase = "autenticación"
             ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-            ftp.prot_p()
+            phase = "subida"
             deploy(ftp, source)
             ftp.quit()
-    except (ftplib.Error, OSError, EOFError):
-        raise SystemExit("Publicación incompleta. Comprobar FTPS, certificado y permisos de la carpeta. No se eliminó el contenido anterior.") from None
+    except (ftplib.Error, OSError, EOFError) as error:
+        raise SystemExit(f"Publicación incompleta durante {phase}: {type(error).__name__}: {error}. No se eliminó el contenido anterior.") from None
     print("Smash GT publicado en su subcarpeta; datos reemplazados después de completar la subida.")
 
 

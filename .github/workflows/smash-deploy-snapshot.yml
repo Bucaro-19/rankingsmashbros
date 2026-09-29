@@ -1,0 +1,25 @@
+name: Publicar captura Smash GT
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verificar captura incluida en el repositorio
+        run: python -m unittest discover -s scripts/smash -q
+      - name: Publicar captura validada en BanaHosting
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: python scripts/smash/deploy.py
