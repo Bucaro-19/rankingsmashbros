@@ -5,7 +5,8 @@ import os
 import uuid
 from pathlib import Path
 
-FILES = ("style.css", "arena.css", "metodologia.css", "app.js", "metodologia.js", ".htaccess", "index.html", "metodologia.html", "data/public.json")
+FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css",
+         "app.js", "metodologia.js", ".htaccess", "encuesta.php", "index.html", "metodologia.html", "data/public.json")
 
 
 def validate_public_data(data):
@@ -42,6 +43,14 @@ def deploy(ftp, source):
             raise
         ftp.mkd("data")
         ftp.cwd("data")
+    ftp.cwd("..")
+    try:
+        ftp.cwd("feedback-data")
+    except ftplib.error_perm as error:
+        if not str(error).startswith("550"):
+            raise
+        ftp.mkd("feedback-data")
+        ftp.cwd("feedback-data")
     ftp.cwd("..")
     for name in FILES:
         temporary = name + "." + uuid.uuid4().hex + ".tmp"

@@ -7,10 +7,17 @@ import re
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
-from collect import APIError, Client, season_timestamp
+from collect import APIError, Client
 
 GAME_ID = 1386
+SEASON_ZONE = ZoneInfo("America/Guatemala")
+
+
+def season_timestamp(value):
+    """Interpret calendar-season boundaries at midnight in Guatemala."""
+    return int(datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=SEASON_ZONE).timestamp())
 PLAYER = "id gamerTag user { id slug location { country } }"
 TOURNAMENTS = """query($page:Int!,$after:Timestamp!,$before:Timestamp!){
  tournaments(query:{page:$page,perPage:50,sortBy:"startAt desc",

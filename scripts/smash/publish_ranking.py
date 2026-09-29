@@ -14,7 +14,7 @@ def event_url(slug):
     return "https://www.start.gg/" + slug if re.fullmatch(r"tournament/[\w-]+/event/[\w-]+", slug or "") else None
 
 
-def export(snapshot, ranking, curation=None):
+def export(snapshot, ranking, curation=None, previous=None):
     curation = curation or {}
     if ranking.get("kind") != "smash_gt_provisional" or snapshot.get("kind") != "national_discovery":
         raise ValueError("Se requiere una captura nacional y su ranking provisional.")
@@ -75,7 +75,9 @@ def export(snapshot, ranking, curation=None):
         if eid not in {row["id"] for row in excluded_events}:
             excluded_events.append({"id": eid, "name": f"Evento {eid}", "reason": reason, "url": None})
     excluded_events.sort(key=lambda row: row["id"])
-    start = datetime.fromtimestamp(snapshot["season"]["startInclusive"], timezone.utc).strftime("%d/%m/%Y")
+    season_start = datetime.fromtimestamp(snapshot["season"]["startInclusive"], timezone.utc)
+    season_year = season_start.year
+    start = season_start.strftime("%d/%m/%Y")
     # The UTC search bound can extend into the following local day. The public
     # label must not claim results from a day that had not begun at capture time.
     captured_at = datetime.fromisoformat(snapshot["generatedAt"]).timestamp()
@@ -84,10 +86,27 @@ def export(snapshot, ranking, curation=None):
     international = snapshot.get("internationalComplete") is True
     countries = {event["country"] for event in events}
     countries.discard(None)
+    players = [dict(row) for row in ranking["ranking"]]
+    previous_cut = None
+    previous_year = previous.get("seasonYear") if previous else None
+    if previous and previous_year is None:
+        previous_start = str(previous.get("seasonLabel", "")).split(" – ")[0]
+        previous_year = int(previous_start[-4:]) if re.fullmatch(r"\d\d/\d\d/\d{4}", previous_start) else None
+    if (previous and previous_year == season_year
+            and previous.get("methodVersion") == ranking.get("methodVersion", "BT-PILOTO-1")
+            and isinstance(previous.get("generatedAt"), str)
+            and previous["generatedAt"] < snapshot["generatedAt"]
+            and isinstance(previous.get("players"), list)):
+        old_ranks = {row.get("id"): row.get("rank") for row in previous["players"]
+                     if isinstance(row, dict) and isinstance(row.get("rank"), int)}
+        for row in players:
+            row["previousRank"] = old_ranks.get(row["id"])
+        previous_cut = previous["generatedAt"]
     return {"schemaVersion": 2, "status": "international_pilot" if international else "local_pilot", "rankingComputed": True,
-            "generatedAt": snapshot["generatedAt"], "seasonLabel": f"{start} – {end}",
+            "generatedAt": snapshot["generatedAt"], "seasonYear": season_year,
+            "seasonLabel": f"{start} – {end}", "previousCutAt": previous_cut,
             "scope": "Torneos presenciales en Guatemala y en el extranjero de jugadores descubiertos localmente." if international else "Solo torneos presenciales en Guatemala. Resultados del extranjero pendientes.",
-            "players": ranking["ranking"], "results": results, "events": events, "excludedEvents": excluded_events,
+            "players": players, "results": results, "events": events, "excludedEvents": excluded_events,
             "counts": {"players": len(ranking["ranking"]), "events": ranking["counts"]["eligibleEvents"],
                        "sets": ranking["counts"]["competitiveSets"], "countries": len(countries)},
             "method": ranking["method"], "methodVersion": ranking.get("methodVersion", "BT-PILOTO-1"),
@@ -100,9 +119,11 @@ def main():
     parser.add_argument("ranking", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--curation", type=Path)
+    parser.add_argument("--previous-public", type=Path, help="Corte público previo para mostrar cambio de puestos")
     args = parser.parse_args()
+    previous = json.loads(args.previous_public.read_text()) if args.previous_public and args.previous_public.is_file() else None
     result = export(json.loads(args.snapshot.read_text()), json.loads(args.ranking.read_text()),
-                    json.loads(args.curation.read_text()) if args.curation else None)
+                    json.loads(args.curation.read_text()) if args.curation else None, previous)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     tmp = args.output.with_suffix(".tmp")
     tmp.write_text(json.dumps(result, ensure_ascii=False, indent=2))

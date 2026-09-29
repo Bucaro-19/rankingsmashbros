@@ -85,6 +85,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
             edge_counts[tuple(sorted((winner, loser)))] += 1
     games = []
     player_events = defaultdict(set)
+    local_player_events = defaultdict(set)
     wins = Counter()
     losses = Counter()
     event_results = defaultdict(list)
@@ -101,6 +102,8 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
             games.append((winner, loser, weight))
             for pid in (winner, loser):
                 player_events[pid].add(eid)
+                if (event.get("tournament") or {}).get("countryCode") == "GT":
+                    local_player_events[pid].add(eid)
             wins[winner] += 1
             losses[loser] += 1
             event_results[eid].append(sid)
@@ -136,14 +139,15 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
         profile_gt = profile_country(player) in {"guatemala", "gt"}
         if not profile_gt and pid not in player_overrides:
             continue
-        if len(player_events[pid]) < 2 or wins[pid] + losses[pid] < 4:
+        if not local_player_events[pid] or len(player_events[pid]) < 2 or wins[pid] + losses[pid] < 4:
             continue
         standings = [event["placements"].get(pid) for eid, event in eligible_events.items() if eid in player_events[pid]]
         standings = [place for place in standings if place is not None]
         rows.append({"id": pid, "tag": player.get("gamerTag") or "Sin alias", "knownAs": player_aliases.get(pid), "url": player_url(player),
                      "rating": round(1500 + 400 / math.log(10) * logits[pid]),
                      "wins": wins[pid], "losses": losses[pid], "sets": wins[pid] + losses[pid],
-                     "events": len(player_events[pid]), "bestPlacement": min(standings) if standings else None,
+                     "events": len(player_events[pid]), "localEvents": len(local_player_events[pid]),
+                     "bestPlacement": min(standings) if standings else None,
                      "countryBasis": player_overrides[pid] if pid in player_overrides else "país del perfil start.gg; sin verificar"})
     rows.sort(key=lambda row: (-row["rating"], -row["wins"], -row["events"], row["tag"].casefold(), row["id"]))
     for index, row in enumerate(rows[:100], 1):
@@ -158,7 +162,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
             "eventDecisions": event_reasons,
             "ttsPointsEstimate": {eid: event["ttsPointsEstimate"] for eid, event in eligible_events.items() if event["ttsPointsEstimate"] is not None},
             "eventIds": sorted(eligible_events),
-            "method": "Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos y 4 sets válidos. No equivale a UltRank.",
+            "method": "Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos, 4 sets válidos y un evento GT con set válido. No equivale a UltRank.",
             "ttsSource": SOURCE_URL if values is not None else None,
             "limitations": (["La captura internacional parte de participantes localmente descubiertos; jugadores que compiten solo fuera del país pueden faltar."] if snapshot.get("internationalComplete") else ["Solo eventos presenciales de Guatemala en esta captura; resultados en el extranjero pendientes de integrar."]) + [
                             "La ubicación pública del perfil indica candidatura, no ciudadanía ni residencia verificada.",

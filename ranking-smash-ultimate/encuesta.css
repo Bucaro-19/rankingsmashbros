@@ -1,0 +1,26 @@
+.survey-page{max-width:960px;padding:58px 24px 85px}
+.survey-page h1{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(58px,11vw,118px);font-style:italic;line-height:.85;margin:24px 0;letter-spacing:-2px}
+.survey-page h1 em{color:#ffe364;font-style:inherit}
+.survey-lead{max-width:700px;color:#b7c4d8;line-height:1.65;margin-bottom:36px}
+.survey-form{display:grid;gap:18px}
+.survey-form fieldset,.survey-text{border:1px solid #3c4e68;background:#151e30;padding:22px;margin:0}
+.survey-form legend,.survey-text>label{color:#ffe364;font-family:'Barlow Condensed',Impact,sans-serif;font-size:24px;font-weight:700;font-style:italic;text-transform:uppercase;padding:0 8px}
+.choices{display:grid;gap:8px;margin-top:12px}
+.choices label{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:#1d2a3f;border:1px solid #354760;cursor:pointer;line-height:1.35}
+.choices label:has(input:checked){border-color:#ffe364;background:#313244}
+.choices input{accent-color:#ffe364;margin-top:3px;flex:none}
+.survey-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.survey-form select,.survey-text input,.survey-text textarea{width:100%;margin-top:14px;border:1px solid #53647d;border-radius:0;background:#0d1624;color:#f3f7ff;padding:13px;font:inherit}
+.survey-form select{max-width:280px}
+.survey-text>label{display:block;padding:0}
+.survey-text textarea{resize:vertical;min-height:120px}
+.survey-form :focus-visible{outline:3px solid #ffe364;outline-offset:3px}
+.privacy-note{color:#aab8cf;font-size:12px;line-height:1.6;max-width:760px}
+.survey-submit{justify-self:start;border:0;background:#ffe364;color:#171d2b;padding:17px 25px;font:800 14px 'DM Sans',sans-serif;letter-spacing:.5px;cursor:pointer;box-shadow:5px 5px 0 #66502b;transform:skew(-5deg)}
+.survey-submit:hover{background:#fff1a0}
+.survey-message{border:1px solid #618c78;background:#183329;padding:25px;margin:32px 0;color:#edf7ed}
+.survey-message h2{font-size:32px;margin:0 0 8px}
+.survey-message a{display:inline-block;margin-top:16px;color:#ffe364}
+.survey-message.error{border-color:#c86b74;background:#45212d;color:#fff}
+.trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+@media(max-width:650px){.survey-page{padding:40px 18px 65px}.survey-pair{grid-template-columns:1fr}.survey-form fieldset,.survey-text{padding:17px}.survey-form legend,.survey-text>label{font-size:21px}.choices label{font-size:13px}}

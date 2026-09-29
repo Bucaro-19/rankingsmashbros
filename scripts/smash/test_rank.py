@@ -1,6 +1,7 @@
 import unittest
 
 from publish_ranking import export
+from discover import season_timestamp
 from rank import competitive_set, compute
 from tiering import guatemala_points, parse_values, value_at
 
@@ -30,6 +31,10 @@ def fixture():
 
 
 class PilotRankingTests(unittest.TestCase):
+    def test_annual_boundaries_use_guatemala_midnight(self):
+        self.assertEqual(season_timestamp("2026-01-01"), 1767247200)
+        self.assertEqual(season_timestamp("2027-01-01"), 1798783200)
+
     def test_tts_values_respect_dates_midpoint_and_guatemala_multiplier(self):
         csv_text = ("Category,Note,Player,Start.gg Hex ID,Start.gg Num ID,Points,Start Date,End Date,Midpt Date,Source\n"
                     "rank,test,P1,hex,1,100,2026-01-01,2026-12-31,2026-07-01,test\n")
@@ -55,16 +60,33 @@ class PilotRankingTests(unittest.TestCase):
         self.assertEqual(result["ranking"][0]["tag"], "P1")
         self.assertEqual(result["ranking"][0]["rank"], 1)
         self.assertEqual(result["ranking"][0]["events"], 2)
+        self.assertEqual(result["ranking"][0]["localEvents"], 2)
         self.assertEqual(result["ranking"][0]["countryBasis"], "2025 PR")
         public = export(snapshot, result)
         self.assertEqual(public["counts"]["players"], 1)
         self.assertEqual(len(public["results"]), 62)
         self.assertEqual(public["status"], "local_pilot")
         self.assertEqual(public["methodVersion"], "BT-PILOTO-1")
+        self.assertEqual(public["seasonYear"], 2026)
         self.assertTrue(public["seasonLabel"].endswith("28/09/2026"))
         self.assertEqual(len(public["events"]), 2)
         self.assertEqual([event["validSets"] for event in public["events"]], [31, 31])
         self.assertEqual(public["events"][0]["activePlayers"], 32)
+
+    def test_previous_cut_is_only_compared_with_same_season_and_method(self):
+        snapshot = fixture()
+        ranking = compute(snapshot, player_overrides={"1": "2025 PR"})
+        previous = {"seasonLabel": "01/01/2026 – 27/09/2026", "methodVersion": "BT-PILOTO-1",
+                    "generatedAt": "2026-09-27T12:00:00+00:00",
+                    "players": [{"id": "1", "rank": 3}]}
+        public = export(snapshot, ranking, previous=previous)
+        self.assertEqual(public["previousCutAt"], previous["generatedAt"])
+        self.assertEqual(public["players"][0]["previousRank"], 3)
+        previous["seasonYear"] = 2025
+        self.assertIsNone(export(snapshot, ranking, previous=previous)["previousCutAt"])
+        previous["seasonYear"] = 2026
+        previous["methodVersion"] = "otro"
+        self.assertIsNone(export(snapshot, ranking, previous=previous)["previousCutAt"])
 
     def test_export_rejects_event_set_count_mismatch(self):
         snapshot = fixture()

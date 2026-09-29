@@ -98,6 +98,10 @@ footer > a { color: #e2e9f8; }
 .player-row .row-end { color: #ffe364; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; }
 .player-row .row-end small { font-family: 'DM Sans', sans-serif; font-size: 9px; font-weight: 400; }
 .player-row small { color: #a1b4d0; }
+.player-row .movement{font-weight:700;letter-spacing:.2px}
+.player-row .movement.up{color:#83e2ad}
+.player-row .movement.down{color:#ff9b9b}
+.player-row .movement.same{color:#b6c3d5}
 .result-row { border-color: #2e3c53; }
 .result-row a { color: #e2edff; }
 .result-row p { color: #9eacc7; }

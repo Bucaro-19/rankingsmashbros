@@ -4,7 +4,7 @@ on:
   schedule:
     # Pruebas: todos los días a las 06:23 de Guatemala (12:23 UTC).
     - cron: '23 12 * * *'
-    # Producción: cada domingo a las 00:00 de Guatemala.
+    # Corte semanal: cada domingo a las 00:00 de Guatemala.
     - cron: '0 0 * * 0'
       timezone: 'America/Guatemala'
 permissions:
@@ -17,8 +17,8 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (vars.SMASH_SYNC_ENABLED == 'true' &&
-        ((vars.SMASH_RELEASE_MODE != 'production' && github.event.schedule == '23 12 * * *') ||
-         (vars.SMASH_RELEASE_MODE == 'production' && github.event.schedule == '0 0 * * 0')))
+        ((vars.SMASH_RELEASE_MODE == 'testing' && github.event.schedule == '23 12 * * *') ||
+         ((vars.SMASH_RELEASE_MODE == 'weekly' || vars.SMASH_RELEASE_MODE == 'production') && github.event.schedule == '0 0 * * 0')))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -42,6 +42,8 @@ jobs:
           SMASH_START: ${{ vars.SMASH_START || '2026-01-01' }}
         run: |
           end_date=$(date -u -d tomorrow +%F)
+          season_end="$((${SMASH_START%%-*} + 1))-01-01"
+          if [[ "$end_date" > "$season_end" ]]; then end_date="$season_end"; fi
           python scripts/smash/discover.py --start "$SMASH_START" --end "$end_date"
       - name: Revisar y descargar torneos internacionales descubiertos
         env:
@@ -52,7 +54,10 @@ jobs:
           python scripts/smash/fetch_tts.py
           python scripts/smash/combine.py scripts/smash/data/national.json scripts/smash/data/abroad.json scripts/smash/data/combined.json
           python scripts/smash/rank.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json --curation scripts/smash/curation.json --points-csv scripts/smash/data/ultrank_players.csv
-          python scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json --curation scripts/smash/curation.json
+          if curl -fsS --max-time 20 https://ingporras.com/ranking-smash-ultimate/data/public.json -o scripts/smash/data/previous-public.tmp && python -m json.tool scripts/smash/data/previous-public.tmp > /dev/null; then
+            mv scripts/smash/data/previous-public.tmp scripts/smash/data/previous-public.json
+          fi
+          python scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json --curation scripts/smash/curation.json --previous-public scripts/smash/data/previous-public.json
       - name: Auditar cobertura y sensibilidad del corte
         run: python scripts/smash/audit.py scripts/smash/data/combined.json scripts/smash/curation.json scripts/smash/data/auditoria.md --points-csv scripts/smash/data/ultrank_players.csv
       - name: Guardar auditoría para revisión

@@ -6,7 +6,9 @@ Esta es la implementación activa. El prototipo anterior de datos se conserva en
 ## Estado
 
 - Web estática sin dependencias de compilación: búsqueda, filtros nacionales/internacionales, detalle de jugador, estados vacíos/error y consulta del archivo público cada 60 segundos mientras la página está visible. La página `metodologia.html` explica el cálculo y lista los torneos incluidos y exclusiones documentadas usando el mismo JSON que el top.
-- La vista local contiene un **top 100 piloto**, calculado con 23 eventos guatemaltecos y tres extranjeros y 6,739 sets competitivos de 2026. Se observaron 155 candidatos con al menos dos eventos y cuatro sets; la página muestra los primeros 100. Véase [METODOLOGIA.md](METODOLOGIA.md).
+- La vista local contiene un **top 100 piloto de 2026**, calculado con 23 eventos guatemaltecos y tres extranjeros y 6,739 sets competitivos del primer corte. El periodo comienza el 1 de enero de 2026 y termina en la fecha local visible de cada consulta. Se observaron 155 candidatos con al menos dos eventos y cuatro sets; la página muestra los primeros 100. Véase [METODOLOGIA.md](METODOLOGIA.md).
+- Cada corte semanal muestra el cambio de puesto frente al corte público anterior de la misma temporada y versión del método. La primera comparación puede ser con el último corte de pruebas; la fecha exacta está en el JSON. La edición 2026 seguirá siendo provisional hasta la revisión comunitaria de nacionalidad y torneos. Al cerrar 2026 se debe guardar su corte final antes de configurar 2027.
+- `encuesta.php` recibe opiniones anónimas sin GitHub ni otro servicio: no pide identidad ni registra IP en la respuesta. Guarda una línea JSON por respuesta en `ranking-smash-ultimate/feedback-data/respuestas-2026.php`, después de una primera línea PHP que bloquea acceso directo; además, la carpeta se protege con `.htaccess` y se conserva entre despliegues. Revisar respuestas desde el administrador de archivos del alojamiento, omitiendo la primera línea; no compartir el archivo públicamente. Antes de difundir la encuesta, verificar que `feedback-data/.htaccess` devuelve acceso denegado y que el formulario puede escribir.
 - Diseño de arena en `arena.css`: fondo oscuro, tipografía de combate, acentos rojo/azul/amarillo y una ilustración vectorial propia de dos figuras sobre una plataforma.
 - Importador nacional con paginación completa y deduplicación por set. País público como candidatura, no como nacionalidad verificada. El importador anterior de un perfil y sus rivales permanece para pruebas de cobertura.
 - Exportación pública separada de las capturas crudas: solo alias, perfil público, resultados presenciales completados y metadatos necesarios. Descarta byes, marcadores DQ reconocibles y participantes desconocidos. La elegibilidad final de eventos y DQ ambiguos aún requiere revisión.
@@ -43,7 +45,7 @@ El final es exclusivo en UTC. Usar `STARTGG_TOKEN` en el entorno o la entrada oc
 
 `smash-publish.yml` descubre eventos guatemaltecos e internacionales completos, verifica que todos los internacionales hallados tengan decisión en `curation.json`, descarga la tabla TTS fijada, calcula el piloto y publica solo si todos los pasos anteriores terminan correctamente. Un evento extranjero nuevo detiene la actualización hasta su revisión. La programación exige `SMASH_SYNC_ENABLED=true`.
 
-`smash-deploy-snapshot.yml` permite publicar manualmente la captura pública ya versionada, sin consumir de nuevo la API de start.gg. Sirve para la primera publicación o para recuperar una subida fallida; la actualización diaria siempre usa el flujo completo.
+`smash-deploy-snapshot.yml` permite publicar manualmente la captura pública ya versionada, sin consumir de nuevo la API de start.gg. Sirve para la primera publicación o para recuperar una subida fallida; el corte semanal usa el flujo completo.
 
 Configuración necesaria:
 
@@ -51,10 +53,11 @@ Configuración necesaria:
 - Secrets existentes: `FTP_SERVER` (hostname sin protocolo), `FTP_USERNAME`, `FTP_PASSWORD`. Se espera el mismo directorio inicial y el mismo protocolo FTP usado por el workflow del portafolio.
 - Variable opcional `SMASH_START`: inicio de consulta, por defecto `2026-01-01`. No es una declaración de temporada oficial.
 - Variable `SMASH_SYNC_ENABLED=true`: habilita las ejecuciones programadas. Sin esta variable, los trabajos programados se omiten; la ejecución manual sigue disponible.
-- Variable `SMASH_RELEASE_MODE=testing` durante pruebas: actualiza a diario a las 12:23 UTC / 06:23 Guatemala. Es el modo actual. Si la variable falta o tiene otro valor distinto de `production`, también rige el horario de pruebas.
-- Variable `SMASH_RELEASE_MODE=production` al cerrar el piloto: actualiza únicamente los domingos a las 00:00 en `America/Guatemala`. Cambiar esta variable activa el horario de producción sin editar el workflow. No activarla antes de cerrar la política de elegibilidad, periodo y eventos.
+- Variable `SMASH_RELEASE_MODE=testing`: actualiza a diario a las 12:23 UTC / 06:23 Guatemala.
+- Variable `SMASH_RELEASE_MODE=weekly`: actualiza los domingos a las 00:00 en `America/Guatemala`, incluso mientras el ranking es piloto. Es el modo público previsto desde esta fase.
+- Variable `SMASH_RELEASE_MODE=production`: conserva el mismo horario semanal cuando se aprueben elegibilidad, torneos y reglas finales. Un valor ausente no activa ninguna programación.
 
-El ranking piloto se publicó en `https://ingporras.com/ranking-smash-ultimate/` el 28 de septiembre de 2026. La variable `SMASH_SYNC_ENABLED=true` está configurada para actualizarlo diariamente. El workflow de publicación general excluye la carpeta del ranking para conservarla.
+El ranking piloto se publicó en `https://ingporras.com/ranking-smash-ultimate/` el 28 de septiembre de 2026. `SMASH_SYNC_ENABLED=true` habilita la programación; el workflow de publicación general excluye la carpeta del ranking para conservarla.
 
 GitHub puede retrasar ejecuciones programadas, especialmente a la hora en punto, y desactivarlas por inactividad en repositorios públicos; la página siempre muestra cuándo se obtuvieron los datos. La frecuencia del navegador no cambia la frecuencia de consulta de start.gg.
 
