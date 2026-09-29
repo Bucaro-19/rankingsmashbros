@@ -1,13 +1,16 @@
 """Publica solo los archivos de Smash GT; sustituye cada archivo al terminar su subida."""
 import argparse
 import ftplib
+import io
 import json
 import os
+import re
 import uuid
 from pathlib import Path
 
-FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css",
-         "app.js", "metodologia.js", ".htaccess", "encuesta.php", "index.html", "metodologia.html", "data/public.json")
+FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css", "opiniones.css",
+         "app.js", "metodologia.js", ".htaccess", "encuesta.php", "opiniones.php", "index.html", "metodologia.html", "data/public.json")
+HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 
 def validate_public_data(data):
@@ -27,7 +30,7 @@ def validate_public_data(data):
         raise ValueError("Se requiere un top 100 piloto completo con eventos internacionales antes de publicar.")
 
 
-def deploy(ftp, source, *, assets_only=False):
+def deploy(ftp, source, *, assets_only=False, admin_hash=None):
     # FTP credentials must have the same root as the existing portfolio workflow.
     # No deletion or recursive synchronization of the site's root.
     try:
@@ -52,6 +55,18 @@ def deploy(ftp, source, *, assets_only=False):
             raise
         ftp.mkd("feedback-data")
         ftp.cwd("feedback-data")
+    if admin_hash:
+        temporary = "admin-auth.php." + uuid.uuid4().hex + ".tmp"
+        try:
+            config = ("<?php\nreturn '" + admin_hash + "';\n").encode()
+            ftp.storbinary("STOR " + temporary, io.BytesIO(config))
+            ftp.rename(temporary, "admin-auth.php")
+        except Exception:
+            try:
+                ftp.delete(temporary)
+            except ftplib.all_errors:
+                pass
+            raise
     ftp.cwd("..")
     for name in FILES[:-1] if assets_only else FILES:
         temporary = name + "." + uuid.uuid4().hex + ".tmp"
@@ -84,6 +99,9 @@ def main():
     required = ("FTP_SERVER", "FTP_USERNAME", "FTP_PASSWORD")
     if not all(os.environ.get(name) for name in required):
         raise SystemExit("Faltan secretos de publicación.")
+    admin_hash = os.environ.get("SMASH_FEEDBACK_ADMIN_HASH", "")
+    if not HASH_PATTERN.fullmatch(admin_hash):
+        raise SystemExit("Falta el hash de acceso al panel de opiniones o tiene un formato inválido.")
     phase = "conexión"
     try:
         # Match the FTP transport already used by the portfolio's working deploy.
@@ -92,7 +110,7 @@ def main():
             phase = "autenticación"
             ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
             phase = "subida"
-            deploy(ftp, source, assets_only=args.assets_only)
+            deploy(ftp, source, assets_only=args.assets_only, admin_hash=admin_hash)
             ftp.quit()
     except (ftplib.Error, OSError, EOFError) as error:
         raise SystemExit(f"Publicación incompleta durante {phase}: {type(error).__name__}: {error}. No se eliminó el contenido anterior.") from None

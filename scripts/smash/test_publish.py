@@ -67,6 +67,12 @@ class ExportTests(unittest.TestCase):
             assets_ftp = Mock()
             deploy(assets_ftp, source, assets_only=True)
             self.assertNotIn("data/public.json", [call.args[1] for call in assets_ftp.rename.call_args_list])
+            secured_ftp = Mock()
+            admin_hash = "$2y$12$" + "A" * 53
+            deploy(secured_ftp, source, assets_only=True, admin_hash=admin_hash)
+            self.assertIn("admin-auth.php", [call.args[1] for call in secured_ftp.rename.call_args_list])
+            self.assertNotIn("data/public.json", [call.args[1] for call in secured_ftp.rename.call_args_list])
+            self.assertEqual(secured_ftp.rename.call_args_list[0].args[1], "admin-auth.php")
             failed = Mock()
             failed.storbinary.side_effect = ftplib.error_temp("450 upload interrupted")
             with self.assertRaises(ftplib.error_temp): deploy(failed, source)

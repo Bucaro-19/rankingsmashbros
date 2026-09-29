@@ -71,4 +71,5 @@ jobs:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          SMASH_FEEDBACK_ADMIN_HASH: ${{ secrets.SMASH_FEEDBACK_ADMIN_HASH }}
         run: python scripts/smash/deploy.py
