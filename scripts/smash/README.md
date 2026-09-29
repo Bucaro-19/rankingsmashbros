@@ -51,7 +51,7 @@ Configuración necesaria:
 - Variable opcional `SMASH_START`: inicio de consulta, por defecto `2026-01-01`. No es una declaración de temporada oficial.
 - Variable `SMASH_SYNC_ENABLED=true`: habilita la ejecución diaria de las 12:23 UTC / 06:23 Guatemala **después** de revisar la primera importación. Sin esta variable, el trabajo programado se omite. La ejecución manual sí funciona sin ella.
 
-El workflow debe existir en la rama predeterminada antes de usar `workflow_dispatch`. Todavía no se ha publicado ni activado remotamente desde esta entrega. El workflow de publicación general excluye la carpeta del ranking para conservarla.
+El ranking piloto se publicó en `https://ingporras.com/ranking-smash-ultimate/` el 28 de septiembre de 2026. La variable `SMASH_SYNC_ENABLED=true` está configurada para actualizarlo diariamente. El workflow de publicación general excluye la carpeta del ranking para conservarla.
 
 GitHub puede retrasar ejecuciones programadas y desactivarlas por inactividad en repositorios públicos; la página siempre muestra cuándo se obtuvieron los datos. La frecuencia del navegador no cambia la frecuencia de consulta de start.gg.
 
@@ -65,6 +65,6 @@ git diff --check
 
 Veinte pruebas de datos y publicación local, incluidas las exclusiones DQ, la cobertura internacional, el requisito de captura completa y las candidaturas documentadas. Vista local revisada con 100 posiciones, búsqueda y detalle de jugador.
 
-Conexión autenticada verificada: resolución de perfil, país e historial paginado vacío. `STARTGG_TOKEN` guardado en GitHub Secrets; reemplazarlo antes de activar automatización porque se compartió en el chat. No se guarda el valor en archivos del repositorio ni se incluye en la exportación.
+`STARTGG_TOKEN` está guardado en GitHub Secrets y la captura completa pasó en GitHub Actions. Conviene rotarlo porque se compartió en el chat: primero sustituir el secreto de GitHub por el token nuevo y después revocar el anterior en start.gg. No se guarda el valor en archivos del repositorio ni se incluye en la exportación.
 
-Pendientes: revisar la elegibilidad de jugadores y eventos con la comunidad, localizar jugadores guatemaltecos que compiten solo en el extranjero, verificar publicación con la cuenta de BanaHosting y reexaminar las fuentes TTS cuando cambie la temporada.
+Pendientes: revisar la elegibilidad de jugadores y eventos con la comunidad, localizar jugadores guatemaltecos que compiten solo en el extranjero, rotar el token y reexaminar las fuentes TTS cuando cambie la temporada.

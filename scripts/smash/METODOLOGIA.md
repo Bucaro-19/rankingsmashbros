@@ -32,4 +32,4 @@ El peso de cada set guatemalteco es `min(2.5, sqrt(puntos_TTS_estimados / 96)) /
 - Los nombres y reglamentos de eventos, DQ ambiguas, series semanales y torneos con reglas especiales necesitan revisión manual. El mínimo de participantes es conservador y puede excluir eventos que UltRank admitiría por puntos de jugadores.
 - Los valores TTS provienen de una revisión fijada de septiembre de 2026; deberán actualizarse conscientemente al cambiar de temporada. Los torneos extranjeros nuevos requieren aprobación o exclusión explícita antes de publicar una actualización automática.
 
-La página muestra explícitamente el estado **Top 100 piloto · Guatemala y el extranjero** y la fecha de consulta. La automatización diaria permanece desactivada hasta que se revise la primera publicación y su cobertura.
+La página muestra explícitamente el estado **Top 100 piloto · Guatemala y el extranjero** y la fecha de consulta. La actualización diaria está activada; si aparece un evento extranjero sin revisión editorial, esa ejecución se detiene y se conserva la última publicación válida.
