@@ -5,7 +5,7 @@ Esta es la implementación activa. El prototipo anterior de datos se conserva en
 
 ## Estado
 
-- Web estática sin dependencias de compilación: búsqueda, filtros nacionales/internacionales, detalle de jugador, estados vacíos/error y consulta del archivo público cada 60 segundos mientras la página está visible.
+- Web estática sin dependencias de compilación: búsqueda, filtros nacionales/internacionales, detalle de jugador, estados vacíos/error y consulta del archivo público cada 60 segundos mientras la página está visible. La página `metodologia.html` explica el cálculo y lista los torneos incluidos y exclusiones documentadas usando el mismo JSON que el top.
 - La vista local contiene un **top 100 piloto**, calculado con 23 eventos guatemaltecos y tres extranjeros y 6,739 sets competitivos de 2026. Se observaron 155 candidatos con al menos dos eventos y cuatro sets; la página muestra los primeros 100. Véase [METODOLOGIA.md](METODOLOGIA.md).
 - Diseño de arena en `arena.css`: fondo oscuro, tipografía de combate, acentos rojo/azul/amarillo y una ilustración vectorial propia de dos figuras sobre una plataforma.
 - Importador nacional con paginación completa y deduplicación por set. País público como candidatura, no como nacionalidad verificada. El importador anterior de un perfil y sus rivales permanece para pruebas de cobertura.
@@ -32,7 +32,7 @@ python3 scripts/smash/discover_abroad.py scripts/smash/data/national.json --cura
 python3 scripts/smash/fetch_tts.py
 python3 scripts/smash/combine.py scripts/smash/data/national.json scripts/smash/data/abroad.json scripts/smash/data/combined.json
 python3 scripts/smash/rank.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json --curation scripts/smash/curation.json --points-csv scripts/smash/data/ultrank_players.csv
-python3 scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json
+python3 scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json --curation scripts/smash/curation.json
 ```
 
 El final es exclusivo en UTC. Usar `STARTGG_TOKEN` en el entorno o la entrada oculta interactiva. No poner el token en código ni en el frontend. No ejecutar recolectores simultáneos. El paso extranjero se puede reanudar desde su captura guardada; si aparecen eventos nuevos, documentarlos en `curation.json` como aprobados o excluidos antes de continuar con `--fetch`. La tabla TTS y las capturas crudas se guardan en `scripts/smash/data/`, ignorada por Git; solo la exportación pública se versiona.
@@ -41,7 +41,7 @@ El final es exclusivo en UTC. Usar `STARTGG_TOKEN` en el entorno o la entrada oc
 
 `smash-check.yml` verifica código en pushes y pull requests. No publica.
 
-`smash-publish.yml` descubre eventos guatemaltecos e internacionales completos, verifica que todos los internacionales hallados tengan decisión en `curation.json`, descarga la tabla TTS fijada, calcula el piloto y publica solo si todos los pasos anteriores terminan correctamente. La programación sigue desactivada sin `SMASH_SYNC_ENABLED=true`. Un evento extranjero nuevo detiene la actualización hasta su revisión.
+`smash-publish.yml` descubre eventos guatemaltecos e internacionales completos, verifica que todos los internacionales hallados tengan decisión en `curation.json`, descarga la tabla TTS fijada, calcula el piloto y publica solo si todos los pasos anteriores terminan correctamente. Un evento extranjero nuevo detiene la actualización hasta su revisión. La programación exige `SMASH_SYNC_ENABLED=true`.
 
 `smash-deploy-snapshot.yml` permite publicar manualmente la captura pública ya versionada, sin consumir de nuevo la API de start.gg. Sirve para la primera publicación o para recuperar una subida fallida; la actualización diaria siempre usa el flujo completo.
 
@@ -50,17 +50,20 @@ Configuración necesaria:
 - Secret `STARTGG_TOKEN`: Personal Access Token de start.gg.
 - Secrets existentes: `FTP_SERVER` (hostname sin protocolo), `FTP_USERNAME`, `FTP_PASSWORD`. Se espera el mismo directorio inicial y el mismo protocolo FTP usado por el workflow del portafolio.
 - Variable opcional `SMASH_START`: inicio de consulta, por defecto `2026-01-01`. No es una declaración de temporada oficial.
-- Variable `SMASH_SYNC_ENABLED=true`: habilita la ejecución diaria de las 12:23 UTC / 06:23 Guatemala **después** de revisar la primera importación. Sin esta variable, el trabajo programado se omite. La ejecución manual sí funciona sin ella.
+- Variable `SMASH_SYNC_ENABLED=true`: habilita las ejecuciones programadas. Sin esta variable, los trabajos programados se omiten; la ejecución manual sigue disponible.
+- Variable `SMASH_RELEASE_MODE=testing` durante pruebas: actualiza a diario a las 12:23 UTC / 06:23 Guatemala. Es el modo actual. Si la variable falta o tiene otro valor distinto de `production`, también rige el horario de pruebas.
+- Variable `SMASH_RELEASE_MODE=production` al cerrar el piloto: actualiza únicamente los domingos a las 00:00 en `America/Guatemala`. Cambiar esta variable activa el horario de producción sin editar el workflow. No activarla antes de cerrar la política de elegibilidad, periodo y eventos.
 
 El ranking piloto se publicó en `https://ingporras.com/ranking-smash-ultimate/` el 28 de septiembre de 2026. La variable `SMASH_SYNC_ENABLED=true` está configurada para actualizarlo diariamente. El workflow de publicación general excluye la carpeta del ranking para conservarla.
 
-GitHub puede retrasar ejecuciones programadas y desactivarlas por inactividad en repositorios públicos; la página siempre muestra cuándo se obtuvieron los datos. La frecuencia del navegador no cambia la frecuencia de consulta de start.gg.
+GitHub puede retrasar ejecuciones programadas, especialmente a la hora en punto, y desactivarlas por inactividad en repositorios públicos; la página siempre muestra cuándo se obtuvieron los datos. La frecuencia del navegador no cambia la frecuencia de consulta de start.gg.
 
 ## Comprobación
 
 ```sh
 python3 -m unittest discover -s scripts/smash -v
 node --check ranking-smash-ultimate/app.js
+node --check ranking-smash-ultimate/metodologia.js
 git diff --check
 ```
 

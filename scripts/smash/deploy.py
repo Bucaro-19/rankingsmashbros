@@ -5,17 +5,23 @@ import os
 import uuid
 from pathlib import Path
 
-FILES = ("style.css", "arena.css", "app.js", ".htaccess", "index.html", "data/public.json")
+FILES = ("style.css", "arena.css", "metodologia.css", "app.js", "metodologia.js", ".htaccess", "index.html", "metodologia.html", "data/public.json")
 
 
 def validate_public_data(data):
     counts = data.get("counts") or {}
     players = data.get("players")
+    events = data.get("events")
     if (data.get("schemaVersion") != 2 or data.get("status") != "international_pilot"
             or data.get("rankingComputed") is not True or not isinstance(players, list)
             or len(players) != 100 or counts.get("players") != 100
             or not isinstance(counts.get("events"), int) or counts["events"] < 1
-            or not isinstance(counts.get("sets"), int) or counts["sets"] < 1):
+            or not isinstance(counts.get("sets"), int) or counts["sets"] < 1
+            or not isinstance(events, list) or len(events) != counts["events"]
+            or not all(isinstance(event, dict) and isinstance(event.get("validSets"), int)
+                       and event["validSets"] > 0 and isinstance(event.get("name"), str)
+                       and isinstance(event.get("activePlayers"), int) for event in events)
+            or sum(event["validSets"] for event in events) != counts["sets"]):
         raise ValueError("Se requiere un top 100 piloto completo con eventos internacionales antes de publicar.")
 
 

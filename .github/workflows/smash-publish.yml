@@ -2,7 +2,11 @@ name: Actualizar y publicar Smash GT
 on:
   workflow_dispatch:
   schedule:
+    # Pruebas: todos los días a las 06:23 de Guatemala (12:23 UTC).
     - cron: '23 12 * * *'
+    # Producción: cada domingo a las 00:00 de Guatemala.
+    - cron: '0 0 * * 0'
+      timezone: 'America/Guatemala'
 permissions:
   contents: read
 concurrency:
@@ -10,8 +14,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
-    # Scheduled updates stay inactive until the first real import has been reviewed.
-    if: github.event_name == 'workflow_dispatch' || vars.SMASH_SYNC_ENABLED == 'true'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.SMASH_SYNC_ENABLED == 'true' &&
+        ((vars.SMASH_RELEASE_MODE != 'production' && github.event.schedule == '23 12 * * *') ||
+         (vars.SMASH_RELEASE_MODE == 'production' && github.event.schedule == '0 0 * * 0')))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -45,7 +52,7 @@ jobs:
           python scripts/smash/fetch_tts.py
           python scripts/smash/combine.py scripts/smash/data/national.json scripts/smash/data/abroad.json scripts/smash/data/combined.json
           python scripts/smash/rank.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json --curation scripts/smash/curation.json --points-csv scripts/smash/data/ultrank_players.csv
-          python scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json
+          python scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json --curation scripts/smash/curation.json
       - name: Auditar cobertura y sensibilidad del corte
         run: python scripts/smash/audit.py scripts/smash/data/combined.json scripts/smash/curation.json scripts/smash/data/auditoria.md --points-csv scripts/smash/data/ultrank_players.csv
       - name: Guardar auditoría para revisión

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es-GT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c101c">
+  <meta name="description" content="Reglas, cálculo y torneos considerados en el ranking piloto de Super Smash Bros. Ultimate de Guatemala.">
+  <title>Metodología y torneos — Smash GT</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./arena.css">
+  <link rel="stylesheet" href="./metodologia.css">
+  <script src="./metodologia.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <header class="site-header wrap">
+    <a class="brand" href="./" aria-label="Smash GT, inicio"><span class="brand-mark" aria-hidden="true">S<span>↗</span></span><span>SMASH<span class="brand-gt">GT</span><small>POR INGPORRAS</small></span></a>
+    <nav aria-label="Principal"><a href="./#clasificacion">Ranking</a><a href="#torneos">Torneos</a></nav>
+    <span class="country"><span class="flag" aria-hidden="true"></span> Guatemala</span>
+  </header>
+  <main id="contenido" class="wrap methodology-page">
+    <div class="methodology-hero">
+      <p class="eyebrow"><span class="tiny-line"></span> REGLAS ABIERTAS / PILOTO 2026</p>
+      <h1>ASÍ SE ARMA<br><em>EL RANKING.</em></h1>
+      <p class="methodology-lead">Cada puesto sale de resultados de torneos, no de una votación. Aquí mostramos qué entra, cómo se calcula y qué falta validar con la comunidad. Esta lista sigue siendo experimental.</p>
+      <div class="methodology-meta"><span id="method-season">Periodo por cargar</span><span id="method-updated">Datos por cargar</span><span id="method-version">BT-PILOTO-1</span></div>
+    </div>
+
+    <section class="methodology-section" aria-labelledby="selection-title">
+      <p class="eyebrow">01 / SELECCIÓN</p><h2 id="selection-title">QUÉ CUENTA.</h2>
+      <div class="methodology-cards">
+        <article><strong>El torneo</strong><p>Super Smash Bros. Ultimate individual, presencial y terminado. En Guatemala pedimos al menos 32 inscritos y 32 personas con un set competitivo; fuera del país, al menos 64. No entran online, dobles ni Squad Strike.</p></article>
+        <article><strong>El set</strong><p>Debe tener dos jugadores identificados, ganador verificable y marcador. Descartamos DQ, bye, walkover y resultados sin marcador. Un 3–0 y un 3–2 cuentan ambos como una victoria: el margen no cambia el cálculo actual.</p></article>
+        <article><strong>El jugador</strong><p>Por ahora proponemos candidatos si su perfil público dice Guatemala o si existe una excepción documentada. Para aparecer necesita dos eventos y cuatro sets válidos. El país del perfil no prueba nacionalidad ni residencia; esa regla sigue pendiente de aprobación.</p></article>
+      </div>
+      <p class="methodology-note">Buscamos torneos extranjeros a partir de jugadores encontrados primero en Guatemala. Alguien que compite únicamente fuera puede faltar. Cada torneo extranjero nuevo se revisa antes de incorporarlo; si queda pendiente, conservamos el último corte publicado.</p>
+    </section>
+
+    <section class="methodology-section" aria-labelledby="calculation-title">
+      <p class="eyebrow">02 / PUNTUACIÓN</p><h2 id="calculation-title">CÓMO SE ORDENA.</h2>
+      <ol class="calculation-steps">
+        <li><span>01</span><div><h3>Miramos a quién venciste.</h3><p>El modelo estima la fuerza de todos los participantes a partir de sus victorias y derrotas. Ganar a alguien con buenos resultados aporta más evidencia que ganar a alguien con resultados débiles. También cuentan las derrotas.</p></div></li>
+        <li><span>02</span><div><h3>Ajustamos cuánto informa cada set.</h3><p>Los torneos más grandes reciben más peso. Si dos personas se enfrentaron muchas veces, cada set repetido aporta menos información que un enfrentamiento nuevo. No añadimos puntos fijos por quedar primero ni por ganar 3–0.</p></div></li>
+        <li><span>03</span><div><h3>Calculamos una fuerza conjunta.</h3><p>Usamos un modelo Bradley–Terry: ajusta las fuerzas para que las victorias observadas sean plausibles frente a cada rival. Una regularización evita que pocos sets, o un cuadro aislado, produzcan valores sin límite. Después convertimos esa fuerza a los puntos Smash GT visibles.</p></div></li>
+      </ol>
+      <details class="formula-detail"><summary>Ver las fórmulas y constantes exactas</summary><div><p>Para cada set local, el peso base es <code>min(2.5, √(puntos TTS estimados / 96))</code>. Para cada set extranjero es <code>min(2.5, √(jugadores activos / 64))</code>. Ambos se dividen por <code>√(cantidad de sets entre la misma pareja)</code>.</p><p>El modelo maximiza la probabilidad de los ganadores observados y aplica una penalización cuadrática de <code>0.5</code> hacia fuerza neutral. Los puntos publicados son <code>redondear(1500 + 400 / ln(10) × fuerza)</code>. El desempate usa victorias, eventos y alias. El texto exacto de la versión de datos actual es:</p><p id="method-exact">Cargando fórmula del corte…</p></div></details>
+      <p class="methodology-note">Estos puntos comparan jugadores <em>dentro de este corte</em>. No son Elo oficial ni la puntuación de UltRank. El modelo actual puede ser sensible a pocos resultados extranjeros y aún necesita evaluación con datos fuera de muestra.</p>
+    </section>
+
+    <section class="methodology-section" aria-labelledby="ultrank-title">
+      <p class="eyebrow">03 / FUENTES</p><h2 id="ultrank-title">QUÉ TOMAMOS DE ULTRANK.</h2>
+      <div class="source-grid"><div><h3>Sí usamos</h3><p>Su sistema público de valor de torneos como referencia para <strong>estimar el peso de eventos guatemaltecos</strong>: número de participantes, multiplicador regional de Guatemala y valores históricos de jugadores vigentes en la fecha del torneo. Para este piloto estimamos <code>activos + min(256, activos) + min(128, activos) + suma de valores de jugadores</code>. La estimación puede diferir de la decisión oficial por DQ, formato o revisión editorial.</p></div><div><h3>No replicamos</h3><p>UltRank también considera calidad de victorias y derrotas, posiciones relativas, volatilidad y ponderación de mejores y peores torneos. Su documentación pública describe esas ideas, pero no permite reproducir todos los coeficientes del ranking de jugadores. Nuestro orden usa el modelo propio explicado arriba. Para torneos extranjeros usamos tamaño activo, no un valor TTS oficial como peso.</p></div></div>
+      <p class="source-links"><a href="https://docs.google.com/document/d/1dC5oJaRfXITqlVMG8w6uZ1KGVjWxshbNqQzRD6zSXE8/edit" target="_blank" rel="noopener noreferrer">Metodología pública de UltRank ↗</a><a href="https://github.com/kenniky/ultrank-scoring" target="_blank" rel="noopener noreferrer">Código público del tierer ↗</a><a href="https://github.com/Bucaro-19/rsvp-graduacion/blob/main/scripts/smash/rank.py" target="_blank" rel="noopener noreferrer">Nuestro cálculo en código ↗</a></p>
+    </section>
+
+    <section class="methodology-section" id="torneos" aria-labelledby="events-title">
+      <p class="eyebrow">04 / EVIDENCIA</p><h2 id="events-title">TORNEOS DEL CORTE.</h2>
+      <p class="methodology-note">Esta tabla se genera del mismo archivo que alimenta las posiciones. “Activos” son personas que jugaron al menos un set válido; “sets” son los que entraron al modelo, aunque no todos involucren a alguien del top 100. Abre cada evento para revisar el cuadro en start.gg.</p>
+      <p id="event-status" class="event-status" role="status">Cargando torneos del corte…</p>
+      <div class="event-table-wrap"><table class="event-table"><thead><tr><th scope="col">Fecha</th><th scope="col">Torneo / evento</th><th scope="col">País</th><th scope="col">Activos</th><th scope="col">Sets</th></tr></thead><tbody id="event-rows"></tbody></table></div>
+      <details class="excluded-detail"><summary>Ver exclusiones documentadas <span id="excluded-count"></span></summary><ul id="excluded-events"></ul></details>
+    </section>
+
+    <section class="methodology-section review-box" aria-labelledby="review-title"><p class="eyebrow">05 / REVISIÓN COMUNITARIA</p><h2 id="review-title">LO QUE FALTA DECIDIR.</h2><p>Antes de llamar a esto ranking nacional definitivo necesitamos acordar quién es elegible para Guatemala, cerrar el periodo de evaluación, revisar torneos no convencionales y definir un mínimo de actividad suficiente. Si la muestra no alcanza para cien puestos defendibles, publicaremos menos. Los cambios a las reglas deben anunciarse antes de recalcular posiciones.</p><p>Durante las pruebas el cálculo se actualiza cada día. En producción quedará programado para cada domingo a las 00:00, hora de Guatemala; GitHub puede retrasar unos minutos la ejecución.</p><div class="review-links"><a href="https://github.com/Bucaro-19/rsvp-graduacion/issues/new?template=smash-ranking-feedback.yml" target="_blank" rel="noopener noreferrer">Proponer una corrección o regla ↗</a><a href="./#clasificacion">Volver al top piloto ↗</a></div></section>
+  </main>
+  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS <span aria-hidden="true">↗</span></a><p>Hecho para la comunidad de Guatemala.<br>Proyecto independiente, sin afiliación con start.gg, UltRank o Nintendo.</p><span>SMASH GT</span></footer>
+</body>
+</html>

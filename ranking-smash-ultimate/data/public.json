@@ -22805,6 +22805,346 @@
       "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
     }
   ],
+  "events": [
+    {
+      "id": "1531876",
+      "name": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
+      "eventName": "Cum de Felipe",
+      "country": "GT",
+      "date": "2026-01-04",
+      "entrants": 40,
+      "activePlayers": 39,
+      "validSets": 76,
+      "ttsPointsEstimate": 117,
+      "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
+    },
+    {
+      "id": "1428416",
+      "name": "Let's Make BIG Moves 2026",
+      "eventName": "Ultimate Singles",
+      "country": "US",
+      "date": "2026-01-24",
+      "entrants": 926,
+      "activePlayers": 870,
+      "validSets": 1713,
+      "ttsPointsEstimate": null,
+      "url": "https://www.start.gg/tournament/let-s-make-big-moves-2026-7/event/ultimate-singles"
+    },
+    {
+      "id": "1542395",
+      "name": "Smash Club Enero - Ultimate Singles",
+      "eventName": "Ultimate Singles @ 11:00 AM",
+      "country": "GT",
+      "date": "2026-01-25",
+      "entrants": 48,
+      "activePlayers": 47,
+      "validSets": 113,
+      "ttsPointsEstimate": 321,
+      "url": "https://www.start.gg/tournament/smash-club-enero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "1548549",
+      "name": "Back to SMASH!",
+      "eventName": "Singles",
+      "country": "GT",
+      "date": "2026-01-31",
+      "entrants": 41,
+      "activePlayers": 41,
+      "validSets": 71,
+      "ttsPointsEstimate": 123,
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
+      "id": "1421380",
+      "name": "Cavalier Clash 7 | $1950+ POT BONUS",
+      "eventName": "Ultimate Singles",
+      "country": "US",
+      "date": "2026-02-07",
+      "entrants": 318,
+      "activePlayers": 296,
+      "validSets": 590,
+      "ttsPointsEstimate": null,
+      "url": "https://www.start.gg/tournament/cavalier-clash-7-1950-pot-bonus/event/ultimate-singles"
+    },
+    {
+      "id": "1547370",
+      "name": "Mega Lumiose Series #1",
+      "eventName": "Mega Lumiose Series #1 - Singles",
+      "country": "GT",
+      "date": "2026-02-08",
+      "entrants": 52,
+      "activePlayers": 46,
+      "validSets": 89,
+      "ttsPointsEstimate": 288,
+      "url": "https://www.start.gg/tournament/mega-lumiose-series-1/event/mega-lumiose-series-1-singles"
+    },
+    {
+      "id": "1565326",
+      "name": "Smash Club Febrero - Ultimate Singles",
+      "eventName": "Ultimate Singles @ 11:00 AM",
+      "country": "GT",
+      "date": "2026-02-22",
+      "entrants": 42,
+      "activePlayers": 40,
+      "validSets": 97,
+      "ttsPointsEstimate": 480,
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "1568830",
+      "name": "Rech Experience 2026",
+      "eventName": "Rech Experience - Super Smash Bros Ultimate",
+      "country": "GT",
+      "date": "2026-02-28",
+      "entrants": 64,
+      "activePlayers": 54,
+      "validSets": 105,
+      "ttsPointsEstimate": 492,
+      "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
+    },
+    {
+      "id": "1577121",
+      "name": "Smash Club Ascension - Marzo",
+      "eventName": "Singles Clase S @ 1:00 PM",
+      "country": "GT",
+      "date": "2026-03-08",
+      "entrants": 37,
+      "activePlayers": 34,
+      "validSets": 66,
+      "ttsPointsEstimate": 402,
+      "url": "https://www.start.gg/tournament/smash-club-ascension-marzo/event/singles-clase-s-1-00-pm"
+    },
+    {
+      "id": "1607965",
+      "name": "NEXT GEN II",
+      "eventName": "Ultimate Singles",
+      "country": "GT",
+      "date": "2026-04-19",
+      "entrants": 60,
+      "activePlayers": 58,
+      "validSets": 110,
+      "ttsPointsEstimate": 174,
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
+      "id": "1613808",
+      "name": "Coliseo Gaming",
+      "eventName": "Singles - Super Smash Bros Ultimate",
+      "country": "GT",
+      "date": "2026-04-26",
+      "entrants": 95,
+      "activePlayers": 81,
+      "validSets": 157,
+      "ttsPointsEstimate": 603,
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "1613963",
+      "name": "Venite coatepeque",
+      "eventName": "Ultimate Singles",
+      "country": "GT",
+      "date": "2026-04-27",
+      "entrants": 75,
+      "activePlayers": 73,
+      "validSets": 79,
+      "ttsPointsEstimate": 219,
+      "url": "https://www.start.gg/tournament/venite-coatepeque/event/ultimate-singles"
+    },
+    {
+      "id": "1612066",
+      "name": "Guatemala Game Show 3 SSBU",
+      "eventName": "Guatemala Gameshow 3 SSBU",
+      "country": "GT",
+      "date": "2026-05-16",
+      "entrants": 67,
+      "activePlayers": 54,
+      "validSets": 60,
+      "ttsPointsEstimate": 492,
+      "url": "https://www.start.gg/tournament/guatemala-game-show-3-ssbu/event/guatemala-gameshow-3-ssbu"
+    },
+    {
+      "id": "1630387",
+      "name": "ComicCon Xela Día 2",
+      "eventName": "ComicCon Xela Smash Segundo Dia",
+      "country": "GT",
+      "date": "2026-05-19",
+      "entrants": 32,
+      "activePlayers": 32,
+      "validSets": 62,
+      "ttsPointsEstimate": 96,
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
+      "id": "1627757",
+      "name": "Lumiose Series 2",
+      "eventName": "Mega Lumiose Series #1 - Singles",
+      "country": "GT",
+      "date": "2026-05-24",
+      "entrants": 45,
+      "activePlayers": 44,
+      "validSets": 85,
+      "ttsPointsEstimate": 192,
+      "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
+    },
+    {
+      "id": "1635982",
+      "name": "Smash Club Mayo - Ultimate Singles",
+      "eventName": "Ultimate Singles @ 11:00 AM",
+      "country": "GT",
+      "date": "2026-05-31",
+      "entrants": 63,
+      "activePlayers": 58,
+      "validSets": 142,
+      "ttsPointsEstimate": 324,
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "1633341",
+      "name": "UFF - Rus Mall",
+      "eventName": "Rus Mall - UFF Singles",
+      "country": "GT",
+      "date": "2026-06-14",
+      "entrants": 60,
+      "activePlayers": 54,
+      "validSets": 106,
+      "ttsPointsEstimate": 522,
+      "url": "https://www.start.gg/tournament/uff-rus-mall/event/rus-mall-uff-singles"
+    },
+    {
+      "id": "1656546",
+      "name": "Smash Club Junio - Ultimate Singles",
+      "eventName": "Ultimate Singles @ 11:00 AM",
+      "country": "GT",
+      "date": "2026-06-28",
+      "entrants": 62,
+      "activePlayers": 56,
+      "validSets": 137,
+      "ttsPointsEstimate": 348,
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "1531257",
+      "name": "S Factor X3",
+      "eventName": "Smash Bros. Ultimate - Singles",
+      "country": "MX",
+      "date": "2026-07-18",
+      "entrants": 1325,
+      "activePlayers": 1070,
+      "validSets": 2105,
+      "ttsPointsEstimate": null,
+      "url": "https://www.start.gg/tournament/s-factor-x3/event/smash-bros-ultimate-singles"
+    },
+    {
+      "id": "1672358",
+      "name": "NEXT GEN IV",
+      "eventName": "Ultimate Singles",
+      "country": "GT",
+      "date": "2026-07-26",
+      "entrants": 55,
+      "activePlayers": 50,
+      "validSets": 93,
+      "ttsPointsEstimate": 180,
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
+      "id": "1672830",
+      "name": "Ultimate Singles @ 11:30AM",
+      "eventName": "Ultimate Singles @ 11:00 AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "entrants": 58,
+      "activePlayers": 54,
+      "validSets": 105,
+      "ttsPointsEstimate": 362,
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "1680151",
+      "name": "Quedely showdown",
+      "eventName": "Ultimate Singles @ 11:00 AM",
+      "country": "GT",
+      "date": "2026-08-02",
+      "entrants": 50,
+      "activePlayers": 43,
+      "validSets": 84,
+      "ttsPointsEstimate": 389,
+      "url": "https://www.start.gg/tournament/quedely-showdown/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "1693653",
+      "name": "Chapin League",
+      "eventName": "Chapin League - Singles",
+      "country": "GT",
+      "date": "2026-08-23",
+      "entrants": 105,
+      "activePlayers": 96,
+      "validSets": 189,
+      "ttsPointsEstimate": 518,
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "1704290",
+      "name": "FanFest x Máster Legends",
+      "eventName": "Ultimate Singles @ 11:00 AM",
+      "country": "GT",
+      "date": "2026-09-06",
+      "entrants": 46,
+      "activePlayers": 46,
+      "validSets": 48,
+      "ttsPointsEstimate": 198,
+      "url": "https://www.start.gg/tournament/fanfest-x-m-ster-legends/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "1712611",
+      "name": "The Closed House #1",
+      "eventName": "Ultimate singles",
+      "country": "GT",
+      "date": "2026-09-16",
+      "entrants": 39,
+      "activePlayers": 36,
+      "validSets": 70,
+      "ttsPointsEstimate": 308,
+      "url": "https://www.start.gg/tournament/the-closed-house-1/event/ultimate-singles"
+    },
+    {
+      "id": "1707403",
+      "name": "Festival Gamer 2026",
+      "eventName": "Festival Gamer - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-09-26",
+      "entrants": 134,
+      "activePlayers": 109,
+      "validSets": 187,
+      "ttsPointsEstimate": 527,
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    }
+  ],
+  "excludedEvents": [
+    {
+      "id": "1533740",
+      "name": "Smash Club - Doubles + Squad Strike Edition",
+      "reason": "Squad Strike, formato distinto a singles estándar",
+      "url": "https://www.start.gg/tournament/smash-club-doubles-squad-strike-edition/event/ultimate-squad-strike-2-30-pm"
+    },
+    {
+      "id": "1602278",
+      "name": "Evento 1602278",
+      "reason": "Pre S Factor X3 del miércoles, local previo al major; exclusión conservadora",
+      "url": null
+    },
+    {
+      "id": "1619708",
+      "name": "Evento 1619708",
+      "reason": "Torneo Mercado San Miguelito: el jugador guatemalteco hallado figura solo con dos DQ; sin set competitivo suyo",
+      "url": null
+    },
+    {
+      "id": "1640091",
+      "name": "Evento 1640091",
+      "reason": "Squad Strike de Pre S Factor X3, formato distinto a singles estándar",
+      "url": null
+    }
+  ],
   "counts": {
     "players": 100,
     "events": 26,
@@ -22812,6 +23152,8 @@
     "countries": 3
   },
   "method": "Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos y 4 sets válidos. No equivale a UltRank.",
+  "methodVersion": "BT-PILOTO-1",
+  "ttsSource": "https://raw.githubusercontent.com/kenniky/ultrank-scoring/61eaa8828eff709ffbfbabeefdaf062dac48095e/ultrank_players.csv",
   "limitations": [
     "La captura internacional parte de participantes localmente descubiertos; jugadores que compiten solo fuera del país pueden faltar.",
     "La ubicación pública del perfil indica candidatura, no ciudadanía ni residencia verificada.",

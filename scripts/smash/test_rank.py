@@ -60,6 +60,17 @@ class PilotRankingTests(unittest.TestCase):
         self.assertEqual(public["counts"]["players"], 1)
         self.assertEqual(len(public["results"]), 62)
         self.assertEqual(public["status"], "local_pilot")
+        self.assertEqual(public["methodVersion"], "BT-PILOTO-1")
+        self.assertEqual(len(public["events"]), 2)
+        self.assertEqual([event["validSets"] for event in public["events"]], [31, 31])
+        self.assertEqual(public["events"][0]["activePlayers"], 32)
+
+    def test_export_rejects_event_set_count_mismatch(self):
+        snapshot = fixture()
+        result = compute(snapshot, player_overrides={"1": "2025 PR"})
+        result["counts"]["competitiveSets"] += 1
+        with self.assertRaisesRegex(ValueError, "no coinciden"):
+            export(snapshot, result)
 
     def test_partial_capture_never_gets_positions(self):
         snapshot = fixture()

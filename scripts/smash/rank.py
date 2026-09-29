@@ -148,7 +148,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
     rows.sort(key=lambda row: (-row["rating"], -row["wins"], -row["events"], row["tag"].casefold(), row["id"]))
     for index, row in enumerate(rows[:100], 1):
         row["rank"] = index
-    return {"kind": "smash_gt_provisional", "generatedAt": snapshot["generatedAt"],
+    return {"kind": "smash_gt_provisional", "methodVersion": "BT-PILOTO-1", "generatedAt": snapshot["generatedAt"],
             "season": snapshot["season"], "ranking": rows[:100],
             "counts": {"eligiblePlayers": len(rows), "rankedPlayers": min(100, len(rows)),
                        "eligibleEvents": len(eligible_events), "competitiveSets": len(games),

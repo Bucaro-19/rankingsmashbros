@@ -72,7 +72,8 @@ class ExportTests(unittest.TestCase):
 
     def test_deployment_requires_a_computed_top_100_with_international_coverage(self):
         data = {"schemaVersion": 2, "status": "international_pilot", "rankingComputed": True,
-                "players": [{}] * 100, "counts": {"players": 100, "events": 26, "sets": 6739}}
+                "players": [{}] * 100, "events": [{"name": "Prueba", "validSets": 6739, "activePlayers": 32}],
+                "counts": {"players": 100, "events": 1, "sets": 6739}}
         validate_public_data(data)
         for change in ["coverage_only", "local_pilot", False, 99]:
             altered = copy.deepcopy(data)
