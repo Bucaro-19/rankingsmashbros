@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Cuestionario de la comunidad — Smash GT</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./arena.css">
-  <link rel="stylesheet" href="./encuesta.css">
+  <link rel="stylesheet" href="./encuesta.css?v=20260929-2">
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -108,14 +108,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <fieldset><legend>02 / ¿Quién debería poder aparecer en el ranking nacional?</legend><div class="choices"><label><input type="radio" name="eligibility" value="nacionalidad-local" required> Guatemaltecos con participación presencial en Guatemala en 2026</label><label><input type="radio" name="eligibility" value="nacionalidad"> Guatemaltecos, aunque compitan solo en el extranjero</label><label><input type="radio" name="eligibility" value="otra"> Propongo otra regla en el comentario</label></div></fieldset>
         <fieldset class="activity-question">
           <legend>03 / ¿Cuánto debe jugar una persona para aparecer en el top?</legend>
-          <p class="question-help">Aquí preguntamos por la actividad de <strong>cada jugador</strong>, una vez que el torneo ya fue admitido en el ranking.</p>
+          <p class="activity-intro">Hablemos de la actividad de <strong>cada jugador</strong>. Primero, el torneo debe estar admitido en el ranking; después contamos los sets que jugó esa persona.</p>
           <div class="activity-guide">
-            <div><h3>¿Qué es un torneo que cuenta?</h3><p>Es una competencia presencial de Smash Ultimate individual, terminada y admitida en el ranking. Debes haber jugado al menos un set válido allí: solo inscribirte no basta. Si el torneo quedó fuera, sus sets tampoco suman.</p></div>
-            <div><h3>¿Qué es un set válido?</h3><p>Es el enfrentamiento completo contra otra persona, con ganador y marcador registrados en start.gg. Ganar <em>o perder</em> cuenta para tu actividad. Un resultado 3–2 son cinco partidas, pero <strong>un solo set</strong>. No cuentan DQ, pase automático (bye), W/O ni resultados sin marcador.</p></div>
+            <div class="activity-definition"><span class="activity-number" aria-hidden="true">01</span><h3>¿Qué torneo cuenta?</h3><p>Uno presencial de Smash Ultimate individual, terminado y admitido en el ranking. Debes haber jugado allí al menos un set válido: inscribirte no basta. Si el torneo quedó fuera, sus sets tampoco suman.</p></div>
+            <div class="activity-definition"><span class="activity-number" aria-hidden="true">02</span><h3>¿Qué set cuenta?</h3><p>Un enfrentamiento terminado contra otra persona, con ganador y marcador en start.gg. <strong>Ganar y perder cuentan.</strong> Un 3–2 son cinco partidas, pero <strong>un solo set</strong>. DQ, pase automático (bye), W/O y resultados sin marcador no cuentan.</p></div>
           </div>
-          <div class="activity-example"><strong>Con peras y manzanas:</strong><p>✅ Juegas 2 sets en el torneo A y 2 en el torneo B: <strong>2 torneos + 4 sets en total</strong>. Sí cumples la regla actual.</p><p>❌ Juegas 4 sets solo en el torneo A: tienes los sets, pero te falta otro torneo. Tampoco bastan 2 torneos si solo jugaste 1 set en cada uno.</p></div>
-          <p class="activity-clarifier">La opción de <strong>3 torneos y 6 sets</strong> pide al menos tres torneos que cuenten y seis sets <strong>sumados entre todos</strong>, no seis en cada torneo. En este piloto, al menos uno de esos torneos debe ser en Guatemala; otro puede ser en el extranjero si cumple las reglas.</p>
-          <p class="activity-separate">El número de participantes que necesita <em>el torneo</em> es otra regla. <a href="./analisis-torneos.html">Mira el análisis de torneos pequeños ↗</a></p>
+          <div class="activity-example">
+            <h3>Con peras y manzanas</h3>
+            <div class="activity-scenarios">
+              <p class="activity-scenario yes"><span class="scenario-icon" aria-hidden="true">✓</span><span><strong>Sí cumple:</strong> 2 sets en el torneo A + 2 en el B = <strong>2 torneos y 4 sets en total.</strong></span></p>
+              <p class="activity-scenario no"><span class="scenario-icon" aria-hidden="true">×</span><span><strong>No cumple:</strong> 4 sets solo en el torneo A. Falta otro torneo. Tampoco alcanzan 2 torneos con solo 1 set en cada uno.</span></p>
+            </div>
+          </div>
+          <div class="activity-notes">
+            <p><strong>¿Y la opción de 3 torneos y 6 sets?</strong> Son seis sets <strong>sumados entre los tres torneos</strong>, no seis en cada uno. En este piloto, al menos un torneo debe ser en Guatemala; otro puede ser en el extranjero si cumple las reglas.</p>
+            <p>El mínimo de participantes de <em>cada torneo</em> es otra regla. <a href="./analisis-torneos.html">Ver análisis de torneos pequeños ↗</a></p>
+          </div>
+          <h3 class="activity-choice-title">¿Qué mínimo te parece justo?</h3>
           <div class="choices"><label><input type="radio" name="minimum" value="2-eventos-4-sets" required> Al menos 2 torneos que cuenten y 4 sets válidos en total (regla actual)</label><label><input type="radio" name="minimum" value="3-eventos-6-sets"> Al menos 3 torneos que cuenten y 6 sets válidos en total</label><label><input type="radio" name="minimum" value="otro"> Otro mínimo; lo explico abajo</label></div>
         </fieldset>
         <fieldset><legend>04 / ¿Cómo tratar los torneos en el extranjero?</legend><div class="choices"><label><input type="radio" name="international" value="todos-validos" required> Contar todos los presenciales que cumplan las reglas</label><label><input type="radio" name="international" value="solo-grandes"> Contar solo los más grandes</label><label><input type="radio" name="international" value="ninguno"> Contar solo torneos de Guatemala</label></div></fieldset>
