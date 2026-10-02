@@ -2,9 +2,12 @@
   "schemaVersion": 2,
   "status": "international_pilot",
   "rankingComputed": true,
-  "generatedAt": "2026-09-29T05:49:11.470098+00:00",
-  "seasonLabel": "01/01/2026 – 28/09/2026",
+  "generatedAt": "2026-10-02T01:30:48.163595+00:00",
+  "seasonYear": 2026,
+  "seasonLabel": "01/01/2026 – 01/10/2026",
+  "previousCutAt": "2026-09-29T14:59:35.352735+00:00",
   "scope": "Torneos presenciales en Guatemala y en el extranjero de jugadores descubiertos localmente.",
+  "rankingCoverage": "all_eligible",
   "players": [
     {
       "id": "1321023",
@@ -16,9 +19,11 @@
       "losses": 17,
       "sets": 101,
       "events": 14,
+      "localEvents": 14,
       "bestPlacement": 1,
       "countryBasis": "asiento regional Guatemala UltRank 2026.1 bajo el alias HaunterGV; perfil actual sin país; pertenencia pendiente de validar",
-      "rank": 1
+      "rank": 1,
+      "previousRank": 1
     },
     {
       "id": "184005",
@@ -30,9 +35,11 @@
       "losses": 11,
       "sets": 100,
       "events": 14,
+      "localEvents": 11,
       "bestPlacement": 1,
       "countryBasis": "PR Guatemala 2025 (#1); perfil actual de México; pertenencia pendiente de validar",
-      "rank": 2
+      "rank": 2,
+      "previousRank": 2
     },
     {
       "id": "3582372",
@@ -44,9 +51,11 @@
       "losses": 24,
       "sets": 79,
       "events": 12,
+      "localEvents": 12,
       "bestPlacement": 2,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 3
+      "rank": 3,
+      "previousRank": 3
     },
     {
       "id": "276159",
@@ -58,9 +67,11 @@
       "losses": 24,
       "sets": 86,
       "events": 12,
+      "localEvents": 12,
       "bestPlacement": 2,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 4
+      "rank": 4,
+      "previousRank": 4
     },
     {
       "id": "3638851",
@@ -72,9 +83,11 @@
       "losses": 28,
       "sets": 93,
       "events": 14,
+      "localEvents": 14,
       "bestPlacement": 2,
       "countryBasis": "asiento regional Guatemala UltRank 2026.1; perfil actual de Estados Unidos; pertenencia pendiente de validar",
-      "rank": 5
+      "rank": 5,
+      "previousRank": 5
     },
     {
       "id": "3971742",
@@ -86,9 +99,11 @@
       "losses": 0,
       "sets": 25,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 1,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 6
+      "rank": 6,
+      "previousRank": 6
     },
     {
       "id": "1629939",
@@ -100,9 +115,11 @@
       "losses": 14,
       "sets": 46,
       "events": 7,
+      "localEvents": 7,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 7
+      "rank": 7,
+      "previousRank": 7
     },
     {
       "id": "3473872",
@@ -114,9 +131,11 @@
       "losses": 10,
       "sets": 39,
       "events": 6,
+      "localEvents": 6,
       "bestPlacement": 1,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 8
+      "rank": 8,
+      "previousRank": 8
     },
     {
       "id": "2542108",
@@ -128,9 +147,11 @@
       "losses": 17,
       "sets": 51,
       "events": 9,
+      "localEvents": 9,
       "bestPlacement": 3,
       "countryBasis": "asiento regional Guatemala UltRank 2026.1; perfil actual de Estados Unidos; pertenencia pendiente de validar",
-      "rank": 9
+      "rank": 9,
+      "previousRank": 9
     },
     {
       "id": "1693445",
@@ -142,9 +163,11 @@
       "losses": 31,
       "sets": 88,
       "events": 15,
+      "localEvents": 15,
       "bestPlacement": 2,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 10
+      "rank": 10,
+      "previousRank": 10
     },
     {
       "id": "4079401",
@@ -156,9 +179,11 @@
       "losses": 26,
       "sets": 70,
       "events": 13,
+      "localEvents": 13,
       "bestPlacement": 4,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 11
+      "rank": 11,
+      "previousRank": 11
     },
     {
       "id": "258781",
@@ -170,9 +195,11 @@
       "losses": 8,
       "sets": 26,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 4,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 12
+      "rank": 12,
+      "previousRank": 12
     },
     {
       "id": "2630326",
@@ -184,9 +211,11 @@
       "losses": 6,
       "sets": 18,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 13
+      "rank": 13,
+      "previousRank": 13
     },
     {
       "id": "2616734",
@@ -198,9 +227,11 @@
       "losses": 6,
       "sets": 16,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 4,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 14
+      "rank": 14,
+      "previousRank": 14
     },
     {
       "id": "1779069",
@@ -212,9 +243,11 @@
       "losses": 4,
       "sets": 16,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 2,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 15
+      "rank": 15,
+      "previousRank": 15
     },
     {
       "id": "2506395",
@@ -226,9 +259,11 @@
       "losses": 13,
       "sets": 38,
       "events": 7,
+      "localEvents": 7,
       "bestPlacement": 3,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 16
+      "rank": 16,
+      "previousRank": 16
     },
     {
       "id": "1548994",
@@ -240,9 +275,11 @@
       "losses": 24,
       "sets": 63,
       "events": 12,
+      "localEvents": 11,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 17
+      "rank": 17,
+      "previousRank": 17
     },
     {
       "id": "2114403",
@@ -254,9 +291,11 @@
       "losses": 30,
       "sets": 73,
       "events": 14,
+      "localEvents": 14,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 18
+      "rank": 18,
+      "previousRank": 18
     },
     {
       "id": "2362246",
@@ -268,9 +307,11 @@
       "losses": 6,
       "sets": 21,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 2,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 19
+      "rank": 19,
+      "previousRank": 19
     },
     {
       "id": "3262714",
@@ -282,9 +323,11 @@
       "losses": 4,
       "sets": 10,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 20
+      "rank": 20,
+      "previousRank": 20
     },
     {
       "id": "5359842",
@@ -296,9 +339,11 @@
       "losses": 5,
       "sets": 14,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 21
+      "rank": 21,
+      "previousRank": 21
     },
     {
       "id": "3565703",
@@ -310,9 +355,11 @@
       "losses": 14,
       "sets": 33,
       "events": 7,
+      "localEvents": 7,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 22
+      "rank": 22,
+      "previousRank": 22
     },
     {
       "id": "618169",
@@ -324,9 +371,11 @@
       "losses": 22,
       "sets": 59,
       "events": 10,
+      "localEvents": 10,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 23
+      "rank": 23,
+      "previousRank": 23
     },
     {
       "id": "4880030",
@@ -338,9 +387,11 @@
       "losses": 16,
       "sets": 45,
       "events": 8,
+      "localEvents": 8,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 24
+      "rank": 24,
+      "previousRank": 24
     },
     {
       "id": "3657008",
@@ -352,9 +403,11 @@
       "losses": 7,
       "sets": 23,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 25
+      "rank": 25,
+      "previousRank": 25
     },
     {
       "id": "4957744",
@@ -366,9 +419,11 @@
       "losses": 4,
       "sets": 17,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 4,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 26
+      "rank": 26,
+      "previousRank": 26
     },
     {
       "id": "5133343",
@@ -380,9 +435,11 @@
       "losses": 11,
       "sets": 29,
       "events": 5,
+      "localEvents": 5,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 27
+      "rank": 27,
+      "previousRank": 27
     },
     {
       "id": "549096",
@@ -394,9 +451,11 @@
       "losses": 32,
       "sets": 78,
       "events": 16,
+      "localEvents": 16,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 28
+      "rank": 28,
+      "previousRank": 28
     },
     {
       "id": "2504077",
@@ -408,9 +467,11 @@
       "losses": 6,
       "sets": 13,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 29
+      "rank": 29,
+      "previousRank": 29
     },
     {
       "id": "3540447",
@@ -422,9 +483,11 @@
       "losses": 5,
       "sets": 12,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 30
+      "rank": 30,
+      "previousRank": 30
     },
     {
       "id": "2503616",
@@ -436,9 +499,11 @@
       "losses": 4,
       "sets": 13,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 31
+      "rank": 31,
+      "previousRank": 31
     },
     {
       "id": "869356",
@@ -450,9 +515,11 @@
       "losses": 7,
       "sets": 18,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 32
+      "rank": 32,
+      "previousRank": 32
     },
     {
       "id": "2114517",
@@ -464,9 +531,11 @@
       "losses": 4,
       "sets": 12,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 33
+      "rank": 33,
+      "previousRank": 33
     },
     {
       "id": "2742505",
@@ -478,9 +547,11 @@
       "losses": 6,
       "sets": 15,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 34
+      "rank": 34,
+      "previousRank": 34
     },
     {
       "id": "3448570",
@@ -492,9 +563,11 @@
       "losses": 7,
       "sets": 14,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 35
+      "rank": 35,
+      "previousRank": 35
     },
     {
       "id": "4906244",
@@ -506,9 +579,11 @@
       "losses": 4,
       "sets": 12,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 36
+      "rank": 36,
+      "previousRank": 36
     },
     {
       "id": "1765040",
@@ -520,9 +595,11 @@
       "losses": 10,
       "sets": 25,
       "events": 6,
+      "localEvents": 6,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 37
+      "rank": 37,
+      "previousRank": 37
     },
     {
       "id": "1236743",
@@ -534,9 +611,11 @@
       "losses": 7,
       "sets": 18,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 38
+      "rank": 38,
+      "previousRank": 38
     },
     {
       "id": "5187742",
@@ -548,9 +627,11 @@
       "losses": 8,
       "sets": 19,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 39
+      "rank": 39,
+      "previousRank": 39
     },
     {
       "id": "2569803",
@@ -562,9 +643,11 @@
       "losses": 20,
       "sets": 46,
       "events": 10,
+      "localEvents": 10,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 40
+      "rank": 40,
+      "previousRank": 40
     },
     {
       "id": "603033",
@@ -576,9 +659,11 @@
       "losses": 10,
       "sets": 20,
       "events": 5,
+      "localEvents": 5,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 41
+      "rank": 41,
+      "previousRank": 41
     },
     {
       "id": "2564398",
@@ -590,9 +675,11 @@
       "losses": 14,
       "sets": 29,
       "events": 7,
+      "localEvents": 7,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 42
+      "rank": 42,
+      "previousRank": 42
     },
     {
       "id": "5016355",
@@ -604,9 +691,11 @@
       "losses": 6,
       "sets": 15,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 43
+      "rank": 43,
+      "previousRank": 43
     },
     {
       "id": "4523333",
@@ -618,9 +707,11 @@
       "losses": 6,
       "sets": 15,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 3,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 44
+      "rank": 44,
+      "previousRank": 44
     },
     {
       "id": "3851824",
@@ -632,9 +723,11 @@
       "losses": 21,
       "sets": 43,
       "events": 10,
+      "localEvents": 10,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 45
+      "rank": 45,
+      "previousRank": 45
     },
     {
       "id": "4182433",
@@ -646,9 +739,11 @@
       "losses": 10,
       "sets": 20,
       "events": 5,
+      "localEvents": 5,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 46
+      "rank": 46,
+      "previousRank": 46
     },
     {
       "id": "4855809",
@@ -660,9 +755,11 @@
       "losses": 6,
       "sets": 20,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 4,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 47
+      "rank": 47,
+      "previousRank": 47
     },
     {
       "id": "4328572",
@@ -674,9 +771,11 @@
       "losses": 4,
       "sets": 8,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 48
+      "rank": 48,
+      "previousRank": 48
     },
     {
       "id": "1356871",
@@ -688,9 +787,11 @@
       "losses": 14,
       "sets": 29,
       "events": 7,
+      "localEvents": 7,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 49
+      "rank": 49,
+      "previousRank": 49
     },
     {
       "id": "4629956",
@@ -702,9 +803,11 @@
       "losses": 9,
       "sets": 17,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 50
+      "rank": 50,
+      "previousRank": 50
     },
     {
       "id": "4324857",
@@ -716,9 +819,11 @@
       "losses": 20,
       "sets": 37,
       "events": 10,
+      "localEvents": 10,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 51
+      "rank": 51,
+      "previousRank": 51
     },
     {
       "id": "4830121",
@@ -730,9 +835,11 @@
       "losses": 6,
       "sets": 15,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 52
+      "rank": 52,
+      "previousRank": 52
     },
     {
       "id": "2270611",
@@ -744,9 +851,11 @@
       "losses": 4,
       "sets": 9,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 53
+      "rank": 53,
+      "previousRank": 53
     },
     {
       "id": "5162515",
@@ -758,9 +867,11 @@
       "losses": 22,
       "sets": 41,
       "events": 11,
+      "localEvents": 11,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 54
+      "rank": 54,
+      "previousRank": 54
     },
     {
       "id": "2395996",
@@ -772,9 +883,11 @@
       "losses": 11,
       "sets": 22,
       "events": 5,
+      "localEvents": 5,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 55
+      "rank": 55,
+      "previousRank": 55
     },
     {
       "id": "4845465",
@@ -786,9 +899,11 @@
       "losses": 5,
       "sets": 14,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 56
+      "rank": 56,
+      "previousRank": 56
     },
     {
       "id": "3974852",
@@ -800,9 +915,11 @@
       "losses": 9,
       "sets": 21,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 2,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 57
+      "rank": 57,
+      "previousRank": 57
     },
     {
       "id": "4270328",
@@ -814,9 +931,11 @@
       "losses": 15,
       "sets": 28,
       "events": 7,
+      "localEvents": 7,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 58
+      "rank": 58,
+      "previousRank": 58
     },
     {
       "id": "2225242",
@@ -828,9 +947,11 @@
       "losses": 10,
       "sets": 22,
       "events": 5,
+      "localEvents": 5,
       "bestPlacement": 3,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 59
+      "rank": 59,
+      "previousRank": 59
     },
     {
       "id": "3386599",
@@ -842,9 +963,11 @@
       "losses": 5,
       "sets": 12,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 60
+      "rank": 60,
+      "previousRank": 60
     },
     {
       "id": "4343101",
@@ -856,9 +979,11 @@
       "losses": 7,
       "sets": 12,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 61
+      "rank": 61,
+      "previousRank": 61
     },
     {
       "id": "2496633",
@@ -870,9 +995,11 @@
       "losses": 8,
       "sets": 19,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 62
+      "rank": 62,
+      "previousRank": 62
     },
     {
       "id": "3656980",
@@ -884,9 +1011,11 @@
       "losses": 5,
       "sets": 11,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 63
+      "rank": 63,
+      "previousRank": 63
     },
     {
       "id": "4990232",
@@ -898,9 +1027,11 @@
       "losses": 6,
       "sets": 15,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 64
+      "rank": 64,
+      "previousRank": 64
     },
     {
       "id": "1270032",
@@ -912,9 +1043,11 @@
       "losses": 30,
       "sets": 56,
       "events": 14,
+      "localEvents": 14,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 65
+      "rank": 65,
+      "previousRank": 65
     },
     {
       "id": "4116992",
@@ -926,9 +1059,11 @@
       "losses": 4,
       "sets": 9,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 66
+      "rank": 66,
+      "previousRank": 66
     },
     {
       "id": "4106205",
@@ -940,9 +1075,11 @@
       "losses": 31,
       "sets": 58,
       "events": 14,
+      "localEvents": 14,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 67
+      "rank": 67,
+      "previousRank": 67
     },
     {
       "id": "4004006",
@@ -954,9 +1091,11 @@
       "losses": 4,
       "sets": 9,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 68
+      "rank": 68,
+      "previousRank": 68
     },
     {
       "id": "4461132",
@@ -968,9 +1107,11 @@
       "losses": 4,
       "sets": 8,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 25,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 69
+      "rank": 69,
+      "previousRank": 69
     },
     {
       "id": "5401271",
@@ -982,9 +1123,11 @@
       "losses": 5,
       "sets": 13,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 70
+      "rank": 70,
+      "previousRank": 70
     },
     {
       "id": "4666766",
@@ -996,9 +1139,11 @@
       "losses": 7,
       "sets": 17,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 71
+      "rank": 71,
+      "previousRank": 71
     },
     {
       "id": "2538863",
@@ -1010,9 +1155,11 @@
       "losses": 5,
       "sets": 10,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 72
+      "rank": 72,
+      "previousRank": 72
     },
     {
       "id": "3846803",
@@ -1024,9 +1171,11 @@
       "losses": 4,
       "sets": 7,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 73
+      "rank": 73,
+      "previousRank": 73
     },
     {
       "id": "314638",
@@ -1038,9 +1187,11 @@
       "losses": 6,
       "sets": 12,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 74
+      "rank": 74,
+      "previousRank": 74
     },
     {
       "id": "5383045",
@@ -1052,9 +1203,11 @@
       "losses": 8,
       "sets": 16,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 4,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 75
+      "rank": 75,
+      "previousRank": 75
     },
     {
       "id": "3977550",
@@ -1066,9 +1219,11 @@
       "losses": 4,
       "sets": 9,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 76
+      "rank": 76,
+      "previousRank": 76
     },
     {
       "id": "1786720",
@@ -1080,9 +1235,11 @@
       "losses": 3,
       "sets": 8,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 77
+      "rank": 77,
+      "previousRank": 77
     },
     {
       "id": "3881213",
@@ -1094,9 +1251,11 @@
       "losses": 13,
       "sets": 22,
       "events": 6,
+      "localEvents": 6,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 78
+      "rank": 78,
+      "previousRank": 78
     },
     {
       "id": "4985465",
@@ -1108,9 +1267,11 @@
       "losses": 6,
       "sets": 14,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 79
+      "rank": 79,
+      "previousRank": 79
     },
     {
       "id": "5457238",
@@ -1122,9 +1283,11 @@
       "losses": 5,
       "sets": 9,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 80
+      "rank": 80,
+      "previousRank": 80
     },
     {
       "id": "4476749",
@@ -1136,9 +1299,11 @@
       "losses": 6,
       "sets": 10,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 81
+      "rank": 81,
+      "previousRank": 81
     },
     {
       "id": "4849266",
@@ -1150,9 +1315,11 @@
       "losses": 5,
       "sets": 9,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 82
+      "rank": 82,
+      "previousRank": 82
     },
     {
       "id": "2496146",
@@ -1164,9 +1331,11 @@
       "losses": 5,
       "sets": 11,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 25,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 83
+      "rank": 83,
+      "previousRank": 83
     },
     {
       "id": "4444709",
@@ -1178,9 +1347,11 @@
       "losses": 8,
       "sets": 17,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 5,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 84
+      "rank": 84,
+      "previousRank": 84
     },
     {
       "id": "4435565",
@@ -1192,9 +1363,11 @@
       "losses": 10,
       "sets": 20,
       "events": 5,
+      "localEvents": 5,
       "bestPlacement": 7,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 85
+      "rank": 85,
+      "previousRank": 85
     },
     {
       "id": "2116541",
@@ -1206,9 +1379,11 @@
       "losses": 4,
       "sets": 8,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 86
+      "rank": 86,
+      "previousRank": 86
     },
     {
       "id": "2502812",
@@ -1220,9 +1395,11 @@
       "losses": 3,
       "sets": 5,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 87
+      "rank": 87,
+      "previousRank": 87
     },
     {
       "id": "5092891",
@@ -1234,9 +1411,11 @@
       "losses": 7,
       "sets": 14,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 9,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 88
+      "rank": 88,
+      "previousRank": 88
     },
     {
       "id": "3503093",
@@ -1248,9 +1427,11 @@
       "losses": 4,
       "sets": 9,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 89
+      "rank": 89,
+      "previousRank": 89
     },
     {
       "id": "3569226",
@@ -1262,9 +1443,11 @@
       "losses": 4,
       "sets": 6,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 90
+      "rank": 90,
+      "previousRank": 90
     },
     {
       "id": "5080475",
@@ -1276,9 +1459,11 @@
       "losses": 6,
       "sets": 12,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 91
+      "rank": 91,
+      "previousRank": 91
     },
     {
       "id": "4500860",
@@ -1290,9 +1475,11 @@
       "losses": 6,
       "sets": 11,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 92
+      "rank": 92,
+      "previousRank": 92
     },
     {
       "id": "5092881",
@@ -1304,9 +1491,11 @@
       "losses": 6,
       "sets": 13,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 3,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 93
+      "rank": 93,
+      "previousRank": 93
     },
     {
       "id": "4038023",
@@ -1318,9 +1507,11 @@
       "losses": 6,
       "sets": 8,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 94
+      "rank": 94,
+      "previousRank": 94
     },
     {
       "id": "2627367",
@@ -1332,9 +1523,11 @@
       "losses": 3,
       "sets": 5,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 95
+      "rank": 95,
+      "previousRank": 95
     },
     {
       "id": "4886452",
@@ -1346,9 +1539,11 @@
       "losses": 14,
       "sets": 22,
       "events": 6,
+      "localEvents": 6,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 96
+      "rank": 96,
+      "previousRank": 96
     },
     {
       "id": "4690758",
@@ -1360,9 +1555,11 @@
       "losses": 20,
       "sets": 37,
       "events": 9,
+      "localEvents": 9,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 97
+      "rank": 97,
+      "previousRank": 97
     },
     {
       "id": "3999819",
@@ -1374,9 +1571,11 @@
       "losses": 4,
       "sets": 7,
       "events": 2,
+      "localEvents": 2,
       "bestPlacement": 17,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 98
+      "rank": 98,
+      "previousRank": 98
     },
     {
       "id": "4985466",
@@ -1388,9 +1587,11 @@
       "losses": 6,
       "sets": 12,
       "events": 3,
+      "localEvents": 3,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 99
+      "rank": 99,
+      "previousRank": 99
     },
     {
       "id": "5016356",
@@ -1402,9 +1603,891 @@
       "losses": 7,
       "sets": 14,
       "events": 4,
+      "localEvents": 4,
       "bestPlacement": 13,
       "countryBasis": "país del perfil start.gg; sin verificar",
-      "rank": 100
+      "rank": 100,
+      "previousRank": 100
+    },
+    {
+      "id": "4682533",
+      "tag": "BrCrV",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/283e477b",
+      "rating": 1524,
+      "wins": 5,
+      "losses": 4,
+      "sets": 9,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 2,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 101,
+      "previousRank": null
+    },
+    {
+      "id": "4849508",
+      "tag": "CHUSS",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/1e6328b7",
+      "rating": 1523,
+      "wins": 3,
+      "losses": 4,
+      "sets": 7,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 102,
+      "previousRank": null
+    },
+    {
+      "id": "4522309",
+      "tag": "joshmi",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/010b7df2",
+      "rating": 1516,
+      "wins": 6,
+      "losses": 6,
+      "sets": 12,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 9,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 103,
+      "previousRank": null
+    },
+    {
+      "id": "4614193",
+      "tag": "acE",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/8c80aade",
+      "rating": 1513,
+      "wins": 3,
+      "losses": 4,
+      "sets": 7,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 17,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 104,
+      "previousRank": null
+    },
+    {
+      "id": "1560165",
+      "tag": "Guilmar",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/6939fa0a",
+      "rating": 1511,
+      "wins": 4,
+      "losses": 6,
+      "sets": 10,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 105,
+      "previousRank": null
+    },
+    {
+      "id": "4594659",
+      "tag": "Un random",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/12ee9854",
+      "rating": 1509,
+      "wins": 3,
+      "losses": 5,
+      "sets": 8,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 17,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 106,
+      "previousRank": null
+    },
+    {
+      "id": "2646661",
+      "tag": "Yanta",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/8aa8b4d5",
+      "rating": 1503,
+      "wins": 3,
+      "losses": 5,
+      "sets": 8,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 107,
+      "previousRank": null
+    },
+    {
+      "id": "5449489",
+      "tag": "Wiip",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/b066cc13",
+      "rating": 1503,
+      "wins": 1,
+      "losses": 3,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 108,
+      "previousRank": null
+    },
+    {
+      "id": "274777",
+      "tag": "EgarS",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/d2eb4c8f",
+      "rating": 1494,
+      "wins": 4,
+      "losses": 9,
+      "sets": 13,
+      "events": 4,
+      "localEvents": 4,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 109,
+      "previousRank": null
+    },
+    {
+      "id": "2182250",
+      "tag": "DaverFXD",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/5f7e0ea8",
+      "rating": 1490,
+      "wins": 3,
+      "losses": 5,
+      "sets": 8,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 110,
+      "previousRank": null
+    },
+    {
+      "id": "1816120",
+      "tag": "Darkshy",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/f2a0179a",
+      "rating": 1486,
+      "wins": 2,
+      "losses": 5,
+      "sets": 7,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 9,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 111,
+      "previousRank": null
+    },
+    {
+      "id": "5192014",
+      "tag": "Chetito",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/c342f2d7",
+      "rating": 1481,
+      "wins": 2,
+      "losses": 3,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 112,
+      "previousRank": null
+    },
+    {
+      "id": "1764142",
+      "tag": "Jab",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/1e6401bf",
+      "rating": 1475,
+      "wins": 2,
+      "losses": 4,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 113,
+      "previousRank": null
+    },
+    {
+      "id": "5374998",
+      "tag": "Chancho",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/72175b1b",
+      "rating": 1471,
+      "wins": 8,
+      "losses": 16,
+      "sets": 24,
+      "events": 8,
+      "localEvents": 8,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 114,
+      "previousRank": null
+    },
+    {
+      "id": "5203725",
+      "tag": "Mastereach117",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/0dee3406",
+      "rating": 1469,
+      "wins": 1,
+      "losses": 4,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 115,
+      "previousRank": null
+    },
+    {
+      "id": "4268643",
+      "tag": "PAB :)",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/c77f7b57",
+      "rating": 1464,
+      "wins": 4,
+      "losses": 4,
+      "sets": 8,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 116,
+      "previousRank": null
+    },
+    {
+      "id": "2106330",
+      "tag": "KŪHAKU",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/405de74f",
+      "rating": 1461,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 117,
+      "previousRank": null
+    },
+    {
+      "id": "5334910",
+      "tag": "Adrix",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/70e28141",
+      "rating": 1459,
+      "wins": 2,
+      "losses": 4,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 118,
+      "previousRank": null
+    },
+    {
+      "id": "4311218",
+      "tag": "Win The Robot",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/d3f749e0",
+      "rating": 1452,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 17,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 119,
+      "previousRank": null
+    },
+    {
+      "id": "3012238",
+      "tag": "keks",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/ef44f598",
+      "rating": 1436,
+      "wins": 2,
+      "losses": 6,
+      "sets": 8,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 120,
+      "previousRank": null
+    },
+    {
+      "id": "5335854",
+      "tag": "Alambrito514",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/e8f9d043",
+      "rating": 1431,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 121,
+      "previousRank": null
+    },
+    {
+      "id": "5079028",
+      "tag": "Sam",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/6768a794",
+      "rating": 1421,
+      "wins": 4,
+      "losses": 8,
+      "sets": 12,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 122,
+      "previousRank": null
+    },
+    {
+      "id": "4851664",
+      "tag": "Dirius",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/8ae6c593",
+      "rating": 1415,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 17,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 123,
+      "previousRank": null
+    },
+    {
+      "id": "4831033",
+      "tag": "Nero",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/e081e01b",
+      "rating": 1414,
+      "wins": 3,
+      "losses": 6,
+      "sets": 9,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 17,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 124,
+      "previousRank": null
+    },
+    {
+      "id": "4842972",
+      "tag": "Pixel",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/eed1a35f",
+      "rating": 1412,
+      "wins": 2,
+      "losses": 3,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 125,
+      "previousRank": null
+    },
+    {
+      "id": "5427155",
+      "tag": "Yefrox",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/742a2eba",
+      "rating": 1410,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 126,
+      "previousRank": null
+    },
+    {
+      "id": "5196361",
+      "tag": "Dandiel",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/2444934c",
+      "rating": 1408,
+      "wins": 2,
+      "losses": 4,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 127,
+      "previousRank": null
+    },
+    {
+      "id": "5326744",
+      "tag": "Dz",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/66da9822",
+      "rating": 1406,
+      "wins": 1,
+      "losses": 3,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 17,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 128,
+      "previousRank": null
+    },
+    {
+      "id": "4766738",
+      "tag": "Replay",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/526fa5e4",
+      "rating": 1404,
+      "wins": 4,
+      "losses": 11,
+      "sets": 15,
+      "events": 5,
+      "localEvents": 5,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 129,
+      "previousRank": null
+    },
+    {
+      "id": "3912165",
+      "tag": "Wildrax",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/042f5001",
+      "rating": 1403,
+      "wins": 2,
+      "losses": 4,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 130,
+      "previousRank": null
+    },
+    {
+      "id": "1826400",
+      "tag": "dragoner",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/d4cfa1b5",
+      "rating": 1396,
+      "wins": 1,
+      "losses": 3,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 131,
+      "previousRank": null
+    },
+    {
+      "id": "4447083",
+      "tag": "Jonathan",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/e4aa8012",
+      "rating": 1393,
+      "wins": 1,
+      "losses": 4,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 132,
+      "previousRank": null
+    },
+    {
+      "id": "5338427",
+      "tag": "lulu0mg",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/7b9bff32",
+      "rating": 1390,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 49,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 133,
+      "previousRank": null
+    },
+    {
+      "id": "5079930",
+      "tag": "KeyG",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/8c47caea",
+      "rating": 1380,
+      "wins": 4,
+      "losses": 8,
+      "sets": 12,
+      "events": 4,
+      "localEvents": 4,
+      "bestPlacement": 13,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 134,
+      "previousRank": null
+    },
+    {
+      "id": "3704293",
+      "tag": "Killer",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/2d4faded",
+      "rating": 1376,
+      "wins": 1,
+      "losses": 4,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 135,
+      "previousRank": null
+    },
+    {
+      "id": "5092879",
+      "tag": "Litans",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/edc5ee8a",
+      "rating": 1345,
+      "wins": 1,
+      "losses": 4,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 136,
+      "previousRank": null
+    },
+    {
+      "id": "5334358",
+      "tag": "Capitán",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/db99f98c",
+      "rating": 1344,
+      "wins": 2,
+      "losses": 6,
+      "sets": 8,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 137,
+      "previousRank": null
+    },
+    {
+      "id": "4922839",
+      "tag": "Foen",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/4ffc3ea2",
+      "rating": 1341,
+      "wins": 4,
+      "losses": 15,
+      "sets": 19,
+      "events": 6,
+      "localEvents": 6,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 138,
+      "previousRank": null
+    },
+    {
+      "id": "5380156",
+      "tag": "Godo",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/01b56579",
+      "rating": 1340,
+      "wins": 1,
+      "losses": 3,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 139,
+      "previousRank": null
+    },
+    {
+      "id": "5398586",
+      "tag": "Armando.PT",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/74ffc9ca",
+      "rating": 1322,
+      "wins": 1,
+      "losses": 4,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 140,
+      "previousRank": null
+    },
+    {
+      "id": "5336906",
+      "tag": "Deimos71",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/faf980a0",
+      "rating": 1313,
+      "wins": 1,
+      "losses": 3,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 141,
+      "previousRank": null
+    },
+    {
+      "id": "5198650",
+      "tag": "Alain21",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/0412000c",
+      "rating": 1313,
+      "wins": 0,
+      "losses": 4,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 142,
+      "previousRank": null
+    },
+    {
+      "id": "4020173",
+      "tag": "TRINITY",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/82af86fd",
+      "rating": 1311,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 143,
+      "previousRank": null
+    },
+    {
+      "id": "4332372",
+      "tag": "Pinulito",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/0aba895a",
+      "rating": 1305,
+      "wins": 1,
+      "losses": 5,
+      "sets": 6,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 144,
+      "previousRank": null
+    },
+    {
+      "id": "5182851",
+      "tag": "cebollin",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/cd4a5505",
+      "rating": 1299,
+      "wins": 3,
+      "losses": 7,
+      "sets": 10,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 145,
+      "previousRank": null
+    },
+    {
+      "id": "5139924",
+      "tag": "Siderion",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/f11dd7da",
+      "rating": 1299,
+      "wins": 1,
+      "losses": 4,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 25,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 146,
+      "previousRank": null
+    },
+    {
+      "id": "4182527",
+      "tag": "miaumiauua",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/848ac5a1",
+      "rating": 1263,
+      "wins": 1,
+      "losses": 8,
+      "sets": 9,
+      "events": 4,
+      "localEvents": 4,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 147,
+      "previousRank": null
+    },
+    {
+      "id": "5320577",
+      "tag": "Zenixth",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/5baece2d",
+      "rating": 1186,
+      "wins": 0,
+      "losses": 4,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 148,
+      "previousRank": null
+    },
+    {
+      "id": "5400446",
+      "tag": "Anzoni231",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/06489110",
+      "rating": 1179,
+      "wins": 0,
+      "losses": 5,
+      "sets": 5,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 149,
+      "previousRank": null
+    },
+    {
+      "id": "5251808",
+      "tag": "Quesadilla",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/cea0f135",
+      "rating": 1159,
+      "wins": 0,
+      "losses": 4,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 150,
+      "previousRank": null
+    },
+    {
+      "id": "5401321",
+      "tag": "Donko",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/ef6cef3d",
+      "rating": 1154,
+      "wins": 1,
+      "losses": 9,
+      "sets": 10,
+      "events": 4,
+      "localEvents": 4,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 151,
+      "previousRank": null
+    },
+    {
+      "id": "5335985",
+      "tag": "Elagord",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/90cd6145",
+      "rating": 1125,
+      "wins": 0,
+      "losses": 4,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 49,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 152,
+      "previousRank": null
+    },
+    {
+      "id": "365399",
+      "tag": "FerchoMan",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/b1e1d67e",
+      "rating": 1125,
+      "wins": 0,
+      "losses": 4,
+      "sets": 4,
+      "events": 2,
+      "localEvents": 2,
+      "bestPlacement": 49,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 153,
+      "previousRank": null
+    },
+    {
+      "id": "5335862",
+      "tag": "Hades",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/9e0af87e",
+      "rating": 1072,
+      "wins": 0,
+      "losses": 5,
+      "sets": 5,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 154,
+      "previousRank": null
+    },
+    {
+      "id": "5078949",
+      "tag": "JzenLee",
+      "knownAs": null,
+      "url": "https://www.start.gg/user/9d556433",
+      "rating": 1020,
+      "wins": 0,
+      "losses": 8,
+      "sets": 8,
+      "events": 3,
+      "localEvents": 3,
+      "bestPlacement": 33,
+      "countryBasis": "país del perfil start.gg; sin verificar",
+      "rank": 155,
+      "previousRank": null
     }
   ],
   "results": [
@@ -1745,6 +2828,18 @@
       "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
     },
     {
+      "id": "108219584",
+      "playerIds": [
+        "5596976",
+        "1560165"
+      ],
+      "score": "Guilmar 0 - Alexpro_ssb 2",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
       "id": "108219583",
       "playerIds": [
         "549096",
@@ -1763,6 +2858,18 @@
         "5556964"
       ],
       "score": "Chapx 0 - Salamandra | Saintts 2",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
+      "id": "108219579",
+      "playerIds": [
+        "5598262",
+        "4682533"
+      ],
+      "score": "NEW | Daniruam 2 - BrCrV 1",
       "tournament": "Festival Gamer 2026",
       "country": "GT",
       "date": "2026-09-26",
@@ -1793,12 +2900,36 @@
       "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
     },
     {
+      "id": "108219573",
+      "playerIds": [
+        "1560165",
+        "5556892"
+      ],
+      "score": "Candy 0 - Guilmar 2",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
       "id": "108219572",
       "playerIds": [
         "549096",
         "5590093"
       ],
       "score": "Tarry 0 - ANG | Loncho 2",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
+      "id": "108219547",
+      "playerIds": [
+        "5598262",
+        "365399"
+      ],
+      "score": "NEW | Daniruam 2 - RainSkulls | FerchoMan 0",
       "tournament": "Festival Gamer 2026",
       "country": "GT",
       "date": "2026-09-26",
@@ -2081,6 +3212,18 @@
       "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
     },
     {
+      "id": "108219320",
+      "playerIds": [
+        "5059743",
+        "365399"
+      ],
+      "score": "RainSkulls | FerchoMan 0 - Charlitos 2",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
       "id": "108219318",
       "playerIds": [
         "314638",
@@ -2171,6 +3314,18 @@
         "549096"
       ],
       "score": "ANG | Loncho 0 - Liko 2",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
+      "id": "108219300",
+      "playerIds": [
+        "5591919",
+        "1560165"
+      ],
+      "score": "Guilmar 0 - Yocochu 2",
       "tournament": "Festival Gamer 2026",
       "country": "GT",
       "date": "2026-09-26",
@@ -2435,6 +3590,18 @@
         "5590114"
       ],
       "score": "NEW | David0205 0 - TSB | Ivo_sk8 2",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
+      "id": "108206399",
+      "playerIds": [
+        "5192014",
+        "5596178"
+      ],
+      "score": "Chetito 2 - Dex2077 0",
       "tournament": "Festival Gamer 2026",
       "country": "GT",
       "date": "2026-09-26",
@@ -2825,6 +3992,18 @@
       "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
     },
     {
+      "id": "108206129",
+      "playerIds": [
+        "5192014",
+        "5590123"
+      ],
+      "score": "Chetito 2 - NEW | SERGIO VELASQUEZ 0",
+      "tournament": "Festival Gamer 2026",
+      "country": "GT",
+      "date": "2026-09-26",
+      "url": "https://www.start.gg/tournament/festival-gamer-2026/event/festival-gamer-ultimate-singles"
+    },
+    {
       "id": "108206128",
       "playerIds": [
         "2270611",
@@ -3089,6 +4268,18 @@
       "url": "https://www.start.gg/tournament/the-closed-house-1/event/ultimate-singles"
     },
     {
+      "id": "108001262",
+      "playerIds": [
+        "3401679",
+        "274777"
+      ],
+      "score": "AndStar007 2 - EgarS 0",
+      "tournament": "The Closed House #1",
+      "country": "GT",
+      "date": "2026-09-16",
+      "url": "https://www.start.gg/tournament/the-closed-house-1/event/ultimate-singles"
+    },
+    {
       "id": "108001260",
       "playerIds": [
         "4690758",
@@ -3287,6 +4478,18 @@
         "1748802"
       ],
       "score": "SMASH GT | Crisam 2 - YUYITO 0",
+      "tournament": "The Closed House #1",
+      "country": "GT",
+      "date": "2026-09-16",
+      "url": "https://www.start.gg/tournament/the-closed-house-1/event/ultimate-singles"
+    },
+    {
+      "id": "108001194",
+      "playerIds": [
+        "274777",
+        "5401321"
+      ],
+      "score": "EgarS 2 - Donko 0",
       "tournament": "The Closed House #1",
       "country": "GT",
       "date": "2026-09-16",
@@ -3869,12 +5072,48 @@
       "url": "https://www.start.gg/tournament/fanfest-x-m-ster-legends/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "107445957",
+      "playerIds": [
+        "4305974",
+        "1826400"
+      ],
+      "score": "dragoner 0 - Ryu9440 2",
+      "tournament": "FanFest x Máster Legends",
+      "country": "GT",
+      "date": "2026-09-06",
+      "url": "https://www.start.gg/tournament/fanfest-x-m-ster-legends/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "107445956",
+      "playerIds": [
+        "1816120",
+        "5565779"
+      ],
+      "score": "Darkshy 2 - Weirdo 0",
+      "tournament": "FanFest x Máster Legends",
+      "country": "GT",
+      "date": "2026-09-06",
+      "url": "https://www.start.gg/tournament/fanfest-x-m-ster-legends/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "107445955",
       "playerIds": [
         "1321023",
         "5565816"
       ],
       "score": "CG/ML | Schatzally 2 - Comix24 0",
+      "tournament": "FanFest x Máster Legends",
+      "country": "GT",
+      "date": "2026-09-06",
+      "url": "https://www.start.gg/tournament/fanfest-x-m-ster-legends/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "107445954",
+      "playerIds": [
+        "5565889",
+        "5335862"
+      ],
+      "score": "Kinjo 2 - Hades 0",
       "tournament": "FanFest x Máster Legends",
       "country": "GT",
       "date": "2026-09-06",
@@ -3899,6 +5138,18 @@
         "5565899"
       ],
       "score": "4ndres 0 - Sonrix 2",
+      "tournament": "FanFest x Máster Legends",
+      "country": "GT",
+      "date": "2026-09-06",
+      "url": "https://www.start.gg/tournament/fanfest-x-m-ster-legends/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "107445928",
+      "playerIds": [
+        "4305974",
+        "5335854"
+      ],
+      "score": "Alambrito514 0 - Ryu9440 2",
       "tournament": "FanFest x Máster Legends",
       "country": "GT",
       "date": "2026-09-06",
@@ -4265,6 +5516,30 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106860197",
+      "playerIds": [
+        "5279880",
+        "3012238"
+      ],
+      "score": "keks 0 - D7 | DAG7 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106860196",
+      "playerIds": [
+        "1560165",
+        "5540303"
+      ],
+      "score": "*Masamune 1 - Guilmar 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106860195",
       "playerIds": [
         "2569803",
@@ -4289,12 +5564,48 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106860192",
+      "playerIds": [
+        "5540301",
+        "4614193"
+      ],
+      "score": "acE 0 - *Bytoto 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106860191",
       "playerIds": [
         "4476749",
         "2565993"
       ],
       "score": "Homs 2 - 2000 | FMC 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106860186",
+      "playerIds": [
+        "5540198",
+        "3704293"
+      ],
+      "score": "*Alessanfro Sierra 2 - Killer 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106860183",
+      "playerIds": [
+        "1560165",
+        "2000569"
+      ],
+      "score": "mErioXD | mErioXD 1 - Guilmar 2",
       "tournament": "Chapin League",
       "country": "GT",
       "date": "2026-08-23",
@@ -4319,6 +5630,42 @@
         "4592638"
       ],
       "score": "Charls 2 - S7 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106860177",
+      "playerIds": [
+        "5540293",
+        "4182527"
+      ],
+      "score": "*alexanderrodz53 2 - miaumiauua 1",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106860170",
+      "playerIds": [
+        "3704293",
+        "5540250"
+      ],
+      "score": "Killer 2 - Diego_dj08 1",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106860167",
+      "playerIds": [
+        "1560165",
+        "5308852"
+      ],
+      "score": "pabo 0 - Guilmar 2",
       "tournament": "Chapin League",
       "country": "GT",
       "date": "2026-08-23",
@@ -4625,6 +5972,18 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106860064",
+      "playerIds": [
+        "982445",
+        "4182527"
+      ],
+      "score": "Rayder 2 - miaumiauua 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106860062",
       "playerIds": [
         "4182433",
@@ -4685,6 +6044,18 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106860052",
+      "playerIds": [
+        "3012238",
+        "5540359"
+      ],
+      "score": "keks 2 - DanielXD 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106860051",
       "playerIds": [
         "4106205",
@@ -4721,6 +6092,18 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106860044",
+      "playerIds": [
+        "5540199",
+        "1560165"
+      ],
+      "score": "Guilmar 0 - *Jovany Sierra 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106860039",
       "playerIds": [
         "2506395",
@@ -4739,6 +6122,18 @@
         "5540333"
       ],
       "score": "ANG | Loncho 2 - Lmac 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106860036",
+      "playerIds": [
+        "4614193",
+        "4592638"
+      ],
+      "score": "acE 2 - S7 0",
       "tournament": "Chapin League",
       "country": "GT",
       "date": "2026-08-23",
@@ -4901,6 +6296,30 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106854322",
+      "playerIds": [
+        "1721763",
+        "5374998"
+      ],
+      "score": "TeamScorers | 1809 2 - Chancho 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106854320",
+      "playerIds": [
+        "1748802",
+        "4766738"
+      ],
+      "score": "Team Scorers | YUYITO 2 - Replay 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106854319",
       "playerIds": [
         "2496146",
@@ -4961,6 +6380,30 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106854314",
+      "playerIds": [
+        "5374998",
+        "5336902"
+      ],
+      "score": "New | EL KREYSI-Anderson 0 - Chancho 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106854312",
+      "playerIds": [
+        "4766738",
+        "5538658"
+      ],
+      "score": "*AlexZ 1 - Replay 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106854311",
       "playerIds": [
         "2496146",
@@ -4991,6 +6434,18 @@
         "5538672"
       ],
       "score": "*BB-BrianBenjamin 0 - Bankai 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106854296",
+      "playerIds": [
+        "5398586",
+        "5335985"
+      ],
+      "score": "Elagord 0 - Armando.PT 2",
       "tournament": "Chapin League",
       "country": "GT",
       "date": "2026-08-23",
@@ -5141,12 +6596,48 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106854194",
+      "playerIds": [
+        "3756349",
+        "5335985"
+      ],
+      "score": "Yukkitox 2 - Elagord 1",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106854193",
       "playerIds": [
         "3638851",
         "5538672"
       ],
       "score": "Krlos04 2 - *BB-BrianBenjamin 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106854191",
+      "playerIds": [
+        "1005578",
+        "4766738"
+      ],
+      "score": "F.E 2 - Replay 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106854190",
+      "playerIds": [
+        "5334358",
+        "5532522"
+      ],
+      "score": "Capitán 2 - YAWH 1",
       "tournament": "Chapin League",
       "country": "GT",
       "date": "2026-08-23",
@@ -5189,6 +6680,18 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106854186",
+      "playerIds": [
+        "1826400",
+        "5538710"
+      ],
+      "score": "dragoner 2 - UCA Wilder 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106854185",
       "playerIds": [
         "4079401",
@@ -5225,6 +6728,30 @@
       "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
     },
     {
+      "id": "106854170",
+      "playerIds": [
+        "4766738",
+        "5457707"
+      ],
+      "score": "Auralmax 1 - Replay 2",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106854162",
+      "playerIds": [
+        "5374998",
+        "5538676"
+      ],
+      "score": "Chancho 2 - *PacJuan 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
       "id": "106854158",
       "playerIds": [
         "4880030",
@@ -5243,6 +6770,18 @@
         "2496146"
       ],
       "score": "Spk 2 - Bankai 0",
+      "tournament": "Chapin League",
+      "country": "GT",
+      "date": "2026-08-23",
+      "url": "https://www.start.gg/tournament/chapin-league/event/chapin-league-singles"
+    },
+    {
+      "id": "106854154",
+      "playerIds": [
+        "5540191",
+        "5398586"
+      ],
+      "score": "Armando.PT 0 - *Erick Abraham 2",
       "tournament": "Chapin League",
       "country": "GT",
       "date": "2026-08-23",
@@ -5693,6 +7232,18 @@
       "url": "https://www.start.gg/tournament/quedely-showdown/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "106044332",
+      "playerIds": [
+        "4917137",
+        "3704293"
+      ],
+      "score": "TNB/TSB/AGT | Shapi_Ssb 2 - Killer 0",
+      "tournament": "Quedely showdown",
+      "country": "GT",
+      "date": "2026-08-02",
+      "url": "https://www.start.gg/tournament/quedely-showdown/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "106044331",
       "playerIds": [
         "3851824",
@@ -5711,6 +7262,18 @@
         "5506630"
       ],
       "score": "Spk 2 - Kao 0",
+      "tournament": "Quedely showdown",
+      "country": "GT",
+      "date": "2026-08-02",
+      "url": "https://www.start.gg/tournament/quedely-showdown/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "106044329",
+      "playerIds": [
+        "4922839",
+        "5498661"
+      ],
+      "score": "TSB | Foen 2 - ETZ_Jagger 0",
       "tournament": "Quedely showdown",
       "country": "GT",
       "date": "2026-08-02",
@@ -5747,6 +7310,18 @@
         "4182527"
       ],
       "score": "Golden Squad | Yukkii 2 - miaumiauua 1",
+      "tournament": "Quedely showdown",
+      "country": "GT",
+      "date": "2026-08-02",
+      "url": "https://www.start.gg/tournament/quedely-showdown/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "106044308",
+      "playerIds": [
+        "4182527",
+        "4086124"
+      ],
+      "score": "miaumiauua 2 - Fernell | Fernachi 0",
       "tournament": "Quedely showdown",
       "country": "GT",
       "date": "2026-08-02",
@@ -6665,6 +8240,18 @@
       "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "105801322",
+      "playerIds": [
+        "5492830",
+        "5401321"
+      ],
+      "score": "Oscaruiz896074 2 - Donko 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "105801321",
       "playerIds": [
         "1270032",
@@ -6695,6 +8282,30 @@
         "4888411"
       ],
       "score": "ANG | Loncho 2 - The great chaman 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105801314",
+      "playerIds": [
+        "5401321",
+        "5496300"
+      ],
+      "score": "Nox 0 - Donko 2",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105801312",
+      "playerIds": [
+        "2182250",
+        "5495615"
+      ],
+      "score": "StringChiz 0 - DaverFXD 2",
       "tournament": "Ultimate Singles @ 11:30AM",
       "country": "GT",
       "date": "2026-07-26",
@@ -6977,6 +8588,18 @@
       "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "105793598",
+      "playerIds": [
+        "4595632",
+        "5374998"
+      ],
+      "score": "Chancho 0 - AGT/TSB/RDR | Spooky 2",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "105793597",
       "playerIds": [
         "1830771",
@@ -7025,6 +8648,18 @@
       "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "105793592",
+      "playerIds": [
+        "5374998",
+        "5335862"
+      ],
+      "score": "Chancho 2 - Hades 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "105793591",
       "playerIds": [
         "2496633",
@@ -7061,12 +8696,48 @@
       "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "105793588",
+      "playerIds": [
+        "5493975",
+        "5182851"
+      ],
+      "score": "cebollin 1 - King von 2",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105793587",
+      "playerIds": [
+        "4020173",
+        "5078949"
+      ],
+      "score": "TRINITY 2 - JZenLee 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "105793583",
       "playerIds": [
         "2496633",
         "4784126"
       ],
       "score": "XS | Celestia 2 - TSB | KS 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105793582",
+      "playerIds": [
+        "1830771",
+        "5335854"
+      ],
+      "score": "AGT | Trooper 2 - Alambrito514 0",
       "tournament": "Ultimate Singles @ 11:30AM",
       "country": "GT",
       "date": "2026-07-26",
@@ -7127,6 +8798,18 @@
         "603033"
       ],
       "score": "Oasis | ShinyMark 2 - Charls 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105793538",
+      "playerIds": [
+        "1921347",
+        "5182851"
+      ],
+      "score": "Clyde 2 - cebollin 0",
       "tournament": "Ultimate Singles @ 11:30AM",
       "country": "GT",
       "date": "2026-07-26",
@@ -7217,6 +8900,42 @@
       "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "105793530",
+      "playerIds": [
+        "5182851",
+        "5078949"
+      ],
+      "score": "cebollin 2 - JZenLee 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105793529",
+      "playerIds": [
+        "1921347",
+        "4020173"
+      ],
+      "score": "Clyde 2 - TRINITY 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105793528",
+      "playerIds": [
+        "5449489",
+        "5496301"
+      ],
+      "score": "sprite 1 - Wiip 2",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "105793526",
       "playerIds": [
         "4886452",
@@ -7241,12 +8960,48 @@
       "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "105793524",
+      "playerIds": [
+        "5079028",
+        "5335862"
+      ],
+      "score": "Sam 2 - Hades 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105793522",
+      "playerIds": [
+        "5374998",
+        "4784126"
+      ],
+      "score": "Chancho 2 - TSB | KS 0",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "105793521",
       "playerIds": [
         "2114403",
         "2496633"
       ],
       "score": "COMPLEXITY | Rom 2 - XS | Celestia 1",
+      "tournament": "Ultimate Singles @ 11:30AM",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/ultimate-singles-11-30am/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "105793520",
+      "playerIds": [
+        "4595632",
+        "5335854"
+      ],
+      "score": "Alambrito514 0 - AGT/TSB/RDR | Spooky 2",
       "tournament": "Ultimate Singles @ 11:30AM",
       "country": "GT",
       "date": "2026-07-26",
@@ -7421,6 +9176,18 @@
       "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
     },
     {
+      "id": "105792659",
+      "playerIds": [
+        "4100011",
+        "4522309"
+      ],
+      "score": "Dragneel1505 2 - joshmi 1",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
       "id": "105792658",
       "playerIds": [
         "4500860",
@@ -7493,6 +9260,18 @@
       "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
     },
     {
+      "id": "105792651",
+      "playerIds": [
+        "4522309",
+        "5496805"
+      ],
+      "score": "joshmi 2 - AlNair 1",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
       "id": "105792650",
       "playerIds": [
         "4500860",
@@ -7553,6 +9332,18 @@
       "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
     },
     {
+      "id": "105792644",
+      "playerIds": [
+        "4831033",
+        "5487907"
+      ],
+      "score": "Nero 2 - Damndan 0",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
       "id": "105792643",
       "playerIds": [
         "5016356",
@@ -7565,12 +9356,36 @@
       "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
     },
     {
+      "id": "105792642",
+      "playerIds": [
+        "3912165",
+        "5139924"
+      ],
+      "score": "ToTG | Wildrax 2 - Siderion 0",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
       "id": "105792641",
       "playerIds": [
         "3977550",
         "4523333"
       ],
       "score": "NECKOH | PepX 0 - Tino 2",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
+      "id": "105792639",
+      "playerIds": [
+        "4522309",
+        "5487908"
+      ],
+      "score": "Dynodumb 0 - joshmi 2",
       "tournament": "NEXT GEN IV",
       "country": "GT",
       "date": "2026-07-26",
@@ -7601,12 +9416,60 @@
       "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
     },
     {
+      "id": "105792634",
+      "playerIds": [
+        "4985516",
+        "5079930"
+      ],
+      "score": "NECKOH | KeyG 0 - Riddles 2",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
+      "id": "105792632",
+      "playerIds": [
+        "5496804",
+        "4849508"
+      ],
+      "score": "CHUSS 0 - wmayorga17 2",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
       "id": "105792631",
       "playerIds": [
         "2116541",
         "5380159"
       ],
       "score": "AllV 2 - DTPM | ALAKRAN 0",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
+      "id": "105792626",
+      "playerIds": [
+        "5139924",
+        "5496333"
+      ],
+      "score": "Siderion 2 - JinDixx 0",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
+      "id": "105792622",
+      "playerIds": [
+        "5196361",
+        "5380156"
+      ],
+      "score": "Dandiel 2 - Godo 0",
       "tournament": "NEXT GEN IV",
       "country": "GT",
       "date": "2026-07-26",
@@ -7751,6 +9614,18 @@
         "2116541"
       ],
       "score": "AllV 1 - Dragneel1505 2",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
+      "id": "105792532",
+      "playerIds": [
+        "4449015",
+        "4849508"
+      ],
+      "score": "JosueSSJ 2 - CHUSS 0",
       "tournament": "NEXT GEN IV",
       "country": "GT",
       "date": "2026-07-26",
@@ -7961,6 +9836,18 @@
       "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
     },
     {
+      "id": "105792511",
+      "playerIds": [
+        "5079930",
+        "5320577"
+      ],
+      "score": "D | Zenixth 1 - NECKOH | KeyG 2",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
       "id": "105792509",
       "playerIds": [
         "5092891",
@@ -8033,6 +9920,18 @@
       "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
     },
     {
+      "id": "105792501",
+      "playerIds": [
+        "5487908",
+        "5380156"
+      ],
+      "score": "Dynodumb 2 - Godo 1",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
       "id": "105792500",
       "playerIds": [
         "4990232",
@@ -8063,6 +9962,18 @@
         "4985516"
       ],
       "score": "W H I T E 2 - Riddles 1",
+      "tournament": "NEXT GEN IV",
+      "country": "GT",
+      "date": "2026-07-26",
+      "url": "https://www.start.gg/tournament/next-gen-iv/event/ultimate-singles"
+    },
+    {
+      "id": "105792491",
+      "playerIds": [
+        "4831033",
+        "5496801"
+      ],
+      "score": "Nero 2 - Ciclo 1",
       "tournament": "NEXT GEN IV",
       "country": "GT",
       "date": "2026-07-26",
@@ -8357,6 +10268,18 @@
       "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "104778063",
+      "playerIds": [
+        "1955975",
+        "2106330"
+      ],
+      "score": "AGT|CBC | KŪHAKU 0 - Gravity 2",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "104778062",
       "playerIds": [
         "869356",
@@ -8417,6 +10340,18 @@
       "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "104778050",
+      "playerIds": [
+        "1955975",
+        "5338427"
+      ],
+      "score": "lulu0mg 0 - Gravity 2",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "104778048",
       "playerIds": [
         "4886452",
@@ -8465,12 +10400,60 @@
       "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "104778038",
+      "playerIds": [
+        "2646661",
+        "4655567"
+      ],
+      "score": "Yanta 2 - Gunther 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "104778036",
       "playerIds": [
         "4690758",
         "5457364"
       ],
       "score": "Spk 2 - MJR 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104778032",
+      "playerIds": [
+        "2182250",
+        "5401321"
+      ],
+      "score": "Donko 0 - DaverFXD 2",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104778023",
+      "playerIds": [
+        "5338427",
+        "838524"
+      ],
+      "score": "lulu0mg W - Adventure | RZG|Fito™ L",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104778016",
+      "playerIds": [
+        "5427155",
+        "5254124"
+      ],
+      "score": "Yefrox 2 - RolledBigCheese 0",
       "tournament": "Smash Club Junio - Ultimate Singles",
       "country": "GT",
       "date": "2026-06-28",
@@ -8897,6 +10880,18 @@
       "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "104771892",
+      "playerIds": [
+        "2106330",
+        "5457398"
+      ],
+      "score": "AGT|CBC | KŪHAKU 2 - Guardia_Hibernal 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "104771891",
       "playerIds": [
         "869356",
@@ -8915,6 +10910,18 @@
         "4886452"
       ],
       "score": "tilin 0 - Richie_1711 2",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104771889",
+      "playerIds": [
+        "4181429",
+        "4922839"
+      ],
+      "score": "TTG/SR/MN | Nyx 2 - TSB | Foen 1",
       "tournament": "Smash Club Junio - Ultimate Singles",
       "country": "GT",
       "date": "2026-06-28",
@@ -9005,6 +11012,18 @@
       "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "104771878",
+      "playerIds": [
+        "2646661",
+        "4516699"
+      ],
+      "score": "Dorix 0 - Yanta 2",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "104771874",
       "playerIds": [
         "5457238",
@@ -9017,12 +11036,72 @@
       "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "104771873",
+      "playerIds": [
+        "4922839",
+        "5452374"
+      ],
+      "score": "TSB | Foen 2 - Ian 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "104771871",
       "playerIds": [
         "4690758",
         "5400446"
       ],
       "score": "Spk 2 - A4C | Anzoni231 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104771867",
+      "playerIds": [
+        "5452356",
+        "5401321"
+      ],
+      "score": "Donko 0 - Tato 2",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104771866",
+      "playerIds": [
+        "4594659",
+        "5457250"
+      ],
+      "score": "ZatoDG 0 - Aletsis | Un random 2",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104771864",
+      "playerIds": [
+        "5374998",
+        "5251808"
+      ],
+      "score": "Chancho 2 - Quesadilla 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104771862",
+      "playerIds": [
+        "2646661",
+        "5338427"
+      ],
+      "score": "lulu0mg 0 - Yanta 2",
       "tournament": "Smash Club Junio - Ultimate Singles",
       "country": "GT",
       "date": "2026-06-28",
@@ -9473,6 +11552,18 @@
       "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "104771745",
+      "playerIds": [
+        "2182250",
+        "5452356"
+      ],
+      "score": "DaverFXD 2 - Tato 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "104771744",
       "playerIds": [
         "3638851",
@@ -9491,6 +11582,18 @@
         "4594659"
       ],
       "score": "Infinity | Pilon 2 - Aletsis | Un random 0",
+      "tournament": "Smash Club Junio - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-06-28",
+      "url": "https://www.start.gg/tournament/smash-club-junio-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "104771739",
+      "playerIds": [
+        "4181429",
+        "5251808"
+      ],
+      "score": "TTG/SR/MN | Nyx 2 - Quesadilla 0",
       "tournament": "Smash Club Junio - Ultimate Singles",
       "country": "GT",
       "date": "2026-06-28",
@@ -9911,6 +12014,18 @@
         "1764142"
       ],
       "score": "Charls 2 - Jab 0",
+      "tournament": "UFF - Rus Mall",
+      "country": "GT",
+      "date": "2026-06-14",
+      "url": "https://www.start.gg/tournament/uff-rus-mall/event/rus-mall-uff-singles"
+    },
+    {
+      "id": "104191765",
+      "playerIds": [
+        "5430050",
+        "5374998"
+      ],
+      "score": "Ynot 2 - Chancho 0",
       "tournament": "UFF - Rus Mall",
       "country": "GT",
       "date": "2026-06-14",
@@ -10385,6 +12500,18 @@
       "url": "https://www.start.gg/tournament/uff-rus-mall/event/rus-mall-uff-singles"
     },
     {
+      "id": "104189451",
+      "playerIds": [
+        "5334358",
+        "365399"
+      ],
+      "score": "Capitán 2 - RainSkulls | FerchoMan 1",
+      "tournament": "UFF - Rus Mall",
+      "country": "GT",
+      "date": "2026-06-14",
+      "url": "https://www.start.gg/tournament/uff-rus-mall/event/rus-mall-uff-singles"
+    },
+    {
       "id": "104189450",
       "playerIds": [
         "3732077",
@@ -10403,6 +12530,18 @@
         "5395112"
       ],
       "score": "Allister 1 - NestMen 2",
+      "tournament": "UFF - Rus Mall",
+      "country": "GT",
+      "date": "2026-06-14",
+      "url": "https://www.start.gg/tournament/uff-rus-mall/event/rus-mall-uff-singles"
+    },
+    {
+      "id": "104189446",
+      "playerIds": [
+        "4766738",
+        "5000668"
+      ],
+      "score": "Felipe 0 - Replay 2",
       "tournament": "UFF - Rus Mall",
       "country": "GT",
       "date": "2026-06-14",
@@ -10619,6 +12758,18 @@
         "3732077"
       ],
       "score": "Saintts 2 - Solaris 0",
+      "tournament": "UFF - Rus Mall",
+      "country": "GT",
+      "date": "2026-06-14",
+      "url": "https://www.start.gg/tournament/uff-rus-mall/event/rus-mall-uff-singles"
+    },
+    {
+      "id": "104189390",
+      "playerIds": [
+        "5046959",
+        "5398586"
+      ],
+      "score": "Daor 2 - Armando.PT 0",
       "tournament": "UFF - Rus Mall",
       "country": "GT",
       "date": "2026-06-14",
@@ -11033,12 +13184,36 @@
       "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "103582577",
+      "playerIds": [
+        "5374998",
+        "2525501"
+      ],
+      "score": "UmaSkill 0 - Chancho 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "103582576",
       "playerIds": [
         "618169",
         "4922839"
       ],
       "score": "AxELDav7 2 - TSB | MegaPobre 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103582570",
+      "playerIds": [
+        "5079028",
+        "5182851"
+      ],
+      "score": "cebollin 1 - Sam 2",
       "tournament": "Smash Club Mayo - Ultimate Singles",
       "country": "GT",
       "date": "2026-05-31",
@@ -11069,12 +13244,48 @@
       "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "103582563",
+      "playerIds": [
+        "5517159",
+        "4332372"
+      ],
+      "score": "Pinulito 0 - JouJounas 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "103582559",
       "playerIds": [
         "5336874",
         "3974852"
       ],
       "score": "NECKOH | Luistendo 1 - Esvin S 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103582555",
+      "playerIds": [
+        "4922839",
+        "2569379"
+      ],
+      "score": "Walland 1 - TSB | MegaPobre 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103582543",
+      "playerIds": [
+        "5079028",
+        "4594659"
+      ],
+      "score": "Un random | Un random 0 - Sam 2",
       "tournament": "Smash Club Mayo - Ultimate Singles",
       "country": "GT",
       "date": "2026-05-31",
@@ -11285,6 +13496,18 @@
       "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "103572755",
+      "playerIds": [
+        "5027997",
+        "5182851"
+      ],
+      "score": "Teach 2 - cebollin 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "103572754",
       "playerIds": [
         "4886452",
@@ -11363,6 +13586,18 @@
         "3974852"
       ],
       "score": "NECKOH | Luistendo 1 - Angel 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572747",
+      "playerIds": [
+        "5182851",
+        "5195440"
+      ],
+      "score": "cebollin 2 - Magik 0",
       "tournament": "Smash Club Mayo - Ultimate Singles",
       "country": "GT",
       "date": "2026-05-31",
@@ -11495,6 +13730,102 @@
         "5251808"
       ],
       "score": "NECKOH | Luistendo 2 - Quesadilla 1",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572728",
+      "playerIds": [
+        "4922839",
+        "5397259"
+      ],
+      "score": "TSB | MegaPobre 2 - DarkWolf 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572726",
+      "playerIds": [
+        "5374998",
+        "2079754"
+      ],
+      "score": "Chancho 2 - LeoCas 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572725",
+      "playerIds": [
+        "5400984",
+        "5401321"
+      ],
+      "score": "Donko 0 - C.falconfan | Draweramateur 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572724",
+      "playerIds": [
+        "4332372",
+        "5401765"
+      ],
+      "score": "Pinulito 2 - Fabrixx 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572721",
+      "playerIds": [
+        "4766738",
+        "5401671"
+      ],
+      "score": "Replay 2 - Salo 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572720",
+      "playerIds": [
+        "5336874",
+        "4020173"
+      ],
+      "score": "TRINITY 0 - Esvin S 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572719",
+      "playerIds": [
+        "4861715",
+        "5078949"
+      ],
+      "score": "JZenLee 0 - Abbacchio 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572718",
+      "playerIds": [
+        "4447083",
+        "5079028"
+      ],
+      "score": "Sam 0 - Jonathan 2",
       "tournament": "Smash Club Mayo - Ultimate Singles",
       "country": "GT",
       "date": "2026-05-31",
@@ -12005,6 +14336,18 @@
       "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "103572600",
+      "playerIds": [
+        "2569379",
+        "5400446"
+      ],
+      "score": "Walland 2 - A4C | Anzoni231 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "103572598",
       "playerIds": [
         "3656980",
@@ -12077,6 +14420,18 @@
       "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "103572592",
+      "playerIds": [
+        "5517159",
+        "4447083"
+      ],
+      "score": "Jonathan 0 - JouJounas 2",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "103572591",
       "playerIds": [
         "549096",
@@ -12095,6 +14450,18 @@
         "5352803"
       ],
       "score": "Just J 2 - Peques 0",
+      "tournament": "Smash Club Mayo - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-05-31",
+      "url": "https://www.start.gg/tournament/smash-club-mayo-ultimate-singles-1/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "103572588",
+      "playerIds": [
+        "5182851",
+        "5251808"
+      ],
+      "score": "cebollin 2 - Quesadilla 1",
       "tournament": "Smash Club Mayo - Ultimate Singles",
       "country": "GT",
       "date": "2026-05-31",
@@ -12317,6 +14684,18 @@
       "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
     },
     {
+      "id": "103310892",
+      "playerIds": [
+        "4614193",
+        "4595632"
+      ],
+      "score": "acE 2 - AGT | Spooky 0",
+      "tournament": "Lumiose Series 2",
+      "country": "GT",
+      "date": "2026-05-24",
+      "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
+    },
+    {
       "id": "103310891",
       "playerIds": [
         "4880030",
@@ -12335,6 +14714,18 @@
         "4270328"
       ],
       "score": "AzaselTK 0 - TurkTeam | Funtown! 2",
+      "tournament": "Lumiose Series 2",
+      "country": "GT",
+      "date": "2026-05-24",
+      "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
+    },
+    {
+      "id": "103310888",
+      "playerIds": [
+        "4595632",
+        "5374998"
+      ],
+      "score": "AGT | Spooky 2 - Chancho 1",
       "tournament": "Lumiose Series 2",
       "country": "GT",
       "date": "2026-05-24",
@@ -12569,6 +14960,18 @@
       "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
     },
     {
+      "id": "103310821",
+      "playerIds": [
+        "3449976",
+        "4614193"
+      ],
+      "score": "TurkTeam | Funtown! 2 - acE 1",
+      "tournament": "Lumiose Series 2",
+      "country": "GT",
+      "date": "2026-05-24",
+      "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
+    },
+    {
       "id": "103310819",
       "playerIds": [
         "1356871",
@@ -12755,6 +15158,18 @@
         "3851824"
       ],
       "score": "AGT | inushiky 1 - OTAN_R 2",
+      "tournament": "Lumiose Series 2",
+      "country": "GT",
+      "date": "2026-05-24",
+      "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
+    },
+    {
+      "id": "103310668",
+      "playerIds": [
+        "4613263",
+        "3012238"
+      ],
+      "score": "Angelus 2 - keks 1",
       "tournament": "Lumiose Series 2",
       "country": "GT",
       "date": "2026-05-24",
@@ -13001,6 +15416,18 @@
       "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
     },
     {
+      "id": "103310589",
+      "playerIds": [
+        "4613263",
+        "4851664"
+      ],
+      "score": "Dirius 0 - Angelus 2",
+      "tournament": "Lumiose Series 2",
+      "country": "GT",
+      "date": "2026-05-24",
+      "url": "https://www.start.gg/tournament/lumiose-series-2/event/mega-lumiose-series-1-singles"
+    },
+    {
       "id": "103095400",
       "playerIds": [
         "4682533",
@@ -13043,6 +15470,42 @@
         "5384240"
       ],
       "score": "Funda W - kadot L",
+      "tournament": "ComicCon Xela Día 2",
+      "country": "GT",
+      "date": "2026-05-20",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
+      "id": "103095385",
+      "playerIds": [
+        "1706215",
+        "4682533"
+      ],
+      "score": "Maniscat W - BrCrV L",
+      "tournament": "ComicCon Xela Día 2",
+      "country": "GT",
+      "date": "2026-05-20",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
+      "id": "103095384",
+      "playerIds": [
+        "1706215",
+        "4682533"
+      ],
+      "score": "Maniscat W - BrCrV L",
+      "tournament": "ComicCon Xela Día 2",
+      "country": "GT",
+      "date": "2026-05-20",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
+      "id": "103095383",
+      "playerIds": [
+        "4682533",
+        "5384229"
+      ],
+      "score": "BrCrV W - lost L",
       "tournament": "ComicCon Xela Día 2",
       "country": "GT",
       "date": "2026-05-20",
@@ -13097,12 +15560,36 @@
       "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
     },
     {
+      "id": "103095327",
+      "playerIds": [
+        "5384231",
+        "5139924"
+      ],
+      "score": "Juan Adolfo W - Siderion L",
+      "tournament": "ComicCon Xela Día 2",
+      "country": "GT",
+      "date": "2026-05-20",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
       "id": "103095284",
       "playerIds": [
         "5384229",
         "4985465"
       ],
       "score": "lost W - Funda L",
+      "tournament": "ComicCon Xela Día 2",
+      "country": "GT",
+      "date": "2026-05-20",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
+      "id": "103095283",
+      "playerIds": [
+        "4682533",
+        "5384240"
+      ],
+      "score": "BrCrV W - kadot L",
       "tournament": "ComicCon Xela Día 2",
       "country": "GT",
       "date": "2026-05-20",
@@ -13169,12 +15656,36 @@
       "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
     },
     {
+      "id": "103095267",
+      "playerIds": [
+        "5384240",
+        "5139924"
+      ],
+      "score": "kadot W - Siderion L",
+      "tournament": "ComicCon Xela Día 2",
+      "country": "GT",
+      "date": "2026-05-20",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
       "id": "103095266",
       "playerIds": [
         "4985466",
         "5384239"
       ],
       "score": "VicZero W - tibu L",
+      "tournament": "ComicCon Xela Día 2",
+      "country": "GT",
+      "date": "2026-05-20",
+      "url": "https://www.start.gg/tournament/comiccon-xela-d-a-2/event/comiccon-xela-smash-segundo-dia"
+    },
+    {
+      "id": "103095265",
+      "playerIds": [
+        "4682533",
+        "5384244"
+      ],
+      "score": "BrCrV W - Damian L",
       "tournament": "ComicCon Xela Día 2",
       "country": "GT",
       "date": "2026-05-20",
@@ -13673,6 +16184,18 @@
       "url": "https://www.start.gg/tournament/guatemala-game-show-3-ssbu/event/guatemala-gameshow-3-ssbu"
     },
     {
+      "id": "102945824",
+      "playerIds": [
+        "4851664",
+        "5365684"
+      ],
+      "score": "Dirius 2 - JJ 0",
+      "tournament": "Guatemala Game Show 3 SSBU",
+      "country": "GT",
+      "date": "2026-05-16",
+      "url": "https://www.start.gg/tournament/guatemala-game-show-3-ssbu/event/guatemala-gameshow-3-ssbu"
+    },
+    {
       "id": "102945823",
       "playerIds": [
         "276159",
@@ -13703,6 +16226,18 @@
         "5377959"
       ],
       "score": "ANG | Loncho 2 - Gecko 0",
+      "tournament": "Guatemala Game Show 3 SSBU",
+      "country": "GT",
+      "date": "2026-05-16",
+      "url": "https://www.start.gg/tournament/guatemala-game-show-3-ssbu/event/guatemala-gameshow-3-ssbu"
+    },
+    {
+      "id": "102945820",
+      "playerIds": [
+        "4595632",
+        "5336906"
+      ],
+      "score": "AGT | Spooky 2 - Deimos71 0",
       "tournament": "Guatemala Game Show 3 SSBU",
       "country": "GT",
       "date": "2026-05-16",
@@ -13745,12 +16280,36 @@
       "url": "https://www.start.gg/tournament/guatemala-game-show-3-ssbu/event/guatemala-gameshow-3-ssbu"
     },
     {
+      "id": "102945808",
+      "playerIds": [
+        "4311218",
+        "5368795"
+      ],
+      "score": "Win The Robot 2 - Will | willonair 0",
+      "tournament": "Guatemala Game Show 3 SSBU",
+      "country": "GT",
+      "date": "2026-05-16",
+      "url": "https://www.start.gg/tournament/guatemala-game-show-3-ssbu/event/guatemala-gameshow-3-ssbu"
+    },
+    {
       "id": "102945807",
       "playerIds": [
         "3638851",
         "4445612"
       ],
       "score": "Krlos04 2 - CV | OmegaSSB 0",
+      "tournament": "Guatemala Game Show 3 SSBU",
+      "country": "GT",
+      "date": "2026-05-16",
+      "url": "https://www.start.gg/tournament/guatemala-game-show-3-ssbu/event/guatemala-gameshow-3-ssbu"
+    },
+    {
+      "id": "102945804",
+      "playerIds": [
+        "4917137",
+        "5192014"
+      ],
+      "score": "RDR|TSB | Shapi_Ssb 2 - Chetito 0",
       "tournament": "Guatemala Game Show 3 SSBU",
       "country": "GT",
       "date": "2026-05-16",
@@ -14075,6 +16634,18 @@
         "5337471"
       ],
       "score": "Andrew 2 - Dalgen 0",
+      "tournament": "Venite coatepeque",
+      "country": "GT",
+      "date": "2026-04-27",
+      "url": "https://www.start.gg/tournament/venite-coatepeque/event/ultimate-singles"
+    },
+    {
+      "id": "102126468",
+      "playerIds": [
+        "5380156",
+        "5337813"
+      ],
+      "score": "Coca 0 - Godo 1",
       "tournament": "Venite coatepeque",
       "country": "GT",
       "date": "2026-04-27",
@@ -14537,6 +17108,18 @@
       "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
     },
     {
+      "id": "102135124",
+      "playerIds": [
+        "5336907",
+        "5338427"
+      ],
+      "score": "lulu0mg 0 - franklin 2",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
       "id": "102135122",
       "playerIds": [
         "2742505",
@@ -14579,6 +17162,30 @@
         "5338879"
       ],
       "score": "John ル 2 - New | Samuxl 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102135114",
+      "playerIds": [
+        "5172325",
+        "1560165"
+      ],
+      "score": "Guilmar 0 - Birix | Birix 2",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102135098",
+      "playerIds": [
+        "5172325",
+        "2646661"
+      ],
+      "score": "Yanta 1 - Birix | Birix 2",
       "tournament": "Coliseo Gaming",
       "country": "GT",
       "date": "2026-04-26",
@@ -14789,6 +17396,18 @@
       "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
     },
     {
+      "id": "102135011",
+      "playerIds": [
+        "683699",
+        "1816120"
+      ],
+      "score": "Taco 2 - Darkshy 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
       "id": "102135010",
       "playerIds": [
         "258781",
@@ -14957,6 +17576,18 @@
       "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
     },
     {
+      "id": "102134991",
+      "playerIds": [
+        "1816120",
+        "5336907"
+      ],
+      "score": "Darkshy 2 - franklin 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
       "id": "102134987",
       "playerIds": [
         "2270611",
@@ -14975,6 +17606,18 @@
         "5338782"
       ],
       "score": "Team Scorers | BetaLander 2 - Creitan 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102134983",
+      "playerIds": [
+        "5335854",
+        "5334048"
+      ],
+      "score": "Alambrito514 2 - Chxli 0",
       "tournament": "Coliseo Gaming",
       "country": "GT",
       "date": "2026-04-26",
@@ -15161,6 +17804,18 @@
       "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
     },
     {
+      "id": "102129419",
+      "playerIds": [
+        "1748802",
+        "4268643"
+      ],
+      "score": "Team Scorers | YUYITO 2 - PAB :) 1",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
       "id": "102129418",
       "playerIds": [
         "3401679",
@@ -15209,6 +17864,30 @@
       "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
     },
     {
+      "id": "102129413",
+      "playerIds": [
+        "4268643",
+        "4592638"
+      ],
+      "score": "S7 0 - PAB :) 2",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129412",
+      "playerIds": [
+        "1748802",
+        "5334910"
+      ],
+      "score": "Team Scorers | YUYITO 2 - Adrix_ant 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
       "id": "102129410",
       "playerIds": [
         "3851824",
@@ -15245,6 +17924,42 @@
       "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
     },
     {
+      "id": "102129405",
+      "playerIds": [
+        "4268643",
+        "4908703"
+      ],
+      "score": "PAB :) W - TSB | EmmaRPG L",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129404",
+      "playerIds": [
+        "5334910",
+        "5336894"
+      ],
+      "score": "Adrix_ant 2 - New | Jimmy (Heber Morales) 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129403",
+      "playerIds": [
+        "3401679",
+        "5335985"
+      ],
+      "score": "Elagord 0 - TurkTeam | AndStar007 2",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
       "id": "102129402",
       "playerIds": [
         "3851824",
@@ -15275,6 +17990,42 @@
         "5336910"
       ],
       "score": "ADONAIso 2 - New | Miklo_GG23 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129392",
+      "playerIds": [
+        "4268643",
+        "5334358"
+      ],
+      "score": "Capitán 0 - PAB :) 2",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129390",
+      "playerIds": [
+        "5334910",
+        "5336912"
+      ],
+      "score": "Adrix_ant 2 - New | Billback SM 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129386",
+      "playerIds": [
+        "5336906",
+        "5335862"
+      ],
+      "score": "Deimos71 2 - Hades 0",
       "tournament": "Coliseo Gaming",
       "country": "GT",
       "date": "2026-04-26",
@@ -15461,6 +18212,18 @@
       "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
     },
     {
+      "id": "102129286",
+      "playerIds": [
+        "4805320",
+        "5335985"
+      ],
+      "score": "Vl_chuy 2 - Elagord 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
       "id": "102129285",
       "playerIds": [
         "3638851",
@@ -15563,6 +18326,30 @@
         "4461132"
       ],
       "score": "TurkTeam | AndStar007 2 - Liko 1",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129254",
+      "playerIds": [
+        "3012238",
+        "4268643"
+      ],
+      "score": "keks 2 - PAB :) 0",
+      "tournament": "Coliseo Gaming",
+      "country": "GT",
+      "date": "2026-04-26",
+      "url": "https://www.start.gg/tournament/coliseo-gaming/event/singles-super-smash-bros-ultimate"
+    },
+    {
+      "id": "102129242",
+      "playerIds": [
+        "5234085",
+        "5335862"
+      ],
+      "score": "Rumix | Rumix 2 - Hades 1",
       "tournament": "Coliseo Gaming",
       "country": "GT",
       "date": "2026-04-26",
@@ -15989,6 +18776,18 @@
       "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
     },
     {
+      "id": "101854192",
+      "playerIds": [
+        "5320581",
+        "3912165"
+      ],
+      "score": "ToTG | Wildrax 1 - Reims7ž 2",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
       "id": "101854191",
       "playerIds": [
         "3503093",
@@ -16019,6 +18818,18 @@
         "4522309"
       ],
       "score": "joshmi 1 - Kawa 2",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
+      "id": "101854187",
+      "playerIds": [
+        "4849508",
+        "5092879"
+      ],
+      "score": "Litans 1 - CHUSS 2",
       "tournament": "NEXT GEN II",
       "country": "GT",
       "date": "2026-04-19",
@@ -16061,12 +18872,48 @@
       "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
     },
     {
+      "id": "101854175",
+      "playerIds": [
+        "5326744",
+        "5325671"
+      ],
+      "score": "Dz 2 - TTundra | TTundra 0",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
+      "id": "101854174",
+      "playerIds": [
+        "5079930",
+        "4842972"
+      ],
+      "score": "NECKOH | KeyG 2 - CAUSA | Pixel 1",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
       "id": "101854172",
       "playerIds": [
         "4845465",
         "5092910"
       ],
       "score": "Ningún | Esotilin 0 - Kawa 2",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
+      "id": "101854171",
+      "playerIds": [
+        "4849508",
+        "5326764"
+      ],
+      "score": "Sam | Sam 0 - CHUSS 2",
       "tournament": "NEXT GEN II",
       "country": "GT",
       "date": "2026-04-19",
@@ -16421,6 +19268,18 @@
       "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
     },
     {
+      "id": "101854065",
+      "playerIds": [
+        "4522309",
+        "4831033"
+      ],
+      "score": "Nero 0 - joshmi 2",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
       "id": "101854062",
       "playerIds": [
         "4985465",
@@ -16469,6 +19328,18 @@
       "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
     },
     {
+      "id": "101854057",
+      "playerIds": [
+        "3912165",
+        "5325676"
+      ],
+      "score": "AGNL | Gabriel_15 1 - ToTG | Wildrax 2",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
       "id": "101854054",
       "playerIds": [
         "5016355",
@@ -16481,12 +19352,36 @@
       "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
     },
     {
+      "id": "101854052",
+      "playerIds": [
+        "4449015",
+        "5326744"
+      ],
+      "score": "JosueSSJ 2 - Dz 0",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
       "id": "101854051",
       "playerIds": [
         "5080475",
         "4842972"
       ],
       "score": "NECKOH | crizcott 2 - CAUSA | Pixel 0",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
+      "id": "101854050",
+      "playerIds": [
+        "4918053",
+        "5079930"
+      ],
+      "score": "NECKOH | KeyG 1 - 13J 2",
       "tournament": "NEXT GEN II",
       "country": "GT",
       "date": "2026-04-19",
@@ -16535,6 +19430,18 @@
         "5326764"
       ],
       "score": "VicZero 2 - Sam | Sam 1",
+      "tournament": "NEXT GEN II",
+      "country": "GT",
+      "date": "2026-04-19",
+      "url": "https://www.start.gg/tournament/next-gen-ii-1/event/ultimate-singles"
+    },
+    {
+      "id": "101854043",
+      "playerIds": [
+        "2153483",
+        "5320577"
+      ],
+      "score": "DA | K-DOT 0 - Mynor_M 2",
       "tournament": "NEXT GEN II",
       "country": "GT",
       "date": "2026-04-19",
@@ -17309,6 +20216,18 @@
       "url": "https://www.start.gg/tournament/smash-club-ascension-marzo/event/singles-clase-s-1-00-pm"
     },
     {
+      "id": "100227058",
+      "playerIds": [
+        "274777",
+        "5250991"
+      ],
+      "score": "EgarS 2 - Dom1x 0",
+      "tournament": "Smash Club Ascension - Marzo",
+      "country": "GT",
+      "date": "2026-03-08",
+      "url": "https://www.start.gg/tournament/smash-club-ascension-marzo/event/singles-clase-s-1-00-pm"
+    },
+    {
       "id": "100227050",
       "playerIds": [
         "4270328",
@@ -17537,12 +20456,36 @@
       "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
     },
     {
+      "id": "99873716",
+      "playerIds": [
+        "5234079",
+        "1764142"
+      ],
+      "score": "Xavi 2 - Jab 1",
+      "tournament": "Rech Experience 2026",
+      "country": "GT",
+      "date": "2026-02-28",
+      "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
+    },
+    {
       "id": "99873715",
       "playerIds": [
         "4106205",
         "1270032"
       ],
       "score": "Golden Squad | Yukkii 1 - Fabianchelas 2",
+      "tournament": "Rech Experience 2026",
+      "country": "GT",
+      "date": "2026-02-28",
+      "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
+    },
+    {
+      "id": "99873714",
+      "playerIds": [
+        "5203725",
+        "4268662"
+      ],
+      "score": "Mastereach117 2 - Primos | Diego 1",
       "tournament": "Rech Experience 2026",
       "country": "GT",
       "date": "2026-02-28",
@@ -17573,12 +20516,36 @@
       "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
     },
     {
+      "id": "99873710",
+      "playerIds": [
+        "1764142",
+        "4274583"
+      ],
+      "score": "Jab 2 - Ufm | Messi 1",
+      "tournament": "Rech Experience 2026",
+      "country": "GT",
+      "date": "2026-02-28",
+      "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
+    },
+    {
       "id": "99873708",
       "playerIds": [
         "4106205",
         "4886452"
       ],
       "score": "Fabianchelas 2 - tilin 0",
+      "tournament": "Rech Experience 2026",
+      "country": "GT",
+      "date": "2026-02-28",
+      "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
+    },
+    {
+      "id": "99873701",
+      "playerIds": [
+        "5234079",
+        "4311218"
+      ],
+      "score": "Win The Robot 1 - Xavi 2",
       "tournament": "Rech Experience 2026",
       "country": "GT",
       "date": "2026-02-28",
@@ -17783,6 +20750,18 @@
         "5198650"
       ],
       "score": "Fabianchelas 2 - Alain21 0",
+      "tournament": "Rech Experience 2026",
+      "country": "GT",
+      "date": "2026-02-28",
+      "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
+    },
+    {
+      "id": "99873643",
+      "playerIds": [
+        "1764142",
+        "2576530"
+      ],
+      "score": "LINKGX 0 - Jab 2",
       "tournament": "Rech Experience 2026",
       "country": "GT",
       "date": "2026-02-28",
@@ -18071,6 +21050,18 @@
         "4690758"
       ],
       "score": "Charls 2 - Spk 0",
+      "tournament": "Rech Experience 2026",
+      "country": "GT",
+      "date": "2026-02-28",
+      "url": "https://www.start.gg/tournament/rech-experience-2026/event/rech-experience-super-smash-bros-ultimate"
+    },
+    {
+      "id": "99873469",
+      "playerIds": [
+        "4268643",
+        "4332372"
+      ],
+      "score": "Pinulito 0 - PAB :) 2",
       "tournament": "Rech Experience 2026",
       "country": "GT",
       "date": "2026-02-28",
@@ -18473,6 +21464,18 @@
       "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "99682249",
+      "playerIds": [
+        "5079028",
+        "5229920"
+      ],
+      "score": "Domixx7 1 - Sr. Sam 3",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "99682248",
       "playerIds": [
         "4690758",
@@ -18527,6 +21530,42 @@
         "4886452"
       ],
       "score": "Golden Squad | Yukkii 3 - tilin 2",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "99682234",
+      "playerIds": [
+        "3786025",
+        "4766738"
+      ],
+      "score": "Gotsurck 3 - Replay 0",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "99682232",
+      "playerIds": [
+        "3969708",
+        "5078949"
+      ],
+      "score": "Kings-Chis 3 - JZenLee 0",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "99682231",
+      "playerIds": [
+        "1786459",
+        "4922839"
+      ],
+      "score": "Sir_Ale 3 - TSB | Foen 2",
       "tournament": "Smash Club Febrero - Ultimate Singles",
       "country": "GT",
       "date": "2026-02-22",
@@ -18953,6 +21992,18 @@
       "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "99670939",
+      "playerIds": [
+        "4917137",
+        "4766738"
+      ],
+      "score": "TSB | Shapi_Ssb 2 - Replay 0",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "99670937",
       "playerIds": [
         "1270032",
@@ -19301,6 +22352,30 @@
       "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "99670801",
+      "playerIds": [
+        "5229781",
+        "5078949"
+      ],
+      "score": "JZenLee 0 - Zer0 2",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "99670799",
+      "playerIds": [
+        "4917137",
+        "4922839"
+      ],
+      "score": "TSB | Shapi_Ssb 2 - TSB | Foen 1",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "99670793",
       "playerIds": [
         "4690758",
@@ -19355,6 +22430,18 @@
         "3969708"
       ],
       "score": "tilin 2 - Kings-Chis 0",
+      "tournament": "Smash Club Febrero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-02-22",
+      "url": "https://www.start.gg/tournament/smash-club-febrero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "99670777",
+      "playerIds": [
+        "5229920",
+        "5079028"
+      ],
+      "score": "Domixx7 2 - Sr. Sam 0",
       "tournament": "Smash Club Febrero - Ultimate Singles",
       "country": "GT",
       "date": "2026-02-22",
@@ -19691,6 +22778,18 @@
         "2576530"
       ],
       "score": "LINKGX 0 - Riu9440 2",
+      "tournament": "Mega Lumiose Series #1",
+      "country": "GT",
+      "date": "2026-02-08",
+      "url": "https://www.start.gg/tournament/mega-lumiose-series-1/event/mega-lumiose-series-1-singles"
+    },
+    {
+      "id": "99136086",
+      "playerIds": [
+        "5209017",
+        "4447083"
+      ],
+      "score": "H 69 2 - Jonathan 1",
       "tournament": "Mega Lumiose Series #1",
       "country": "GT",
       "date": "2026-02-08",
@@ -20669,6 +23768,18 @@
       "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
     },
     {
+      "id": "98823720",
+      "playerIds": [
+        "5192600",
+        "5196361"
+      ],
+      "score": "Dandiel 1 - SoftAndWet 2",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
       "id": "98823719",
       "playerIds": [
         "4435565",
@@ -20717,12 +23828,60 @@
       "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
     },
     {
+      "id": "98823711",
+      "playerIds": [
+        "5196361",
+        "5079930"
+      ],
+      "score": "Dandiel 2 - NECKOH | KeyG 1",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
       "id": "98823705",
       "playerIds": [
         "5196623",
         "4990232"
       ],
       "score": "Ko3ru 0 - Lucio 2",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
+      "id": "98823700",
+      "playerIds": [
+        "4842972",
+        "5196698"
+      ],
+      "score": "CAUSA | Pixel 2 - Xochilt | Xochilt 0",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
+      "id": "98823699",
+      "playerIds": [
+        "4831033",
+        "4985571"
+      ],
+      "score": "Nero 2 - Xavi7 0",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
+      "id": "98823697",
+      "playerIds": [
+        "5092879",
+        "5016353"
+      ],
+      "score": "Litans 2 - Triasic 1",
       "tournament": "Back to SMASH!",
       "country": "GT",
       "date": "2026-01-31",
@@ -20873,6 +24032,18 @@
       "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
     },
     {
+      "id": "98823597",
+      "playerIds": [
+        "5196613",
+        "4831033"
+      ],
+      "score": "Nero 1 - A18N 2",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
       "id": "98823596",
       "playerIds": [
         "3971742",
@@ -20981,12 +24152,36 @@
       "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
     },
     {
+      "id": "98823585",
+      "playerIds": [
+        "5196549",
+        "5196361"
+      ],
+      "score": "Dandiel 1 - Francio 2",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
       "id": "98823581",
       "playerIds": [
         "5016356",
         "5079930"
       ],
       "score": "W H I T E 2 - NECKOH | KeyG 1",
+      "tournament": "Back to SMASH!",
+      "country": "GT",
+      "date": "2026-01-31",
+      "url": "https://www.start.gg/tournament/back-to-smash-5/event/singles"
+    },
+    {
+      "id": "98823577",
+      "playerIds": [
+        "4842972",
+        "5196501"
+      ],
+      "score": "Gutz17 0 - CAUSA | Pixel 2",
       "tournament": "Back to SMASH!",
       "country": "GT",
       "date": "2026-01-31",
@@ -21821,6 +25016,18 @@
       "url": "https://www.start.gg/tournament/smash-club-enero-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "98596270",
+      "playerIds": [
+        "274777",
+        "4271096"
+      ],
+      "score": "EgarS 2 - Helaxis 1",
+      "tournament": "Smash Club Enero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-01-25",
+      "url": "https://www.start.gg/tournament/smash-club-enero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "98596269",
       "playerIds": [
         "1270032",
@@ -21851,6 +25058,18 @@
         "4324857"
       ],
       "score": "ANG | MARS 2 - John ル 1",
+      "tournament": "Smash Club Enero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-01-25",
+      "url": "https://www.start.gg/tournament/smash-club-enero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "98596265",
+      "playerIds": [
+        "5187258",
+        "5182851"
+      ],
+      "score": "Rayfer 2 - cebollin 0",
       "tournament": "Smash Club Enero - Ultimate Singles",
       "country": "GT",
       "date": "2026-01-25",
@@ -22169,6 +25388,18 @@
       "url": "https://www.start.gg/tournament/smash-club-enero-ultimate-singles/event/ultimate-singles-11-00-am"
     },
     {
+      "id": "98596141",
+      "playerIds": [
+        "274777",
+        "4595632"
+      ],
+      "score": "EgarS 2 - AGT | Spooky 0",
+      "tournament": "Smash Club Enero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-01-25",
+      "url": "https://www.start.gg/tournament/smash-club-enero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
       "id": "98596139",
       "playerIds": [
         "2225242",
@@ -22259,6 +25490,18 @@
         "4324857"
       ],
       "score": "John ル 0 - KaiFudo 2",
+      "tournament": "Smash Club Enero - Ultimate Singles",
+      "country": "GT",
+      "date": "2026-01-25",
+      "url": "https://www.start.gg/tournament/smash-club-enero-ultimate-singles/event/ultimate-singles-11-00-am"
+    },
+    {
+      "id": "98596121",
+      "playerIds": [
+        "5186252",
+        "5182851"
+      ],
+      "score": "cebollin 0 - 12 | Capitanculorico 2",
       "tournament": "Smash Club Enero - Ultimate Singles",
       "country": "GT",
       "date": "2026-01-25",
@@ -22481,6 +25724,18 @@
       "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
     },
     {
+      "id": "97859118",
+      "playerIds": [
+        "5153000",
+        "4522309"
+      ],
+      "score": "Benson 2 - joshmi 0",
+      "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
+      "country": "GT",
+      "date": "2026-01-04",
+      "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
+    },
+    {
       "id": "97859117",
       "playerIds": [
         "2362246",
@@ -22499,6 +25754,18 @@
         "5152965"
       ],
       "score": "NECKOH | BEERUS 2 - Extra2 1",
+      "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
+      "country": "GT",
+      "date": "2026-01-04",
+      "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
+    },
+    {
+      "id": "97859114",
+      "playerIds": [
+        "4522309",
+        "5079930"
+      ],
+      "score": "joshmi 2 - NECKOH | KeyG 0",
       "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
       "country": "GT",
       "date": "2026-01-04",
@@ -22535,6 +25802,30 @@
         "5152937"
       ],
       "score": "NECKOH | BEERUS 2 - Aurelio3 0",
+      "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
+      "country": "GT",
+      "date": "2026-01-04",
+      "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
+    },
+    {
+      "id": "97859109",
+      "playerIds": [
+        "5079930",
+        "5152936"
+      ],
+      "score": "NECKOH | KeyG 2 - Chus 0",
+      "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
+      "country": "GT",
+      "date": "2026-01-04",
+      "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
+    },
+    {
+      "id": "97859108",
+      "playerIds": [
+        "4522309",
+        "5152943"
+      ],
+      "score": "joshmi 2 - StreetBoss 0",
       "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
       "country": "GT",
       "date": "2026-01-04",
@@ -22697,12 +25988,36 @@
       "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
     },
     {
+      "id": "97858982",
+      "playerIds": [
+        "4522309",
+        "5152938"
+      ],
+      "score": "joshmi 2 - Isanox 1",
+      "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
+      "country": "GT",
+      "date": "2026-01-04",
+      "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
+    },
+    {
       "id": "97858981",
       "playerIds": [
         "4116992",
         "4918546"
       ],
       "score": "NECKOH | Adler-R 2 - ZantBøî 0",
+      "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
+      "country": "GT",
+      "date": "2026-01-04",
+      "url": "https://www.start.gg/tournament/torneo-hbd-felipe-muy-pro-legendario-pico-fenomenal-nico-incineroar/event/cum-de-felipe"
+    },
+    {
+      "id": "97858980",
+      "playerIds": [
+        "5079930",
+        "5152945"
+      ],
+      "score": "NECKOH | KeyG 2 - Jrol.art 0",
       "tournament": "Torneo HBD Felipe, muy pro, legendario, épico, fenomenal, único, incineroar",
       "country": "GT",
       "date": "2026-01-04",
@@ -23146,12 +26461,14 @@
     }
   ],
   "counts": {
-    "players": 100,
+    "players": 155,
+    "eligiblePlayers": 155,
+    "top100": 100,
     "events": 26,
     "sets": 6739,
     "countries": 3
   },
-  "method": "Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos y 4 sets válidos. No equivale a UltRank.",
+  "method": "Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos, 4 sets válidos y un evento GT con set válido. No equivale a UltRank.",
   "methodVersion": "BT-PILOTO-1",
   "ttsSource": "https://raw.githubusercontent.com/kenniky/ultrank-scoring/61eaa8828eff709ffbfbabeefdaf062dac48095e/ultrank_players.csv",
   "limitations": [
