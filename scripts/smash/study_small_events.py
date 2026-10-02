@@ -53,14 +53,14 @@ def study(national, previous, curation, points_table, published=None):
     exclusions = set(curation.get("excludedEventIds", {})) | set(curation.get("excludedForeignEventIds", {}))
     kwargs = {"excluded_event_ids": exclusions, "player_overrides": curation.get("playerOverrides", {}),
               "points_table": points_table, "player_aliases": curation.get("playerAliases", {})}
-    baseline = compute(snapshot, **kwargs)
+    baseline = compute(snapshot, **kwargs, local_minimum=32)
     if published is not None:
         expected = [(row["id"], row["rank"], row["rating"]) for row in published.get("players", [])]
         actual = [(row["id"], row["rank"], row["rating"]) for row in baseline["ranking"]]
         if (expected != actual or published.get("counts", {}).get("events") != baseline["counts"]["eligibleEvents"]
                 or published.get("counts", {}).get("sets") != baseline["counts"]["competitiveSets"]):
             raise ValueError("La base de la simulación no reproduce el ranking público usado como referencia.")
-    exception = compute(snapshot, **kwargs, allow_points_exception=True)
+    exception = compute(snapshot, **kwargs, local_minimum=32, allow_points_exception=True)
     min24 = compute(snapshot, **kwargs, local_minimum=24)
     min16 = compute(snapshot, **kwargs, local_minimum=16)
     valid_sets = Counter()

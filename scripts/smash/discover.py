@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from rules import LOCAL_MINIMUM_ACTIVE
 from collect import APIError, Client
 
 GAME_ID = 1386
@@ -131,8 +132,8 @@ def discover(client, start, end, *, max_events=None, include_small=False):
                 reason = "unfinished_event"
             elif event.get("type") != 1:
                 reason = "not_singles"
-            elif not isinstance(event.get("numEntrants"), int) or event["numEntrants"] < 1 or (not include_small and event["numEntrants"] < 32):
-                reason = "under_32_entrants"
+            elif not isinstance(event.get("numEntrants"), int) or event["numEntrants"] < 1 or (not include_small and event["numEntrants"] < LOCAL_MINIMUM_ACTIVE):
+                reason = f"under_{LOCAL_MINIMUM_ACTIVE}_entrants"
             elif not isinstance(event.get("startAt"), int) or not start <= event["startAt"] < end:
                 reason = "outside_window"
             if reason:
@@ -160,7 +161,7 @@ def discover(client, start, end, *, max_events=None, include_small=False):
             "excludedEvents": excluded, "events": event_records, "players": players, "sets": matches,
             "countryCounts": dict(countries), "requests": client.calls,
             "selectionNote": ("Estudio: todos los eventos presenciales singles con inscritos conocidos; aún requieren evaluación de DQ, puntos y exclusiones editoriales."
-                              if include_small else "Provisional: eventos presenciales singles con al menos 32 inscritos; faltan DQ, excepciones por valor de jugadores y exclusiones editoriales de UltRank.")}
+                              if include_small else "Provisional: eventos presenciales singles con al menos 20 inscritos; solo se admiten al cálculo los que tengan 20 jugadores activos; faltan DQ, excepciones por valor de jugadores y exclusiones editoriales de UltRank.")}
 
 
 def main():
@@ -168,7 +169,7 @@ def main():
     parser.add_argument("--start", default="2026-01-01")
     parser.add_argument("--end", required=True)
     parser.add_argument("--max-events", type=int, help="Para una muestra reciente; la captura se marca incompleta")
-    parser.add_argument("--include-small", action="store_true", help="Capturar también singles locales con menos de 32 inscritos para un estudio; no modifica el ranking publicado")
+    parser.add_argument("--include-small", action="store_true", help="Capturar también singles locales con menos de 20 inscritos para un estudio; no modifica el ranking publicado")
     args = parser.parse_args()
     try:
         start, end = season_timestamp(args.start), season_timestamp(args.end)

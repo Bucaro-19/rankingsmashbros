@@ -117,6 +117,7 @@ def export(snapshot, ranking, curation=None, previous=None):
             "counts": {"players": len(players), "eligiblePlayers": ranking["counts"]["eligiblePlayers"],
                        "top100": min(100, len(players)), "events": ranking["counts"]["eligibleEvents"],
                        "sets": ranking["counts"]["competitiveSets"], "countries": len(countries)},
+            "eligibilityRules": ranking.get("eligibilityRules"),
             "method": ranking["method"], "methodVersion": ranking.get("methodVersion", "BT-PILOTO-1"),
             "ttsSource": ranking.get("ttsSource"), "limitations": ranking["limitations"]}
 

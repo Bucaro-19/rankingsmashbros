@@ -75,3 +75,16 @@ jobs:
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           SMASH_FEEDBACK_ADMIN_HASH: ${{ secrets.SMASH_FEEDBACK_ADMIN_HASH }}
         run: python scripts/smash/deploy.py
+      - name: Guardar capturas privadas para revisar cobertura o reanudar una publicación
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smash-gt-capturas
+          path: |
+            scripts/smash/data/national.json
+            scripts/smash/data/abroad.json
+            scripts/smash/data/combined.json
+            scripts/smash/data/pilot-ranking.json
+            scripts/smash/data/previous-public.json
+          retention-days: 7
+          if-no-files-found: ignore

@@ -6,6 +6,7 @@ import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
+from rules import LOCAL_MINIMUM_ACTIVE, FOREIGN_MINIMUM_ACTIVE
 from tiering import guatemala_points, parse_values, value_at, SOURCE_URL
 
 BAD_SCORE = re.compile(r"\b(?:DQ|BYE|W/?O|FORFEIT|DESCALIFICAD[OA])\b|(?<!\d)-1(?!\d)", re.I)
@@ -54,7 +55,7 @@ def local_event_evidence(active_player_ids, timestamp, values):
 
 
 def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table=None, player_aliases=None,
-            *, local_minimum=32, allow_points_exception=False):
+            *, local_minimum=LOCAL_MINIMUM_ACTIVE, allow_points_exception=False):
     if snapshot.get("kind") != "national_discovery" or not snapshot.get("catalogComplete") or not snapshot.get("eventsComplete"):
         raise ValueError("Solo se calcula una captura nacional completa.")
     excluded = {str(id_) for id_ in excluded_event_ids}
@@ -85,7 +86,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
         evidence = local_event_evidence(active, event["startAt"], values) if country == "GT" else {"estimatedPoints": None, "valuedPlayers": 0}
         qualifies_by_points = (country == "GT" and allow_points_exception
                                and evidence["estimatedPoints"] >= 200 and evidence["valuedPlayers"] >= 2)
-        minimum = local_minimum if country == "GT" else 64
+        minimum = local_minimum if country == "GT" else FOREIGN_MINIMUM_ACTIVE
         if eid in excluded:
             event_reasons[eid] = "manual_exclusion"
         elif len(active) < minimum and not qualifies_by_points:
@@ -174,7 +175,15 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
     rows.sort(key=lambda row: (-row["rating"], -row["wins"], -row["events"], row["tag"].casefold(), row["id"]))
     for index, row in enumerate(rows, 1):
         row["rank"] = index
-    return {"kind": "smash_gt_provisional", "methodVersion": "BT-PILOTO-2" if allow_points_exception else "BT-PILOTO-1", "generatedAt": snapshot["generatedAt"],
+    if local_minimum == 20 and not allow_points_exception:
+        method_version = "BT-PILOTO-3"
+    elif local_minimum == 32:
+        method_version = "BT-PILOTO-2" if allow_points_exception else "BT-PILOTO-1"
+    else:
+        method_version = f"BT-EXPERIMENTO-{local_minimum}-TTS{int(allow_points_exception)}"
+    return {"kind": "smash_gt_provisional", "methodVersion": method_version,
+            "eligibilityRules": {"localMinimumActive": local_minimum, "foreignMinimumActive": FOREIGN_MINIMUM_ACTIVE,
+                                 "playerMinimumEvents": 2, "playerMinimumSets": 4, "allowPointsException": allow_points_exception}, "generatedAt": snapshot["generatedAt"],
             "season": snapshot["season"], "ranking": rows[:100], "fullRanking": rows,
             "counts": {"eligiblePlayers": len(rows), "rankedPlayers": min(100, len(rows)),
                        "eligibleEvents": len(eligible_events), "competitiveSets": len(games),
@@ -185,7 +194,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
             "eventQualifications": event_qualifications,
             "ttsPointsEstimate": {eid: event["ttsPointsEstimate"] for eid, event in eligible_events.items() if event["ttsPointsEstimate"] is not None},
             "eventIds": sorted(eligible_events),
-            "method": "Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos, 4 sets válidos y un evento GT con set válido. No equivale a UltRank.",
+            "method": f"Torneos GT: mínimo {local_minimum} jugadores activos; extranjero: mínimo {FOREIGN_MINIMUM_ACTIVE}. Bradley-Terry regularizado: prior 0.5; peso de evento GT min(2.5,sqrt(puntos_TTS_estimados/96)) con tabla TTS, o min(2,sqrt(jugadores_activos/32)) sin tabla; peso extranjero min(2.5,sqrt(jugadores_activos/64)); enfrentamientos repetidos divididos por sqrt(repeticiones); rating=1500+400/ln(10)*logit. Mínimo 2 eventos, 4 sets válidos y un evento GT con set válido. No equivale a UltRank.",
             "ttsSource": SOURCE_URL if values is not None else None,
             "limitations": (["La captura internacional parte de participantes localmente descubiertos; jugadores que compiten solo fuera del país pueden faltar."] if snapshot.get("internationalComplete") else ["Solo eventos presenciales de Guatemala en esta captura; resultados en el extranjero pendientes de integrar."]) + [
                             "La ubicación pública del perfil indica candidatura, no ciudadanía ni residencia verificada.",

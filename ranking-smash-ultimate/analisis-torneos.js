@@ -9,7 +9,7 @@ const dateTime = value => new Intl.DateTimeFormat('es-GT', { dateStyle: 'medium'
 
 function renderScenarios(data) {
   const items = [
-    ['baseline', 'Regla actual', data.baseline],
+    ['baseline', 'Base histórica: 32 activos', data.baseline],
     ['pointsException', 'Excepción 200 puntos', data.scenarios.pointsException],
     ['min24', 'Mínimo de 24 activos', data.scenarios.min24],
     ['min16', 'Mínimo de 16 activos', data.scenarios.min16]
@@ -21,7 +21,7 @@ function renderScenarios(data) {
     card.dataset.kind = key;
     card.append(node('h3', label), node('strong', result.events), node('span', 'torneos admitidos'));
     const detail = node('p');
-    const extra = key === 'baseline' ? 'Punto de comparación. El ranking público aún usa este criterio.'
+    const extra = key === 'baseline' ? 'Punto de comparación histórico. El ranking público ahora usa 20 activos en Guatemala.'
       : `${result.addedEvents} eventos más · ${result.commonPlayersMoved} jugadores que siguen en el top 100 cambian de puesto · mayor cambio: ${result.largestMove} puestos.`;
     detail.textContent = `${result.sets} sets válidos. ${extra}`;
     card.append(detail);

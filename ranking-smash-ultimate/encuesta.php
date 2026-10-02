@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
           <div class="activity-notes">
             <p><strong>¿Y la opción de 3 torneos y 6 sets?</strong> Son seis sets <strong>sumados entre los tres torneos</strong>, no seis en cada uno. En este piloto, al menos un torneo debe ser en Guatemala; otro puede ser en el extranjero si cumple las reglas.</p>
-            <p>El mínimo de participantes de <em>cada torneo</em> es otra regla. <a href="./analisis-torneos.html">Ver análisis de torneos pequeños ↗</a></p>
+            <p>El mínimo de participantes de <em>cada torneo</em> es otra regla: en Guatemala se necesitan <strong>20 personas que hayan jugado al menos un set válido</strong>; no basta con estar inscritas. <a href="./analisis-torneos.html">Ver el estudio histórico de torneos pequeños ↗</a></p>
           </div>
           <h3 class="activity-choice-title">¿Qué mínimo te parece justo?</h3>
           <div class="choices"><label><input type="radio" name="minimum" value="2-eventos-4-sets" required> Al menos 2 torneos que cuenten y 4 sets válidos en total (regla actual)</label><label><input type="radio" name="minimum" value="3-eventos-6-sets"> Al menos 3 torneos que cuenten y 6 sets válidos en total</label><label><input type="radio" name="minimum" value="otro"> Otro mínimo; lo explico abajo</label></div>

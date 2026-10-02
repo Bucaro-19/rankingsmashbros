@@ -31,6 +31,39 @@ def fixture():
 
 
 class PilotRankingTests(unittest.TestCase):
+    def test_local_threshold_counts_active_players_not_registrations(self):
+        for active in (19, 20, 21):
+            with self.subTest(active=active):
+                snapshot = fixture()
+                snapshot['sets'] = {sid: row for sid, row in snapshot['sets'].items()
+                                    if row['event']['id'] == 10 or int(sid) % 100 <= active}
+                # All 32 registered, but only `active` played a valid set.
+                for pid in range(active + 1, 33):
+                    snapshot['sets'][f'dq-{pid}'] = match(f'dq-{pid}', 11, '1', str(pid), 'DQ')
+                result = compute(snapshot, player_overrides={'1': 'verified fixture'})
+                self.assertEqual('11' in result['eventIds'], active >= 20)
+                self.assertEqual(result['eventQualifications']['11']['activePlayers'], active)
+                excluded = compute(snapshot, excluded_event_ids=['11'])
+                self.assertEqual(excluded['eventDecisions']['11'], 'manual_exclusion')
+                if active >= 20:
+                    self.assertEqual(len(result['fullRanking']), 1)
+                    self.assertEqual(result['ranking'][0]['events'], 2)
+                    public = export(snapshot, result)
+                    self.assertEqual(public['eligibilityRules']['localMinimumActive'], 20)
+                    old = export(snapshot, compute(snapshot, local_minimum=32))
+                    old['generatedAt'] = '2026-09-27T12:00:00+00:00'
+                    self.assertIsNone(export(snapshot, result, previous=old)['previousCutAt'])
+
+    def test_foreign_threshold_remains_64_active_players(self):
+        for active in (63, 64):
+            snapshot = fixture()
+            snapshot['events'][1]['tournament']['countryCode'] = 'MX'
+            snapshot['events'][1]['numEntrants'] = 100
+            snapshot['sets'] = {sid: row for sid, row in snapshot['sets'].items() if row['event']['id'] == 10}
+            snapshot['sets'].update({f'foreign-{pid}': match(f'foreign-{pid}', 11, '1', str(pid))
+                                     for pid in range(2, active + 1)})
+            self.assertEqual('11' in compute(snapshot)['eventIds'], active == 64)
+
     def test_full_ranking_keeps_top_100_and_exports_lower_positions_with_history(self):
         snapshot = fixture()
         snapshot['players'] = {str(pid): player(str(pid), 'Mexico' if pid == 105 else 'Guatemala')
@@ -118,7 +151,7 @@ class PilotRankingTests(unittest.TestCase):
         self.assertEqual(public["counts"]["players"], 1)
         self.assertEqual(len(public["results"]), 62)
         self.assertEqual(public["status"], "local_pilot")
-        self.assertEqual(public["methodVersion"], "BT-PILOTO-1")
+        self.assertEqual(public["methodVersion"], "BT-PILOTO-3")
         self.assertEqual(public["seasonYear"], 2026)
         self.assertTrue(public["seasonLabel"].endswith("28/09/2026"))
         self.assertEqual(len(public["events"]), 2)
@@ -128,7 +161,7 @@ class PilotRankingTests(unittest.TestCase):
     def test_previous_cut_is_only_compared_with_same_season_and_method(self):
         snapshot = fixture()
         ranking = compute(snapshot, player_overrides={"1": "2025 PR"})
-        previous = {"seasonLabel": "01/01/2026 – 27/09/2026", "methodVersion": "BT-PILOTO-1",
+        previous = {"seasonLabel": "01/01/2026 – 27/09/2026", "methodVersion": "BT-PILOTO-3",
                     "generatedAt": "2026-09-27T12:00:00+00:00",
                     "players": [{"id": "1", "rank": 3}]}
         public = export(snapshot, ranking, previous=previous)
