@@ -1,6 +1,9 @@
 {
   "note": "Candidaturas para revisión: la ubicación de start.gg no determina nacionalidad ni residencia. La lista de 2025 y los asientos regionales de UltRank 2026.1 son antecedentes, no elegibilidad verificada para este ranking.",
-  "sources": ["https://liquipedia.net/smash/Guatemala_Power_Rankings/Ultimate", "https://github.com/kenniky/ultrank-scoring/blob/61eaa8828eff709ffbfbabeefdaf062dac48095e/ultrank_players.csv"],
+  "sources": [
+    "https://liquipedia.net/smash/Guatemala_Power_Rankings/Ultimate",
+    "https://github.com/kenniky/ultrank-scoring/blob/61eaa8828eff709ffbfbabeefdaf062dac48095e/ultrank_players.csv"
+  ],
   "excludedEventIds": {
     "1533740": "Squad Strike, formato distinto a singles estándar",
     "1552956": "Ultimate Squad Strike, formato distinto a singles estándar",
@@ -15,7 +18,9 @@
   "approvedForeignEventIds": {
     "1428416": "Let's Make BIG Moves 2026, Ultimate singles presencial en Estados Unidos",
     "1421380": "Cavalier Clash 7, Ultimate singles presencial en Estados Unidos",
-    "1531257": "S Factor X3, Ultimate singles presencial en México"
+    "1531257": "S Factor X3, Ultimate singles presencial en México",
+    "1576640": "STARGATE CLASSIC #3, Ultimate Singles presencial en Estados Unidos. Metadatos start.gg revisados 2026-10-02: terminado, juego 1386, individual, 109 inscritos; descubierto por Johandonis. La admisión final exige 64 activos y un set válido del jugador semilla.",
+    "1705753": "TRY-HARDS @ THE SANCTUARY AT CLIFTON’S, Singles presencial en Estados Unidos. Metadatos start.gg revisados 2026-10-02: terminado, juego 1386, individual, 72 inscritos; descubierto por Johandonis. La admisión final exige 64 activos y un set válido del jugador semilla."
   },
   "playerOverrides": {
     "184005": "PR Guatemala 2025 (#1); perfil actual de México; pertenencia pendiente de validar",

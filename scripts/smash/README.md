@@ -58,7 +58,7 @@ Para repetir el estudio sin tocar el top público, ejecutar el workflow manual `
 
 `smash-check.yml` verifica código en pushes y pull requests. No publica.
 
-`smash-publish.yml` descubre eventos guatemaltecos e internacionales completos, verifica que todos los internacionales hallados tengan decisión en `curation.json`, descarga la tabla TTS fijada, calcula el piloto y publica solo si todos los pasos anteriores terminan correctamente. Un evento extranjero nuevo detiene la actualización hasta su revisión. La programación exige `SMASH_SYNC_ENABLED=true`.
+`smash-publish.yml` descubre eventos guatemaltecos e internacionales completos, verifica que todos los internacionales hallados tengan decisión en `curation.json`, descarga la tabla TTS fijada, calcula el piloto y publica solo si todos los pasos anteriores terminan correctamente. Un evento extranjero nuevo detiene la actualización hasta su revisión. Las capturas privadas se conservan 7 días en `smash-gt-capturas`; tras revisar `curation.json`, el campo manual `resume_run_id` permite retomar esa misma captura, sin repetir el catálogo nacional ni los historiales ya consultados. Solo acepta artefactos de este workflow en `main`; las validaciones de coincidencia y cobertura siguen vigentes. La programación exige `SMASH_SYNC_ENABLED=true`.
 
 `smash-deploy-snapshot.yml` permite publicar manualmente la captura pública ya versionada, sin consumir de nuevo la API de start.gg. Su opción `assets_only=true` publica únicamente HTML, estilos, JavaScript y el formulario, conservando el corte actual en el servidor. Sin esa opción sirve para la primera publicación o para recuperar una subida fallida; el corte semanal usa el flujo completo.
 
