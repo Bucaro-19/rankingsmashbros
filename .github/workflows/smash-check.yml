@@ -20,3 +20,4 @@ jobs:
         run: |
           node --check ranking-smash-ultimate/app.js
           node --check ranking-smash-ultimate/metodologia.js
+          node --test scripts/smash/test_app.cjs

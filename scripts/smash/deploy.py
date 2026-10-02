@@ -20,7 +20,12 @@ def validate_public_data(data):
     events = data.get("events")
     if (data.get("schemaVersion") != 2 or data.get("status") != "international_pilot"
             or data.get("rankingComputed") is not True or not isinstance(players, list)
-            or len(players) != 100 or counts.get("players") != 100
+            or not players or counts.get("players") != len(players)
+            or any(not isinstance(player, dict) or not isinstance(player.get("id"), str)
+                   or player.get("rank") != index for index, player in enumerate(players, 1))
+            or len({player["id"] for player in players}) != len(players)
+            or (data.get("rankingCoverage") == "all_eligible" and
+                (counts.get("eligiblePlayers") != len(players) or counts.get("top100") != min(100, len(players))))
             or not isinstance(counts.get("events"), int) or counts["events"] < 1
             or not isinstance(counts.get("sets"), int) or counts["sets"] < 1
             or not isinstance(events, list) or len(events) != counts["events"]
@@ -28,7 +33,7 @@ def validate_public_data(data):
                        and event["validSets"] > 0 and isinstance(event.get("name"), str)
                        and isinstance(event.get("activePlayers"), int) for event in events)
             or sum(event["validSets"] for event in events) != counts["sets"]):
-        raise ValueError("Se requiere un top 100 piloto completo con eventos internacionales antes de publicar.")
+        raise ValueError("Se requiere una clasificación coherente y completa con eventos internacionales antes de publicar.")
 
 
 def validate_study_data(data):

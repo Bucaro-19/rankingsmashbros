@@ -79,9 +79,9 @@ class ExportTests(unittest.TestCase):
             failed.rename.assert_not_called()
             self.assertTrue(failed.delete.call_args.args[0].endswith(".tmp"))
 
-    def test_deployment_requires_a_computed_top_100_with_international_coverage(self):
+    def test_deployment_requires_consistent_ranking_with_international_coverage(self):
         data = {"schemaVersion": 2, "status": "international_pilot", "rankingComputed": True,
-                "players": [{}] * 100, "events": [{"name": "Prueba", "validSets": 6739, "activePlayers": 32}],
+                "players": [{"id": str(i), "rank": i} for i in range(1, 101)], "events": [{"name": "Prueba", "validSets": 6739, "activePlayers": 32}],
                 "counts": {"players": 100, "events": 1, "sets": 6739}}
         validate_public_data(data)
         for change in ["coverage_only", "local_pilot", False, 99]:
@@ -89,6 +89,20 @@ class ExportTests(unittest.TestCase):
             if isinstance(change, str): altered["status"] = change
             elif isinstance(change, bool): altered["rankingComputed"] = change
             else: altered["players"].pop()
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                validate_public_data(altered)
+
+        data['players'].extend({'id': str(i), 'rank': i} for i in range(101, 156))
+        data['rankingCoverage'] = 'all_eligible'
+        data['counts'].update(players=155, eligiblePlayers=155, top100=100)
+        validate_public_data(data)
+        for change in ('truncated', 'gap', 'duplicate'):
+            altered = copy.deepcopy(data)
+            if change == 'truncated':
+                altered['players'].pop()
+                altered['counts']['players'] -= 1
+            elif change == 'gap': altered['players'][-1]['rank'] += 1
+            else: altered['players'][-1]['id'] = '1'
             with self.subTest(change=change), self.assertRaises(ValueError):
                 validate_public_data(altered)
 

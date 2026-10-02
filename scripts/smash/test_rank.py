@@ -31,6 +31,34 @@ def fixture():
 
 
 class PilotRankingTests(unittest.TestCase):
+    def test_full_ranking_keeps_top_100_and_exports_lower_positions_with_history(self):
+        snapshot = fixture()
+        snapshot['players'] = {str(pid): player(str(pid), 'Mexico' if pid == 105 else 'Guatemala')
+                               for pid in range(1, 107)}
+        snapshot['sets'] = {f'{eid}-{pid}': match(f'{eid}-{pid}', eid, str(pid), str(pid % 105 + 1))
+                            for eid in (10, 11) for pid in range(1, 106)}
+        snapshot['sets']['one-event'] = match('one-event', 10, '106', '1')
+        for event in snapshot['events']:
+            event['numEntrants'] = 106
+        ranking = compute(snapshot)
+        self.assertEqual(len(ranking['fullRanking']), 104)
+        self.assertEqual(ranking['ranking'], ranking['fullRanking'][:100])
+        self.assertEqual([row['rank'] for row in ranking['fullRanking']], list(range(1, 105)))
+        self.assertNotIn('105', {row['id'] for row in ranking['fullRanking']})
+        self.assertNotIn('106', {row['id'] for row in ranking['fullRanking']})
+        lower = ranking['fullRanking'][-1]
+        previous = {'seasonYear': 2026, 'methodVersion': ranking['methodVersion'],
+                    'generatedAt': '2026-09-27T12:00:00+00:00', 'players': [{'id': lower['id'], 'rank': 140}]}
+        public = export(snapshot, ranking, previous=previous)
+        self.assertEqual(public['counts']['players'], 104)
+        self.assertEqual(public['counts']['top100'], 100)
+        self.assertEqual(public['rankingCoverage'], 'all_eligible')
+        self.assertEqual(public['players'][-1]['previousRank'], 140)
+        self.assertEqual(sum(lower['id'] in row['playerIds'] for row in public['results']), lower['sets'])
+        ranking['fullRanking'] = ranking['fullRanking'][:100]
+        with self.assertRaisesRegex(ValueError, 'ranking completo'):
+            export(snapshot, ranking)
+
     def test_annual_boundaries_use_guatemala_midnight(self):
         self.assertEqual(season_timestamp("2026-01-01"), 1767247200)
         self.assertEqual(season_timestamp("2027-01-01"), 1798783200)

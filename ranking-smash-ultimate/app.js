@@ -1,6 +1,9 @@
 const $ = (selector) => document.querySelector(selector);
 let snapshot = null;
 let loading = false;
+let rankingView = 'top';
+let playerMatches = [];
+let visibleMatches = 20;
 const dateFormat = new Intl.DateTimeFormat('es-GT', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Guatemala' });
 
 function element(tag, text, className) {
@@ -30,18 +33,29 @@ function resultNode(match) {
   row.append(title, element('p', `${match.tournament} · ${match.country || 'País no indicado'} · ${match.date}`));
   return row;
 }
+function renderPlayerMatches() {
+  $('#player-matches').replaceChildren(...playerMatches.slice(0, visibleMatches).map(resultNode));
+  $('#player-history-count').textContent = `${Math.min(visibleMatches, playerMatches.length)} de ${playerMatches.length} sets válidos · del más reciente al más antiguo.`;
+  $('#player-more').hidden = visibleMatches >= playerMatches.length;
+  if (!playerMatches.length) empty($('#player-matches'), 'Todavía sin resultados', 'No encontramos sets presenciales completados en los datos consultados para esta ventana.');
+}
 function openPlayer(player) {
   const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
   $('#player-title').textContent = player.knownAs ? `${player.tag} (antes ${player.knownAs})` : player.tag;
   const movement = snapshot.previousCutAt && Number.isInteger(player.previousRank)
     ? ` En el corte anterior: #${player.previousRank}.`
     : '';
+  const stats = pilot ? [[`#${player.rank}`, 'Puesto provisional'], [String(player.rating), 'Puntos Smash GT'], [String(player.events), 'Torneos válidos']] : [];
+  $('#player-stats').replaceChildren(...stats.map(([value, label]) => {
+    const item = element('div'); item.append(element('strong', value), element('span', label)); return item;
+  }));
+  $('#player-stats').hidden = !pilot;
   $('#player-summary').textContent = pilot
-    ? `#${player.rank} provisional · ${player.rating} puntos Smash GT.${movement} ${player.wins} victorias y ${player.losses} derrotas en ${player.events} torneos considerados. Elegibilidad: ${player.countryBasis}. ${snapshot.scope}`
+    ? `${player.wins} victorias y ${player.losses} derrotas.${movement} Corte: ${snapshot.seasonLabel}. Elegibilidad: ${player.countryBasis}. Este historial corresponde a los eventos incluidos en el ranking; puede no abarcar toda tu actividad en start.gg.`
     : `País del perfil: Guatemala. ${player.sets} sets completados observados. ${player.historyComplete ? 'Historial consultado sin recortes de páginas.' : 'La cobertura del historial todavía es parcial.'} Posición nacional pendiente de cálculo.`;
-  const recent = snapshot.results.filter((match) => match.playerIds.includes(player.id));
-  $('#player-matches').replaceChildren(...recent.slice(0, 8).map(resultNode));
-  if (!recent.length) empty($('#player-matches'), 'Todavía sin resultados', 'No encontramos sets presenciales completados en los datos consultados para esta ventana.');
+  playerMatches = snapshot.results.filter((match) => match.playerIds.includes(player.id));
+  visibleMatches = 20;
+  renderPlayerMatches();
   const link = safeLink(player.url);
   $('#player-link').hidden = !link;
   if (link) $('#player-link').href = link;
@@ -50,9 +64,15 @@ function openPlayer(player) {
 function renderPlayers() {
   const target = $('#players-list');
   if (!snapshot) return empty(target, 'Estamos preparando la primera lista', 'Conectaremos los perfiles y resultados antes de publicar jugadores y posiciones.');
-  const query = $('#search').value.trim().toLocaleLowerCase('es');
-  const players = snapshot.players.filter((player) => `${player.tag} ${player.knownAs || ''}`.toLocaleLowerCase('es').includes(query));
-  if (!players.length) return empty(target, query ? 'No encontramos ese nombre' : 'La primera lista está en camino', query ? 'Prueba otro nombre o borra la búsqueda. La cobertura de jugadores aún está en construcción.' : 'Los jugadores aparecerán después de consultar sus perfiles y detectar Guatemala como país.');
+  const normalize = (value) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
+  const query = normalize($('#search').value.trim());
+  const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
+  const players = snapshot.players.filter((player) => query
+    ? normalize(`${player.tag} ${player.knownAs || ''}`).includes(query)
+    : rankingView === 'all' || !pilot || player.rank <= 100);
+  $('#scene-title').textContent = query ? 'Encuentra tu puesto.' : rankingView === 'all' ? 'Ranking completo.' : 'Top 100 piloto.';
+  $('#ranking-summary').textContent = query ? `${players.length} ${players.length === 1 ? 'coincidencia' : 'coincidencias'} entre ${snapshot.players.length} jugadores disponibles.` : `${players.length} de ${snapshot.players.length} clasificados · ${rankingView === 'top' ? 'vista Top 100' : 'todos los puestos'}.`;
+  if (!players.length) return empty(target, query ? 'No encontramos ese alias en este corte' : 'La primera lista está en camino', query ? 'Prueba tu alias de start.gg. Si aún no apareces, puedes no cumplir los 2 torneos y 4 sets válidos, o pueden faltar datos por verificar. Esto no significa que no juegues en Guatemala.' : 'Los jugadores aparecerán después de consultar sus perfiles y validar su actividad.');
   target.replaceChildren(...players.map((player) => {
     const row = element('button', undefined, 'player-row');
     const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
@@ -67,7 +87,7 @@ function renderPlayers() {
     label.append(element('small', pilot ? `${player.events} torneos · ${player.wins} V / ${player.losses} D` : 'Guatemala · país del perfil'));
     if (pilot && snapshot.previousCutAt) {
       const delta = Number.isInteger(player.previousRank) ? player.previousRank - player.rank : null;
-      const movement = delta === null ? 'Nuevo en el top' : delta > 0 ? `↑ ${delta} puestos` : delta < 0 ? `↓ ${Math.abs(delta)} puestos` : 'Sin cambio de puesto';
+      const movement = delta === null ? 'Sin puesto previo publicado' : delta > 0 ? `↑ ${delta} puestos` : delta < 0 ? `↓ ${Math.abs(delta)} puestos` : 'Sin cambio de puesto';
       label.append(element('small', movement, `movement ${delta > 0 ? 'up' : delta < 0 ? 'down' : 'same'}`));
     }
     const end = element('span', pilot ? `${player.rating} pts` : `${player.sets} sets observados`, 'row-end');
@@ -99,7 +119,7 @@ function validate(data) {
     if (typeof player.id !== 'string' || typeof player.tag !== 'string' || !Number.isInteger(player.sets) || player.sets < 0) throw new Error('Jugador inválido');
     if (player.knownAs != null && typeof player.knownAs !== 'string') throw new Error('Alias inválido');
     if (pilot && (!Number.isInteger(player.rank) || player.rank < 1 || !Number.isInteger(player.rating) || !Number.isInteger(player.wins) || !Number.isInteger(player.losses) || !Number.isInteger(player.events) || typeof player.countryBasis !== 'string')) throw new Error('Clasificación inválida');
-    if (player.previousRank != null && (!Number.isInteger(player.previousRank) || player.previousRank < 1 || player.previousRank > 100)) throw new Error('Posición anterior inválida');
+    if (player.previousRank != null && (!Number.isInteger(player.previousRank) || player.previousRank < 1)) throw new Error('Posición anterior inválida');
     if (coverage && typeof player.historyComplete !== 'boolean') throw new Error('Cobertura inválida');
   }
   for (const match of data.results) {
@@ -109,7 +129,9 @@ function validate(data) {
     if ((data.status === 'coverage_only' || pilot) && (!Number.isInteger(data.counts?.[name]) || data.counts[name] < 0)) throw new Error('Conteo inválido');
   }
   if ((data.status === 'coverage_only' || pilot) && !Number.isFinite(Date.parse(data.generatedAt))) throw new Error('Fecha inválida');
-  if (pilot && (data.players.length > 100 || data.players.some((player, index) => player.rank !== index + 1) || typeof data.scope !== 'string')) throw new Error('Ranking inválido');
+  if (pilot && (data.players.some((player, index) => player.rank !== index + 1) || typeof data.scope !== 'string'
+      || data.counts.players !== data.players.length || new Set(data.players.map((player) => player.id)).size !== data.players.length)) throw new Error('Ranking inválido');
+  if (pilot && data.rankingCoverage === 'all_eligible' && (data.counts.eligiblePlayers !== data.players.length || data.counts.top100 !== Math.min(100, data.players.length))) throw new Error('Clasificación incompleta');
   if (data.seasonYear != null && (!Number.isInteger(data.seasonYear) || data.seasonYear < 2026)) throw new Error('Temporada inválida');
   return data;
 }
@@ -117,13 +139,16 @@ function render() {
   const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
   const international = snapshot.status === 'international_pilot';
   const ready = snapshot.status === 'coverage_only' || pilot;
-  $('#data-status').textContent = international ? 'Top 100 piloto · Guatemala y el extranjero' : pilot ? 'Top 100 piloto · solo torneos en Guatemala' : ready ? 'Datos preliminares · ranking pendiente' : 'Preparando la primera temporada';
+  $('#data-status').textContent = international ? 'Ranking piloto · Guatemala y el extranjero' : pilot ? 'Ranking piloto · solo torneos en Guatemala' : ready ? 'Datos preliminares · ranking pendiente' : 'Preparando la primera temporada';
   $('#updated').textContent = ready ? `Última consulta: ${dateFormat.format(new Date(snapshot.generatedAt))}` : 'Sin sincronización todavía';
   $('#season-label').textContent = ready ? snapshot.seasonLabel : 'Temporada por confirmar';
   for (const name of ['players', 'events', 'sets', 'countries']) $(`#${name}-count`).textContent = ready ? snapshot.counts[name].toLocaleString('es-GT') : '—';
   $('#tab-count').textContent = ready ? snapshot.players.length : '—';
+  $('#search-help').textContent = snapshot.rankingCoverage === 'all_eligible'
+    ? 'La búsqueda incluye todos los clasificados, también fuera del top 100. Mínimo: 2 torneos y 4 sets válidos, además de los requisitos de pertenencia al ranking.'
+    : 'La búsqueda incluye todos los puestos publicados en este corte. La ampliación del listado se mostrará al completar una nueva actualización.';
   $('#list-note').textContent = international ? 'Corte semanal experimental con torneos presenciales de Guatemala y del extranjero de jugadores descubiertos localmente. Las flechas comparan posiciones con el corte anterior; la elegibilidad sigue en revisión. No es UltRank ni el ranking oficial.' : pilot ? 'Clasificación experimental con torneos presenciales de Guatemala. Los resultados del extranjero y la elegibilidad de jugadores siguen pendientes; no es UltRank ni el ranking oficial.' : ready ? 'Lista alfabética de perfiles detectados. Cobertura experimental; todavía no representa el ranking nacional completo.' : 'Las posiciones se publicarán cuando validemos el cálculo.';
-  $('#hero-note').textContent = international ? `Temporada ${snapshot.seasonYear || 2026} · corte semanal en revisión.` : 'Primer corte local. Resultados internacionales en revisión.';
+  $('#hero-note').textContent = international ? `Temporada ${snapshot.seasonYear || 2026} · actualización prevista los domingos a las 00:00, hora de Guatemala, para todos los clasificados.` : 'Primer corte local. Resultados internacionales en revisión.';
   $('#aside-scope').textContent = international ? 'Este top es una prueba abierta: incluye torneos internacionales de jugadores encontrados en la escena local. El orden cambiará al revisar la elegibilidad y los eventos.' : 'Este top es una prueba abierta: el orden cambiará cuando completemos los torneos internacionales y revisemos quiénes representan a Guatemala.';
   $('#aside-phase1').replaceChildren(element('span', '01'), document.createTextNode(international ? ' Identificar jugadores que compiten solo fuera' : ' Agregar resultados del extranjero'));
   $('#method-scope').textContent = international ? 'Esta versión toma eventos presenciales individuales de Guatemala y de otros países donde participaron jugadores descubiertos localmente. Exige dos eventos y cuatro sets por clasificado; faltan los jugadores que compiten solo fuera del país.' : 'Esta versión toma eventos presenciales individuales de Guatemala con al menos 32 jugadores activos y exige dos eventos y cuatro sets por clasificado. Los torneos del extranjero aún no cuentan.';
@@ -167,6 +192,17 @@ for (const tab of tabs) {
   });
 }
 $('#search').addEventListener('input', renderPlayers);
+for (const [id, view] of [['view-top', 'top'], ['view-all', 'all']]) {
+  $(`#${id}`).addEventListener('click', () => {
+    rankingView = view;
+    $('#search').value = '';
+    $('#view-top').setAttribute('aria-pressed', String(view === 'top'));
+    $('#view-all').setAttribute('aria-pressed', String(view === 'all'));
+    renderPlayers();
+  });
+}
+$('.find-rank-link').addEventListener('click', () => { selectTab($('#tab-players')); $('#search').focus(); });
+$('#player-more').addEventListener('click', () => { visibleMatches += 20; renderPlayerMatches(); });
 $('#region').addEventListener('change', renderResults);
 $('#refresh').addEventListener('click', refresh);
 $('#player-dialog .close').addEventListener('click', () => $('#player-dialog').close());

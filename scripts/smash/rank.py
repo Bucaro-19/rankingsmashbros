@@ -172,10 +172,10 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
                      "bestPlacement": min(standings) if standings else None,
                      "countryBasis": player_overrides[pid] if pid in player_overrides else "país del perfil start.gg; sin verificar"})
     rows.sort(key=lambda row: (-row["rating"], -row["wins"], -row["events"], row["tag"].casefold(), row["id"]))
-    for index, row in enumerate(rows[:100], 1):
+    for index, row in enumerate(rows, 1):
         row["rank"] = index
     return {"kind": "smash_gt_provisional", "methodVersion": "BT-PILOTO-2" if allow_points_exception else "BT-PILOTO-1", "generatedAt": snapshot["generatedAt"],
-            "season": snapshot["season"], "ranking": rows[:100],
+            "season": snapshot["season"], "ranking": rows[:100], "fullRanking": rows,
             "counts": {"eligiblePlayers": len(rows), "rankedPlayers": min(100, len(rows)),
                        "eligibleEvents": len(eligible_events), "competitiveSets": len(games),
                        "eventsUnderMinimumActive": sum(reason == "under_minimum_active_players" for reason in event_reasons.values()),
@@ -208,7 +208,7 @@ def main():
     tmp = args.output.with_suffix(".tmp")
     tmp.write_text(json.dumps(result, ensure_ascii=False, indent=2))
     tmp.replace(args.output)
-    print(f"{result['counts']['rankedPlayers']} posiciones provisionales; {result['counts']['eligibleEvents']} eventos y {result['counts']['competitiveSets']} sets válidos.")
+    print(f"{result['counts']['eligiblePlayers']} posiciones provisionales, con top 100 destacado; {result['counts']['eligibleEvents']} eventos y {result['counts']['competitiveSets']} sets válidos.")
 
 
 if __name__ == "__main__":

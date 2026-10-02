@@ -20,7 +20,13 @@ def export(snapshot, ranking, curation=None, previous=None):
         raise ValueError("Se requiere una captura nacional y su ranking provisional.")
     if snapshot["generatedAt"] != ranking["generatedAt"]:
         raise ValueError("La captura y el ranking no corresponden a la misma consulta.")
-    ranked = {row["id"] for row in ranking["ranking"]}
+    all_players = ranking.get("fullRanking", ranking["ranking"])
+    if "fullRanking" in ranking and (len(all_players) != ranking["counts"]["eligiblePlayers"]
+            or all_players[:100] != ranking["ranking"]
+            or [row.get("rank") for row in all_players] != list(range(1, len(all_players) + 1))
+            or len({row["id"] for row in all_players}) != len(all_players)):
+        raise ValueError("El ranking completo no coincide con sus clasificados y su top 100.")
+    ranked = {row["id"] for row in all_players}
     accepted = set(ranking["eventIds"])
     results = []
     event_players = defaultdict(set)
@@ -86,7 +92,7 @@ def export(snapshot, ranking, curation=None, previous=None):
     international = snapshot.get("internationalComplete") is True
     countries = {event["country"] for event in events}
     countries.discard(None)
-    players = [dict(row) for row in ranking["ranking"]]
+    players = [dict(row) for row in all_players]
     previous_cut = None
     previous_year = previous.get("seasonYear") if previous else None
     if previous and previous_year is None:
@@ -106,8 +112,10 @@ def export(snapshot, ranking, curation=None, previous=None):
             "generatedAt": snapshot["generatedAt"], "seasonYear": season_year,
             "seasonLabel": f"{start} – {end}", "previousCutAt": previous_cut,
             "scope": "Torneos presenciales en Guatemala y en el extranjero de jugadores descubiertos localmente." if international else "Solo torneos presenciales en Guatemala. Resultados del extranjero pendientes.",
+            "rankingCoverage": "all_eligible" if "fullRanking" in ranking else "top_100",
             "players": players, "results": results, "events": events, "excludedEvents": excluded_events,
-            "counts": {"players": len(ranking["ranking"]), "events": ranking["counts"]["eligibleEvents"],
+            "counts": {"players": len(players), "eligiblePlayers": ranking["counts"]["eligiblePlayers"],
+                       "top100": min(100, len(players)), "events": ranking["counts"]["eligibleEvents"],
                        "sets": ranking["counts"]["competitiveSets"], "countries": len(countries)},
             "method": ranking["method"], "methodVersion": ranking.get("methodVersion", "BT-PILOTO-1"),
             "ttsSource": ranking.get("ttsSource"), "limitations": ranking["limitations"]}

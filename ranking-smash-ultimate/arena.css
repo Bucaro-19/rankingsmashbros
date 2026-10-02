@@ -65,6 +65,26 @@ h2 { font-size: 42px; text-transform: uppercase; font-style: italic; font-weight
 .search-field { background: #0c1220; border-color: #34425b; border-radius: 0; }
 .search-field input { color: #f4f7ff; }
 .search-field input::placeholder { color: #909eb8; }
+.find-rank-link { display: inline-block; margin: 20px 0 0 20px; color: #ffe364; font-size: 12px; font-weight: 700; text-underline-offset: 5px; }
+.ranking-intro { margin: 25px 23px 20px; padding-bottom: 20px; border-bottom: 1px solid #34425b; }
+.ranking-intro .card-kicker { color: #ffe364; }
+.ranking-intro h3 { margin: 10px 0; font: 700 italic 28px 'Barlow Condensed', sans-serif; color: #f4f7ff; }
+.ranking-intro p { max-width: 530px; color: #b7c7dd; font-size: 13px; line-height: 1.75; }
+.ranking-views { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 23px 18px; }
+.ranking-views button, .history-more { padding: 11px 15px; background: #1c2a40; border: 1px solid #465873; color: #c6d5eb; font-size: 12px; font-weight: 700; }
+.ranking-views button[aria-pressed=true] { background: #ffe364; color: #142033; border-color: #ffe364; }
+.ranking-views button:hover, .history-more:hover { border-color: #ffe364; }
+.ranking-summary { padding: 14px 23px; color: #c6d5eb; background: #0f1828; font-size: 12px; line-height: 1.6; }
+#search { scroll-margin-top: 25px; }
+.player-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 18px 0; }
+.player-stats > div { padding: 15px 10px; background: #1c2a40; border: 1px solid #364d6c; }
+.player-stats strong { display: block; font: 800 italic 32px 'Barlow Condensed', sans-serif; color: #ffe364; }
+.player-stats span { display: block; margin-top: 7px; color: #b7c7dd; font-size: 10px; line-height: 1.5; }
+.history-title { color: #f4f7ff; margin-top: 25px; font: 700 italic 23px 'Barlow Condensed', sans-serif; }
+dialog .history-count { margin: 8px 0 18px; color: #b7c7dd; font-size: 11px; }
+.history-more { display: block; margin-top: 18px; }
+dialog #player-summary { color: #b7c7dd; }
+.player-row > span:nth-child(2) { min-width: 0; }
 .list-note { color: #9aa7c1; }
 .empty-icon { color: #ffe364; background: #1f293b; border-color: #404a60; border-radius: 0; transform: skew(-7deg); }
 .empty h3 { font-size: 25px; font-style: italic; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
@@ -140,4 +160,9 @@ dialog > a { color: #ffe364; }
   .method article:last-child { border-left: 2px solid #364661; }
   .player-row .row-end { font-size: 15px; }
   .player-row strong { font-size: 21px; }
+  .find-rank-link { margin-left: 0; display: block; width: fit-content; }
+  .ranking-intro { margin-inline: 18px; }
+  .ranking-views { margin-inline: 18px; }
+  .ranking-summary { padding-inline: 18px; }
+  .player-row .row-end { max-width: 110px; }
 }

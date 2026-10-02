@@ -3,6 +3,17 @@
 Página: `ranking-smash-ultimate/`. Destino previsto: `https://ingporras.com/ranking-smash-ultimate/`.
 Esta es la implementación activa. El prototipo anterior de datos se conserva en `../SmashRankingGT`, fuera de este repositorio.
 
+Próxima revisión: consultar los [acuerdos del 1 de octubre de 2026](ACUERDOS-2026-10-01.md) antes de modificar las reglas o ampliar el producto. Incluyen el mínimo nacional de 20 participantes, mantener 2 torneos/4 sets, constancia, cuadro de puntos, ranking completo y top 15 por organizador. La ampliación del listado se describe abajo; las demás novedades siguen pendientes.
+
+## Primera ampliación: consulta gratuita de todos los clasificados
+
+- `rank.py` conserva `ranking` con el top 100 para auditorías y simulaciones, y añade `fullRanking` con todas las posiciones elegibles. No cambia la puntuación ni las reglas de admisión.
+- `publish_ranking.py` exporta todo `fullRanking`, junto a sus sets válidos, y marca `rankingCoverage: all_eligible`. La publicación verifica el total de clasificados, IDs únicos, posiciones consecutivas y coincidencia con el top 100. Conserva compatibilidad con capturas antiguas.
+- La web abre en Top 100, permite ver todos los clasificados y busca alias en todo el listado. El detalle permite recorrer todos los sets exportados de ese jugador de veinte en veinte; no promete su historial completo de start.gg. El puesto y el historial básico son gratuitos, sin cuenta.
+- El flujo semanal existente calcula y publica el listado completo para todos. Conserva el último corte ante errores; la hora programada no garantiza que GitHub termine a esa hora. El artefacto de auditoría ahora incluye el JSON público del corte para recuperación y revisión.
+- Se reutilizan BanaHosting para servir la web y GitHub Actions para el cálculo. Esta fase no requiere una suscripción nueva; el costo adicional depende del consumo de las cuotas existentes de la cuenta. El acceso con start.gg, la agenda, las funciones premium y los pagos quedan para fases posteriores.
+- El mínimo nacional de 20 participantes y la bonificación por constancia siguen pendientes de diseño/validación. Esta ampliación del listado aplica las reglas actuales del piloto.
+
 ## Estado
 
 - Web estática sin dependencias de compilación: búsqueda, filtros nacionales/internacionales, detalle de jugador, estados vacíos/error y consulta del archivo público cada 60 segundos mientras la página está visible. La página `metodologia.html` explica el cálculo y lista los torneos incluidos y exclusiones documentadas usando el mismo JSON que el top.

@@ -1,5 +1,9 @@
 # De piloto a ranking nacional verificable
 
+## Actualización del 1 de octubre de 2026
+
+Los [acuerdos e ideas del propietario](ACUERDOS-2026-10-01.md) fijan la dirección de la próxima revisión: torneos nacionales desde 20 participantes, cobertura de todo el país, mantener 2 torneos y 4 sets por jugador, diseñar una tabla de puntos que reconozca la constancia, consultar todos los puestos con el top 100 como vista principal y generar un top 15 por organizador y año. El documento distingue decisiones de detalles pendientes y no constituye un cambio ya aplicado al piloto. Leerlo antes de retomar las propuestas generales de este plan.
+
 El top 100 publicado es un **piloto**, no un ranking oficial de la comunidad. Su cálculo es reproducible, pero la [auditoría de la captura del 28 de septiembre de 2026](AUDITORIA-PILOTO-2026-09-28.md) encontró cobertura y criterios pendientes. El puesto de una persona no debe corregirse manualmente para que coincida con una expectativa: se corrigen datos y reglas generales, se vuelve a calcular y se muestra qué cambió.
 
 ## Decisiones que deben quedar públicas antes de la primera lista definitiva
