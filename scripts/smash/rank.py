@@ -55,7 +55,7 @@ def local_event_evidence(active_player_ids, timestamp, values):
 
 
 def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table=None, player_aliases=None,
-            *, local_minimum=LOCAL_MINIMUM_ACTIVE, allow_points_exception=False):
+            *, local_minimum=LOCAL_MINIMUM_ACTIVE, allow_points_exception=False, diagnostics=False):
     if snapshot.get("kind") != "national_discovery" or not snapshot.get("catalogComplete") or not snapshot.get("eventsComplete"):
         raise ValueError("Solo se calcula una captura nacional completa.")
     excluded = {str(id_) for id_ in excluded_event_ids}
@@ -142,7 +142,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
         degrees[winner] += weight
         degrees[loser] += weight
     prior = 0.5
-    for _ in range(700):
+    for iteration in range(700):
         gradient = {pid: -prior * logits[pid] for pid in players}
         for winner, loser, weight in games:
             difference = max(-30, min(30, logits[winner] - logits[loser]))
@@ -181,7 +181,7 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
         method_version = "BT-PILOTO-2" if allow_points_exception else "BT-PILOTO-1"
     else:
         method_version = f"BT-EXPERIMENTO-{local_minimum}-TTS{int(allow_points_exception)}"
-    return {"kind": "smash_gt_provisional", "methodVersion": method_version,
+    result = {"kind": "smash_gt_provisional", "methodVersion": method_version,
             "eligibilityRules": {"localMinimumActive": local_minimum, "foreignMinimumActive": FOREIGN_MINIMUM_ACTIVE,
                                  "playerMinimumEvents": 2, "playerMinimumSets": 4, "allowPointsException": allow_points_exception}, "generatedAt": snapshot["generatedAt"],
             "season": snapshot["season"], "ranking": rows[:100], "fullRanking": rows,
@@ -199,6 +199,12 @@ def compute(snapshot, excluded_event_ids=(), player_overrides=None, points_table
             "limitations": (["La captura internacional parte de participantes localmente descubiertos; jugadores que compiten solo fuera del país pueden faltar."] if snapshot.get("internationalComplete") else ["Solo eventos presenciales de Guatemala en esta captura; resultados en el extranjero pendientes de integrar."]) + [
                             "La ubicación pública del perfil indica candidatura, no ciudadanía ni residencia verificada.",
                             "La exclusión de eventos no convencionales, DQ ambiguos y torneos semanales requiere revisión comunitaria."]}
+
+    if diagnostics:
+        result['diagnostics'] = {'iterations': iteration + 1, 'maxStep': maximum,
+                                 'converged': maximum < 1e-7,
+                                 'logits': logits, 'weightedDegree': dict(degrees)}
+    return result
 
 
 def main():

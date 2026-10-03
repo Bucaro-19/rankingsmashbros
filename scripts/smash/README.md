@@ -93,3 +93,9 @@ Veinte pruebas de datos y publicación local, incluidas las exclusiones DQ, la c
 La ejecución completa del 29 de septiembre de 2026 importó y calculó de nuevo el piloto y publicó por FTP. El JSON servido en el dominio confirma la actualización de ese corte.
 
 Pendientes: revisar la elegibilidad de jugadores y eventos con la comunidad, localizar jugadores guatemaltecos que compiten solo en el extranjero, rotar el token y reexaminar las fuentes TTS cuando cambie la temporada.
+
+## Estudio fechado del top 20 y constancia (3 de octubre de 2026)
+
+`analisis-top20.html` conserva el corte del 2 de octubre, 16:33 Guatemala, sin modificar el ranking. `study_top20.py` exige reproducir exactamente las posiciones, puntuaciones, actividad, eventos, sets, fecha y método publicados antes de generar la comparación. Usa todos los clasificados en las simulaciones de bonos, prueba retirar cada evento y recalcula también sin el bloque internacional. El indicador de convergencia es un diagnóstico privado opcional y no cambia el cálculo habitual. Los bonos son hipótesis, no reglas aprobadas.
+
+Regeneración manual: `python3 scripts/smash/study_top20.py <combined.json_del_corte> scripts/smash/curation.json scripts/smash/data/ultrank_players.csv <public.json_del_mismo_corte> ranking-smash-ultimate/data/analisis-top20.json`. Revisar los hallazgos antes de actualizar el estudio; la página detecta si el ranking tiene otro corte y se identifica como histórica. La publicación semanal no regenera ni adopta los bonos.

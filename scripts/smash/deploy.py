@@ -10,7 +10,8 @@ from pathlib import Path
 
 FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css", "opiniones.css", "analisis-torneos.css",
          "app.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "encuesta.php", "opiniones.php", "index.html", "metodologia.html",
-         "analisis-torneos.html", "data/analisis-torneos.json", "data/public.json")
+         "analisis-torneos.html", "data/analisis-torneos.json", "analisis-top20.html", "analisis-top20.css",
+         "analisis-top20.js", "data/analisis-top20.json", "data/public.json")
 HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 
@@ -42,6 +43,35 @@ def validate_study_data(data):
             or not isinstance(data.get("smallEvents"), list) or not isinstance(data.get("scenarios"), dict)
             or not all(key in data["scenarios"] for key in ("pointsException", "min24", "min16"))):
         raise ValueError("Se requiere un estudio completo de torneos pequeños antes de publicar.")
+
+
+def validate_top20_study(data):
+    def require(condition):
+        if not condition:
+            raise ValueError('Estudio inconsistente')
+
+    try:
+        count = data['counts']['players']
+        require(data['schemaVersion'] == 1 and data['status'] == 'study_not_adopted')
+        require(isinstance(data['cut'], str) and isinstance(count, int) and count >= 20)
+        require(data['sensitivityEventCount'] == data['counts']['events'])
+        base = data['scenarios']['none']['players']
+        ids = {p['id'] for p in base}
+        require(len(ids) == count)
+        require([p['rank'] for p in data['profiles']] == list(range(1, 21)))
+        require([p['id'] for p in data['profiles']] == [p['id'] for p in base[:20]])
+        for name in ('none', 'events', 'months'):
+            rows = data['scenarios'][name]['players']
+            require(len(rows) == count and {p['id'] for p in rows} == ids)
+            require([p['rank'] for p in rows] == list(range(1, count + 1)))
+            require(all(0 <= p['bonus'] <= 30 and p['points'] == p['basePoints'] + p['bonus'] for p in rows))
+        require(all(p['bonus'] == 0 and p['baseRank'] == p['rank'] for p in base))
+        for p in data['profiles']:
+            require(len(p['sensitivity']['scenarios']) == data['sensitivityEventCount'])
+            require(sum(e['wins'] for e in p['eventLedger']) == p['wins'])
+            require(sum(e['losses'] for e in p['eventLedger']) == p['losses'])
+    except (AssertionError, KeyError, TypeError, ValueError):
+        raise ValueError('El estudio del top 20 está incompleto o mezcla escenarios incompatibles.') from None
 
 
 def deploy(ftp, source, *, assets_only=False, admin_hash=None):
@@ -103,6 +133,7 @@ def main():
     source = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate"
     try:
         validate_study_data(json.loads((source / "data/analisis-torneos.json").read_text()))
+        validate_top20_study(json.loads((source / "data/analisis-top20.json").read_text()))
     except (OSError, json.JSONDecodeError, ValueError) as error:
         raise SystemExit(str(error)) from None
     if not args.assets_only:
