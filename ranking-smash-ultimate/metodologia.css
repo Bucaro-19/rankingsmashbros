@@ -53,3 +53,13 @@
 .review-links a{color:#ffe364;font-size:12px;font-weight:700}
 @media(max-width:800px){.methodology-cards{grid-template-columns:1fr}.source-grid{grid-template-columns:1fr}.methodology-hero{padding:45px 0}}
 @media(max-width:620px){.methodology-page{padding-bottom:40px}.methodology-hero h1{font-size:62px}.methodology-lead{font-size:14px}.methodology-section{padding:38px 0}.methodology-section h2{font-size:36px}.calculation-steps li{grid-template-columns:48px 1fr;gap:8px;padding:18px 14px}.calculation-steps li>span{font-size:26px}.calculation-steps h3{font-size:21px}.methodology-cards article,.source-grid>div{padding:20px}.review-box{margin-top:32px;padding:24px}.event-table{min-width:0}.event-table thead{display:none}.event-table tbody{display:grid}.event-table tr{display:grid;grid-template-columns:1fr 1fr;padding:14px;border-bottom:1px solid #354760}.event-table td{border:0;padding:4px 0!important;font-size:11px}.event-table td:nth-child(2){grid-column:1/-1;grid-row:1;margin-bottom:5px}.event-table td:nth-child(2) a{font-size:13px}.event-table td:nth-child(1){grid-column:1;grid-row:2}.event-table td:nth-child(3){grid-column:2;grid-row:2;text-align:right}.event-table td:nth-child(4){grid-column:1;grid-row:3;text-align:left!important}.event-table td:nth-child(5){grid-column:2;grid-row:3;text-align:right!important}.event-table td:nth-child(4)::before{content:'Activos: ';color:#90a4be}.event-table td:nth-child(5)::before{content:'Sets: ';color:#90a4be}}
+
+.points-table-wrap { margin-top: 24px; border: 1px solid #3c4e68; }
+.points-table { width: 100%; border-collapse: collapse; background: #121a29; }
+.points-table caption { padding: 18px; text-align: left; color: #ffe364; font-weight: 700; font-size: 13px; }
+.points-table th, .points-table td { text-align: left; padding: 18px; border-top: 1px solid #354760; line-height: 1.8; font-size: 13px; vertical-align: top; }
+.points-table thead th { background: #1d2a3f; color: #fff; }
+.points-table tbody th { width: 32%; color: #ffe364; }
+.points-table td { color: #c4cedd; }
+.points-context { margin-top: 24px; }
+@media(max-width:620px) { .points-table th,.points-table td { padding: 13px 11px; font-size: 12px; } .points-table tbody th { width: 36%; } }

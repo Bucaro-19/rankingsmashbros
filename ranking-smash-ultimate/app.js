@@ -5,6 +5,7 @@ let includeInternational = true;
 let loading = false;
 let rankingView = 'top';
 let playerMatches = [];
+let allPlayerMatches = [];
 let visibleMatches = 20;
 const dateFormat = new Intl.DateTimeFormat('es-GT', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Guatemala' });
 
@@ -41,6 +42,66 @@ function renderPlayerMatches() {
   $('#player-more').hidden = visibleMatches >= playerMatches.length;
   if (!playerMatches.length) empty($('#player-matches'), 'Todavía sin resultados', 'No encontramos sets presenciales completados en los datos consultados para esta ventana.');
 }
+function activityView(player, data) {
+  if (!player.activity) return null;
+  const catalog = new Map((data.events || []).map(event => [event.id, event]));
+  const {events, months} = player.activity;
+  if (!Array.isArray(events) || !Array.isArray(months) || events.length !== player.events
+      || new Set(events.map(event => event.id)).size !== events.length) throw new Error('Actividad inválida');
+  const ledger = events.map(record => {
+    const event = catalog.get(record.id);
+    if (!event || !/^\d{4}-\d{2}-\d{2}$/.test(event.date)
+        || !Number.isInteger(record.wins) || record.wins < 0
+        || !Number.isInteger(record.losses) || record.losses < 0
+        || record.wins + record.losses < 1) throw new Error('Torneo de actividad inválido');
+    return {...event, wins: record.wins, losses: record.losses};
+  }).sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  if (ledger.reduce((n,e) => n+e.wins,0) !== player.wins
+      || ledger.reduce((n,e) => n+e.losses,0) !== player.losses
+      || player.sets !== player.wins + player.losses
+      || JSON.stringify([...new Set(ledger.map(e => e.date.slice(0,7)))].sort()) !== JSON.stringify(months)) throw new Error('Totales de actividad inválidos');
+  return {ledger, months};
+}
+function showPlayerMatches(event = null) {
+  playerMatches = event ? allPlayerMatches.filter(match => match.eventId === event.id) : allPlayerMatches;
+  visibleMatches = 20;
+  $('#player-history-title').textContent = event ? `Sets en ${event.name}` : 'Sets considerados en este corte';
+  $('#player-all-results').hidden = !event;
+  renderPlayerMatches();
+}
+function renderActivity(player) {
+  const view = activityView(player, snapshot);
+  $('#player-activity').hidden = !view;
+  if (!view) return;
+  $('#activity-summary').textContent = `${view.months.length} ${view.months.length === 1 ? 'mes con actividad' : 'meses con actividad'} · ${player.events} torneos · ${player.sets} sets válidos.`;
+  const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const monthLong = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const cutMonth = Number(snapshot.seasonLabel.split(' – ')[1]?.split('/')[1]);
+  $('#activity-months').replaceChildren(...monthNames.map((name, index) => {
+    const key = `${snapshot.seasonYear}-${String(index+1).padStart(2,'0')}`;
+    const count = view.ledger.filter(event => event.date.startsWith(key)).length;
+    const future = index+1 > cutMonth;
+    const item = element('li', undefined, `activity-month${count ? ' is-active' : ''}${future ? ' is-future' : ''}`);
+    const label = count ? `${count} ${count === 1 ? 'torneo' : 'torneos'}` : future ? 'Tras el corte' : 'Sin registro';
+    item.setAttribute('aria-label', `${monthLong[index]} ${snapshot.seasonYear}: ${label}`);
+    item.append(element('strong', name), element('span', label));
+    return item;
+  }));
+  $('#activity-events-title').textContent = `Ver los ${player.events} torneos que cuentan`;
+  $('#activity-events').open = false;
+  $('#activity-ledger').replaceChildren(...view.ledger.map(event => {
+    const item = element('li');
+    const url = safeLink(event.url);
+    const title = element(url ? 'a' : 'strong', event.name);
+    if (url) { title.href=url; title.target='_blank'; title.rel='noopener noreferrer'; }
+    const button = element('button', 'Ver sets', 'activity-sets');
+    button.type='button'; button.setAttribute('aria-label', `Ver sets en ${event.name}, ${event.date}`);
+    button.addEventListener('click', () => { showPlayerMatches(event); $('#player-history-title').scrollIntoView({block:'start'}); });
+    item.append(title, element('p', `${event.eventName} · ${event.country} · ${event.date}`),
+      element('p', `${event.wins} ${event.wins === 1 ? 'victoria' : 'victorias'} · ${event.losses} ${event.losses === 1 ? 'derrota' : 'derrotas'} · ${event.wins+event.losses} sets válidos`), button);
+    return item;
+  }));
+}
 function openPlayer(player) {
   const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
   $('#player-title').textContent = player.knownAs ? `${player.tag} (antes ${player.knownAs})` : player.tag;
@@ -55,9 +116,9 @@ function openPlayer(player) {
   $('#player-summary').textContent = pilot
     ? `${player.wins} victorias y ${player.losses} derrotas.${movement} Corte: ${snapshot.seasonLabel}. Vista: ${snapshot.rankingScope === 'guatemala' ? 'solo Guatemala' : 'Guatemala + internacionales'}. Elegibilidad: ${player.countryBasis}. Este historial corresponde a los eventos incluidos en el ranking; puede no abarcar toda tu actividad en start.gg.`
     : `País del perfil: Guatemala. ${player.sets} sets completados observados. ${player.historyComplete ? 'Historial consultado sin recortes de páginas.' : 'La cobertura del historial todavía es parcial.'} Posición nacional pendiente de cálculo.`;
-  playerMatches = snapshot.results.filter((match) => match.playerIds.includes(player.id));
-  visibleMatches = 20;
-  renderPlayerMatches();
+  allPlayerMatches = snapshot.results.filter((match) => match.playerIds.includes(player.id));
+  showPlayerMatches();
+  renderActivity(player);
   const link = safeLink(player.url);
   $('#player-link').hidden = !link;
   if (link) $('#player-link').href = link;
@@ -123,6 +184,7 @@ function validate(data, nested = false) {
     if (player.knownAs != null && typeof player.knownAs !== 'string') throw new Error('Alias inválido');
     if (pilot && (!Number.isInteger(player.rank) || player.rank < 1 || !Number.isInteger(player.rating) || !Number.isInteger(player.wins) || !Number.isInteger(player.losses) || !Number.isInteger(player.events) || typeof player.countryBasis !== 'string')) throw new Error('Clasificación inválida');
     if (player.previousRank != null && (!Number.isInteger(player.previousRank) || player.previousRank < 1)) throw new Error('Posición anterior inválida');
+    if (player.activity) activityView(player, data);
     if (coverage && typeof player.historyComplete !== 'boolean') throw new Error('Cobertura inválida');
   }
   for (const match of data.results) {
@@ -192,7 +254,7 @@ function render() {
     $('#method-scope').textContent = `Esta vista usa únicamente torneos presenciales individuales de Guatemala con al menos ${localMinimum} participantes activos. Para clasificar aquí necesitas 2 eventos locales y 4 sets válidos locales.`;
     $('#results-note').textContent = 'Historial de los eventos locales usados en esta vista. Los resultados extranjeros están excluidos por tu selección.';
   }
-  document.querySelectorAll('a[href^="./metodologia.html"]').forEach(link => { link.href = localView ? './metodologia.html?scope=guatemala' : './metodologia.html'; });
+  document.querySelectorAll('a[href^="./metodologia.html"]').forEach(link => { const anchor = link.hash; link.href = (localView ? './metodologia.html?scope=guatemala' : './metodologia.html') + anchor; });
   $('#region').disabled = localView;
   if (localView) $('#region').value = 'GT';
   renderPlayers(); renderResults();
@@ -245,6 +307,7 @@ $('#include-international').addEventListener('change', () => {
   $('#region').value = 'all';
   render();
 });
+$('#player-all-results').addEventListener('click', () => showPlayerMatches());
 $('#search').addEventListener('input', renderPlayers);
 for (const [id, view] of [['view-top', 'top'], ['view-all', 'all']]) {
   $(`#${id}`).addEventListener('click', () => {

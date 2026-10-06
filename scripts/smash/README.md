@@ -3,7 +3,7 @@
 Página: `ranking-smash-ultimate/`. Destino previsto: `https://ingporras.com/ranking-smash-ultimate/`.
 Esta es la implementación activa. El prototipo anterior de datos se conserva en `../SmashRankingGT`, fuera de este repositorio.
 
-Próxima revisión: consultar los [acuerdos del 1 de octubre de 2026](ACUERDOS-2026-10-01.md) antes de modificar las reglas o ampliar el producto. Incluyen el mínimo nacional de 20 participantes, mantener 2 torneos/4 sets, constancia, cuadro de puntos, ranking completo y top 15 por organizador. La ampliación del listado y el mínimo de 20 activos están implementados; las demás novedades siguen pendientes.
+Próxima revisión: consultar los [acuerdos del 1 de octubre de 2026](ACUERDOS-2026-10-01.md) antes de modificar las reglas o ampliar el producto. Incluyen el mínimo nacional de 20 participantes, mantener 2 torneos/4 sets, constancia, cuadro de puntos, ranking completo y top 15 por organizador. La ampliación del listado y el mínimo de 20 activos están implementados; la ficha ya muestra actividad mensual y el estudio de constancia está publicado; los bonos y el top 15 por organizador siguen pendientes.
 
 ## Primera ampliación: consulta gratuita de todos los clasificados
 
@@ -105,3 +105,11 @@ Regeneración manual: `python3 scripts/smash/study_top20.py <combined.json_del_c
 `public.json` mantiene la clasificación combinada como raíz y añade `localRanking`, calculada de nuevo sobre eventos y sets GT del mismo corte. No se filtran ni renumeran posiciones combinadas: se reajustan los rivales y la elegibilidad local. La consulta inicial mantiene incluidos los internacionales; cambiar de vista conserva la búsqueda y Top 100/listado completo, actualiza estadísticas e historial, y reinicia el filtro de resultados para evitar combinar alcances. La selección se conserva durante las actualizaciones de la página.
 
 La exportación semanal usa `--include-local --points-csv` con la misma tabla TTS del cálculo principal. Ambas vistas se publican dentro de un solo JSON para impedir cortes desparejados. Los puestos anteriores locales proceden exclusivamente del `localRanking` del corte anterior, y el primer corte local no muestra movimientos. El servidor y el navegador rechazan vistas con fechas, métodos o eventos locales incompatibles. El catálogo de metodología acepta `?scope=guatemala` para consultar la evidencia de esa vista.
+
+## Fichas de actividad (6 de octubre de 2026)
+
+Cada clasificado de ambas vistas publica `activity.months` y un registro `activity.events` por ID con victorias y derrotas. Los meses usan la fecha local del evento en Guatemala y solo sets competitivos de eventos admitidos. Cada resultado lleva `eventId`, para consultar en la ficha todos los sets o únicamente los de un torneo. El calendario distingue meses sin registro de los posteriores al corte. No se interpreta la falta de cobertura como inactividad comprobada.
+
+La exportación semanal incorpora estos campos sin cambiar fuerzas, puntuaciones, reglas ni movimientos. El despliegue coteja cada registro con los sets exportados (el orden de `playerIds` es ganador/perdedor), con los totales de cada jugador y con las fechas del catálogo. La interfaz tolera capturas antiguas sin actividad durante una publicación y valida la coherencia del registro nuevo. `metodologia.html#puntos-en-claro` explica los cuatro casos de victoria/derrota, la fuerza retrospectiva de rivales y la constancia; no se adoptó ningún bono.
+
+Próximo bloque de producto: top 15 por organizador y temporada. Antes de atribuir eventos a una persona, hace falta un catálogo verificable de organizadores y torneos; los nombres parecidos por sí solos no prueban quién los organizó. Siguen pendientes la elegibilidad de ese top particular y el contexto de fuerza elegido.

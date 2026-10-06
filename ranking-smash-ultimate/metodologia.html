@@ -8,7 +8,7 @@
   <title>Metodología y torneos — Smash GT</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./arena.css">
-  <link rel="stylesheet" href="./metodologia.css">
+  <link rel="stylesheet" href="./metodologia.css?v=20261006-activity">
   <script src="./metodologia.js?v=20261006-scope" defer></script>
 </head>
 <body>
@@ -49,6 +49,24 @@
       </ol>
       <details class="formula-detail"><summary>Ver las fórmulas y constantes exactas</summary><div><p>Para cada set local, el peso base es <code>min(2.5, √(puntos TTS estimados / 96))</code>. Para cada set extranjero es <code>min(2.5, √(jugadores activos / 64))</code>. Ambos se dividen por <code>√(cantidad de sets entre la misma pareja)</code>.</p><p>El modelo maximiza la probabilidad de los ganadores observados y aplica una penalización cuadrática de <code>0.5</code> hacia fuerza neutral. Los puntos publicados son <code>redondear(1500 + 400 / ln(10) × fuerza)</code>. El desempate usa victorias, eventos y alias. El texto exacto de la versión de datos actual es:</p><p id="method-exact">Cargando fórmula del corte…</p></div></details>
       <p class="methodology-note">Estos puntos comparan jugadores <em>dentro de este corte</em>. No son Elo oficial ni la puntuación de UltRank. El modelo actual puede ser sensible a pocos resultados extranjeros y aún necesita evaluación con datos fuera de muestra.</p>
+    </section>
+
+    <section id="puntos-en-claro" class="methodology-section" aria-labelledby="points-title">
+      <p class="eyebrow">PUNTOS CON PERAS Y MANZANAS</p><h2 id="points-title">QUÉ DICE CADA RESULTADO.</h2>
+      <p class="methodology-note">Imagina a Ana jugando contra dos rivales: uno con una fuerza estimada mayor que la suya y otro con una menor. A igual peso del torneo y repetición del enfrentamiento, estos son los cuatro casos:</p>
+      <div class="points-table-wrap"><table class="points-table"><caption>Cómo interpreta el modelo una victoria o una derrota</caption><thead><tr><th scope="col">Resultado de Ana</th><th scope="col">Qué le dice al cálculo</th></tr></thead><tbody>
+        <tr><th scope="row">Gana al rival más fuerte</th><td>Es una victoria menos esperada: aporta más evidencia a favor de su fuerza que vencer a un rival más débil.</td></tr>
+        <tr><th scope="row">Gana al rival más débil</th><td>La victoria sí cuenta, pero era más esperada y aporta menos evidencia que ganar al rival más fuerte.</td></tr>
+        <tr><th scope="row">Pierde contra el rival más fuerte</th><td>La derrota cuenta. Como era más esperada, aporta menos evidencia en contra que perder ante el rival más débil.</td></tr>
+        <tr><th scope="row">Pierde contra el rival más débil</th><td>Es una derrota menos esperada: aporta más evidencia en contra de su fuerza.</td></tr>
+      </tbody></table></div>
+      <p class="methodology-note"><strong>No son premios o descuentos fijos de +10 o −10.</strong> Volvemos a ajustar a todos los rivales juntos en cada corte. Tu puesto puede cambiar aunque no hayas jugado, porque cambiaron los resultados de otros. Ganar un set tampoco garantiza subir un puesto cuando se recalcula toda la temporada.</p>
+      <div class="source-grid points-context">
+        <div><h3>¿De dónde sale la fuerza del rival?</h3><p>De sus resultados válidos dentro de la vista y el corte seleccionados, no de su fama ni del puesto que tenía antes de jugar. Es una estimación retrospectiva de esta temporada. Al apagar los internacionales, recalculamos también esa fuerza con solo eventos de Guatemala.</p></div>
+        <div><h3>¿Y mi constancia?</h3><p>Tu ficha muestra torneos y meses con actividad: un mes cuenta si jugaste al menos un set válido en un evento admitido, usando la fecha del evento en hora de Guatemala. Ganar o perder cuenta como actividad. Jugar cuatro torneos en enero suma cuatro torneos y un mes activo.</p><p>La asistencia no añade un bono de puntos. A igual puntuación y victorias, el número de eventos sí puede resolver un empate. Las propuestas de bonos siguen en evaluación; consultar o apoyar el proyecto tampoco añade puntos.</p></div>
+      </div>
+      <p class="methodology-note">Por ejemplo, dos personas pueden cumplir 2 torneos y 4 sets. Si una participó en ocho meses y otra en dos, sus fichas mostrarán esa diferencia, pero la primera no queda arriba automáticamente: el orden depende de sus resultados y rivales. Un mes sin registro no demuestra inactividad fuera de nuestra cobertura.</p>
+      <div class="review-links"><a href="./analisis-top20.html">Ver el estudio de propuestas de constancia ↗</a><a href="./encuesta.php">Opinar sin crear una cuenta ↗</a></div>
     </section>
 
     <section class="methodology-section" aria-labelledby="ultrank-title">

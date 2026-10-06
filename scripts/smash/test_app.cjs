@@ -66,3 +66,33 @@ test('selecting a view returns that calculation and never silently falls back', 
   assert.equal(choose(data,false),data.localRanking);
   assert.throws(()=>choose(fixture(),false));
 });
+
+const activityView = vm.runInNewContext(source.split('const tabs =')[0] + '\nactivityView;');
+function activityFixture() {
+  return {player:{id:'1',events:2,sets:5,wins:3,losses:2,activity:{months:['2026-01','2026-02'],events:[{id:'b',wins:1,losses:1},{id:'a',wins:2,losses:1}]}},
+    data:{events:[{id:'a',date:'2026-01-15',name:'Enero'},{id:'b',date:'2026-02-28',name:'Febrero'}]}};
+}
+test('activity joins by event id and sorts the ledger without changing points', () => {
+  const {player,data}=activityFixture(); const before=JSON.stringify(player);
+  const view=activityView(player,data);
+  assert.equal(view.ledger[0].name,'Febrero');
+  assert.equal(view.months.length,2);
+  assert.equal(JSON.stringify(player),before);
+  assert.equal(activityView({id:'legacy'},data),null);
+});
+test('activity rejects invented months, duplicate events and inconsistent totals', () => {
+  for(const corruption of ['months','duplicate','unknown','totals','negative']) {
+    const {player,data}=activityFixture();
+    if(corruption==='months')player.activity.months.push('2026-03');
+    if(corruption==='duplicate')player.activity.events[0].id='a';
+    if(corruption==='unknown')player.activity.events[0].id='other';
+    if(corruption==='totals')player.sets++;
+    if(corruption==='negative')player.activity.events[0].wins=-1;
+    assert.throws(()=>activityView(player,data));
+  }
+});
+test('the published combined and local player ledgers load under the browser contract', () => {
+  const data=JSON.parse(fs.readFileSync(path.join(__dirname,'../../ranking-smash-ultimate/data/public.json'),'utf8'));
+  assert.equal(validate(data),data);
+  for(const scope of [data,data.localRanking]) for(const player of scope.players) assert.ok(activityView(player,scope));
+});

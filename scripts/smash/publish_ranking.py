@@ -31,6 +31,7 @@ def export(snapshot, ranking, curation=None, previous=None):
     results = []
     event_players = defaultdict(set)
     event_sets = Counter()
+    activity = defaultdict(lambda: defaultdict(Counter))
     for sid, match in snapshot["sets"].items():
         event = match.get("event") or {}
         eid = str(event.get("id"))
@@ -43,8 +44,11 @@ def export(snapshot, ranking, curation=None, previous=None):
         event_players[eid].update(pair)
         if not ranked.intersection(pair):
             continue
+        for pid, outcome in zip(pair, ('wins', 'losses')):
+            if pid in ranked:
+                activity[pid][eid][outcome] += 1
         slug = event.get("slug") or ""
-        results.append({"id": str(sid), "playerIds": list(pair),
+        results.append({"id": str(sid), "eventId": eid, "playerIds": list(pair),
                         "score": match["displayScore"],
                         "tournament": (match.get("tournament") or {}).get("name") or event.get("name") or "Torneo",
                         "country": (match.get("tournament") or {}).get("countryCode") or "GT",
@@ -93,6 +97,13 @@ def export(snapshot, ranking, curation=None, previous=None):
     countries = {event["country"] for event in events}
     countries.discard(None)
     players = [dict(row) for row in all_players]
+    event_dates = {e['id']: e['date'] for e in events}
+    for row in players:
+        ledger = [{'id': eid, 'wins': record['wins'], 'losses': record['losses']}
+                  for eid, record in activity[row['id']].items()]
+        ledger.sort(key=lambda e: (event_dates[e['id']], e['id']), reverse=True)
+        row['activity'] = {'months': sorted({event_dates[e['id']][:7] for e in ledger}),
+                           'events': ledger}
     scope_key = "combined" if international else "guatemala"
     previous_scope = (previous.get("rankingScope") or ("combined" if previous.get("status") == "international_pilot" else "guatemala" if previous.get("status") == "local_pilot" else scope_key)) if previous else None
     previous_cut = None

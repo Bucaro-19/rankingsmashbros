@@ -7,8 +7,8 @@
   <meta name="description" content="La escena de Smash Ultimate de Guatemala, en un solo lugar. Jugadores, resultados nacionales e internacionales y seguimiento de la temporada.">
   <title>Smash GT — La escena, en un solo lugar</title>
   <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./arena.css?v=20261006-scope">
-  <script src="./app.js?v=20261006-scope" defer></script>
+  <link rel="stylesheet" href="./arena.css?v=20261006-activity">
+  <script src="./app.js?v=20261006-activity" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -95,7 +95,13 @@
     <section class="method wrap" id="metodo" aria-labelledby="method-title"><div class="section-heading"><div><p class="eyebrow">RESULTADOS CON CONTEXTO</p><h2 id="method-title">Cada partida tiene una historia.</h2></div></div><div class="method-grid"><article><span>01 / COMUNIDAD</span><h3>Guatemala, presente.</h3><p>El país público del perfil permite descubrir candidatos, pero no prueba nacionalidad o residencia. Incluimos casos documentados por el ranking guatemalteco de 2025 y los asientos regionales de UltRank 2026.1; su elegibilidad para este top sigue en revisión.</p></article><article><span>02 / COMPETENCIA</span><h3>Dentro y fuera.</h3><p id="method-scope">Esta versión toma eventos presenciales individuales de Guatemala con al menos 20 jugadores activos y exige dos eventos y cuatro sets por clasificado. Los torneos del extranjero aún no cuentan.</p></article><article><span>03 / TRANSPARENCIA</span><h3>Un cálculo propio.</h3><p>Los puntos Smash GT comparan victorias y derrotas según la fuerza estimada del rival, con ajustes por valor del torneo y enfrentamientos repetidos. La tabla pública de UltRank ayuda a estimar el valor de eventos guatemaltecos; el orden de jugadores usa nuestro propio modelo.</p><a href="./metodologia.html">Cómo calculamos cada puesto y qué torneos entran ↗</a></article></div></section>
   </main>
   <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS <span aria-hidden="true">↗</span></a><p>Hecho para la comunidad de Guatemala.<br>Proyecto independiente, sin afiliación con start.gg, UltRank o Nintendo.</p><span>SMASH GT</span></footer>
-  <dialog id="player-dialog" aria-labelledby="player-title"><button class="close" aria-label="Cerrar detalle" autofocus>×</button><p class="eyebrow">PERFIL DE LA COMUNIDAD</p><h2 id="player-title"></h2><div id="player-stats" class="player-stats"></div><p id="player-summary"></p><h3 class="history-title">Sets considerados en este corte</h3><p id="player-history-count" class="history-count"></p><div id="player-matches"></div><button id="player-more" class="history-more" type="button" hidden>Ver más resultados</button><a id="player-link" target="_blank" rel="noopener noreferrer">Ver perfil en start.gg ↗</a></dialog>
+  <dialog id="player-dialog" aria-labelledby="player-title"><button class="close" aria-label="Cerrar detalle" autofocus>×</button><p class="eyebrow">PERFIL DE LA COMUNIDAD</p><h2 id="player-title"></h2><div id="player-stats" class="player-stats"></div><p id="player-summary"></p><section id="player-activity" class="player-activity" aria-labelledby="activity-title" hidden>
+    <p class="eyebrow">CONSTANCIA VISIBLE</p><h3 id="activity-title">Tu temporada, mes a mes.</h3>
+    <p id="activity-summary"></p><ul id="activity-months" class="activity-months" aria-label="Actividad por mes"></ul>
+    <p class="activity-note">Un mes activo tiene al menos un set válido en un torneo admitido. Usamos la fecha del evento en hora de Guatemala. “Sin registro” no prueba que no hayas jugado: puede faltar cobertura. Esto muestra participación; no añade un bono de puntos.</p>
+    <details id="activity-events"><summary id="activity-events-title"></summary><ul id="activity-ledger"></ul></details>
+    <a id="activity-method-link" href="./metodologia.html#puntos-en-claro">Entender mis puntos y mi actividad ↗</a>
+  </section><h3 id="player-history-title" class="history-title">Sets considerados en este corte</h3><button id="player-all-results" class="history-more" type="button" hidden>Volver a todos los sets</button><p id="player-history-count" class="history-count"></p><div id="player-matches"></div><button id="player-more" class="history-more" type="button" hidden>Ver más resultados</button><a id="player-link" target="_blank" rel="noopener noreferrer">Ver perfil en start.gg ↗</a></dialog>
   <noscript><p class="wrap error">Activa JavaScript para consultar jugadores y resultados.</p></noscript>
 </body>
 </html>

@@ -7,6 +7,7 @@ import os
 import re
 import uuid
 from pathlib import Path
+from collections import Counter, defaultdict
 
 FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css", "opiniones.css", "analisis-torneos.css",
          "app.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "encuesta.php", "opiniones.php", "index.html", "metodologia.html",
@@ -37,6 +38,7 @@ def validate_public_data(data, *, local=False):
         raise ValueError("Se requiere una clasificación coherente y completa con eventos internacionales antes de publicar.")
 
 
+    validate_activity(data)
     if local and (data.get('rankingScope') != 'guatemala' or 'localRanking' in data
                   or any(e.get('country') != 'GT' for e in events)
                   or any(m.get('country') != 'GT' for m in data.get('results', []))):
@@ -51,6 +53,42 @@ def validate_public_data(data, *, local=False):
                 or {e['id'] for e in view['events']} != {e['id'] for e in events if e.get('country') == 'GT'}):
             raise ValueError('Las dos vistas deben usar el mismo corte, reglas y eventos locales.')
 
+
+def validate_activity(data):
+    """Optional for legacy cuts; new ledgers must reconcile with published sets."""
+    if not any('activity' in p for p in data['players']):
+        return
+    def require(condition):
+        if not condition:
+            raise ValueError("Actividad incoherente")
+
+    try:
+        events = {e['id']: e for e in data['events']}
+        records = defaultdict(lambda: defaultdict(Counter))
+        seen = set()
+        for match in data['results']:
+            require(match['id'] not in seen)
+            seen.add(match['id'])
+            require(match['eventId'] in events and len(match['playerIds']) == 2)
+            require(len(set(match['playerIds'])) == 2)
+            for pid, outcome in zip(match['playerIds'], ('wins', 'losses')):
+                records[pid][match['eventId']][outcome] += 1
+        for player in data['players']:
+            activity = player['activity']
+            ledger = activity['events']
+            require(len(ledger) == player['events'] == len({e['id'] for e in ledger}))
+            require({e['id'] for e in ledger} == set(records[player['id']]))
+            for event in ledger:
+                require(event['id'] in events)
+                for outcome in ('wins', 'losses'):
+                    require(type(event[outcome]) is int and event[outcome] >= 0)
+                    require(event[outcome] == records[player['id']][event['id']][outcome])
+            require(sum(e['wins'] for e in ledger) == player['wins'])
+            require(sum(e['losses'] for e in ledger) == player['losses'])
+            require(player['sets'] == player['wins'] + player['losses'])
+            require(activity['months'] == sorted({events[e['id']]['date'][:7] for e in ledger}))
+    except (KeyError, TypeError, ValueError):
+        raise ValueError('La actividad debe coincidir con los torneos, sets y totales del jugador.') from None
 
 def validate_study_data(data):
     if (data.get("schemaVersion") != 1 or data.get("status") != "simulacion_sin_cambio_de_regla"
@@ -85,7 +123,7 @@ def validate_top20_study(data):
             require(len(p['sensitivity']['scenarios']) == data['sensitivityEventCount'])
             require(sum(e['wins'] for e in p['eventLedger']) == p['wins'])
             require(sum(e['losses'] for e in p['eventLedger']) == p['losses'])
-    except (AssertionError, KeyError, TypeError, ValueError):
+    except (KeyError, TypeError, ValueError):
         raise ValueError('El estudio del top 20 está incompleto o mezcla escenarios incompatibles.') from None
 
 
