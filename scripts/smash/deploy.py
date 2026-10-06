@@ -10,9 +10,14 @@ from pathlib import Path
 from collections import Counter, defaultdict
 
 FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css", "encuesta.css", "opiniones.css", "analisis-torneos.css",
-         "app.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "encuesta.php", "opiniones.php", "index.html", "metodologia.html",
+         "characters.js", "app.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "encuesta.php", "opiniones.php", "index.html", "metodologia.html",
          "analisis-torneos.html", "data/analisis-torneos.json", "analisis-top20.html", "analisis-top20.css",
          "analisis-top20.js", "data/analisis-top20.json", "data/public.json")
+# Explicitly scoped character assets, before the atomic public-data replacement.
+ASSET_ROOT = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate/assets/characters"
+CHARACTER_FILES = tuple("assets/characters/" + path.name for path in sorted(ASSET_ROOT.glob("*.png"))
+                        if re.fullmatch(r"[a-z0-9_]+-(icon|portrait)\.png", path.name))
+FILES = FILES[:-1] + CHARACTER_FILES + FILES[-1:]
 HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 
@@ -186,6 +191,12 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
                 pass
             raise
     ftp.cwd("..")
+    for directory in ("assets", "assets/characters"):
+        try:
+            ftp.mkd(directory)
+        except ftplib.error_perm as error:
+            if not str(error).startswith("550"):
+                raise
     for name in FILES[:-1] if assets_only else FILES:
         temporary = name + "." + uuid.uuid4().hex + ".tmp"
         try:

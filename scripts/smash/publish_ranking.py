@@ -49,6 +49,7 @@ def export(snapshot, ranking, curation=None, previous=None):
                 activity[pid][eid][outcome] += 1
         slug = event.get("slug") or ""
         results.append({"id": str(sid), "eventId": eid, "playerIds": list(pair),
+                        "playerTags": [(snapshot["players"].get(pid) or {}).get("gamerTag") or f"Rival #{pid}" for pid in pair],
                         "score": match["displayScore"],
                         "tournament": (match.get("tournament") or {}).get("name") or event.get("name") or "Torneo",
                         "country": (match.get("tournament") or {}).get("countryCode") or "GT",

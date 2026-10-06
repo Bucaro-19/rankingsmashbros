@@ -1,14 +1,8 @@
-const $ = (selector) => document.querySelector(selector);
-let snapshot = null;
-let published = null;
-let includeInternational = true;
-let loading = false;
-let rankingView = 'top';
-let playerMatches = [];
-let allPlayerMatches = [];
-let visibleMatches = 20;
-const dateFormat = new Intl.DateTimeFormat('es-GT', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Guatemala' });
-
+const $ = selector => document.querySelector(selector);
+let snapshot=null, published=null, includeInternational=true, loading=false;
+let rankingView='top', selectedMain=null, selectedPlayerId=null;
+let playerMatches=[], allPlayerMatches=[], visibleMatches=20;
+const dateFormat=new Intl.DateTimeFormat('es-GT',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Guatemala'});
 function element(tag, text, className) {
   const node = document.createElement(tag);
   if (text !== undefined) node.textContent = text;
@@ -102,78 +96,6 @@ function renderActivity(player) {
     return item;
   }));
 }
-function openPlayer(player) {
-  const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
-  $('#player-title').textContent = player.knownAs ? `${player.tag} (antes ${player.knownAs})` : player.tag;
-  const movement = snapshot.previousCutAt && Number.isInteger(player.previousRank)
-    ? ` En el corte anterior: #${player.previousRank}.`
-    : '';
-  const stats = pilot ? [[`#${player.rank}`, 'Puesto provisional'], [String(player.rating), 'Puntos Smash GT'], [String(player.events), 'Torneos válidos']] : [];
-  $('#player-stats').replaceChildren(...stats.map(([value, label]) => {
-    const item = element('div'); item.append(element('strong', value), element('span', label)); return item;
-  }));
-  $('#player-stats').hidden = !pilot;
-  $('#player-summary').textContent = pilot
-    ? `${player.wins} victorias y ${player.losses} derrotas.${movement} Corte: ${snapshot.seasonLabel}. Vista: ${snapshot.rankingScope === 'guatemala' ? 'solo Guatemala' : 'Guatemala + internacionales'}. Elegibilidad: ${player.countryBasis}. Este historial corresponde a los eventos incluidos en el ranking; puede no abarcar toda tu actividad en start.gg.`
-    : `País del perfil: Guatemala. ${player.sets} sets completados observados. ${player.historyComplete ? 'Historial consultado sin recortes de páginas.' : 'La cobertura del historial todavía es parcial.'} Posición nacional pendiente de cálculo.`;
-  allPlayerMatches = snapshot.results.filter((match) => match.playerIds.includes(player.id));
-  showPlayerMatches();
-  renderActivity(player);
-  const link = safeLink(player.url);
-  $('#player-link').hidden = !link;
-  if (link) $('#player-link').href = link;
-  $('#player-dialog').showModal();
-}
-function renderPlayers() {
-  const target = $('#players-list');
-  if (!snapshot) return empty(target, 'Estamos preparando la primera lista', 'Conectaremos los perfiles y resultados antes de publicar jugadores y posiciones.');
-  const normalize = (value) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
-  const query = normalize($('#search').value.trim());
-  const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
-  const players = snapshot.players.filter((player) => query
-    ? normalize(`${player.tag} ${player.knownAs || ''}`).includes(query)
-    : rankingView === 'all' || !pilot || player.rank <= 100);
-  $('#scene-title').textContent = query ? 'Encuentra tu puesto.' : rankingView === 'all' ? 'Ranking completo.' : 'Top 100 piloto.';
-  $('#ranking-summary').textContent = query ? `${players.length} ${players.length === 1 ? 'coincidencia' : 'coincidencias'} entre ${snapshot.players.length} jugadores disponibles.` : `${players.length} de ${snapshot.players.length} clasificados · ${rankingView === 'top' ? 'vista Top 100' : 'todos los puestos'}.`;
-  if (!players.length) return empty(target, query ? 'No encontramos ese alias en este corte' : 'La primera lista está en camino', query ? 'Prueba tu alias de start.gg. Puedes no cumplir los 2 torneos y 4 sets válidos en esta vista, o pueden faltar datos. Si elegiste solo Guatemala, activa los internacionales para comprobar si clasificas al incluir esos eventos.' : 'Los jugadores aparecerán después de consultar sus perfiles y validar su actividad.');
-  target.replaceChildren(...players.map((player) => {
-    const row = element('button', undefined, 'player-row');
-    const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
-    if (pilot && player.rank <= 3) row.classList.add('podium-row', `podium-${player.rank}`);
-    row.type = 'button';
-    row.setAttribute('aria-label', `Ver detalle de ${player.tag}${player.knownAs ? `, antes ${player.knownAs}` : ''}`);
-    const avatar = element('span', pilot ? String(player.rank).padStart(2, '0') : player.tag.slice(0, 2).toUpperCase(), 'avatar');
-    avatar.setAttribute('aria-hidden', 'true');
-    const label = element('span');
-    label.append(element('strong', player.tag));
-    if (player.knownAs) label.append(element('small', `Antes: ${player.knownAs}`));
-    label.append(element('small', pilot ? `${player.events} torneos · ${player.wins} V / ${player.losses} D` : 'Guatemala · país del perfil'));
-    if (pilot && snapshot.previousCutAt) {
-      const delta = Number.isInteger(player.previousRank) ? player.previousRank - player.rank : null;
-      const movement = delta === null ? 'Sin puesto previo publicado' : delta > 0 ? `↑ ${delta} puestos` : delta < 0 ? `↓ ${Math.abs(delta)} puestos` : 'Sin cambio de puesto';
-      label.append(element('small', movement, `movement ${delta > 0 ? 'up' : delta < 0 ? 'down' : 'same'}`));
-    }
-    const end = element('span', pilot ? `${player.rating} pts` : `${player.sets} sets observados`, 'row-end');
-    end.append(element('small', pilot ? 'Clasificación provisional ↗' : 'Sin posición asignada ↗'));
-    row.append(avatar, label, end);
-    row.addEventListener('click', () => {
-      try { openPlayer(player); }
-      catch (error) {
-        $('#load-error').textContent = 'No pudimos abrir el detalle del jugador. Vuelve a intentarlo.';
-        $('#load-error').hidden = false;
-      }
-    });
-    return row;
-  }));
-}
-function renderResults() {
-  const target = $('#results-list');
-  const region = $('#region').value;
-  const results = (snapshot?.results || []).filter((match) => region === 'all' || (region === 'GT' ? match.country === 'GT' : match.country && match.country !== 'GT'));
-  if (!results.length) return empty(target, region === 'international' && snapshot?.status === 'local_pilot' ? 'El extranjero sigue en revisión' : 'Todavía no hay resultados para mostrar', region === 'international' && snapshot?.status === 'local_pilot' ? 'La primera clasificación usa torneos presenciales de Guatemala. Agregaremos partidas fuera del país al completar su verificación.' : 'Aquí podrás seguir las partidas de la comunidad, dentro y fuera de Guatemala.');
-  target.replaceChildren(...results.slice(0, 100).map(resultNode));
-  if (results.length > 100) target.append(element('p', 'Se muestran los 100 resultados más recientes de este filtro.', 'list-note'));
-}
 function validateMains(player) {
   const mains = player.mains, c = player.mainCoverage;
   if (!Array.isArray(mains) || !c || mains.some(m => typeof m.characterId !== 'string' || typeof m.name !== 'string' || !m.name.trim() || !Number.isInteger(m.games) || m.games < 1)
@@ -227,111 +149,163 @@ function chooseSnapshot(data, international) {
   if (!international && !data.localRanking) throw new Error('Vista local no disponible');
   return international ? data : data.localRanking;
 }
+function damageColor(rank) {
+  const stops=[[244,241,234],[255,210,63],[255,140,40],[255,77,46],[200,30,40]];
+  const x=Math.min(.999999,Math.max(0,1-(rank-1)/14))*4, i=Math.floor(x), f=x-i;
+  return `rgb(${stops[i].map((v,k)=>Math.round(v+(stops[i+1][k]-v)*f)).join(',')})`;
+}
+function movement(player, data=snapshot) {
+  if (!data.previousCutAt || !Number.isInteger(player.previousRank)) return {text:'—',label:data.previousCutAt?'Sin puesto previo publicado':'Sin corte anterior comparable',kind:'same'};
+  const delta=player.previousRank-player.rank;
+  return {text:delta>0?`▲ ${delta}`:delta<0?`▼ ${-delta}`:'—',label:delta>0?`Subió ${delta} puestos`:delta<0?`Bajó ${-delta} puestos`:'Sin cambio de puesto',kind:delta>0?'up':delta<0?'down':'same'};
+}
+function mainList(player) { return (player.mains || []).slice(0,3); }
+function imageNode(name, kind='icon', fallback='?') {
+  const asset=characterAsset(name);
+  const missing=()=>element('span',fallback,kind==='portrait'&&fallback!=='?'?'unknown-hero':'unknown-art');
+  if (!asset) return missing();
+  const img=element('img'); img.src=asset[kind]; img.alt=kind==='portrait'?'':name; img.loading=kind==='icon'?'lazy':'eager'; img.decoding='async';
+  if (kind==='portrait' && asset[kind].startsWith('./')) img.className='is-tight';
+  img.addEventListener('error',()=>img.replaceWith(missing()),{once:true});
+  return img;
+}
+function playerSub(player) { return [mainList(player)[0]?.name || 'Main sin registro',player.knownAs?`antes ${player.knownAs}`:null,`${player.events} torneos`].filter(Boolean).join(' · '); }
+function openFrom(player) { return ()=>openPlayer(player); }
+function renderHero() {
+  const player=snapshot.players[0];
+  $('#hero-season').textContent=`Temporada ${snapshot.seasonYear || 2026} · Corte ${snapshot.seasonLabel.split(' – ')[1]} · Piloto`;
+  for (const [id,key] of [['players-count','players'],['events-count','events'],['sets-count','sets']]) $('#'+id).textContent=snapshot.counts[key].toLocaleString('es-GT');
+  $('#hero-player').disabled=!player;
+  if (!player) { $('#hero-tag').textContent='Sin clasificados';$('#hero-points').textContent='—';$('#hero-art').replaceChildren();return; }
+  $('#hero-tag').textContent=player.tag;$('#hero-points').textContent=String(player.rating);
+  $('#hero-art').replaceChildren(imageNode(mainList(player)[0]?.name,'portrait',player.tag));
+  $('#hero-player').setAttribute('aria-label',`Ver detalle de ${player.tag}, puesto 1`);
+  $('#hero-player').onclick=openFrom(player);
+  const text=snapshot.players.slice(0,10).map(p=>`#${String(p.rank).padStart(2,'0')} ${p.tag} · ${p.rating} pts ${movement(p).text}`).join('  ✦  ')+'  ✦  ';
+  const copy=element('span',text);copy.setAttribute('aria-hidden','true');
+  $('#ticker-track').replaceChildren(element('span',text),copy);
+}
+function renderChips() {
+  const mains=new Map();
+  snapshot.players.forEach(p=>mainList(p).forEach(m=>mains.set(m.characterId,m)));
+  if (selectedMain && !mains.has(selectedMain)) selectedMain=null;
+  $('#main-filter').hidden=!mains.size;
+  const chip=(name,id)=>{const b=element('button',undefined,'main-chip');b.type='button';b.title=name;b.setAttribute('aria-label',id?`Filtrar por ${name}`:'Todos los personajes');b.setAttribute('aria-pressed',String(selectedMain===id));b.append(id?imageNode(name):document.createTextNode('Todos'));b.onclick=()=>{selectedMain=id;renderChips();renderPlayers();};return b;};
+  $('#main-chips').replaceChildren(chip('Todos',null),...[...mains.values()].sort((a,b)=>a.name.localeCompare(b.name)).map(m=>chip(m.name,m.characterId)));
+  const known=snapshot.players.filter(p=>p.mains?.length).length;
+  $('#main-coverage-note').textContent=known?`Personajes registrados para ${known} de ${snapshot.players.length} clasificados. Los chips incluyen el main y hasta dos secundarios por jugador; son selecciones reportadas en este corte.`:'Todavía no hay selecciones de personajes disponibles en esta vista. “?” significa sin datos registrados, no que el jugador no tenga un main.';
+}
+function podiumCard(player) {
+  const card=element('button',undefined,`podium-card${player.rank===1?' is-first':''}`);card.type='button';card.setAttribute('aria-label',`Ver detalle de ${player.tag}, puesto ${player.rank}`);
+  card.append(element('span',String(player.rank),'podium-number'),imageNode(mainList(player)[0]?.name,'portrait'));
+  const caption=element('span',undefined,'podium-caption'),name=element('span'),score=element('b',String(player.rating));score.style.color=damageColor(player.rank);
+  name.append(element('strong',player.tag),element('small',`${player.events} torneos · ${movement(player).text} ${movement(player).label}`));caption.append(name,score);card.append(caption);card.onclick=openFrom(player);return card;
+}
+function rankRow(player,max) {
+  const row=element('button',undefined,'rank-row');row.type='button';row.setAttribute('aria-label',`Ver detalle de ${player.tag}, puesto ${player.rank}`);
+  const move=movement(player),arrow=element('span',move.text,`rank-move ${move.kind}`);arrow.setAttribute('aria-label',move.label);
+  const identity=element('span',undefined,'rank-identity'),icon=element('span',undefined,'stock-icon'),name=element('span',undefined,'rank-name');
+  icon.append(imageNode(mainList(player)[0]?.name));name.append(element('strong',player.tag),element('small',playerSub(player)));identity.append(icon,name);
+  const secondaries=element('span',undefined,'rank-secondaries');mainList(player).slice(1).forEach(m=>secondaries.append(imageNode(m.name)));
+  const score=element('span',undefined,'rank-score'),track=element('span',undefined,'points-track'),fill=element('span',undefined,'points-fill');score.style.color=damageColor(player.rank);fill.style.width=`${Math.max(0,Math.min(100,player.rating/Math.max(1,max)*100))}%`;track.setAttribute('aria-hidden','true');track.append(fill);score.append(track,element('b',String(player.rating)));
+  row.append(element('span',String(player.rank).padStart(2,'0'),'rank-number'),arrow,identity,secondaries,element('span',`${player.wins}–${player.losses}`,'rank-record'),score);row.onclick=openFrom(player);return row;
+}
+function filteredPlayers(data, query, main, view) {
+  const norm=v=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es');
+  const q=norm(query.trim()),filtered=Boolean(q||main);
+  return data.players.filter(p=>(!q||norm(`${p.tag} ${p.knownAs||''}`).includes(q))&&(!main||mainList(p).some(m=>m.characterId===main))&&(filtered||view==='all'||p.rank<=100));
+}
+function renderPlayers() {
+  if (!snapshot) return;
+  const query=$('#search').value,filtered=Boolean(query.trim()||selectedMain);
+  const rows=filteredPlayers(snapshot,query,selectedMain,rankingView);
+  $('#podium').hidden=filtered||!rows.length;
+  $('#podium').replaceChildren(...[2,1,3].map(rank=>rows.find(p=>p.rank===rank)).filter(Boolean).map(podiumCard));
+  const visible=filtered?rows:rows.filter(p=>p.rank>3);
+  $('#players-list').replaceChildren(...visible.map(p=>rankRow(p,snapshot.players[0]?.rating||1)));
+  if (!rows.length) $('#players-list').append(element('p','Nadie con ese tag o main en este corte. Prueba otro filtro o cambia el alcance.','gt-empty'));
+  $('#ranking-summary').textContent=filtered?`${rows.length} ${rows.length===1?'coincidencia':'coincidencias'} entre ${snapshot.players.length} clasificados.`:`${rows.length} de ${snapshot.players.length} clasificados · ${rankingView==='all'?'todos los puestos':'Top 100'}.`;
+  $('#view-all').hidden=filtered||snapshot.players.length<=100;
+  $('#view-all').textContent=rankingView==='all'?'Ver solo top 100':`Ver los ${snapshot.players.length} clasificados`;
+  $('#view-all').setAttribute('aria-pressed',String(rankingView==='all'));
+}
+function playerRivals(player, data) {
+  const rivals=new Map(),names=new Map(data.players.map(p=>[p.id,p.tag]));
+  for(const match of data.results) {
+    const index=match.playerIds.indexOf(player.id);if(index<0)continue;
+    const other=match.playerIds[1-index];if(!other)continue;
+    const row=rivals.get(other)||{id:other,tag:names.get(other)||match.playerTags?.[1-index]||`Rival #${other}`,wins:0,losses:0};
+    row[index===0?'wins':'losses']++;rivals.set(other,row);
+  }
+  return [...rivals.values()].sort((a,b)=>(b.wins+b.losses)-(a.wins+a.losses)||a.tag.localeCompare(b.tag)).slice(0,5);
+}
+function openPlayer(player) {
+  selectedPlayerId=player.id;
+  $('#drawer-rank').textContent=String(player.rank);$('#drawer-art').replaceChildren(imageNode(mainList(player)[0]?.name,'portrait'));
+  $('#player-title').textContent=player.tag;$('#player-subtitle').textContent=playerSub(player);
+  $('#player-movement').textContent=`${movement(player).text} ${movement(player).label}`;
+  const stats=[[String(player.rating),'Puntos'],[`${player.wins}–${player.losses}`,'Sets G–P'],[String(player.events),'Torneos']];
+  $('#player-stats').replaceChildren(...stats.map(([value,label],index)=>{const d=element('div'),v=element('strong',value);if(!index)v.style.color=damageColor(player.rank);d.append(v,element('span',label));return d;}));
+  $('#player-summary').textContent=`#${player.rank} provisional · ${snapshot.rankingScope==='guatemala'?'Solo Guatemala':'Guatemala + internacionales'} · ${snapshot.seasonLabel}. Elegibilidad: ${player.countryBasis}. Historial de eventos admitidos; puede faltar actividad de start.gg.`;
+  const mains=mainList(player),coverage=player.mainCoverage;
+  $('#player-mains').replaceChildren(...mains.map((m,i)=>{const d=element('div',undefined,'main-usage'),label=element('span',m.name);label.append(element('small',`${i===0?'Principal detectado':'Secundario'} · ${m.games} partidas`));d.append(imageNode(m.name),label);return d;}));
+  const near=mains.length>1 && mains[1].games>=mains[0].games*.8;
+  $('#player-main-note').textContent=coverage?`${coverage.gamesWithSelections} partidas con personaje registrado en ${coverage.setsWithSelections} de ${coverage.setsQueried} sets consultados. ${mains.length?'El main se estima por uso registrado; la cobertura puede ser parcial.':'Sin datos para detectar un main.'}${near?' Uso repartido: los dos más usados tienen cantidades cercanas (el segundo alcanza al menos el 80% del primero). Podrá revisarse cuando existan cuentas.':''}${coverage.ambiguousGames?` ${coverage.ambiguousGames} partidas con selecciones ambiguas se omitieron.`:''}`:'Todavía no hay datos de personajes para este jugador.';
+  if(!mains.length)$('#player-mains').append(element('span','?','unknown-art'));
+  const view=activityView(player,snapshot);
+  $('#player-recent').replaceChildren(...(view?.ledger||[]).slice(0,5).map(e=>{const url=safeLink(e.url),r=element(url?'a':'div',undefined,'drawer-event'),label=element('span',e.name),record=element('b',`${e.wins}–${e.losses}`);label.append(element('small',`${e.date} · ${e.country}`));record.style.color=e.wins>e.losses?'#5BE38A':e.wins<e.losses?'#FF4D2E':'#F4F1EA';if(url){r.href=url;r.target='_blank';r.rel='noopener noreferrer';}r.append(label,record);return r;}));
+  if(!view)$('#player-recent').append(element('p','El detalle por torneo no está disponible en este corte anterior.','drawer-note'));
+  $('#player-rivals').replaceChildren(...playerRivals(player,snapshot).map(r=>{const d=element('div',undefined,'drawer-rival'),record=element('b',`${r.wins}–${r.losses}`);record.style.color=r.wins>r.losses?'#5BE38A':r.wins<r.losses?'#FF4D2E':'#F4F1EA';d.append(element('span',r.tag),record);return d;}));
+  allPlayerMatches=snapshot.results.filter(m=>m.playerIds.includes(player.id));showPlayerMatches();renderActivity(player);
+  const url=safeLink(player.url);$('#player-link').hidden=!url;if(url)$('#player-link').href=url;
+  if(!$('#player-dialog').open)$('#player-dialog').showModal();$('#player-dialog').scrollTop=0;
+}
 function render() {
-  const pilot = ['local_pilot', 'international_pilot'].includes(snapshot.status);
-  const international = snapshot.status === 'international_pilot';
-  const localView = snapshot.rankingScope === 'guatemala' && Boolean(published?.localRanking);
-  const ready = snapshot.status === 'coverage_only' || pilot;
-  $('#data-status').textContent = international ? 'Ranking piloto · Guatemala y el extranjero' : pilot ? 'Ranking piloto · solo torneos en Guatemala' : ready ? 'Datos preliminares · ranking pendiente' : 'Preparando la primera temporada';
-  $('#updated').textContent = ready ? `Última consulta: ${dateFormat.format(new Date(snapshot.generatedAt))}` : 'Sin sincronización todavía';
-  $('#season-label').textContent = ready ? snapshot.seasonLabel : 'Temporada por confirmar';
-  for (const name of ['players', 'events', 'sets', 'countries']) $(`#${name}-count`).textContent = ready ? snapshot.counts[name].toLocaleString('es-GT') : '—';
-  $('#tab-count').textContent = ready ? snapshot.players.length : '—';
-  $('#search-help').textContent = snapshot.rankingCoverage === 'all_eligible'
-    ? 'La búsqueda incluye todos los clasificados, también fuera del top 100. Mínimo: 2 torneos y 4 sets válidos, además de los requisitos de pertenencia al ranking.'
-    : 'La búsqueda incluye todos los puestos publicados en este corte. La ampliación del listado se mostrará al completar una nueva actualización.';
-  $('#list-note').textContent = international ? 'Corte semanal experimental con torneos presenciales de Guatemala y del extranjero de jugadores descubiertos localmente. Las flechas comparan cortes con las mismas reglas; la elegibilidad sigue en revisión. No es UltRank ni el ranking oficial.' : pilot ? 'Clasificación experimental con torneos presenciales de Guatemala. Los resultados del extranjero y la elegibilidad de jugadores siguen pendientes; no es UltRank ni el ranking oficial.' : ready ? 'Lista alfabética de perfiles detectados. Cobertura experimental; todavía no representa el ranking nacional completo.' : 'Las posiciones se publicarán cuando validemos el cálculo.';
-  $('#hero-note').textContent = international ? `Temporada ${snapshot.seasonYear || 2026} · actualización prevista los domingos a las 00:00, hora de Guatemala, para todos los clasificados.` : 'Primer corte local. Resultados internacionales en revisión.';
-  $('#aside-scope').textContent = international ? 'Este top es una prueba abierta: incluye torneos internacionales de jugadores encontrados en la escena local. El orden cambiará al revisar la elegibilidad y los eventos.' : 'Este top es una prueba abierta: el orden cambiará cuando completemos los torneos internacionales y revisemos quiénes representan a Guatemala.';
-  $('#aside-phase1').replaceChildren(element('span', '01'), document.createTextNode(international ? ' Identificar jugadores que compiten solo fuera' : ' Agregar resultados del extranjero'));
-  const localMinimum = snapshot.eligibilityRules?.localMinimumActive ?? 32;
-  $('#method-scope').textContent = `En Guatemala cuentan los torneos individuales presenciales con al menos ${localMinimum} participantes activos: cada uno debe haber jugado un set válido. Para clasificar se mantienen 2 torneos y 4 sets.` + (international ? ' En el extranjero se mantienen 64 activos; faltan jugadores que compiten solo fuera del país.' : ' Los torneos del extranjero aún no cuentan.');
-  if (snapshot.methodVersion === 'BT-PILOTO-3' && !snapshot.previousCutAt) {
-    $('#list-note').textContent += ' Nuevo criterio: 20 activos por torneo de Guatemala. Este primer corte no muestra movimientos frente a la regla anterior de 32.';
-  }
-  $('#results-note').textContent = international ? 'Partidas consideradas en esta versión dentro y fuera de Guatemala; la selección de eventos sigue en revisión.' : 'Partidas consideradas en esta versión local; los resultados de fuera de Guatemala aún se están recopilando.';
-  $('#include-international').disabled = !published?.localRanking;
-  $('#include-international').checked = includeInternational;
-  $('#scope-label').textContent = localView ? 'Solo Guatemala' : 'Guatemala + internacionales';
-  $('#scope-help').textContent = published?.localRanking
-    ? (localView ? 'Puntos y actividad recalculados solo con torneos de Guatemala. Puede cambiar quién clasifica; las flechas comparan únicamente cortes de esta vista.' : 'Cuenta los eventos de Guatemala y del extranjero admitidos. Apaga el interruptor para consultar un cálculo independiente con solo torneos locales.')
-    : 'La vista local estará disponible cuando termine su publicación. Se conserva el último ranking completo.';
-  if (localView) {
-    $('#list-note').textContent = 'Vista solo Guatemala: se recalculan rivales, puntos y elegibilidad con eventos locales. Se mantienen 2 torneos y 4 sets válidos, todos dentro de Guatemala. No es UltRank ni el ranking oficial.' + (snapshot.previousCutAt ? ' Las flechas comparan el corte local anterior.' : ' Es el primer corte disponible de esta vista; todavía no hay comparación semanal local.');
-    $('#hero-note').textContent = `Temporada ${snapshot.seasonYear || 2026} · ambas vistas se actualizan los domingos a las 00:00, hora de Guatemala.`;
-    $('#aside-scope').textContent = 'Estás viendo solo torneos celebrados en Guatemala. Activa los internacionales para comparar el cálculo que incluye la participación en el extranjero.';
-    $('#aside-phase1').replaceChildren(element('span', '01'), document.createTextNode(' Revisar cobertura nacional e internacional'));
-    $('#method-scope').textContent = `Esta vista usa únicamente torneos presenciales individuales de Guatemala con al menos ${localMinimum} participantes activos. Para clasificar aquí necesitas 2 eventos locales y 4 sets válidos locales.`;
-    $('#results-note').textContent = 'Historial de los eventos locales usados en esta vista. Los resultados extranjeros están excluidos por tu selección.';
-  }
-  document.querySelectorAll('a[href^="./metodologia.html"]').forEach(link => { const anchor = link.hash; link.href = (localView ? './metodologia.html?scope=guatemala' : './metodologia.html') + anchor; });
-  $('#region').disabled = localView;
-  if (localView) $('#region').value = 'GT';
-  renderPlayers(); renderResults();
+  const local=snapshot.rankingScope==='guatemala';
+  $('#scope-local').disabled=!published.localRanking;$('#scope-combined').disabled=false;
+  $('#scope-local').setAttribute('aria-pressed',String(!includeInternational));$('#scope-combined').setAttribute('aria-pressed',String(includeInternational));
+  $('#data-status').textContent=`Ranking piloto · ${local?'Solo Guatemala':'Guatemala + internacionales'}`;
+  $('#updated').textContent=`Datos: ${dateFormat.format(new Date(snapshot.generatedAt))}`;
+  $('#scope-help').textContent=local?'Cálculo independiente con eventos de Guatemala. Cambian puntos, actividad y elegibilidad; las flechas comparan únicamente cortes de esta vista.':'Incluye los eventos admitidos de Guatemala y del extranjero. “Solo Guatemala” recalcula toda la clasificación con eventos locales.';
+  $('#list-note').textContent=`${snapshot.scope} Corte ${snapshot.seasonLabel} · ${snapshot.methodVersion}. ${snapshot.previousCutAt?'Movimiento frente al corte del '+dateFormat.format(new Date(snapshot.previousCutAt)):'Sin corte anterior comparable para mostrar movimientos.'}`;
+  $('#footer-method').textContent=snapshot.methodVersion;
+  document.querySelectorAll('a[href^="./metodologia.html"]').forEach(link=>{const hash=link.hash;link.href='./metodologia.html'+(local?'?scope=guatemala':'')+hash;});
+  renderHero();renderChips();renderPlayers();
+}
+function setScope(international) {
+  if(!published || (!international&&!published.localRanking))return;
+  includeInternational=international;snapshot=chooseSnapshot(published,international);
+  if($('#player-dialog').open)$('#player-dialog').close();render();
 }
 async function refresh() {
-  if (loading) return;
-  loading = true;
-  $('#refresh').disabled = true;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  if(loading)return;loading=true;$('#refresh').disabled=true;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
   try {
-    const response = await fetch('./data/public.json', { cache: 'no-store', signal: controller.signal });
-    if (!response.ok) throw new Error('No disponible');
-    const next = validate(await response.json());
-    const chosen = chooseSnapshot(next, includeInternational);
-    const changed = snapshot && (snapshot.generatedAt !== chosen.generatedAt || snapshot.rankingScope !== chosen.rankingScope);
-    published = next;
-    snapshot = chosen;
-    if (changed && $('#player-dialog').open) $('#player-dialog').close();
-    render();
-    $('#load-error').hidden = true;
+    const response=await fetch('./data/public.json',{cache:'no-store',signal:controller.signal});
+    if(!response.ok)throw new Error('Sin datos');
+    const next=validate(await response.json()),chosen=chooseSnapshot(next,includeInternational);
+    const changed=snapshot&&(snapshot.generatedAt!==chosen.generatedAt||snapshot.rankingScope!==chosen.rankingScope);
+    published=next;snapshot=chosen;if(changed&&$('#player-dialog').open)$('#player-dialog').close();
+    render();$('#load-error').hidden=true;
   } catch {
-    $('#load-error').textContent = snapshot ? 'No pudimos actualizar los datos. Se mantiene la última consulta disponible. Puedes volver a intentarlo.' : 'No pudimos cargar los datos. Comprueba tu conexión y pulsa Actualizar.';
-    $('#load-error').hidden = false;
-  } finally { clearTimeout(timeout); loading = false; $('#refresh').disabled = false; }
+    $('#load-error').textContent=snapshot?'No pudimos actualizar. Conservamos el último corte completo que cargaste.':'No pudimos cargar un corte válido. Intenta actualizar en un momento.';$('#load-error').hidden=false;
+  } finally { clearTimeout(timer);loading=false;$('#refresh').disabled=false; }
 }
-const tabs = [$('#tab-players'), $('#tab-results')];
-function selectTab(selected) {
-  for (const tab of tabs) {
-    const active = selected === tab;
-    tab.setAttribute('aria-selected', String(active)); tab.tabIndex = active ? 0 : -1;
-    document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
-  }
+function renderDemo(slug='pikachu',animate=false) {
+  const selected=CHARACTER_CATALOG.find(c=>c.slug===slug)||CHARACTER_CATALOG[0];if(!selected)return;
+  $('#demo-art').replaceChildren(imageNode(selected.name,'portrait'));$('#demo-icon').replaceChildren(imageNode(selected.name));$('#demo-main-name').textContent=`Main · ${selected.name}`;
+  document.querySelectorAll('#demo-roster button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.slug===selected.slug)));
+  if(animate){$('#demo-card').classList.remove('is-pop');requestAnimationFrame(()=>requestAnimationFrame(()=>$('#demo-card').classList.add('is-pop')));$('#demo-status').textContent=`Carta de demostración: ${selected.name}. No se guardó tu selección.`;}
 }
-for (const tab of tabs) {
-  tab.addEventListener('click', () => selectTab(tab));
-  tab.addEventListener('keydown', (event) => {
-    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-      event.preventDefault();
-      const next = event.key === 'Home' ? tabs[0] : event.key === 'End' ? tabs[1] : tabs[1 - tabs.indexOf(tab)];
-      selectTab(next); next.focus();
-    }
-  });
-}
-$('#include-international').addEventListener('change', () => {
-  if (!published?.localRanking) return;
-  includeInternational = $('#include-international').checked;
-  snapshot = chooseSnapshot(published, includeInternational);
-  if ($('#player-dialog').open) $('#player-dialog').close();
-  $('#region').value = 'all';
-  render();
-});
-$('#player-all-results').addEventListener('click', () => showPlayerMatches());
-$('#search').addEventListener('input', renderPlayers);
-for (const [id, view] of [['view-top', 'top'], ['view-all', 'all']]) {
-  $(`#${id}`).addEventListener('click', () => {
-    rankingView = view;
-    $('#search').value = '';
-    $('#view-top').setAttribute('aria-pressed', String(view === 'top'));
-    $('#view-all').setAttribute('aria-pressed', String(view === 'all'));
-    renderPlayers();
-  });
-}
-$('.find-rank-link').addEventListener('click', () => { selectTab($('#tab-players')); $('#search').focus(); });
-$('#player-more').addEventListener('click', () => { visibleMatches += 20; renderPlayerMatches(); });
-$('#region').addEventListener('change', renderResults);
-$('#refresh').addEventListener('click', refresh);
-$('#player-dialog .close').addEventListener('click', () => $('#player-dialog').close());
-renderPlayers(); renderResults(); refresh();
-setInterval(() => { if (!document.hidden) refresh(); }, 60000);
+// Keep browser-only bindings after this boundary so contract tests load pure helpers.
+const tabs = [];
+$('#search').addEventListener('input',renderPlayers);
+$('#view-all').onclick=()=>{rankingView=rankingView==='all'?'top':'all';renderPlayers();};
+$('#scope-local').onclick=()=>setScope(false);$('#scope-combined').onclick=()=>setScope(true);
+$('#refresh').onclick=refresh;$('#player-close').onclick=()=>$('#player-dialog').close();
+$('#player-dialog').addEventListener('click',event=>{const rect=$('#player-dialog').getBoundingClientRect();if(event.target===$('#player-dialog')&&(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom))$('#player-dialog').close();});
+$('#player-all-results').onclick=()=>showPlayerMatches();$('#player-more').onclick=()=>{visibleMatches+=20;renderPlayerMatches();};
+$('#ticker-pause').onclick=()=>{const paused=$('#ticker-track').classList.toggle('is-paused');$('#ticker-pause').setAttribute('aria-pressed',String(paused));$('#ticker-pause').setAttribute('aria-label',paused?'Reanudar barra de resultados':'Pausar barra de resultados');$('#ticker-pause').textContent=paused?'▶':'Ⅱ';};
+$('#demo-roster').replaceChildren(...CHARACTER_CATALOG.map(c=>{const b=element('button');b.type='button';b.dataset.slug=c.slug;b.title=c.name;b.setAttribute('aria-label',`Probar ${c.name}`);b.setAttribute('aria-pressed','false');b.append(imageNode(c.name));b.onclick=()=>renderDemo(c.slug,true);return b;}));
+renderDemo();refresh();setInterval(()=>{if(!document.hidden)refresh();},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});

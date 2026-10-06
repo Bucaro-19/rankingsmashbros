@@ -1,107 +1,53 @@
 <!doctype html>
 <html lang="es-GT">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0c101c">
-  <meta name="description" content="La escena de Smash Ultimate de Guatemala, en un solo lugar. Jugadores, resultados nacionales e internacionales y seguimiento de la temporada.">
-  <title>Smash GT — La escena, en un solo lugar</title>
-  <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./arena.css?v=20261006-activity">
-  <script src="./app.js?v=20261006-activity" defer></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0B0F1A"><meta name="description" content="Ranking piloto de Smash Ultimate Guatemala. Consulta tu puesto, actividad, mains registrados y torneos de la temporada.">
+  <title>Smash GT — Los que mandan en el 502</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./arena.css?v=20261006-design2">
+  <script src="./characters.js?v=20261006-design2" defer></script><script src="./app.js?v=20261006-design2" defer></script>
 </head>
-<body>
-  <a class="skip-link" href="#contenido">Saltar al contenido</a>
-  <header class="site-header wrap">
-    <a class="brand" href="./" aria-label="Smash GT, inicio"><span class="brand-mark" aria-hidden="true">S<span>↗</span></span><span>SMASH<span class="brand-gt">GT</span><small>POR INGPORRAS</small></span></a>
-    <nav aria-label="Principal"><a href="#clasificacion">La escena</a><a href="./metodologia.html">Método y torneos <span aria-hidden="true">↗</span></a><a href="./encuesta.php">Tu opinión <span aria-hidden="true">↗</span></a></nav>
-    <span class="country"><span class="flag" aria-hidden="true"></span> Guatemala</span>
+<body class="smash-redesign">
+  <a class="skip-link" href="#ranking">Saltar al ranking</a>
+  <header class="gt-header">
+    <a class="gt-brand" href="./" aria-label="Smash GT, inicio"><span class="gt-mark">GT</span><span>SMASH GT<small>por ingporras</small></span></a>
+    <nav aria-label="Principal"><a href="#ranking">Ranking</a><a href="./metodologia.html">Método</a><a href="./encuesta.php">Tu opinión</a><a class="account-link" href="#cuenta">Próximamente: tu cuenta</a></nav>
   </header>
+  <div class="gt-ticker"><div class="ticker-window"><div id="ticker-track" class="ticker-track"><span>SMASH GT · TEMPORADA 2026 · RANKING PILOTO</span></div></div><button id="ticker-pause" type="button" aria-pressed="false" aria-label="Pausar barra de resultados">Ⅱ</button></div>
   <main id="contenido">
-    <section class="hero wrap" aria-labelledby="hero-title">
-      <div class="hero-copy"><p class="eyebrow"><span class="tiny-line"></span> SUPER SMASH BROS. ULTIMATE</p>
-        <h1 id="hero-title">EL TALENTO<br><em>CHAPÍN</em><br>EN JUEGO.</h1>
-        <p class="intro">La primera clasificación experimental de la escena guatemalteca: partidas presenciales, rivales y actividad durante 2026.</p>
-        <a class="button primary" href="#clasificacion">VER TOP 100 PILOTO <span aria-hidden="true">↘</span></a>
-        <a class="find-rank-link" href="#search">BUSCAR MI PUESTO <span aria-hidden="true">↗</span></a>
-        <p id="hero-note" class="hero-note">Temporada 2026 · corte semanal en revisión.</p>
+    <section class="gt-hero" aria-labelledby="hero-title">
+      <div class="hero-copy"><p id="hero-season" class="gt-kicker">Temporada 2026 · Ranking piloto</p><h1 id="hero-title">Los que<span>mandan</span><em>en el 502.</em></h1>
+        <div class="hero-stats" aria-label="Cobertura del ranking"><div><strong id="players-count">—</strong><span>clasificados</span></div><div><strong id="events-count">—</strong><span>torneos</span></div><div><strong id="sets-count">—</strong><span>sets jugados</span></div></div>
       </div>
-      <div class="hero-art" aria-label="Ilustración de una arena de combate">
-        <div class="art-heading"><span><i></i> ARENA GUATEMALA</span><span>GT / 502</span></div>
-        <svg viewBox="0 0 500 400" role="img" aria-label="Dos figuras de combate sobre una plataforma, con destellos rojos y azules">
-          <defs>
-            <linearGradient id="blue-side" x2="1" y2="1"><stop stop-color="#1161b5"/><stop offset="1" stop-color="#0a162e"/></linearGradient>
-            <linearGradient id="red-side" x2="1" y2="1"><stop stop-color="#421b38"/><stop offset="1" stop-color="#f04442"/></linearGradient>
-            <radialGradient id="impact"><stop stop-color="#ffe19b" stop-opacity=".9"/><stop offset=".45" stop-color="#ff7144" stop-opacity=".3"/><stop offset="1" stop-color="#ff7144" stop-opacity="0"/></radialGradient>
-            <linearGradient id="stage" x2="0" y2="1"><stop stop-color="#5a7a91"/><stop offset=".1" stop-color="#142339"/><stop offset="1" stop-color="#0a101c"/></linearGradient>
-          </defs>
-          <path d="M0 0H315L180 400H0Z" fill="url(#blue-side)"/><path d="M320 0H500V400H186Z" fill="url(#red-side)"/>
-          <g opacity=".15" stroke="#a6d9ff" fill="none"><path d="M0 50L300 0M0 90L285 40M0 130L270 80M0 170L250 120M0 210L230 160M0 250L215 200"/><circle cx="130" cy="180" r="95"/><circle cx="130" cy="180" r="112"/></g>
-          <g opacity=".18" stroke="#ffdad5"><path d="M350 60l150-35M340 100l160-35M320 140l180-35M310 180l190-35M290 220l210-35M280 260l220-35"/></g>
-          <path d="M305 15L245 161L272 157L206 305L278 185L250 187L322 15" fill="#fff3c8" opacity=".9"/>
-          <circle cx="260" cy="211" r="115" fill="url(#impact)"/>
-          <g fill="#09111e" stroke="#57bbed" stroke-width="2" stroke-linejoin="round">
-            <path d="M129 161l19-17 27 7 5 24-13 17-28-6z"/>
-            <path d="M140 186l32 5 30 51-32 17-42-38z"/>
-            <path d="M169 196l27 4 27-35 13 12-26 52-28-5z"/>
-            <path d="M133 199l-23 22-19-9-9 19 35 12 31-27z"/>
-            <path d="M142 233l29 19-40 29-5 34-31 1 9-13 7-42z"/>
-            <path d="M165 250l25-16 20 44 26 17-13 18-34-24z"/>
-            <path d="M226 168l7-6 38-67 7 4-23 77-15 14z" fill="#badcee"/>
-            <path d="M128 192l-27 42-36 26 35-10 40-27z" fill="#1579a6"/>
-          </g>
-          <g fill="#170e19" stroke="#ff9075" stroke-width="2" stroke-linejoin="round">
-            <path d="M350 141l20 2 14 18-6 23-22 3-17-17z"/>
-            <path d="M353 183l24 4 14 46-39 20-17-39z"/>
-            <path d="M344 193l-30 10-28-13-11 16 37 24 42-16z"/>
-            <path d="M377 195l30 17-5 33-21-3 2-19-22-12z"/>
-            <path d="M357 237l24-1 5 44 28 17-7 19-41-21z"/>
-            <path d="M356 233l22 15-34 30-26 32-24-7 10-15 26-36z"/>
-            <path d="M352 185l-30 52 12-4 9-12 5 23 13-13 15 10 4-38z" fill="#a33748"/>
-            <path d="M281 185l-18 9-2 20 24 8 14-17z" fill="#ee7856"/>
-          </g>
-          <g stroke="#ffe9ac" stroke-width="3"><path d="M259 204l-25-6M271 183l-3-18M279 218l16 13M246 224l-14 14"/></g>
-          <path d="M46 320L416 306 464 324 99 350Z" fill="#86b5c9"/><path d="M99 350L464 324 435 352 147 382Z" fill="url(#stage)"/><path d="M46 320L99 350 147 382 76 348Z" fill="#182b43"/>
-          <path d="M103 352l340-26" stroke="#60d7ff" stroke-width="3"/>
-          <text x="250" y="110" text-anchor="middle" fill="#fff" font-family="Impact, sans-serif" font-style="italic" font-size="58" stroke="#101421" stroke-width="2" paint-order="stroke">VS</text>
-          <text x="27" y="379" fill="#a7d8ff" font-size="10" font-family="sans-serif" letter-spacing="3">JUEGO LOCAL. ALCANCE GLOBAL.</text>
-        </svg>
-        <div class="art-footer"><span class="plus" aria-hidden="true">↗</span><p>UNA COMUNIDAD.<br><strong>TODOS LOS ESCENARIOS.</strong></p><span class="battle-label">SMASH<br>ULTIMATE</span></div>
-      </div>
+      <button id="hero-player" class="hero-player" type="button" disabled aria-label="Ver al líder del ranking"><span class="hero-rank" aria-hidden="true">1</span><span id="hero-art" class="hero-art"></span><span class="hero-caption"><span class="hero-tag"><small>Líder de esta vista · piloto</small><strong id="hero-tag">Cargando…</strong></span><span class="hero-points"><b id="hero-points">—</b> PTS</span></span></button>
     </section>
-    <section class="season-bar wrap" aria-label="Estado de los datos"><div><span class="status-dot"></span><strong id="data-status">Preparando la primera temporada</strong></div><span id="updated">Sin sincronización todavía</span><button id="refresh" type="button">Actualizar <span aria-hidden="true">↻</span></button></section>
-    <p id="load-error" class="wrap error" role="alert" hidden></p>
-    <section class="scope-panel wrap" aria-label="Alcance del ranking">
-      <div><p class="card-kicker">ELIGE QUÉ TORNEOS CUENTAN</p><label class="scope-switch"><input type="checkbox" role="switch" id="include-international" aria-describedby="scope-help" checked disabled><span class="switch-track" aria-hidden="true"></span><span>Incluir torneos internacionales</span></label></div>
-      <div class="scope-description"><strong id="scope-label">Guatemala + internacionales</strong><p id="scope-help" role="status">Cargando las vistas del ranking…</p></div>
+    <section id="ranking" class="gt-ranking" aria-labelledby="scene-title">
+      <div class="ranking-heading"><h2 id="scene-title">Player<span>select.</span></h2><div class="ranking-controls"><div class="scope-buttons" role="group" aria-label="Alcance del ranking"><button id="scope-local" type="button" aria-pressed="false" disabled>Solo Guatemala</button><button id="scope-combined" type="button" aria-pressed="true" disabled>+ Internacional</button></div><label class="gt-search"><span class="sr-only">Buscar jugador en toda la clasificación</span><input id="search" type="search" placeholder="Busca tu tag…" autocomplete="off"></label></div></div>
+      <div class="cut-status"><div><strong id="data-status">Cargando ranking…</strong><p id="updated">Consultando el último corte disponible.</p></div><button id="refresh" type="button">Actualizar ↻</button></div>
+      <p id="load-error" class="gt-error" role="alert" hidden></p><p id="scope-help" class="gt-note"></p>
+      <div id="main-filter" class="main-filter" role="group" aria-label="Filtrar por personaje" hidden><span>Filtrar por main</span><div id="main-chips"></div></div>
+      <p id="main-coverage-note" class="gt-note"></p>
+      <div id="podium" class="gt-podium" aria-label="Podio del ranking"></div>
+      <p id="ranking-summary" class="gt-note" role="status"></p><div id="players-list" class="gt-rows"></div>
+      <button id="view-all" class="gt-outline view-all" type="button" aria-pressed="false" hidden>Ver todos los clasificados</button>
+      <p id="list-note" class="gt-note"></p><p class="gt-note">Para clasificar: 2 torneos y 4 sets válidos. Ambas vistas se actualizan los domingos a las 00:00 de Guatemala; la publicación puede demorar. <a href="./metodologia.html">Método y torneos ↗</a></p>
     </section>
-    <section class="stats wrap" aria-label="Cobertura de datos"><div><span id="players-count">—</span><p>Clasificados piloto</p></div><div><span id="events-count">—</span><p>Eventos considerados</p></div><div><span id="sets-count">—</span><p>Sets competitivos</p></div><div><span id="countries-count">—</span><p>Países incluidos</p></div></section>
-    <section class="scene wrap" id="clasificacion" aria-labelledby="scene-title">
-      <div class="section-heading"><div><p class="eyebrow">PLAYER SELECT / GUATEMALA · TEMPORADA 2026</p><h2 id="scene-title">Top 100 piloto.</h2></div><span id="season-label" class="season-label">Temporada por confirmar</span></div>
-      <div class="scene-layout"><div class="list-panel">
-        <div class="tabs" role="tablist" aria-label="Explorar"><button id="tab-players" role="tab" aria-selected="true" aria-controls="panel-players" tabindex="0">Jugadores <span id="tab-count">—</span></button><button id="tab-results" role="tab" aria-selected="false" aria-controls="panel-results" tabindex="-1">Resultados</button></div>
-        <div id="panel-players" role="tabpanel" aria-labelledby="tab-players">
-          <div class="ranking-intro"><span class="card-kicker">TU LUGAR EN LA ESCENA</span><h3>Tu puesto también cuenta.</h3><p>Busca tu alias, aunque estés fuera del top 100. Consultar tu puesto es gratis y no necesitas cuenta.</p></div>
-          <div class="ranking-views" role="group" aria-label="Vista de clasificación"><button id="view-top" type="button" aria-pressed="true">Top 100</button><button id="view-all" type="button" aria-pressed="false">Todos los clasificados</button></div>
-          <div class="search-field"><span aria-hidden="true">⌕</span><input id="search" type="search" aria-label="Buscar jugador en toda la clasificación" aria-describedby="search-help" placeholder="Tu alias o nombre de jugador…" autocomplete="off"></div>
-          <p class="list-note" id="search-help">La búsqueda incluye todos los puestos disponibles. Para clasificar necesitas 2 torneos y 4 sets válidos.</p>
-          <p class="list-note" id="list-note">Las posiciones se publicarán cuando validemos el cálculo.</p>
-          <p id="ranking-summary" class="ranking-summary" role="status"></p>
-          <div id="players-list"></div>
-        </div>
-        <div id="panel-results" role="tabpanel" aria-labelledby="tab-results" hidden><div class="filter-row"><label for="region">Dónde se jugó</label><select id="region"><option value="all">Todos los países</option><option value="GT">Guatemala</option><option value="international">En el extranjero</option></select></div><p id="results-note" class="list-note">Partidas consideradas en esta versión local; los resultados de fuera de Guatemala aún se están recopilando.</p><div id="results-list" aria-live="polite"></div></div>
-      </div><aside class="aside-card"><span class="card-kicker">READY TO FIGHT?</span><h3>LA PRÓXIMA<br>PARTIDA ES<br>OTRA HISTORIA.</h3><p id="aside-scope">Este top es una prueba abierta: el orden cambiará cuando completemos los torneos internacionales y revisemos quiénes representan a Guatemala.</p><div class="aside-divider"></div><span class="card-kicker">SIGUIENTES FASES</span><ol><li id="aside-phase1"><span>01</span> Agregar resultados del extranjero</li><li><span>02</span> Revisar jugadores y torneos</li><li><span>03</span> Validar la clasificación final</li></ol><a href="./metodologia.html">Ver cálculo y torneos <span aria-hidden="true">↗</span></a><a href="./encuesta.php">Ayudar con el cuestionario <span aria-hidden="true">↗</span></a></aside></div>
-    </section>
-    <section class="method wrap" id="metodo" aria-labelledby="method-title"><div class="section-heading"><div><p class="eyebrow">RESULTADOS CON CONTEXTO</p><h2 id="method-title">Cada partida tiene una historia.</h2></div></div><div class="method-grid"><article><span>01 / COMUNIDAD</span><h3>Guatemala, presente.</h3><p>El país público del perfil permite descubrir candidatos, pero no prueba nacionalidad o residencia. Incluimos casos documentados por el ranking guatemalteco de 2025 y los asientos regionales de UltRank 2026.1; su elegibilidad para este top sigue en revisión.</p></article><article><span>02 / COMPETENCIA</span><h3>Dentro y fuera.</h3><p id="method-scope">Esta versión toma eventos presenciales individuales de Guatemala con al menos 20 jugadores activos y exige dos eventos y cuatro sets por clasificado. Los torneos del extranjero aún no cuentan.</p></article><article><span>03 / TRANSPARENCIA</span><h3>Un cálculo propio.</h3><p>Los puntos Smash GT comparan victorias y derrotas según la fuerza estimada del rival, con ajustes por valor del torneo y enfrentamientos repetidos. La tabla pública de UltRank ayuda a estimar el valor de eventos guatemaltecos; el orden de jugadores usa nuestro propio modelo.</p><a href="./metodologia.html">Cómo calculamos cada puesto y qué torneos entran ↗</a></article></div></section>
+    <section id="cuenta" class="gt-preview" aria-labelledby="preview-title"><div class="preview-layout"><div><p class="gt-kicker">Próximamente · Cuentas</p><h2 id="preview-title">Elige tu<br>main.</h2><p class="preview-copy">Así podría verse tu carta de jugador. Prueba un personaje: este adelanto no crea una cuenta, no guarda tu elección y no cambia el main detectado en el ranking.</p><div id="demo-roster" class="demo-roster" role="group" aria-label="Elegir personaje para la carta de demostración"></div></div><div class="preview-card-wrap"><div id="demo-card" class="demo-card"><div id="demo-art" class="demo-art"></div><div class="demo-name"><span>TU TAG<small id="demo-main-name">Carta de demostración</small></span><span id="demo-icon"></span></div></div><p id="demo-status" class="sr-only" role="status"></p></div></div></section>
   </main>
-  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS <span aria-hidden="true">↗</span></a><p>Hecho para la comunidad de Guatemala.<br>Proyecto independiente, sin afiliación con start.gg, UltRank o Nintendo.</p><span>SMASH GT</span></footer>
-  <dialog id="player-dialog" aria-labelledby="player-title"><button class="close" aria-label="Cerrar detalle" autofocus>×</button><p class="eyebrow">PERFIL DE LA COMUNIDAD</p><h2 id="player-title"></h2><div id="player-stats" class="player-stats"></div><p id="player-summary"></p><section id="player-activity" class="player-activity" aria-labelledby="activity-title" hidden>
-    <p class="eyebrow">CONSTANCIA VISIBLE</p><h3 id="activity-title">Tu temporada, mes a mes.</h3>
-    <p id="activity-summary"></p><ul id="activity-months" class="activity-months" aria-label="Actividad por mes"></ul>
-    <p class="activity-note">Un mes activo tiene al menos un set válido en un torneo admitido. Usamos la fecha del evento en hora de Guatemala. “Sin registro” no prueba que no hayas jugado: puede faltar cobertura. Esto muestra participación; no añade un bono de puntos.</p>
-    <details id="activity-events"><summary id="activity-events-title"></summary><ul id="activity-ledger"></ul></details>
-    <a id="activity-method-link" href="./metodologia.html#puntos-en-claro">Entender mis puntos y mi actividad ↗</a>
-  </section><h3 id="player-history-title" class="history-title">Sets considerados en este corte</h3><button id="player-all-results" class="history-more" type="button" hidden>Volver a todos los sets</button><p id="player-history-count" class="history-count"></p><div id="player-matches"></div><button id="player-more" class="history-more" type="button" hidden>Ver más resultados</button><a id="player-link" target="_blank" rel="noopener noreferrer">Ver perfil en start.gg ↗</a></dialog>
-  <noscript><p class="wrap error">Activa JavaScript para consultar jugadores y resultados.</p></noscript>
+  <footer class="gt-footer"><span>Hecho para la comunidad de Guatemala. <a href="https://ingporras.com/">INGPORRAS ↗</a></span><span>Datos: start.gg · <span id="footer-method">BT-PILOTO-3</span><br>Arte: Nintendo y titulares respectivos · Recursos: <a href="https://github.com/marcrd/smash-ultimate-assets" target="_blank" rel="noopener noreferrer">marcrd</a> / <a href="https://github.com/jonborg/ThumbnailGenerator" target="_blank" rel="noopener noreferrer">ThumbnailGenerator</a></span><p>Proyecto independiente, sin afiliación con Nintendo, start.gg ni UltRank. Ranking experimental.</p></footer>
+  <dialog id="player-dialog" class="gt-drawer" aria-labelledby="player-title">
+    <div class="drawer-hero"><strong id="drawer-rank" aria-hidden="true"></strong><div id="drawer-art"></div><button id="player-close" type="button" class="close" aria-label="Cerrar detalle" autofocus>×</button></div>
+    <div class="drawer-content"><div><p class="gt-kicker">Perfil de la comunidad</p><h2 id="player-title"></h2><p id="player-subtitle"></p><p id="player-movement"></p></div><div id="player-stats" class="drawer-stats"></div><p id="player-summary" class="drawer-note"></p>
+      <section aria-labelledby="player-main-title"><h3 id="player-main-title">Personajes registrados</h3><div id="player-mains" class="player-mains"></div><p id="player-main-note" class="drawer-note"></p></section>
+      <section aria-labelledby="recent-title"><h3 id="recent-title">Últimos torneos</h3><div id="player-recent"></div></section>
+      <section aria-labelledby="rivals-title"><h3 id="rivals-title">Rivales más frecuentes</h3><div id="player-rivals"></div><p class="drawer-note">Récord de sets en esta vista, del mismo corte. Incluye rivales que no clasifican al ranking.</p></section>
+      <section id="player-activity" class="drawer-activity" aria-labelledby="activity-title" hidden><h3 id="activity-title">Tu temporada, mes a mes.</h3><p id="activity-summary" class="drawer-note"></p><ul id="activity-months" class="activity-months" aria-label="Actividad por mes"></ul><p class="drawer-note">Un mes activo tiene un set válido en un torneo admitido, según la fecha del evento en Guatemala. Sin registro no prueba inactividad. No añade bonos.</p><details id="activity-events"><summary id="activity-events-title"></summary><ul id="activity-ledger"></ul></details><a href="./metodologia.html#puntos-en-claro">Entender puntos y actividad ↗</a></section>
+      <section><h3 id="player-history-title">Sets considerados en este corte</h3><button id="player-all-results" class="gt-outline" type="button" hidden>Volver a todos los sets</button><p id="player-history-count" class="drawer-note" role="status"></p><div id="player-matches"></div><button id="player-more" class="gt-outline" type="button" hidden>Ver más resultados</button></section>
+      <a id="player-link" class="gt-outline" target="_blank" rel="noopener noreferrer">Ver perfil en start.gg ↗</a>
+    </div>
+  </dialog>
+  <noscript><p class="gt-error">Activa JavaScript para consultar el ranking y sus filtros.</p></noscript>
 </body>
 </html>

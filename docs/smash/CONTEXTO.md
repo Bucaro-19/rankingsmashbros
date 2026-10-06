@@ -27,4 +27,4 @@
 ## Referencias
 - Acuerdos: `scripts/smash/ACUERDOS-2026-10-01.md`.
 - Operación y metodología: README.md, METODOLOGIA.md, PLAN-RANKING.md en scripts/smash.
-- Último avance terminado antes del rediseño: PR #22, commit 6b5192c. Calendarios y torneos por jugador publicados, 50 pruebas correctas. Corte Oct4: 188 clasificados, 42 eventos combinados / 39 locales. Actividad generada sin cambiar puntos/puestos.
+- Rediseño y mains: estado vivo en `EN-CURSO.md`. Último avance previo: PR #22, commit 6b5192c. Calendarios y torneos por jugador publicados, 50 pruebas correctas. Corte Oct4: 188 clasificados, 42 eventos combinados / 39 locales. Actividad generada sin cambiar puntos/puestos.

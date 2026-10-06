@@ -39,7 +39,7 @@ function renderEvent(event) {
 }
 
 function render(data) {
-  if (data.schemaVersion !== 2 || !data.rankingComputed || !Array.isArray(data.events) || !Array.isArray(data.excludedEvents)) {
+  if (![2, 3].includes(data.schemaVersion) || !data.rankingComputed || !Array.isArray(data.events) || !Array.isArray(data.excludedEvents)) {
     throw new Error('La captura no tiene el catálogo de torneos');
   }
   if (data.events.length !== data.counts?.events || data.events.some((event) =>

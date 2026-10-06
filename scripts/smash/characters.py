@@ -129,6 +129,7 @@ def add_to_public(snapshot, public):
             raise ValueError('Cobertura de personajes incompleta para esta vista.')
         data = player_mains(snapshot, events, ids)
         view['players'] = [{**p, **data[p['id']]} for p in view['players']]
+        view['results'] = [{**m, 'playerTags': [(snapshot['players'].get(pid) or {}).get('gamerTag') or f'Rival #{pid}' for pid in m['playerIds']]} for m in view['results']]
         view['schemaVersion'] = 3
         view['characterCapturedAt'] = snapshot['characterCapturedAt']
     return result

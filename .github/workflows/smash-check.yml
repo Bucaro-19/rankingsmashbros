@@ -18,6 +18,7 @@ jobs:
         run: python -m unittest discover -s scripts/smash -v
       - name: Verificar JavaScript
         run: |
+          node --check ranking-smash-ultimate/characters.js
           node --check ranking-smash-ultimate/app.js
           node --check ranking-smash-ultimate/metodologia.js
           node --check ranking-smash-ultimate/analisis-top20.js

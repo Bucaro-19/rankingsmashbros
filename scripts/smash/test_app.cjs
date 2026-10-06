@@ -106,3 +106,28 @@ test('schema 3 preserves existing rank checks and rejects invalid character coun
   assert.equal(validate(data),data);
   data.players[0].rank=999;assert.throws(()=>validate(data));
 });
+const newHelpers=vm.runInNewContext(source.split('const tabs =')[0]+'\n({filteredPlayers,movement,playerRivals,damageColor});');
+test('main search includes secondaries and all positions, preserves rank and aliases',()=>{
+  const data=fixture();data.players[154].tag='Ángel';data.players[154].knownAs='OldTag';
+  data.players[154].mains=[{characterId:'a',name:'Mario',games:4},{characterId:'b',name:'Luigi',games:3}];
+  assert.equal(newHelpers.filteredPlayers(data,'angel','b','top')[0].rank,155);
+  assert.equal(newHelpers.filteredPlayers(data,'oldtag',null,'top')[0].rank,155);
+  assert.equal(newHelpers.filteredPlayers(data,'','missing','all').length,0);
+});
+test('movement requires comparable cut; rival records use stable IDs and winner order',()=>{
+  const p={id:'1',rank:10,previousRank:12};
+  assert.equal(newHelpers.movement(p,{}).text,'—');
+  assert.equal(newHelpers.movement(p,{previousCutAt:'2026-01-01'}).text,'▲ 2');
+  assert.equal(newHelpers.movement({...p,previousRank:5},{previousCutAt:'2026-01-01'}).text,'▼ 5');
+  const data={players:[{id:'2',tag:'Nuevo alias'}],results:[{playerIds:['1','2']},{playerIds:['2','1']},{playerIds:['1','3'],playerTags:['Yo','Extranjero']}]};
+  const rivals=newHelpers.playerRivals(p,data);
+  assert.equal(rivals[0].tag,'Nuevo alias');assert.equal(rivals[0].wins,1);assert.equal(rivals[0].losses,1);
+  assert.equal(rivals[1].tag,'Extranjero');
+  assert.equal(newHelpers.damageColor(100),'rgb(244,241,234)');
+});
+test('all roster names resolve including DLC; local assets exist and aliases map safely',()=>{
+  const char=vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../../ranking-smash-ultimate/characters.js'),'utf8')+'\n({catalog:CHARACTER_CATALOG,asset:characterAsset});');
+  for(const c of char.catalog){assert.ok(char.asset(c.name),c.name);for(const type of ['icon','portrait'])if(c[type].startsWith('./'))assert.ok(fs.existsSync(path.join(__dirname,'../../ranking-smash-ultimate',c[type])));}
+  for(const name of ['Sora','Joker','Hero','Banjo & Kazooie','Byleth','Min Min','Steve','Sephiroth','Pyra/Mythra','Kazuya','Terry','Piranha Plant','Rosalina'])assert.ok(char.asset(name),name);
+  assert.equal(char.asset('<script>'),null);
+});
