@@ -96,3 +96,13 @@ test('the published combined and local player ledgers load under the browser con
   assert.equal(validate(data),data);
   for(const scope of [data,data.localRanking]) for(const player of scope.players) assert.ok(activityView(player,scope));
 });
+test('schema 3 preserves existing rank checks and rejects invalid character counts',()=>{
+  const data=fixture();data.schemaVersion=3;
+  for(const p of data.players){p.mains=[];p.mainCoverage={setsQueried:4,setsWithSelections:0,gamesWithSelections:0,ambiguousGames:0};}
+  assert.equal(validate(data),data);
+  data.players[0].mains=[{characterId:'1',name:'Mario',games:1}];
+  assert.throws(()=>validate(data));
+  data.players[0].mainCoverage.gamesWithSelections=1;data.players[0].mainCoverage.setsWithSelections=1;
+  assert.equal(validate(data),data);
+  data.players[0].rank=999;assert.throws(()=>validate(data));
+});

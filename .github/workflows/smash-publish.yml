@@ -74,6 +74,20 @@ jobs:
             mv scripts/smash/data/previous-public.tmp scripts/smash/data/previous-public.json
           fi
           python scripts/smash/publish_ranking.py scripts/smash/data/combined.json scripts/smash/data/pilot-ranking.json ranking-smash-ultimate/data/public.json --curation scripts/smash/curation.json --previous-public scripts/smash/data/previous-public.json --include-local --points-csv scripts/smash/data/ultrank_players.csv
+      - uses: actions/cache/restore@v4
+        with:
+          path: scripts/smash/data/characters-cache.json
+          key: smash-characters-v1-${{ github.run_id }}
+          restore-keys: smash-characters-v1-
+      - name: Consultar personajes registrados sin cambiar el ranking
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        run: python scripts/smash/characters.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json --output-public ranking-smash-ultimate/data/public.json
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: scripts/smash/data/characters-cache.json
+          key: smash-characters-v1-${{ github.run_id }}
       - name: Auditar cobertura y sensibilidad del corte
         run: python scripts/smash/audit.py scripts/smash/data/combined.json scripts/smash/curation.json scripts/smash/data/auditoria.md --points-csv scripts/smash/data/ultrank_players.csv
       - name: Guardar auditoría para revisión

@@ -20,7 +20,7 @@ def validate_public_data(data, *, local=False):
     counts = data.get("counts") or {}
     players = data.get("players")
     events = data.get("events")
-    if (data.get("schemaVersion") != 2 or data.get("status") != ("local_pilot" if local else "international_pilot")
+    if (data.get("schemaVersion") not in (2, 3) or data.get("status") != ("local_pilot" if local else "international_pilot")
             or data.get("rankingComputed") is not True or not isinstance(players, list)
             or not players or counts.get("players") != len(players)
             or any(not isinstance(player, dict) or not isinstance(player.get("id"), str)
@@ -39,6 +39,7 @@ def validate_public_data(data, *, local=False):
 
 
     validate_activity(data)
+    validate_mains(data)
     if local and (data.get('rankingScope') != 'guatemala' or 'localRanking' in data
                   or any(e.get('country') != 'GT' for e in events)
                   or any(m.get('country') != 'GT' for m in data.get('results', []))):
@@ -52,6 +53,26 @@ def validate_public_data(data, *, local=False):
                 or any(view.get(k) != data.get(k) for k in ('generatedAt', 'seasonYear', 'seasonLabel', 'methodVersion', 'eligibilityRules'))
                 or {e['id'] for e in view['events']} != {e['id'] for e in events if e.get('country') == 'GT'}):
             raise ValueError('Las dos vistas deben usar el mismo corte, reglas y eventos locales.')
+
+
+def validate_mains(data):
+    if data.get('schemaVersion') != 3:
+        return
+    try:
+        if not isinstance(data['characterCapturedAt'], str): raise ValueError()
+        for p in data['players']:
+            mains, coverage = p['mains'], p['mainCoverage']
+            if not isinstance(mains, list): raise ValueError()
+            if any(not isinstance(m['characterId'], str) or not isinstance(m['name'], str)
+                   or not m['name'].strip() or type(m['games']) is not int or m['games'] < 1 for m in mains): raise ValueError()
+            if len({m['characterId'] for m in mains}) != len(mains): raise ValueError()
+            if mains != sorted(mains, key=lambda m: (-m['games'], m['characterId'])): raise ValueError()
+            if any(type(coverage[k]) is not int or coverage[k] < 0 for k in
+                   ('setsQueried','setsWithSelections','gamesWithSelections','ambiguousGames')): raise ValueError()
+            if coverage['setsQueried'] != p['sets'] or coverage['setsWithSelections'] > p['sets']: raise ValueError()
+            if sum(m['games'] for m in mains) != coverage['gamesWithSelections']: raise ValueError()
+    except (KeyError, TypeError, ValueError):
+        raise ValueError('Personajes o cobertura incoherentes; no publicar.') from None
 
 
 def validate_activity(data):

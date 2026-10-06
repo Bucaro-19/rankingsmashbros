@@ -174,9 +174,18 @@ function renderResults() {
   target.replaceChildren(...results.slice(0, 100).map(resultNode));
   if (results.length > 100) target.append(element('p', 'Se muestran los 100 resultados más recientes de este filtro.', 'list-note'));
 }
+function validateMains(player) {
+  const mains = player.mains, c = player.mainCoverage;
+  if (!Array.isArray(mains) || !c || mains.some(m => typeof m.characterId !== 'string' || typeof m.name !== 'string' || !m.name.trim() || !Number.isInteger(m.games) || m.games < 1)
+      || new Set(mains.map(m=>m.characterId)).size !== mains.length
+      || ['setsQueried','setsWithSelections','gamesWithSelections','ambiguousGames'].some(k=>!Number.isInteger(c[k]) || c[k]<0)
+      || c.setsQueried !== player.sets || c.setsWithSelections > c.setsQueried
+      || mains.reduce((n,m)=>n+m.games,0) !== c.gamesWithSelections
+      || mains.some((m,i)=>i>0 && (m.games>mains[i-1].games || (m.games===mains[i-1].games && m.characterId<mains[i-1].characterId)))) throw new Error('Personajes inválidos');
+}
 function validate(data, nested = false) {
   if (!data || typeof data !== 'object') throw new Error('Datos inválidos');
-  const pilot = data.schemaVersion === 2 && ['local_pilot', 'international_pilot'].includes(data.status) && data.rankingComputed === true;
+  const pilot = [2, 3].includes(data.schemaVersion) && ['local_pilot', 'international_pilot'].includes(data.status) && data.rankingComputed === true;
   const coverage = data.schemaVersion === 1 && ['awaiting_data', 'coverage_only'].includes(data.status) && data.rankingComputed === false;
   if ((!pilot && !coverage) || !Array.isArray(data.players) || !Array.isArray(data.results)) throw new Error('Formato inválido');
   for (const player of data.players) {
@@ -184,6 +193,7 @@ function validate(data, nested = false) {
     if (player.knownAs != null && typeof player.knownAs !== 'string') throw new Error('Alias inválido');
     if (pilot && (!Number.isInteger(player.rank) || player.rank < 1 || !Number.isInteger(player.rating) || !Number.isInteger(player.wins) || !Number.isInteger(player.losses) || !Number.isInteger(player.events) || typeof player.countryBasis !== 'string')) throw new Error('Clasificación inválida');
     if (player.previousRank != null && (!Number.isInteger(player.previousRank) || player.previousRank < 1)) throw new Error('Posición anterior inválida');
+    if (data.schemaVersion === 3) validateMains(player);
     if (player.activity) activityView(player, data);
     if (coverage && typeof player.historyComplete !== 'boolean') throw new Error('Cobertura inválida');
   }
