@@ -67,7 +67,11 @@ async function refresh() {
   try {
     const response = await fetch('./data/public.json', { cache: 'no-store' });
     if (!response.ok) throw new Error('Datos no disponibles');
-    render(await response.json());
+    const bundle = await response.json();
+    const local = new URLSearchParams(window.location.search).get('scope') === 'guatemala';
+    if (local && !bundle.localRanking) throw new Error('La vista local no está disponible');
+    render(local ? bundle.localRanking : bundle);
+    byId('method-view').textContent = local ? 'Vista: solo Guatemala. La tabla y los conteos corresponden al cálculo local independiente.' : 'Vista: Guatemala + internacionales. La tabla y los conteos corresponden al cálculo combinado.';
   } catch {
     byId('event-status').textContent = 'No pudimos cargar el catálogo. Vuelve a intentarlo más tarde.';
   }

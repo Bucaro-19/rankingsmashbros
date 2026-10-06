@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from rank import competitive_set
+from rank import competitive_set, compute
 
 
 def event_url(slug):
@@ -93,12 +93,14 @@ def export(snapshot, ranking, curation=None, previous=None):
     countries = {event["country"] for event in events}
     countries.discard(None)
     players = [dict(row) for row in all_players]
+    scope_key = "combined" if international else "guatemala"
+    previous_scope = (previous.get("rankingScope") or ("combined" if previous.get("status") == "international_pilot" else "guatemala" if previous.get("status") == "local_pilot" else scope_key)) if previous else None
     previous_cut = None
     previous_year = previous.get("seasonYear") if previous else None
     if previous and previous_year is None:
         previous_start = str(previous.get("seasonLabel", "")).split(" – ")[0]
         previous_year = int(previous_start[-4:]) if re.fullmatch(r"\d\d/\d\d/\d{4}", previous_start) else None
-    if (previous and previous_year == season_year
+    if (previous and previous_scope == scope_key and previous_year == season_year
             and previous.get("methodVersion") == ranking.get("methodVersion", "BT-PILOTO-1")
             and isinstance(previous.get("generatedAt"), str)
             and previous["generatedAt"] < snapshot["generatedAt"]
@@ -112,6 +114,7 @@ def export(snapshot, ranking, curation=None, previous=None):
             "generatedAt": snapshot["generatedAt"], "seasonYear": season_year,
             "seasonLabel": f"{start} – {end}", "previousCutAt": previous_cut,
             "scope": "Torneos presenciales en Guatemala y en el extranjero de jugadores descubiertos localmente." if international else "Solo torneos presenciales en Guatemala. Resultados del extranjero pendientes.",
+            "rankingScope": scope_key,
             "rankingCoverage": "all_eligible" if "fullRanking" in ranking else "top_100",
             "players": players, "results": results, "events": events, "excludedEvents": excluded_events,
             "counts": {"players": len(players), "eligiblePlayers": ranking["counts"]["eligiblePlayers"],
@@ -122,6 +125,27 @@ def export(snapshot, ranking, curation=None, previous=None):
             "ttsSource": ranking.get("ttsSource"), "limitations": ranking["limitations"]}
 
 
+def export_views(snapshot, ranking, curation, points_table, previous=None):
+    """One atomic payload: combined default plus independently fitted GT-only view."""
+    if not snapshot.get('internationalComplete'):
+        raise ValueError('Las dos vistas requieren la captura internacional completa.')
+    result = export(snapshot, ranking, curation, previous)
+    local_events = [e for e in snapshot['events'] if e['tournament'].get('countryCode') == 'GT']
+    local_ids = {str(e['id']) for e in local_events}
+    local_snapshot = {**snapshot, 'internationalComplete': False, 'events': local_events,
+                      'sets': {sid: m for sid, m in snapshot['sets'].items()
+                               if str((m.get('event') or {}).get('id')) in local_ids}}
+    local_curation = {**curation, 'excludedForeignEventIds': {}}
+    local_rank = compute(local_snapshot, curation.get('excludedEventIds', {}),
+                         curation.get('playerOverrides', {}), points_table, curation.get('playerAliases', {}))
+    previous_local = previous.get('localRanking') if previous else None
+    local = export(local_snapshot, local_rank, local_curation, previous_local)
+    local['scope'] = 'Solo torneos presenciales de Guatemala; cálculo independiente del mismo corte.'
+    local['limitations'] = ['Los resultados extranjeros se excluyen por la vista seleccionada; no están pendientes de descarga.'] + local['limitations'][1:]
+    result['localRanking'] = local
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("snapshot", type=Path)
@@ -129,10 +153,17 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--curation", type=Path)
     parser.add_argument("--previous-public", type=Path, help="Corte público previo para mostrar cambio de puestos")
+    parser.add_argument("--include-local", action="store_true", help="Publicar también la clasificación calculada solo con torneos GT")
+    parser.add_argument("--points-csv", type=Path, help="Misma tabla TTS usada por el cálculo combinado")
     args = parser.parse_args()
+    if args.include_local and not args.points_csv:
+        parser.error("--include-local requiere --points-csv para mantener los mismos pesos de torneos")
     previous = json.loads(args.previous_public.read_text()) if args.previous_public and args.previous_public.is_file() else None
-    result = export(json.loads(args.snapshot.read_text()), json.loads(args.ranking.read_text()),
-                    json.loads(args.curation.read_text()) if args.curation else None, previous)
+    snapshot = json.loads(args.snapshot.read_text())
+    ranking = json.loads(args.ranking.read_text())
+    curation = json.loads(args.curation.read_text()) if args.curation else {}
+    result = (export_views(snapshot, ranking, curation, args.points_csv.read_text(), previous)
+              if args.include_local else export(snapshot, ranking, curation, previous))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     tmp = args.output.with_suffix(".tmp")
     tmp.write_text(json.dumps(result, ensure_ascii=False, indent=2))

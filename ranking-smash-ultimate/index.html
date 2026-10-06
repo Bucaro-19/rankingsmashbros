@@ -7,8 +7,8 @@
   <meta name="description" content="La escena de Smash Ultimate de Guatemala, en un solo lugar. Jugadores, resultados nacionales e internacionales y seguimiento de la temporada.">
   <title>Smash GT — La escena, en un solo lugar</title>
   <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./arena.css?v=20261001-ranking">
-  <script src="./app.js?v=20261002-min20" defer></script>
+  <link rel="stylesheet" href="./arena.css?v=20261006-scope">
+  <script src="./app.js?v=20261006-scope" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -71,6 +71,10 @@
     </section>
     <section class="season-bar wrap" aria-label="Estado de los datos"><div><span class="status-dot"></span><strong id="data-status">Preparando la primera temporada</strong></div><span id="updated">Sin sincronización todavía</span><button id="refresh" type="button">Actualizar <span aria-hidden="true">↻</span></button></section>
     <p id="load-error" class="wrap error" role="alert" hidden></p>
+    <section class="scope-panel wrap" aria-label="Alcance del ranking">
+      <div><p class="card-kicker">ELIGE QUÉ TORNEOS CUENTAN</p><label class="scope-switch"><input type="checkbox" role="switch" id="include-international" aria-describedby="scope-help" checked disabled><span class="switch-track" aria-hidden="true"></span><span>Incluir torneos internacionales</span></label></div>
+      <div class="scope-description"><strong id="scope-label">Guatemala + internacionales</strong><p id="scope-help" role="status">Cargando las vistas del ranking…</p></div>
+    </section>
     <section class="stats wrap" aria-label="Cobertura de datos"><div><span id="players-count">—</span><p>Clasificados piloto</p></div><div><span id="events-count">—</span><p>Eventos considerados</p></div><div><span id="sets-count">—</span><p>Sets competitivos</p></div><div><span id="countries-count">—</span><p>Países incluidos</p></div></section>
     <section class="scene wrap" id="clasificacion" aria-labelledby="scene-title">
       <div class="section-heading"><div><p class="eyebrow">PLAYER SELECT / GUATEMALA · TEMPORADA 2026</p><h2 id="scene-title">Top 100 piloto.</h2></div><span id="season-label" class="season-label">Temporada por confirmar</span></div>

@@ -35,3 +35,34 @@ test('truncated and inconsistent full rankings are rejected', () => {
     assert.throws(() => validate(data));
   }
 });
+
+function dualFixture() {
+  const data = fixture();
+  data.rankingScope = 'combined';
+  data.events = [{id:'gt',country:'GT'},{id:'mx',country:'MX'}];
+  data.localRanking = structuredClone(data);
+  data.localRanking.rankingScope = 'guatemala';
+  data.localRanking.status = 'local_pilot';
+  data.localRanking.events = [{id:'gt',country:'GT'}];
+  return data;
+}
+test('both views must share a cut and local data excludes foreign events and results', () => {
+  assert.equal(validate(dualFixture()).localRanking.rankingScope, 'guatemala');
+  for (const corruption of ['date','method','event','set','missing']) {
+    const data = dualFixture();
+    if (corruption === 'date') data.localRanking.generatedAt = '2026-10-02T12:00:00Z';
+    if (corruption === 'method') data.localRanking.methodVersion = 'other';
+    if (corruption === 'event') data.localRanking.events[0].country = 'MX';
+    if (corruption === 'set') data.localRanking.results.push({playerIds:['1','2'],tournament:'Foreign',date:'2026-01-01',score:'2-0',country:'MX'});
+    if (corruption === 'missing') data.localRanking = null;
+    assert.throws(()=>validate(data));
+  }
+});
+test('selecting a view returns that calculation and never silently falls back', () => {
+  const choose = vm.runInNewContext(source.split('const tabs =')[0] + '\nchooseSnapshot;');
+  const data = dualFixture();
+  data.localRanking.players.reverse(); // Deliberately distinguish returned lists.
+  assert.equal(choose(data,true),data);
+  assert.equal(choose(data,false),data.localRanking);
+  assert.throws(()=>choose(fixture(),false));
+});

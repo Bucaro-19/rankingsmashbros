@@ -15,11 +15,11 @@ FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "metodologia.css",
 HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 
-def validate_public_data(data):
+def validate_public_data(data, *, local=False):
     counts = data.get("counts") or {}
     players = data.get("players")
     events = data.get("events")
-    if (data.get("schemaVersion") != 2 or data.get("status") != "international_pilot"
+    if (data.get("schemaVersion") != 2 or data.get("status") != ("local_pilot" if local else "international_pilot")
             or data.get("rankingComputed") is not True or not isinstance(players, list)
             or not players or counts.get("players") != len(players)
             or any(not isinstance(player, dict) or not isinstance(player.get("id"), str)
@@ -35,6 +35,21 @@ def validate_public_data(data):
                        and isinstance(event.get("activePlayers"), int) for event in events)
             or sum(event["validSets"] for event in events) != counts["sets"]):
         raise ValueError("Se requiere una clasificación coherente y completa con eventos internacionales antes de publicar.")
+
+
+    if local and (data.get('rankingScope') != 'guatemala' or 'localRanking' in data
+                  or any(e.get('country') != 'GT' for e in events)
+                  or any(m.get('country') != 'GT' for m in data.get('results', []))):
+        raise ValueError('La vista local solo puede contener eventos y sets de Guatemala.')
+    if 'localRanking' in data:
+        view = data['localRanking']
+        if not isinstance(view, dict):
+            raise ValueError('Vista local inválida.')
+        validate_public_data(view, local=True)
+        if (data.get('rankingScope') != 'combined'
+                or any(view.get(k) != data.get(k) for k in ('generatedAt', 'seasonYear', 'seasonLabel', 'methodVersion', 'eligibilityRules'))
+                or {e['id'] for e in view['events']} != {e['id'] for e in events if e.get('country') == 'GT'}):
+            raise ValueError('Las dos vistas deben usar el mismo corte, reglas y eventos locales.')
 
 
 def validate_study_data(data):
