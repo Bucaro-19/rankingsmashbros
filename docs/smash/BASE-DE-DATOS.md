@@ -94,4 +94,15 @@ Fuentes oficiales revisadas el 7 de octubre:
 3. Migrar encuesta desde `feedback-data/respuestas-2026.php`, saltando guarda PHP y usando sha256 de cada línea como import_hash. Mantener respaldo y verificar conteos/pruebas internas antes de cambiar lectura/escritura.
 4. OAuth, perfil con historial/mains, prueba de torneo activo, reportes y avisos por etapas. La base está instalada y conectada; los módulos todavía no están implementados. No se han movido respuestas ni modificado el cálculo/ranking con esta conexión.
 
-Las respuestas anteriores ya se comprobaron en el dominio nuevo. La carpeta feedback-data permanece protegida. El acceso SSH/MySQL de un agente aún no está configurado; no abrir acceso remoto universal para instalar esto.
+Las respuestas anteriores ya se comprobaron en el dominio nuevo. La carpeta feedback-data permanece protegida. Acceso directo de un agente a la base: **configurado desde el 7 de octubre de 2026** por MySQL remoto desde la Mac del dueño (sin SSH); ver la sección «Acceso directo a la base» abajo. No abrir acceso remoto universal (`%`).
+
+## Acceso directo a la base (desde la Mac del dueño)
+
+Configurado y verificado por Claude Code el 7 de octubre de 2026. Detalle de lo consultado: `VERIFICACION-BASE-2026-10-07.md`.
+
+- **Cómo conectarse:** ejecutar `/opt/homebrew/opt/mysql-client/bin/mysql` sin argumentos de conexión (no está en el PATH). Lee `~/.my.cnf` del dueño: host `bh8932.banahosting.com`, puerto 3306, usuario `ivcjgjlk_admin`, base `ivcjgjlk_smash`, `utf8mb4`. Ejemplo: `/opt/homebrew/opt/mysql-client/bin/mysql -e "SELECT version FROM schema_migrations"`.
+- **Quién puede usarlo:** cualquier agente que corra en esa Mac (Claude Code o Codex). No funciona desde GitHub Actions ni desde otra máquina: cPanel → Remote MySQL solo autoriza la IP de la casa del dueño (`190.14.141.191`), que es residencial y puede cambiar. Si aparece `Host ... is not allowed to connect`, el dueño debe agregar la IP nueva (`curl -4 -s https://ifconfig.me`).
+- **Credenciales:** la contraseña la escribió el dueño en `~/.my.cnf` (permisos 600). No abrir, imprimir ni copiar ese archivo; no pasar la contraseña por línea de comandos, chat, repo ni logs. Es independiente de `config.local.php` del servidor, que usa PHP.
+- **Permisos:** `ALL PRIVILEGES` sobre `ivcjgjlk_smash.*`. Es producción: usar para lectura, diagnóstico y verificación de importaciones. Cambios de esquema solo por migración versionada en el repo; escrituras de datos con visto bueno del dueño y dentro de transacción.
+- **Sin SSH:** los puertos SSH no responden desde fuera y el dueño retiró su llave de cPanel el 7 de octubre. No hay forma de ejecutar comandos en el servidor salvo la Terminal web de cPanel (la usa el dueño). Los archivos del sitio se publican solo por Git y `smash-deploy-snapshot.yml`.
+- **Qué desbloquea:** el diagnóstico ya no depende de que el dueño abra `opiniones.php?diagnostico=base`; un agente puede comprobar versión, tablas, conteos y, tras una importación, comparar filas contra `public.json`. El importador de producción sigue necesitando la vía definida en `SIGUIENTE-FASE.md` (no abrir MySQL a GitHub Actions), aunque esta conexión permite una primera carga manual supervisada desde la Mac si el dueño la aprueba.
