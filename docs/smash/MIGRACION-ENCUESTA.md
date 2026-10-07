@@ -1,6 +1,6 @@
 # Migración de la encuesta a `survey_responses` — entrega 1 (Claude Code, 7 de octubre de 2026)
 
-Encargo: `TRABAJO-PARALELO-2026-10-07.md` (Codex). Rama `feat/survey-import`. Esta entrega es solo código y pruebas: **no se ejecutó nada contra producción, no se leyó el archivo real de respuestas y la encuesta sigue leyendo y escribiendo su archivo.**
+Encargo: `TRABAJO-PARALELO-2026-10-07.md` (Codex). Rama `feat/survey-import`. La entrega era solo código y pruebas. **Actualización del mismo día: el dueño decidió copiar ya las respuestas y ejecutó el importador en producción; ver «Ejecutado en producción» al final.** La encuesta y el panel siguen leyendo y escribiendo su archivo.
 
 ## Qué se entrega
 - `scripts/database/import_survey.php`: biblioteca y CLI.
@@ -28,7 +28,7 @@ php scripts/database/import_survey.php --file RUTA --site-root SITIO --apply # e
 - `php scripts/database/test_import_survey.php` sin variables: análisis, 38 casos de rechazo, privacidad de errores y la secuencia completa de importación sobre SQLite en memoria (sustituto del motor, mismo SQL).
 - Con `SMASH_SCHEMA_TEST_DB=smash_schema_test SMASH_SCHEMA_TEST_PORT=33306 SMASH_SCHEMA_TEST_PASSWORD=...` repite la secuencia sobre el esquema real instalado con `install.sql`: simulación sin escritura, primera importación, valores guardados iguales al archivo, repetición sin cambios, línea añadida, archivo inválido, fallo a mitad de transacción con rollback y conflicto de hash no sobrescrito. Borra `survey_responses` antes y después, y se niega a correr si la base no se llama `smash_schema_test*`.
 - Ejecutado por Claude Code en una MariaDB local desechable **13.0.2** (Homebrew) con `install.sql` (31 tablas, 87 personajes): pasó. También el CLI de punta a punta: validar, simular, aplicar, repetir, archivo dañado y uso incorrecto.
-- **No verificado:** MariaDB 10.11 y MySQL 8.0 de CI (el workflow no se tocó, por encargo) ni MariaDB 11.4.13 de producción.
+- MariaDB 11.4.13 de producción: verificado con la ejecución real descrita al final. **No verificado:** las pruebas nuevas en MariaDB 10.11 y MySQL 8.0 de CI (el workflow no se tocó, por encargo).
 
 ## Para integrar en CI (Codex)
 En el paso que ya corre `php scripts/database/test_connection.php`, añadir:
@@ -45,10 +45,23 @@ Debe ir **después** de `python scripts/database/test_schema.py` o en un orden q
 4. **`source_url`** admite 512 caracteres en la tabla; la encuesta limita a 250 bytes y el importador respeta ese límite.
 5. El charset por defecto de la base es latin1 (ver `VERIFICACION-BASE-2026-10-07.md`); `survey_responses` es utf8mb4 y la prueba guarda y compara acentos, ñ y emoji.
 
-## Protocolo propuesto para la migración real (no ejecutado)
+## Protocolo de la migración real (pasos 1–5 ejecutados el 7 de octubre; el 6 sigue pendiente)
 1. **Respaldo:** copia del archivo dentro de la carpeta privada del servidor, con fecha; anotar su tamaño y `sha256sum`. No bajarlo a un repo ni exponerlo por URL.
 2. **Validar:** `--file` solo. Debe dar `ok` y `fileRows` igual al número de líneas menos la guarda. Si rechaza una línea, no editar el archivo: revisar el motivo y decidir con el dueño.
 3. **Simular:** con `--site-root`, sin `--apply`. Esperado en la primera vez: `inserted = fileRows`, `alreadyPresent = 0`.
 4. **Aplicar** con `--apply` y **repetir** una vez: la repetición debe dar `inserted = 0`.
 5. **Comparar:** `SELECT COUNT(*), SUM(is_test) FROM survey_responses` contra `fileRows` y `testRows`; el panel debe seguir mostrando el mismo total (hoy 12 visibles, que excluye el envío de prueba). Un agente en la Mac del dueño puede hacer esos SELECT por el acceso directo.
 6. **Transición** (entrega posterior, no incluida): mientras `encuesta.php` siga escribiendo al archivo, repetir el paso 4 es seguro y trae las respuestas nuevas. Cambiar la escritura a SQL y la lectura del panel en un mismo despliegue, justo después de una última importación, conservando validaciones, CSRF y el límite de 5 minutos. No activar doble escritura. Conservar el archivo original y su respaldo.
+
+## Ejecutado en producción — 7 de octubre de 2026
+
+Por decisión del dueño, que corrió los comandos en la Terminal web de cPanel con el importador del commit `4008a85` descargado a `~/private-smash/import_survey.php`. Salidas pegadas por el dueño (solo conteos):
+
+1. Respaldo: `~/private-smash/respuestas-2026.respaldo-2026-10-07.php`. No se anotó tamaño ni sha256.
+2. Validar: `ok`, `fileRows=13`, `testRows=1`.
+3. Simular: `inserted=13`, `alreadyPresent=0`, `applied=false`, tabla 0 → 0.
+4. Aplicar: `inserted=13`, `applied=true`, tabla 0 → 13. No se corrió la repetición.
+
+Verificación directa de Claude Code desde la Mac del dueño, solo agregados y sin leer comentarios: 13 filas, 13 hashes distintos, 1 `is_test`, temporada 2026, fechas de 2026-09-29 14:47:21 a 2026-10-01 21:11:23 UTC, 4 sin comentario, 0 con enlace; sin la prueba: 8 jugadores, 2 organizadores, 2 espectadores (12, igual que el panel).
+
+Estado: `survey_responses` es una copia; `encuesta.php` sigue escribiendo al archivo y `opiniones.php` leyendo de él. Las respuestas nuevas no llegan a la base hasta repetir el paso 4 (seguro, no duplica) o hasta la transición del paso 6. Quedan en el servidor, fuera del sitio público y fuera de Git, el respaldo y `import_survey.php`; conservarlos hasta la transición.
