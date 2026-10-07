@@ -11,7 +11,17 @@
 - `SMASH_SYNC_ENABLED` no existe en este repo a propósito. El repo viejo sigue publicando en ingporras.com.
 - Base de datos para cuentas, agenda y mains: propuesta en `BASE-DE-DATOS.md` y `schema.sql`.
 
-## Falta, en orden
+## Publicado en el dominio nuevo (6 de octubre, 20:49 Guatemala)
+- Run `37563770354` de `smash-deploy-snapshot.yml` correcto, tras corregir el hash (se había copiado con el `%` que zsh añade al final) y el usuario/contraseña FTP (530).
+- Verificado en https://rankingsmashbros.com/: schema 3, corte 2026-10-04T11:43:18, 188 clasificados en ambas vistas, 175 con personaje, imágenes y panel sin errores, `metodologia.html`, `encuesta.php` y `opiniones.php` responden 200, `feedback-data/` responde 403 (protegida, correcto).
+- Activadas aquí `SMASH_SYNC_ENABLED=true` y `SMASH_RELEASE_MODE=weekly`. El repo viejo sigue con las suyas: publican a dominios distintos y no chocan. El domingo 11 de octubre es la primera actualización semanal de este repo y la primera prueba real del `STARTGG_TOKEN` nuevo; si falla, se conserva el corte actual.
+
+## Falta ahora
+1. Dueño: entrar a `https://rankingsmashbros.com/opiniones.php` con su clave y confirmar que aparecen las respuestas anteriores de la encuesta.
+2. Lunes 12 de octubre: comprobar que el semanal de este repo publicó. Si sí: `SMASH_SYNC_ENABLED=false` en el repo viejo, redirección de `ingporras.com/ranking-smash-ultimate/` al dominio nuevo, actualizar enlaces del portafolio y los `ingporras.com` de pies de página y documentación, y después quitar Smash del repo viejo.
+3. Base de datos: ver `BASE-DE-DATOS.md`.
+
+## Lista original (referencia)
 1. (Hecho) Dueño, en cPanel de BanaHosting: agregar `rankingsmashbros.com` como dominio adicional, apuntar el DNS y activar SSL. Anotar la carpeta raíz que cPanel le asigna.
 2. (Hecho, salvo el hash) Dueño, en este repo (Settings → Secrets and variables → Actions). GitHub no deja copiar secretos entre repos:
    - Secretos: `STARTGG_TOKEN` (aprovechar para rotarlo), `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`, `SMASH_FEEDBACK_ADMIN_HASH`.
