@@ -1,4 +1,4 @@
-# Base conectada — siguiente fase (6 de octubre de 2026, Guatemala)
+# Importación de ranking e historial — 7 de octubre de 2026, Guatemala
 
 ## Estado vigente
 
@@ -23,6 +23,14 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 - Conexión cerrada: el diagnóstico confirma que PHP lee el archivo privado, conecta y consulta el esquema compatible. No prueba permisos de escritura ni importaciones: comprobarlos con el futuro importador transaccional. Próxima acción inmediata: preparar el paquete privado con IDs reales y el importador del corte/historial.
 
 ## Próximo trabajo
+
+### Entrega activa — Codex
+
+- Rama feat/ranking-database-import; checkout separado /tmp/smash-ranking-db-import. El checkout principal queda disponible para Claude. Reparto y prompt: TRABAJO-PARALELO-2026-10-07.md.
+- ranking_package.py genera paquete determinista desde combined.json y public.json sin recalcular ni consultar API. import_ranking.py valida y escribe con transacción/bloqueo/paridad; modo predeterminado de simulación. Guía IMPORTACION-RANKING.md.
+- Lectura directa desde la Mac confirmada mediante configuración privada ya provisionada: MariaDB 11.4.13 y cuts=0. No se imprimieron credenciales. La simulación real del corte Oct4 terminó validated_no_writes: 3435 jugadores de contexto, 43 torneos, 47 eventos, 4498 entrants, 8985 sets y 17970 slots; vistas de 188 jugadores cada una (42/39 eventos y 2648/2624 resultados). No confundir jugadores de contexto con clasificados guatemaltecos.
+- Hasta aquí no se escribieron datos productivos. CI y primera importación/repetición pendientes. La encuesta queda asignada a Claude para preparar código/tests, sin activar escritura SQL todavía. SQL semanal automático aún pendiente: Actions prepara artefacto privado, no tiene acceso remoto a MySQL.
+- Verificación local: 46 Python del ranking, 12 Node y 4 contratos del paquete correctos; 6 casos SQL reales esperan CI en MySQL/MariaDB.
 
 Leer `SIGUIENTE-FASE.md`: paquete/importación transaccional e idempotente del corte real (faltan tournamentId/entrantIds en el JSON público), manteniendo JSON público; migración de encuesta con respaldo y conteos; después OAuth y perfil según handoff de Design. Mantener método y calendario semanal. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
 

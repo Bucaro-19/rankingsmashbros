@@ -26,6 +26,8 @@ Implementación publicada en database.php y opiniones.php?diagnostico=base, con 
 
 ## Entrega 2 — importación de cortes e historial
 
+Codex implementa esta entrega en feat/ranking-database-import, checkout /tmp/smash-ranking-db-import. Leer IMPORTACION-RANKING.md y EN-CURSO.md antes de duplicar trabajo. Claude puede preparar Entrega 3 en otra rama/worktree y archivos propios según TRABAJO-PARALELO-2026-10-07.md, sin cambiar la encuesta productiva todavía.
+
 ### Datos que faltan en el JSON público actual
 
 Inspeccionado el corte del 4 de octubre, schema 3:

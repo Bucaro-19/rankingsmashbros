@@ -93,6 +93,9 @@ jobs:
           key: smash-characters-v1-${{ github.run_id }}
       - name: Auditar cobertura y sensibilidad del corte
         run: python scripts/smash/audit.py scripts/smash/data/combined.json scripts/smash/curation.json scripts/smash/data/auditoria.md --points-csv scripts/smash/data/ultrank_players.csv
+      - name: Preparar paquete privado para importar el corte a SQL
+        continue-on-error: true
+        run: python scripts/database/ranking_package.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json scripts/smash/data/database-package.json
       - name: Guardar auditoría para revisión
         uses: actions/upload-artifact@v4
         with:
@@ -119,5 +122,6 @@ jobs:
             scripts/smash/data/combined.json
             scripts/smash/data/pilot-ranking.json
             scripts/smash/data/previous-public.json
+            scripts/smash/data/database-package.json
           retention-days: 7
           if-no-files-found: ignore
