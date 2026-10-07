@@ -25,6 +25,13 @@ jobs:
           node --check ranking-smash-ultimate/metodologia.js
           node --check ranking-smash-ultimate/analisis-top20.js
           node --test scripts/smash/test_app.cjs
+      - name: Verificar PHP en la versión del hosting y en la mínima admitida
+        run: |
+          # El servidor usa PHP 8.1; el código publicado debe seguir siendo válido desde 7.4.
+          docker run --rm -v "$PWD":/app -w /app php:7.4-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/import_survey.php; do php -l "$f" || exit 1; done'
+          docker run --rm -v "$PWD":/app -w /app php:8.1-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$f" || exit 1; done'
+      - name: Verificar contratos estáticos de la encuesta
+        run: python scripts/database/test_survey_http.py
 
   database:
     runs-on: ubuntu-latest
@@ -62,12 +69,11 @@ jobs:
           SMASH_SCHEMA_TEST_PORT: '33306'
           SMASH_SCHEMA_TEST_PASSWORD: disposable-test-only
         run: |
-          php -l ranking-smash-ultimate/database.php
-          php -l ranking-smash-ultimate/opiniones.php
-          php -l scripts/database/import_survey.php
-          php -l scripts/database/test_import_survey.php
+          for file in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$file"; done
           python scripts/database/test_schema.py
           php scripts/database/test_connection.php
           python scripts/database/test_diagnostic_http.py
           python scripts/database/test_import_ranking.py
           php scripts/database/test_import_survey.php
+          php scripts/database/test_survey_storage.php
+          python scripts/database/test_survey_http.py

@@ -66,7 +66,8 @@ function smash_database_connect(array $db): PDO
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_TIMEOUT => 5,
-                PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
+                // Same option under its current name where it exists (PHP 8.4+), without deprecation notices.
+                (defined('Pdo\\Mysql::ATTR_MULTI_STATEMENTS') ? constant('Pdo\\Mysql::ATTR_MULTI_STATEMENTS') : PDO::MYSQL_ATTR_MULTI_STATEMENTS) => false,
             ]);
         $pdo->exec("SET time_zone = '+00:00'");
         return $pdo;

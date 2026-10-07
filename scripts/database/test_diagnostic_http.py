@@ -24,7 +24,7 @@ class DiagnosticTests(unittest.TestCase):
         cls.sessions.mkdir()
         cls.private = home / 'private-smash'
         cls.private.mkdir()
-        for filename in ('database.php', 'opiniones.php'):
+        for filename in ('database.php', 'survey.php', 'opiniones.php'):
             (cls.site / filename).write_bytes((ROOT / 'ranking-smash-ultimate' / filename).read_bytes())
         (cls.site / 'feedback-data/admin-auth.php').write_text("<?php return '" + '$2y$12$' + 'A'*53 + "';")
         cls.session_id = 'smashdiagnostictestonly'

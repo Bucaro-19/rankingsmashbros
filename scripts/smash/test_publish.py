@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 from publish_data import export
-from deploy import deploy, validate_public_data, validate_study_data, FILES
+from deploy import deploy, require_sql_survey, validate_public_data, validate_study_data, FILES
 
 
 def snapshot():
@@ -120,6 +120,53 @@ class ExportTests(unittest.TestCase):
         valid["status"] = "ranking_publicado"
         with self.assertRaisesRegex(ValueError, "estudio completo"):
             validate_study_data(valid)
+
+    def test_php_libraries_are_published_denied_and_uploaded_before_their_callers(self):
+        # The allowlist is independent of the file tree: a committed but unlisted PHP file would
+        # deploy "successfully" and break the pages that require it. Files replace one by one,
+        # so a library must already be in place (and denied by .htaccess) when its caller lands.
+        import re
+        site = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate"
+        pages = sorted(path.name for path in site.glob("*.php"))
+        self.assertEqual(pages, sorted(name for name in FILES if name.endswith(".php")))
+        htaccess = (site / ".htaccess").read_text()
+        libraries = set()
+        for page in pages:
+            source = (site / page).read_text()
+            required = re.findall(r"require(?:_once)?\s+__DIR__\s*\.\s*'/([A-Za-z0-9_.-]+\.php)'", source)
+            self.assertEqual(len(required), len(re.findall(r"\brequire(?:_once)?\b[^;]*\.php'", source)), page)
+            for library in required:
+                libraries.add(library)
+                self.assertIn(library, FILES, f"{page} requires {library}")
+                self.assertLess(FILES.index(library), FILES.index(page), f"{library} must upload before {page}")
+        self.assertEqual(libraries, {"database.php", "survey.php"})
+        for library in libraries:
+            self.assertLess(FILES.index(".htaccess"), FILES.index(library))
+            self.assertRegex(htaccess, r'<Files "%s">\s*Require all denied\s*</Files>' % re.escape(library))
+        # The admin hash file is the only PHP loaded from the protected folder; it is written by deploy().
+        self.assertEqual(FILES[-1], "data/public.json")
+
+    def test_file_backed_survey_pages_are_never_published(self):
+        site = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate"
+        require_sql_survey(site)  # the pages in this checkout
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            for page in ("encuesta.php", "opiniones.php"):
+                (source / page).write_text((site / page).read_text())
+            require_sql_survey(source)
+            legacy = "<?php $path = __DIR__ . '/feedback-data/respuestas-2026.php'; ?><title>x</title>"
+            for page, content in [("encuesta.php", legacy), ("opiniones.php", legacy),
+                                  ("encuesta.php", (site / "encuesta.php").read_text().replace('content="sql"', 'content="file"')),
+                                  ("opiniones.php", (site / "opiniones.php").read_text() + "<!-- respuestas-2026 -->")]:
+                original = (source / page).read_text()
+                (source / page).write_text(content)
+                with self.subTest(page=page), self.assertRaises(ValueError):
+                    require_sql_survey(source)
+                (source / page).write_text(original)
+        # Deploys only run from main: another ref could carry the pages of before the migration.
+        workflows = Path(__file__).resolve().parents[2] / ".github/workflows"
+        for name in ("smash-deploy-snapshot.yml", "smash-publish.yml"):
+            self.assertIn("github.ref == 'refs/heads/main'", (workflows / name).read_text(), name)
 
 
 if __name__ == "__main__":
