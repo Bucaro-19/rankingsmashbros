@@ -3,6 +3,7 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/accounts.php';
+require_once __DIR__ . '/stats.php';
 smash_account_session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, private');
@@ -52,7 +53,9 @@ try {
     $pdo = account_pdo(); $user = account_verified_user($pdo);
     $user['avatarUrl'] = smash_account_safe_image($_SESSION['smash_account']['avatarUrl'] ?? null);
     $user['url'] = $_SESSION['smash_account']['url'] ?? $user['url'];
-    account_response(200, ['ok' => true, 'authenticated' => true, 'oauthReady' => $ready,
+    // Only the owner's account learns that a private panel exists; nobody else receives the key.
+    $owner = smash_stats_is_owner($pdo, $user['id']) ? ['panel' => true] : [];
+    account_response(200, $owner + ['ok' => true, 'authenticated' => true, 'oauthReady' => $ready,
         'csrf' => $_SESSION['smash_account_csrf'], 'user' => $user, 'profile' => smash_account_profile(smash_account_public(__DIR__), $user['playerId'])]);
 } catch (SmashAccountError $error) {
     if ($error->reason === 'login_required') {

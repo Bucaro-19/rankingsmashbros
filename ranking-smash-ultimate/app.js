@@ -331,5 +331,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();
       const tag=data.authenticated?data.user.tag:null;
       try{if(tag)localStorage.setItem('smashgt.cuenta',tag);else localStorage.removeItem('smashgt.cuenta');}catch{}
       show(tag);
+      // The server says so only to the owner's signed-in account.
+      const panel=document.getElementById('panel-link');if(panel)panel.hidden=!(data.authenticated&&data.panel===true);
     }).catch(()=>{});
 })();

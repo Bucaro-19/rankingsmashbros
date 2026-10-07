@@ -1,5 +1,12 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Enlace al panel solo para el dueño y preparación de premium — en PR (Claude Code, 7/oct)
+
+- Pedido del dueño después de ver el panel: un acceso visible solo para él. `account-api.php` añade `panel: true` únicamente a la cuenta con rol `admin` (las demás no reciben la clave); `cuenta.html` muestra «Panel privado ↗» junto a las pestañas y el inicio muestra «Panel» en el encabezado tras confirmar con el servidor. Pruebas HTTP: cuenta normal sin la clave, dueño con ella. Revisado en navegador local con ambas cuentas.
+- **Brief para Claude Design del análisis de rival (premium):** [BRIEF-CLAUDE-DESIGN-ANALISIS-RIVAL.md](BRIEF-CLAUDE-DESIGN-ANALISIS-RIVAL.md). Define los únicos datos que existirán.
+- **Hallazgo que condiciona premium:** en producción `games` y `game_selections` están vacías (0 filas); solo existen los personajes agregados por jugador (`player_characters`, 175 jugadores). El matchup personaje contra personaje por game **no se puede calcular hoy**. Lo que sí se puede: probabilidad estimada con los puntos del ranking, historial entre ambos, forma reciente y récord contra jugadores cuyo personaje más usado es X (aproximación, con muestra pequeña). Guardar las selecciones por game requiere ampliar la captura semanal; es una entrega propia.
+- Decisiones del dueño pendientes para premium: proveedor de cobro disponible en Guatemala, precio y modalidad (mensual, por temporada o pago único).
+
 ## Publicación del 7/oct por la noche — perfil v2 y panel del dueño (Claude Code)
 
 Por orden explícita del dueño: PR #30 (`aee2479`) y PR #31 (`87c4e0a`) fusionadas, CI de main correcta y despliegue `37699120256` (`assets_only=true`) correcto. `public.json` idéntico (SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`).

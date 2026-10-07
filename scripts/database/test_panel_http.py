@@ -103,6 +103,8 @@ class PanelHttpTests(unittest.TestCase):
         self.assertIn('Sin acceso.', body); self.assertNotIn('Cerrar sesión', body)
         status, _, body = self.get('/panel-api.php')
         self.assertEqual((status, json.loads(body)), (403, {'ok': False, 'reason': 'forbidden'}))
+        account = json.loads(self.get('/account-api.php')[2])
+        self.assertTrue(account['authenticated']); self.assertNotIn('panel', account)
 
     def test_owner_gets_the_panel_and_aggregates_only(self):
         self.get('/fixture-login.php?admin=1')
@@ -117,6 +119,8 @@ class PanelHttpTests(unittest.TestCase):
         self.assertEqual(data['report']['seasonYear'], 2026)
         self.assertNotIn('Dueña', body); self.assertNotIn('8999401', body)
         self.assertEqual(self.get('/panel-api.php', method='POST')[0], 405)
+        # Only the owner's account is told to show the link to the panel.
+        self.assertIs(json.loads(self.get('/account-api.php')[2])['panel'], True)
 
     def test_remembered_owner_resumes_and_loses_access_when_the_role_is_removed(self):
         self.get('/fixture-login.php?admin=1&remember=1')
