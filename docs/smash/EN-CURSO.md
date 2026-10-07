@@ -1,5 +1,11 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Reparto vigente — 7/oct, cierre de la noche
+
+- **Codex:** datos del análisis de rival, solo servidor. Encargo y prompt: [ENCARGO-CODEX-API-ANALISIS-RIVAL.md](ENCARGO-CODEX-API-ANALISIS-RIVAL.md). Su PR #36 (personajes por game) está abierta con CI en verde y espera la orden del dueño para fusionar y publicar.
+- **Claude Code:** rediseño de Método y Tu opinión (handoff `design_handoff_smash_gt_metodo_opinion/`, en curso en la rama `feat/metodo-opinion-redesign`), después la pantalla del análisis de rival (handoff `design_handoff_smash_gt_analisis/`) y la pestaña Premium cuando llegue su diseño.
+- **Premium en modo prueba, encendido en producción:** el dueño subió `private-smash/recurrente.local.php` con la llave de prueba y el secreto del webhook del sandbox, registrado por Claude Code con su orden. Comprobado por HTTP: `premium-api.php` responde `available: true` y el webhook exige firma (401 sin ella). Falta el pago de prueba del dueño.
+
 ## Cobros de premium con Recurrente — servidor listo, sin pantallas (Claude Code, 7/oct)
 
 Documento: [PREMIUM.md](PREMIUM.md). Biblioteca `premium.php`, `premium-api.php`, `recurrente-webhook.php` y migración `004_premium.sql`. El dueño guardó su llave de **prueba** de Recurrente en su Mac; se comprobó contra el sandbox (cuenta Ingporras, ambiente `sandbox`) sin imprimirla. Premium queda **apagado** en producción hasta que exista el archivo privado. El panel del dueño ya muestra cuántas cuentas son premium.
