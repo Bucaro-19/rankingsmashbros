@@ -1,0 +1,6 @@
+<?php
+// Copy to /home/ivcjgjlk/private-smash/sync.local.php. Never fill the tracked example.
+return [
+    'enabled' => false,
+    'key' => 'CLAVE_ALEATORIA_64_HEX',
+];

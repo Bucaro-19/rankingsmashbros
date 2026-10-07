@@ -41,6 +41,10 @@ El cierre documental anterior estaba en `docs/accounts-activation`, commit `5cd9
 - Archivo OAuth local conservado e ignorado, ejemplo sin credenciales. Protección adicional en `.git/info/exclude` para conservar la exclusión local al cambiar de rama; no es un archivo para publicar. El despliegue no incluye los archivos de configuración privados.
 - Continúan los pendientes de operación semanal/SQL y módulos posteriores descritos arriba. Este cierre solo registra el redespliegue verificado y no requiere volver a publicar documentos.
 
+## Automatización SQL en BanaHosting — nueva entrega
+
+El dueño eligió BanaHosting para funcionar con la Mac apagada. Implementado receptor HTTPS autenticado + cola privada + importador PHP/worker CLI + paso Actions; sin migración ni cambio de cálculo. Detalles, límites y activación: CARGA-SEMANAL-SQL.md, bloque vigente. Paridad Python/PHP tabla por tabla, 11 casos locales y paquete real Oct4 verificados en base desechable. Preparado; configuración/cron y prueba del circuito de producción aún pendientes. No afirmar que ya está programado ni activar variable antes de validar servidor.
+
 ## Estado vigente
 
 - El dueño compartió el resultado real del diagnóstico privado: connection=connected, MariaDB 11.4.13, schemaVersion=001_accounts_competition, tableCount=31, missingTables=[], engineCompatible=true y schemaReady=true. Base de la instalación: `ivcjgjlk_smash`. Evidencia recibida del dueño el 6/oct/2026 (Guatemala), no lectura directa del agente mediante navegador.

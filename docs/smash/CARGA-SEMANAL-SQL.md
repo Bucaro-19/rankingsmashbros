@@ -1,6 +1,52 @@
-# Carga semanal del ranking a SQL — preparación (Claude Code, 7 de octubre de 2026)
+# Carga semanal del ranking a SQL — BanaHosting y respaldo desde la Mac
 
 Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`, «preparación del transporte privado para cargar semanalmente el ranking en SQL». **Nada de esto está activado como tarea automática.** Lo entregado es un cargador de un solo comando, probado, que el dueño o un agente ejecuta desde la Mac del dueño, más el diseño del transporte desatendido en el servidor para una entrega posterior.
+
+## Actualización vigente — elección del dueño, 7/oct
+
+El dueño autorizó automatizar en **BanaHosting, independiente de la Mac**. Codex preparó `ranking-sync.php`, `ranking-sync-lib.php`, `ranking-import.php`, `ranking-worker.php` y el envío HTTPS `publish_sql.py`. Se reutilizan las tablas existentes; no reinstalar ni abrir MySQL a Actions. **Preparado, todavía pendiente de configurar el archivo privado, el cron y verificar el circuito real.**
+
+### Circuito implementado
+
+1. Actions calcula el mismo ranking, prepara/valida el paquete y comprueba el contrato del transporte **antes de publicar**. Se eliminó `continue-on-error` del paquete: un paquete inválido detiene la publicación.
+2. Tras publicar la web y guardar el artefacto SQL, envía el paquete comprimido por HTTPS al destino fijo `https://rankingsmashbros.com/ranking-sync.php`. El paso solo corre con `SMASH_SQL_SYNC_ENABLED=true` y requiere `SMASH_SQL_SYNC_KEY`.
+3. HMAC-SHA256 sobre método/ruta/marca de tiempo/nonce/hash del cuerpo, ventana ±5 min, nonce de un solo uso con registro privado y comparación constante. No credenciales en URL ni payload. Máximo 4 MiB gzip / 32 MiB descomprimidos, sin seguir redirecciones.
+4. La recepción autentica antes de abrir SQL, guarda el gzip fuera del document root, permisos 600, y registra `sync_jobs`. Entrega repetida del mismo cuerpo devuelve el mismo trabajo; no vuelve a importar.
+5. Un cron PHP de cPanel procesa un trabajo por vez con bloqueo. Valida SHA-256, JSON canónico, versión, IDs, relaciones, actividad, mains, ambas vistas y **coincidencia exacta con el JSON publicado local**. Solo entonces importa en una transacción con el mismo bloqueo que Python.
+6. Paridad de snapshot/ranking/mains/eventos/resultados antes de commit; repetición exige `already_imported`. Cortes publicados inmutables. Jobs interrumpidos se recuperan tras adquirir el bloqueo exclusivo; solo falta temporal de publicación/bloqueo se reintenta (máximo 12 intentos). Conflictos, huecos de historial y paquetes corruptos quedan fallidos para revisión.
+7. Actions espera hasta 10 minutos y solo termina bien si SQL confirma `succeeded`. Si falla, GitHub registra el error y SQL conserva el último corte completo. **FTP y SQL no forman una transacción conjunta:** un fallo después de publicar puede dejar la web en un corte posterior a SQL; la ejecución falla para que se repare/reenvíe el paquete. La preparación previa evita paquetes ausentes, no elimina esa posibilidad.
+
+### Pruebas verificadas localmente
+
+- 11 pruebas nuevas de contrato/SQL/HTTP, todas correctas en MariaDB local desechable: HMAC, adulteración, caducidad/replay, deduplicación, dos cortes, tabla por tabla Python/PHP, repetición, rollback, conflictos, corte previo ausente, interrupción y limpieza.
+- Paquete real Oct4 importado **solo en SQL local desechable**, luego comprobado con `verify_parity` de Python: 188 jugadores por vista, hash `ecb1d4a5cd44f87250537a85d0d166fa6f9824ff3408f0b55c98ac6102fd9e45`, 1.67 segundos en la Mac. No equivale a tiempo/recursos del hosting.
+- Validación PHP del paquete real: pico 128499712 bytes (~122.5 MiB). Worker con `memory_limit=512M` propuesto para margen; **medir en el hosting**, no asumir límites del CLI iguales al PHP web. Recepción solo guarda gzip (~1.06 MB para este corte), no decodifica el paquete grande.
+- Transporte admite JSON de enteros/strings/null/bools/objetos/listas del exportador actual, IDs hasta PHP_INT_MAX. Rechaza floats e IDs mayores antes de publicar para evitar diferencias de canonicalización PHP/Python; no convierte silenciosamente.
+
+### Activación de producción (paso único)
+
+1. Publicar código desde main, `assets_only=true`; confirmar API/encuesta y hash de public.json sin cambios. Endpoint sin configuración privada no puede cargar paquetes.
+2. El archivo editable local **ignorado** es `docs/smash/config/sync.local.php`. Copiar a `/home/ivcjgjlk/private-smash/sync.local.php`, fuera del sitio. Debe contener `enabled=true` y una clave aleatoria 64 hex igual al secreto GitHub `SMASH_SQL_SYNC_KEY`. No rellenar el ejemplo versionado ni enviar la clave al chat. Permisos 600 si PHP puede leerlo.
+3. En Terminal cPanel, comprobar el binario PHP y ejecutar una vez (una sola línea, no pegar credenciales):
+   `/usr/local/bin/php -d memory_limit=512M /home/ivcjgjlk/rankingsmashbros.com/ranking-worker.php`
+   Verificar PHP 8.1+, mbstring, pdo_mysql, zlib y la salida saneada. Si `/usr/local/bin/php` no es PHP adecuado, usar la ruta confirmada de cPanel; no adivinarla.
+4. cPanel → Cron Jobs: **cada cinco minutos**, comando:
+   `/usr/local/bin/php -d memory_limit=512M /home/ivcjgjlk/rankingsmashbros.com/ranking-worker.php >> /home/ivcjgjlk/private-smash/ranking-worker.log 2>&1`
+   Se despierta para trabajos pendientes, no consulta start.gg ni recalcula cada cinco minutos. La publicación sigue domingo 00:00 Guatemala. No crear una segunda tarea si ya existe.
+5. Desde la Mac, cargar la clave privada en memoria/entorno del subproceso (sin imprimirla), ejecutar `publish_sql.py diagnostic`, enviar **el paquete ya importado del Oct4** y exigir `sql_synchronized`/`already_imported`; comprobar SQL sin nuevos cortes/duplicados. No usar una recaptura con hash distinto para la prueba.
+6. Solo después activar `SMASH_SQL_SYNC_ENABLED=true`. Domingo 11/oct será la primera prueba de **nuevo** corte y disparo programado real; todavía no es un hecho verificado. GitHub permite zona horaria IANA en schedule, confirmado en docs oficiales; puede retrasar la ejecución.
+
+### Relevo
+
+No declarar automatización activa por tener archivos/secretos. Registrar PR, CI, despliegue, diagnóstico del hosting, ejecución manual/cron, prueba real y variable activada. El cargador Python operado desde la Mac sigue como respaldo. No cambiar cálculo/reglas por diferencias de resultados. No nueva pantalla.
+
+Fuentes técnicas revisadas: [GitHub schedule y zonas horarias](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onschedule), [límites PHP](https://www.php.net/manual/en/ini.core.php).
+
+---
+
+## Archivo histórico — preparación de Claude Code
+
+Las secciones siguientes describen el estado anterior a la implementación PHP; el estado vigente está arriba. No activar launchd ni seguir la propuesta de portar PHP como si siguiera sin implementar.
 
 ## Hechos que deciden el diseño (verificados el 7 de octubre)
 - Servidor (Terminal de cPanel, salida pegada por el dueño): PHP 8.1.34, **Python 3.6.8**, `crontab` disponible. El importador revisado (`import_ranking.py` + `ranking_package.py`) necesita Python 3.9+ (`zoneinfo`, `:=`) y PyMySQL 1.1.2 exige 3.8+: **no puede ejecutarse en el servidor**.
