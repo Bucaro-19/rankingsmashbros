@@ -10,7 +10,7 @@ from pathlib import Path
 from collections import Counter, defaultdict
 
 FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "cuenta.css", "metodologia.css", "encuesta.css", "opiniones.css", "analisis-torneos.css",
-         "characters.js", "account-model.js", "cuenta.js", "app.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "database.php", "survey.php", "accounts.php", "account-api.php", "oauth.php", "encuesta.php", "opiniones.php", "cuenta.html", "index.html", "metodologia.html",
+         "characters.js", "account-model.js", "cuenta.js", "app.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "database.php", "survey.php", "accounts.php", "ranking-import.php", "ranking-sync-lib.php", "ranking-sync.php", "ranking-worker.php", "account-api.php", "oauth.php", "encuesta.php", "opiniones.php", "cuenta.html", "index.html", "metodologia.html",
          "analisis-torneos.html", "data/analisis-torneos.json", "analisis-top20.html", "analisis-top20.css",
          "analisis-top20.js", "data/analisis-top20.json", "data/public.json")
 # Explicitly scoped character assets, before the atomic public-data replacement.

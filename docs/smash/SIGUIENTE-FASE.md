@@ -1,5 +1,9 @@
 # Relevo para Claude Code — importar datos a la base conectada
 
+## Actualización vigente — automatización en BanaHosting, 7/oct
+
+El dueño eligió hosting independiente de la Mac. Codex preparó el transporte HTTPS autenticado, importador PHP y worker CLI usando las tablas existentes, con paridad Python/PHP y prueba del paquete real en SQL local desechable. Leer primero el bloque vigente de CARGA-SEMANAL-SQL.md y EN-CURSO.md. Falta configuración privada/cron, prueba end-to-end en producción y activación de la variable; no declarar automatización completa. No rehacer encuestas/OAuth ni instalar tablas. Las secciones antiguas de este documento son archivo histórico.
+
 ## Actualización vigente — cuentas, 7/oct
 
 Claude Code completó encuesta en SQL y cargador semanal; Claude Design entregó ingreso/perfil/personajes. Codex implementó ese handoff y backend: leer [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md) y el bloque inicial de EN-CURSO.md antes de seguir encargos históricos de este archivo. El dueño ya registró OAuth y configuró el secreto fuera del sitio; la vinculación real de Bucaro19 se comprobó en Chrome. No instalar tablas otra vez. Intercambio de código e identidad comprobados con el proveedor real.

@@ -18,6 +18,15 @@ Options -Indexes
 <Files "accounts.php">
   Require all denied
 </Files>
+<Files "ranking-import.php">
+  Require all denied
+</Files>
+<Files "ranking-sync-lib.php">
+  Require all denied
+</Files>
+<Files "ranking-worker.php">
+  Require all denied
+</Files>
 # PHP may write its log beside the scripts; it must never be downloadable.
 <Files "error_log">
   Require all denied
