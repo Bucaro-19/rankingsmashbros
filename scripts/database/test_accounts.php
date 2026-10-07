@@ -1,0 +1,107 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../../ranking-smash-ultimate/database.php';
+require_once __DIR__ . '/../../ranking-smash-ultimate/accounts.php';
+function check_account($condition, string $description): void {
+    if (!$condition) throw new RuntimeException($description);
+}
+function account_rejects(callable $operation, string $reason): void {
+    try { $operation(); } catch (SmashAccountError $error) { check_account($error->reason === $reason, 'Unexpected rejection'); return; }
+    throw new RuntimeException('Expected rejection: ' . $reason);
+}
+$config = ['client_id' => 'fixture-id', 'client_secret' => 'fixture-secret-only'];
+$session = [];
+$url = smash_account_authorize($session, $config, 1000);
+parse_str(parse_url($url, PHP_URL_QUERY), $query);
+check_account($query['scope'] === 'user.identity' && !isset($query['client_secret']), 'Authorization must not expose a secret or ask for email/reporting');
+check_account($query['redirect_uri'] === SMASH_ACCOUNT_CALLBACK && strlen($query['state']) === 64, 'Fixed redirect and random state');
+smash_account_consume_state($session, $query['state'], 1001);
+account_rejects(function () use (&$session, $query) { smash_account_consume_state($session, $query['state'], 1002); }, 'oauth_state_invalid');
+foreach ([['wrong',1001],['same',1601],['same',999]] as $case) {
+    $s = ['smash_oauth_pending' => ['state'=>'same','at'=>1000]];
+    account_rejects(function () use (&$s, $case) { smash_account_consume_state($s, $case[0], $case[1]); }, 'oauth_state_invalid');
+    check_account(!isset($s['smash_oauth_pending']), 'Invalid/cancelled callbacks consume the attempt');
+}
+check_account(smash_account_csrf_valid(['smash_account_csrf'=>'a'], 'a') && !smash_account_csrf_valid(['smash_account_csrf'=>'a'], ['a']), 'CSRF types');
+check_account(!smash_account_session_valid(['smash_account'=>['id'=>'1','at'=>1000]], 1000+28800), 'Absolute session expiry');
+check_account(!smash_account_session_valid(['smash_account'=>['id'=>'1','at'=>1001]], 1000), 'Future sessions');
+$calls = 0;
+$identity = smash_account_exchange($config, 'fixture-code', function ($endpoint, $body, $token) use (&$calls) {
+    $calls++;
+    if ($calls === 1) {
+        check_account($endpoint === 'https://api.start.gg/oauth/access_token' && $body['scope'] === 'user.identity' && $token === null, 'Token exchange');
+        return ['access_token'=>'fixture-token-only','token_type'=>'Bearer','refresh_token'=>'fixture-refresh-only'];
+    }
+    check_account($endpoint === 'https://api.start.gg/gql/alpha' && $token === 'fixture-token-only' && strpos($body['query'],'currentUser') !== false, 'Identity fetched from provider');
+    return ['data'=>['currentUser'=>['id'=>'8999001','slug'=>'user/fixture','player'=>['id'=>'8999002','gamerTag'=>'Jugador QA'],'images'=>[['url'=>'https://images.start.gg/fixture.png']]]]];
+});
+check_account($calls === 2 && $identity['playerId'] === '8999002' && !isset($identity['access_token']), 'Tokens discarded after verified identity');
+account_rejects(function () { smash_account_identity(['id'=>'2','player'=>['id'=>'3','gamerTag'=>'']]); }, 'identity_invalid');
+account_rejects(function () use ($config) { smash_account_exchange($config, 'code', static fn() => ['access_token'=>'bad token','token_type'=>'Bearer']); }, 'provider_invalid');
+check_account(smash_account_external_id('18446744073709551616') === null && smash_account_external_id('1e3') === null, 'IDs fit the SQL type');
+check_account(smash_account_safe_image('https://images.start.gg.evil.test/x') === null && smash_account_safe_image('javascript:alert(1)') === null, 'Avatar allowlist');
+check_account(smash_account_identity(['id'=>'1','slug'=>'//evil.test','player'=>null])['url'] === null, 'No open profile redirects');
+$root = sys_get_temp_dir() . '/smash-oauth-config-' . bin2hex(random_bytes(6));
+mkdir($root); mkdir($root.'/site'); mkdir($root.'/private-smash');
+try {
+    check_account(smash_account_oauth_config($root.'/site') === null, 'Missing config disables login');
+    file_put_contents($root.'/private-smash/oauth.local.php', '<?php echo "DO_NOT_PRINT"; return ["enabled"=>false];');
+    ob_start(); $missing=smash_account_oauth_config($root.'/site'); $output=ob_get_clean();
+    check_account($missing === null && $output === '', 'Private config output suppressed');
+    file_put_contents($root.'/private-smash/oauth.local.php', '<?php return '.var_export(['enabled'=>true,'client_id'=>'CLIENT_ID_AQUI','client_secret'=>'valid-fixture-secret','redirect_uri'=>SMASH_ACCOUNT_CALLBACK], true).';');
+    account_rejects(static fn() => smash_account_oauth_config($root.'/site'), 'config_invalid');
+} finally { unlink($root.'/private-smash/oauth.local.php'); rmdir($root.'/site'); rmdir($root.'/private-smash'); rmdir($root); }
+$public=smash_account_public(__DIR__.'/../../ranking-smash-ultimate');
+foreach ($public['players'] as $player) {
+    $profile=smash_account_profile($public,$player['id']);
+    foreach (['combined'=>$public,'guatemala'=>$public['localRanking']] as $scope=>$view) {
+        $original=null; foreach ($view['players'] as $candidate) if ($candidate['id']===$player['id']) $original=$candidate;
+        if (!$original) continue;
+        $v=$profile['views'][$scope];
+        check_account($v['rank']===$original['rank'] && $v['points']===$original['rating'], 'Exact ranking parity');
+        check_account(array_sum(array_column($v['events'],'wins')) >= $v['wins'], 'Available attendance cannot undercount included wins');
+        $included=array_filter($v['events'],static fn($e)=>$e['counts']);
+        check_account(count($included)===$original['events'] && array_sum(array_column($included,'wins'))===$original['wins'] && array_sum(array_column($included,'losses'))===$original['losses'], 'Per-event parity');
+    }
+}
+check_account(smash_account_profile($public,null)['views']['combined']['rank'] === null, 'Unlinked account has no fabricated rank');
+echo "OAuth, identity, configuration and published ranking contracts passed.\n";
+$db = getenv('SMASH_SCHEMA_TEST_DB');
+if (!$db) { echo "SQL tests skipped: no disposable database configured.\n"; exit; }
+if (strpos($db,'smash_schema_test')!==0 || !in_array(getenv('SMASH_SCHEMA_TEST_HOST') ?: '127.0.0.1',['127.0.0.1','localhost'],true)) throw new RuntimeException('Disposable database required');
+$pdo = smash_database_connect(['host'=>'127.0.0.1','port'=>(int)(getenv('SMASH_SCHEMA_TEST_PORT') ?: 3306),'name'=>$db,'user'=>'root','password'=>getenv('SMASH_SCHEMA_TEST_PASSWORD')]);
+$id=null;
+try {
+    $id=smash_account_login($pdo,$identity,time());
+    $user=smash_account_user($pdo,$id); $version=$user['connectionVersion'];
+    smash_account_preferences($pdo,$id,'roles',['roles'=>['player','organizer']],$version);
+    check_account(count(smash_account_user($pdo,$id)['roles'])===2 && (int)$pdo->query('SELECT COUNT(*) FROM tournament_staff')->fetchColumn()===0, 'Roles do not grant tournament permissions');
+    account_rejects(function () use ($pdo,$id,$version) { smash_account_preferences($pdo,$id,'roles',['roles'=>['admin']],$version); }, 'invalid_roles');
+    $pdo->exec("INSERT INTO user_roles(user_id,role) VALUES ($id,'admin')");
+    smash_account_preferences($pdo,$id,'roles',['roles'=>['player']],$version);
+    check_account((int)$pdo->query("SELECT COUNT(*) FROM user_roles WHERE user_id=$id AND role='admin'")->fetchColumn()===1,'Product preferences preserve externally granted admin');
+    smash_account_preferences($pdo,$id,'characters',['characters'=>['1319','1766']],$version);
+    foreach ([['1319','1319'],['1746'],['99999999'],[]] as $invalid) account_rejects(function () use ($pdo,$id,$version,$invalid) { smash_account_preferences($pdo,$id,'characters',['characters'=>$invalid],$version); }, 'invalid_characters');
+    $pdo->exec("CREATE TRIGGER smash_account_fixture_failure BEFORE INSERT ON user_characters FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture failure'");
+    account_rejects(function () use ($pdo,$id,$version) { smash_account_preferences($pdo,$id,'characters',['characters'=>['1766']],$version); }, 'account_write_failed');
+    $pdo->exec('DROP TRIGGER smash_account_fixture_failure');
+    check_account(smash_account_user($pdo,$id)['chosen']===['1319','1766'],'Failed replacement rolls back the deletion');
+    smash_account_preferences($pdo,$id,'disconnect',[],$version);
+    account_rejects(static fn() => smash_account_user($pdo,$id),'login_required');
+    account_rejects(function () use ($pdo,$id,$version) { smash_account_preferences($pdo,$id,'roles',['roles'=>['organizer']],$version); },'login_required');
+    check_account(smash_account_login($pdo,$identity,time())===$id,'Reauthorization reuses same account');
+    check_account(smash_account_user($pdo,$id)['chosen']===['1319','1766'],'Reauthorization preserves preferences');
+    account_rejects(function () use ($pdo,$id,$version) { smash_account_preferences($pdo,$id,'roles',['roles'=>['organizer']],$version); },'login_required');
+    check_account((int)$pdo->query("SELECT COUNT(*) FROM oauth_connections WHERE user_id=$id AND access_token_encrypted IS NULL AND refresh_token_encrypted IS NULL")->fetchColumn()===1,'No provider tokens stored');
+    $pdo->beginTransaction();
+    account_rejects(static fn()=>smash_account_login($pdo,$identity,time()),'transaction_already_active');
+    check_account($pdo->inTransaction(),'Caller transaction remains owned by caller'); $pdo->rollBack();
+    $pdo->exec("UPDATE users SET status='disabled' WHERE id=$id");
+    account_rejects(static fn()=>smash_account_login($pdo,$identity,time()),'account_disabled');
+    echo "SQL linking, preferences, rollback, role isolation, expiry and revocation passed.\n";
+} finally {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    $pdo->exec('DROP TRIGGER IF EXISTS smash_account_fixture_failure');
+    if ($id!==null) { foreach (['user_characters','user_roles','oauth_connections'] as $table) $pdo->exec("DELETE FROM $table WHERE user_id=$id"); $pdo->exec("DELETE FROM users WHERE id=$id"); }
+    $pdo->exec('DELETE FROM players WHERE id=8999002');
+}

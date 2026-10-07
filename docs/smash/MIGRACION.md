@@ -1,5 +1,9 @@
 # Migración a repo y dominio propios — 6 de octubre de 2026
 
+## Estado vigente — 7/oct
+
+El dominio nuevo está publicado, la encuesta escribe/lee en SQL y la URL anterior ya redirige al nuevo sitio (cierre documentado en MIGRACION-ENCUESTA.md). Conteo final: 13 respuestas de comunidad y 3 de prueba. El primer corte está en SQL; el cargador semanal desde la Mac está preparado, sin tarea automática instalada. Primer semanal del repo nuevo pendiente de verificar el domingo 11/oct. Las secciones del 6/oct siguientes son antecedentes; no repetir hash/FTP/migración ni instalar tablas. Cuentas: CUENTAS-OAUTH.md.
+
 ## Hecho
 - Repo `Bucaro-19/rankingsmashbros` creado con el historial de Smash filtrado desde `Bucaro-19/rsvp-graduacion` (solo `ranking-smash-ultimate/`, `scripts/smash/`, `docs/smash/` y los workflows `smash-*`). Los hashes de commit cambiaron; los números de PR de los mensajes (#1–#25) son del repo viejo.
 - `deploy.py` y los workflows aceptan dos variables de Actions: `SMASH_FTP_DIR` (carpeta del sitio bajo la raíz del FTP; `.` publica en la raíz; por defecto `ranking-smash-ultimate`) y `SMASH_PUBLIC_URL` (URL base sin barra final; por defecto `https://ingporras.com/ranking-smash-ultimate`).
@@ -16,7 +20,7 @@
 - Verificado en https://rankingsmashbros.com/: schema 3, corte 2026-10-04T11:43:18, 188 clasificados en ambas vistas, 175 con personaje, imágenes y panel sin errores, `metodologia.html`, `encuesta.php` y `opiniones.php` responden 200, `feedback-data/` responde 403 (protegida, correcto).
 - Activadas aquí `SMASH_SYNC_ENABLED=true` y `SMASH_RELEASE_MODE=weekly`. El repo viejo sigue con las suyas: publican a dominios distintos y no chocan. El domingo 11 de octubre es la primera actualización semanal de este repo y la primera prueba real del `STARTGG_TOKEN` nuevo; si falla, se conserva el corte actual.
 
-## Falta ahora
+## Pendientes históricos del 6/oct (consultar el estado vigente arriba)
 1. Hecho: panel privado consultado en el dominio nuevo; 12 respuestas reales antes y después de publicar el conector PHP. Encuesta sigue usando su archivo protegido, todavía no SQL.
 2. Lunes 12 de octubre: comprobar que el semanal de este repo publicó. Si sí: `SMASH_SYNC_ENABLED=false` en el repo viejo, redirección de `ingporras.com/ranking-smash-ultimate/` al dominio nuevo, actualizar enlaces del portafolio y los `ingporras.com` de pies de página y documentación, y después quitar Smash del repo viejo.
 3. Base instalada/conectada y primer corte importado por Codex el 7/oct/2026 (PR #9): MariaDB 11.4.13, 31 tablas, 87 selecciones, cutId=1 publicado y 188 rankings por vista. Encuesta y automatización SQL semanal pendientes; ver BASE-DE-DATOS.md y SIGUIENTE-FASE.md. No reinstalar ni pedir credenciales por rutina.

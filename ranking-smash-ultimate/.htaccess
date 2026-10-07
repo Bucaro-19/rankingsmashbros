@@ -15,6 +15,9 @@ Options -Indexes
 <Files "survey.php">
   Require all denied
 </Files>
+<Files "accounts.php">
+  Require all denied
+</Files>
 # PHP may write its log beside the scripts; it must never be downloadable.
 <Files "error_log">
   Require all denied

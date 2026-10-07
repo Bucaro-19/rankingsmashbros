@@ -1,5 +1,9 @@
 # Relevo para Claude Code — importar datos a la base conectada
 
+## Actualización vigente — cuentas, 7/oct
+
+Claude Code completó encuesta en SQL y cargador semanal; Claude Design entregó ingreso/perfil/personajes. Codex implementó ese handoff y backend: leer [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md) y el bloque inicial de EN-CURSO.md antes de seguir encargos históricos de este archivo. El dueño aún debe registrar OAuth y configurar el secreto fuera del sitio. No instalar tablas otra vez. La prueba real del proveedor sigue pendiente.
+
 **Encargo vigente del dueño (7/oct):** Claude Code continúa la transición de encuesta y, después, la automatización SQL. Leer primero RELEVO-CLAUDE-CODE-2026-10-07.md. PR #10 ya fusionada en main 972225d; no rehacer ese importador ni seguir el encargo limitado de tres archivos. Las pantallas de cuentas esperan el handoff solicitado con BRIEF-CLAUDE-DESIGN-CUENTAS.md.
 
 ## Punto de partida confirmado

@@ -112,3 +112,7 @@ Configurado y verificado por Claude Code el 7 de octubre de 2026. Detalle de lo 
 - **Qué desbloquea:** el diagnóstico ya no depende de que el dueño abra `opiniones.php?diagnostico=base`; un agente puede comprobar versión, tablas, conteos y, tras una importación, comparar filas contra `public.json`. El importador de producción sigue necesitando la vía definida en `SIGUIENTE-FASE.md` (no abrir MySQL a GitHub Actions), aunque esta conexión permite una primera carga manual supervisada desde la Mac si el dueño la aprueba.
 
 Codex también confirmó lectura directa y ejecutó la simulación del importador sin escritura. El dueño autorizó continuar la fase de importación en el chat el 7/oct/2026; el código aplica paquetes validados en una transacción. Estado de la primera carga y pruebas: EN-CURSO.md e IMPORTACION-RANKING.md.
+
+## Cuentas — 7/oct, nueva entrega
+
+Se reutilizan `users`, `user_roles`, `user_characters`, `oauth_connections` y `players`, sin migración ni reinstalación. `oauth_connections.updated_at` invalida sesiones anteriores al revocar/reautorizar. Los tokens no se persisten en esta fase. La elección de organizador no toca `tournament_staff`. Consultar [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md) para alcance, privacidad, pruebas y activación pendiente del registro de la aplicación por el dueño. Pruebas hechas únicamente con usuarios sintéticos en SQL local desechable.
