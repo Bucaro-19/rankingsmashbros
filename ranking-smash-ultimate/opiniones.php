@@ -4,7 +4,8 @@ declare(strict_types=1);
 ini_set('session.use_strict_mode', '1');
 session_name('SMASHGT_ADMIN');
 session_set_cookie_params([
-    'lifetime' => 0, 'path' => '/ranking-smash-ultimate/',
+    // Scope the cookie to wherever the site is served (domain root or a subfolder).
+    'lifetime' => 0, 'path' => rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/') . '/',
     'secure' => PHP_SAPI !== 'cli-server',
     'httponly' => true, 'samesite' => 'Strict',
 ]);
