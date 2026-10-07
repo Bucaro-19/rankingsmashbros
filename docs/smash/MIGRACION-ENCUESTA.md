@@ -28,7 +28,7 @@ php scripts/database/import_survey.php --file RUTA --site-root SITIO --apply # e
 - `php scripts/database/test_import_survey.php` sin variables: análisis, 38 casos de rechazo, privacidad de errores y la secuencia completa de importación sobre SQLite en memoria (sustituto del motor, mismo SQL).
 - Con `SMASH_SCHEMA_TEST_DB=smash_schema_test SMASH_SCHEMA_TEST_PORT=33306 SMASH_SCHEMA_TEST_PASSWORD=...` repite la secuencia sobre el esquema real instalado con `install.sql`: simulación sin escritura, primera importación, valores guardados iguales al archivo, repetición sin cambios, línea añadida, archivo inválido, fallo a mitad de transacción con rollback y conflicto de hash no sobrescrito. Borra `survey_responses` antes y después, y se niega a correr si la base no se llama `smash_schema_test*`.
 - Ejecutado por Claude Code en una MariaDB local desechable **13.0.2** (Homebrew) con `install.sql` (31 tablas, 87 personajes): pasó. También el CLI de punta a punta: validar, simular, aplicar, repetir, archivo dañado y uso incorrecto.
-- MariaDB 11.4.13 de producción: verificado con la ejecución real descrita al final. **No verificado:** las pruebas nuevas en MariaDB 10.11 y MySQL 8.0 de CI (el workflow no se tocó, por encargo).
+- MariaDB 11.4.13 de producción: primera copia descrita al final. Suite nueva integrada y verificada por Codex en CI `37582761629`: MySQL **8.0.46** y MariaDB **10.11.19**, además de SQLite; todos los checks correctos en el commit de revisión `b7d842a`.
 
 ## Integración en CI (Codex)
 Integrada en `smash-check.yml`, después de las pruebas de esquema, conexión e importador de ranking. Se instalan explícitamente `php-mysql`, `php-sqlite3` y `php-mbstring` y se ejecutan:
@@ -71,5 +71,5 @@ Estado: `survey_responses` es una copia; `encuesta.php` sigue escribiendo al arc
 
 - Lectura directa de producción, solo agregados: **13 filas, 13 hashes distintos y 1 prueba interna**. No se descargaron respuestas ni se consultaron comentarios. Coincide con lo documentado por Claude; no sustituye la comparación campo por campo con el archivo.
 - Corregido el caso de biblioteca con transacción previa: ya no revierte datos ajenos. Regresión comprobada con una escritura pendiente del llamador.
-- Sintaxis PHP y suite local SQLite correctas. La suite ya forma parte de ambas bases desechables de CI; confirmar el resultado del nuevo commit antes de fusionar.
+- Sintaxis PHP y suite local SQLite correctas. CI `37582761629` correcta: se comprobó en los logs la ejecución efectiva de la suite de encuesta en ambos motores, además de las pruebas de ranking/UI, esquema y conector.
 - Pendientes de producción: registrar tamaño/hash del respaldo existente, repetir la importación con la versión revisada y verificar valores contra el archivo. No se ejecutó ningún importador en producción durante esta revisión.
