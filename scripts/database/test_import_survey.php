@@ -124,6 +124,16 @@ try {
         fixture($file, $valid);
         $rows = smash_survey_parse_file($file);
 
+        // A library caller's transaction belongs to the caller, including its pending writes.
+        $pdo->beginTransaction();
+        $pending = $pdo->prepare('INSERT INTO survey_responses (' . implode(', ', SMASH_SURVEY_COLUMNS) . ') VALUES ('
+            . implode(', ', array_fill(0, count(SMASH_SURVEY_COLUMNS), '?')) . ')');
+        $pending->execute(array_values($rows[0]));
+        rejects(fn() => smash_survey_import($pdo, $rows, true), 'transaction_already_active');
+        verify($pdo->inTransaction() && $count() === 1, "$engine caller transaction and row preserved");
+        $pdo->rollBack();
+        verify($count() === 0, "$engine caller controls rollback");
+
         $dry = smash_survey_import($pdo, $rows, false);
         verify($dry['inserted'] === 3 && $dry['applied'] === false && $count() === 0, "$engine dry run writes nothing");
         $first = smash_survey_import($pdo, $rows, true);

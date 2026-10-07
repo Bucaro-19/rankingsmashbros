@@ -156,6 +156,8 @@ function smash_survey_same(array $row, array $stored): bool
 // matches its hash is a conflict to audit, never overwritten.
 function smash_survey_import(PDO $pdo, array $rows, bool $apply): array
 {
+    // Own the transaction: rejecting a nested call must not roll back the caller's work.
+    if ($pdo->inTransaction()) throw new SmashSurveyImportError('transaction_already_active');
     $find = 'SELECT ' . implode(', ', SMASH_SURVEY_COLUMNS) . ' FROM survey_responses WHERE import_hash = ?';
     $insert = 'INSERT INTO survey_responses (' . implode(', ', SMASH_SURVEY_COLUMNS) . ') VALUES ('
         . implode(', ', array_fill(0, count(SMASH_SURVEY_COLUMNS), '?')) . ')';
