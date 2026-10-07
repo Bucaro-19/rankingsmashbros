@@ -1,5 +1,7 @@
 # Trabajo paralelo — 7 de octubre de 2026
 
+**Completado:** PR #9 y PR #10 fusionadas. Este reparto se conserva como historial. El encargo vigente del dueño para Claude Code está en RELEVO-CLAUDE-CODE-2026-10-07.md; ya puede modificar escritor/lector de encuesta y CI según la nueva entrega. El brief para Claude Design está en BRIEF-CLAUDE-DESIGN-CUENTAS.md.
+
 ## Reparto
 
 Codex completó el paquete privado y el importador transaccional de ranking/historial en PR #9/main e685fb2, con primera carga real y repetición verificadas. Mantiene un checkout separado en `/tmp/smash-ranking-db-import`. No modificar el cálculo ni cambiar el frontend de JSON a SQL todavía. Automatización de la carga SQL semanal sigue pendiente.

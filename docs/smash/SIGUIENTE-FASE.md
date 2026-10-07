@@ -1,5 +1,7 @@
 # Relevo para Claude Code — importar datos a la base conectada
 
+**Encargo vigente del dueño (7/oct):** Claude Code continúa la transición de encuesta y, después, la automatización SQL. Leer primero RELEVO-CLAUDE-CODE-2026-10-07.md. PR #10 ya fusionada en main 972225d; no rehacer ese importador ni seguir el encargo limitado de tres archivos. Las pantallas de cuentas esperan el handoff solicitado con BRIEF-CLAUDE-DESIGN-CUENTAS.md.
+
 ## Punto de partida confirmado
 
 - Repo: Bucaro-19/rankingsmashbros. Sitio: https://rankingsmashbros.com/. No continuar sobre los cambios obsoletos de rsvp-graduacion.
