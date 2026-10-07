@@ -54,11 +54,11 @@ class DiagnosticTests(unittest.TestCase):
         cls.process.wait(timeout=5)
         cls.temp.cleanup()
 
-    def request(self, *, authenticated=False, method='GET', accept=None):
+    def request(self, *, authenticated=False, method='GET', accept=None, url=None):
         headers = {'Cookie': f'SMASHGT_ADMIN={self.session_id}'} if authenticated else {}
         if accept is not None:
             headers['Accept'] = accept
-        request = urllib.request.Request(self.url, headers=headers, method=method)
+        request = urllib.request.Request(url or self.url, headers=headers, method=method)
         try:
             response = urllib.request.urlopen(request, timeout=5)
         except urllib.error.HTTPError as error:
@@ -112,6 +112,14 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertIn('no-store', headers['Cache-Control'])
         _, headers, _ = self.request(accept='application/json')
         self.assertTrue(headers['Content-Type'].startswith('application/json;'))
+
+    def test_diagnostic_navigation_is_available_only_inside_admin_panel(self):
+        for authenticated in (False, True):
+            with self.subTest(authenticated=authenticated):
+                status, _, body = self.request(authenticated=authenticated,
+                    url=self.url.split('?')[0])
+                self.assertEqual(status, 200)
+                self.assertEqual('href="./opiniones.php?diagnostico=base"' in body, authenticated)
 
 
 if __name__ == '__main__':
