@@ -2,7 +2,7 @@
 
 ## Reparto
 
-Codex prepara el paquete privado y el importador transaccional de ranking/historial en la rama `feat/ranking-database-import`, checkout `/tmp/smash-ranking-db-import`. No modificar el cálculo ni cambiar el frontend de JSON a SQL todavía.
+Codex completó el paquete privado y el importador transaccional de ranking/historial en PR #9/main e685fb2, con primera carga real y repetición verificadas. Mantiene un checkout separado en `/tmp/smash-ranking-db-import`. No modificar el cálculo ni cambiar el frontend de JSON a SQL todavía. Automatización de la carga SQL semanal sigue pendiente.
 
 Claude Code puede preparar la migración de la encuesta en **otra rama y otro worktree** desde main. No cambiar de rama en el checkout de Codex. Archivos propios: `scripts/database/import_survey.php`, `scripts/database/test_import_survey.php` y `docs/smash/MIGRACION-ENCUESTA.md`. Usar el conector existente sin editar `database.php`. No tocar `schema.sql`, `install.sql`, `opiniones.php`, `encuesta.php`, workflows, importador de ranking ni documentos compartidos de estado en esta primera entrega. Codex actualizará EN-CURSO y SIGUIENTE-FASE; Claude documentará su avance en MIGRACION-ENCUESTA.
 

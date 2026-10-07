@@ -39,4 +39,6 @@ El workflow semanal genera database-package.json dentro del artefacto existente 
 
 `python scripts/database/test_import_ranking.py`: contratos sin SQL y, con SMASH_SCHEMA_TEST_DB apuntando a un servicio localhost desechable, importación/repetición, dos vistas con puestos diferentes, conflicto de hash, enlace/falta de corte previo, fallo SQL intermedio con rollback, conflicto de relación y conservación del corte ante correcciones vivas. Los tests rechazan bases que no sean smash_schema_test* en localhost. CI ejecuta MySQL 8.0 y MariaDB 10.11.
 
-Estado de la importación real y conteos finales: EN-CURSO.md. No confundir la simulación validada con escritura completada.
+Primera importación real completada el 7/oct/2026 por Codex, después de fusionar PR #9/main e685fb2 y CI 37581615922/37581612335 correctas. Corte Oct4, cutId=1, status=published; la repetición devolvió already_imported. Paridad completa comprobada antes de commit y al repetir. Datos: 188 clasificados en combined y 188 en guatemala; 3435 jugadores de contexto, 43 torneos, 47 eventos, 4498 entrants, 8985 sets y 17970 slots. Las copias por vista contienen 42/39 eventos y 2648/2624 resultados. Users/survey_responses=0; no se modificó encuesta ni frontend.
+
+Hash del paquete: ecb1d4a5cd44f87250537a85d0d166fa6f9824ff3408f0b55c98ac6102fd9e45. public.json permaneció idéntico después de importar (SHA-256 1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1); inicio/encuesta/opiniones respondieron 200. Estado posterior y pendientes: EN-CURSO.md.
