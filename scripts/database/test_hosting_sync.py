@@ -125,23 +125,29 @@ class HostingSQLTests(unittest.TestCase):
     def run_package(self, p, mode='apply'):
         self.path.write_text(canonical(p)); return bridge(mode, self.path)
 
-    def snapshot(self):
+    def snapshot(self, *, compare_importers=False):
         found = {}
         for t in TABLES:
-            columns = [r[0] for r in sql(self.db, 'SHOW COLUMNS FROM `' + t + '`') if r[0] != 'imported_at']
+            ignored = {'imported_at'}
+            if compare_importers and t == 'players':
+                # SQL generates this wall-clock timestamp independently for
+                # each import. All package/source dates remain in the comparison;
+                # rollback/conflict snapshots still include these columns.
+                ignored.add('updated_at')
+            columns = [r[0] for r in sql(self.db, 'SHOW COLUMNS FROM `' + t + '`') if r[0] not in ignored]
             found[t] = sorted(sql(self.db, 'SELECT `' + '`,`'.join(columns) + '` FROM `' + t + '`'), key=repr)
         return found
 
     def test_python_php_identical_tables_first_repeat_and_linked_second_cut(self):
         first, second = build_package(*fixture()), linked(SECOND, FIRST)
-        import_package(self.db, first, apply=True); import_package(self.db, second, apply=True); expected = self.snapshot()
+        import_package(self.db, first, apply=True); import_package(self.db, second, apply=True); expected = self.snapshot(compare_importers=True)
         self.clear()
         self.assertEqual(self.run_package(first, 'dry')['result']['status'], 'validated_no_writes')
         self.assertEqual(sql(self.db, 'SELECT COUNT(*) FROM cuts')[0][0], 0)
         for p in (first, second):
             self.assertEqual(self.run_package(p)['result']['status'], 'imported')
             self.assertEqual(self.run_package(p)['result']['status'], 'already_imported')
-        self.assertEqual(expected, self.snapshot())
+        self.assertEqual(expected, self.snapshot(compare_importers=True))
 
     def test_failure_mid_write_rolls_back_and_conflict_preserves_history(self):
         first = build_package(*fixture())
