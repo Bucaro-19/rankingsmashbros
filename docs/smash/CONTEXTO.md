@@ -9,8 +9,12 @@
 - Top 100 principal; búsqueda y puesto básico de todos gratuitos. Donaciones/premium, OAuth, agenda y top 15 por organizador siguen pendientes.
 - Constancia: estudio publicado, sin bono aprobado. Calendario de meses, torneos y sets en la ficha. Consulta gratuita sin cuenta.
 
+## Diseño y relevo
+- Pantallas nuevas: solicitar primero a Claude Design mediante un brief y esperar el handoff. Instrucción del dueño; backend sin pantallas puede avanzar.
+- Claude Code debe leer AGENTS.md/CLAUDE.md, este contexto, EN-CURSO.md y SIGUIENTE-FASE.md, y mantener el relevo actualizado.
+
 ## Base de datos (fase actual)
-- Dueño confirmó que aún no hay tablas. Preparación autorizada de v1: 31 tablas y catálogo en `docs/smash/install.sql`; guía `BASE-DE-DATOS.md`. Cuentas/lectura en vivo/reportes/avisos se implementan después de instalar.
+- Dueño confirmó importación exitosa de `docs/smash/install.sql` en `ivcjgjlk_smash` (BanaHosting). v1 preparada en PR #1/main `cb89570`: 31 tablas/87 selecciones esperadas; conteos y versión pendientes de verificación directa. Guía `BASE-DE-DATOS.md`; siguiente fase `SIGUIENTE-FASE.md`. Falta conectar PHP/importadores; no reinstalar por rutina.
 - OAuth para identidad y acceso autorizado; no garantiza multiplicar cuota. Tokens persistentes cifrados en servidor, llave fuera de la base/Git. La web actual sigue con JSON.
 
 ## Arquitectura

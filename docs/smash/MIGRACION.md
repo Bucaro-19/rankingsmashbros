@@ -19,7 +19,7 @@
 ## Falta ahora
 1. Dueño: entrar a `https://rankingsmashbros.com/opiniones.php` con su clave y confirmar que aparecen las respuestas anteriores de la encuesta.
 2. Lunes 12 de octubre: comprobar que el semanal de este repo publicó. Si sí: `SMASH_SYNC_ENABLED=false` en el repo viejo, redirección de `ingporras.com/ranking-smash-ultimate/` al dominio nuevo, actualizar enlaces del portafolio y los `ingporras.com` de pies de página y documentación, y después quitar Smash del repo viejo.
-3. Base de datos: ver `BASE-DE-DATOS.md`.
+3. Base de datos: dueño confirmó importación exitosa de install.sql en ivcjgjlk_smash. Conexión/importadores pendientes; ver BASE-DE-DATOS.md y SIGUIENTE-FASE.md.
 
 ## Lista original (referencia)
 1. (Hecho) Dueño, en cPanel de BanaHosting: agregar `rankingsmashbros.com` como dominio adicional, apuntar el DNS y activar SSL. Anotar la carpeta raíz que cPanel le asigna.
