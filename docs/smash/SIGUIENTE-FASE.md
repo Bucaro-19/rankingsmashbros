@@ -56,7 +56,7 @@ El esquema usa IDs reales y relaciones. **No generar tournamentId/entrantId desd
 
 ## Entrega 3 — encuesta
 
-**Estado (7/oct, Claude Code):** código, pruebas, protocolo de pausa y recuperación listos en `feat/survey-sql-storage`; ver MIGRACION-ENCUESTA.md «Entrega 2» para contratos y para el registro de la transición en producción. La lista siguiente queda como referencia del encargo.
+**Estado (7/oct, Claude Code): completada y publicada.** PR #13 (`033bd6a`); producción escribe y lee la encuesta en SQL. Evidencia y pendientes menores (prueba real por la web, confirmación del panel, encuesta del dominio anterior) en MIGRACION-ENCUESTA.md, «Transición en producción». La lista siguiente queda como referencia del encargo.
 
 PR #10 entrega importador y pruebas, revisados por Codex con protección de transacciones previas e integración en CI. Primera copia ya ejecutada por el dueño; la web sigue usando archivo. Leer MIGRACION-ENCUESTA.md: pendientes de repetición real y respaldo verificado, después transición controlada con pausa de envíos y comparación final. No repetir la primera carga como si la tabla estuviera vacía ni cambiar ambas fuentes mediante FTP sin atender los envíos durante la transición.
 
