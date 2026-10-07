@@ -11,6 +11,8 @@ Primer punto de la hoja de ruta, aprobado por el dueño («lo normal, como Faceb
 - El diagnóstico del panel ahora informa `migrations`; tras aplicar la 002 debe listar ambas versiones y `tableCount` 34.
 - Pruebas locales en MariaDB desechable (13.0.2): `test_schema.py` 9, `test_accounts.php`, `test_accounts_http.py` 8, diagnóstico, importadores, encuesta y sincronización; 48 de Python del ranking y Node sin cambios. Nada probado aún en producción ni con el proveedor real.
 
+**Brief listo para el dueño:** [BRIEF-CLAUDE-DESIGN-PANEL-ESTADISTICAS.md](BRIEF-CLAUDE-DESIGN-PANEL-ESTADISTICAS.md), para pedir a Claude Design el panel de estadísticas. Define los únicos datos que existirán; el contador de visitas del servidor es la siguiente entrega y no necesita esperar el diseño.
+
 ## Pedidos nuevos del dueño — 7 de octubre
 
 Panel administrativo de estadísticas, sesión persistente, historial/rivales gratis, análisis de contrincante y top 15 por organizador como premium, y ranking por país a futuro. Registro y estado técnico en [HOJA-DE-RUTA-DUENO-2026-10-07.md](HOJA-DE-RUTA-DUENO-2026-10-07.md). Nada implementado; el orden propuesto espera confirmación del dueño.
