@@ -38,7 +38,7 @@
     const yesterday=report.yesterday?`Ayer completo: ${M.plural(report.yesterday.visitors,'visitante','visitantes')}`:report.counterStartedAt?'Ayer: sin datos (el contador empezó hoy)':'El contador todavía no registra visitas';
     $('glance').innerHTML=`<div class="card today wide"><p class="label">Hoy · en curso</p><p class="figure">${N(t.visitors)}</p><p class="strong">${t.visitors===1?'visitante':'visitantes'} hasta las ${report.updatedAt.slice(11,16)}</p><p>${yesterday}</p></div>`
       +glanceCard('7','Últimos 7 días')+glanceCard('30','Últimos 30 días')
-      +`<div class="card accounts wide"><p class="label">Cuentas registradas</p><p class="figure">${N(a.total)}</p><p class="sub">${a.total?`${N(a.linked)} ${a.linked===1?'sigue vinculada':'siguen vinculadas'} a start.gg · ${M.plural(gone,'desvinculada','desvinculadas')}`:'Aún no hay cuentas registradas'}</p></div>`;
+      +`<div class="card accounts wide"><p class="label">Cuentas registradas</p><p class="figure">${N(a.total)}</p><p class="sub">${a.total?`${N(a.linked)} ${a.linked===1?'sigue vinculada':'siguen vinculadas'} a start.gg · ${M.plural(gone,'desvinculada','desvinculadas')}`:'Aún no hay cuentas registradas'}</p>${a.premium!=null?`<p class="sub"><strong class="yellow">${N(a.premium)}</strong> ${a.premium===1?'cuenta premium':'cuentas premium'}</p>`:''}</div>`;
   }
   function renderPeriod() {
     const p=report.periods[period], title=period==='season'?`Temporada ${report.seasonYear}`:M.LABELS[period];

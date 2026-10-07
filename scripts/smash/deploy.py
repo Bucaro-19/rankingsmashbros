@@ -10,7 +10,7 @@ from pathlib import Path
 from collections import Counter, defaultdict
 
 FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "cuenta.css", "panel.css", "metodologia.css", "encuesta.css", "opiniones.css", "analisis-torneos.css",
-         "characters.js", "account-model.js", "cuenta.js", "app.js", "visita.js", "panel-model.js", "panel.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "database.php", "survey.php", "accounts.php", "visits.php", "stats.php", "ranking-import.php", "ranking-sync-lib.php", "ranking-sync.php", "ranking-worker.php", "account-api.php", "oauth.php", "visita.php", "panel-api.php", "panel.php", "encuesta.php", "opiniones.php", "cuenta.html", "index.html", "metodologia.html",
+         "characters.js", "account-model.js", "cuenta.js", "app.js", "visita.js", "panel-model.js", "panel.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "database.php", "survey.php", "accounts.php", "visits.php", "stats.php", "premium.php", "ranking-import.php", "ranking-sync-lib.php", "ranking-sync.php", "ranking-worker.php", "account-api.php", "oauth.php", "visita.php", "panel-api.php", "panel.php", "premium-api.php", "recurrente-webhook.php", "encuesta.php", "opiniones.php", "cuenta.html", "index.html", "metodologia.html",
          "analisis-torneos.html", "data/analisis-torneos.json", "analisis-top20.html", "analisis-top20.css",
          "analisis-top20.js", "data/analisis-top20.json", "data/public.json")
 # Explicitly scoped character assets, before the atomic public-data replacement.

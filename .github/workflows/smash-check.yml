@@ -85,6 +85,8 @@ jobs:
           php scripts/database/test_visits.php
           python scripts/database/test_visits_http.py
           php scripts/database/test_stats.php
+          php scripts/database/test_premium.php
+          python scripts/database/test_premium_http.py
           python scripts/database/test_panel_http.py
           python scripts/database/test_diagnostic_http.py
           python scripts/database/test_import_ranking.py

@@ -64,9 +64,9 @@ class SchemaTests(unittest.TestCase):
 
     def test_repeatable_installation_and_catalog(self):
         self.assertEqual(self.execute('SELECT COUNT(*) FROM characters')[0][0], 87)
-        self.assertEqual(self.execute('SELECT version FROM schema_migrations ORDER BY version'), (('001_accounts_competition',), ('002_sessions_visits',), ('003_visit_networks',)))
+        self.assertEqual(self.execute('SELECT version FROM schema_migrations ORDER BY version'), (('001_accounts_competition',), ('002_sessions_visits',), ('003_visit_networks',), ('004_premium',)))
         self.assertEqual(self.execute("SELECT name FROM characters WHERE id=1897")[0][0], 'Sora')
-        self.assertEqual(self.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()')[0][0], 35)
+        self.assertEqual(self.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()')[0][0], 37)
 
     def test_pending_opponent_and_foreign_unranked_player(self):
         self.assertEqual(self.execute('SELECT winner_entrant_id FROM sets WHERE id=500')[0][0], None)
