@@ -31,6 +31,12 @@ Panel de estadísticas, ficha de rival/historial, análisis premium, top 15 por 
 - Sesión: «lo normal, como Facebook» → 90 días renovables y varios dispositivos a la vez. Implementación en curso; ver EN-CURSO.md.
 - Visitantes: prefiere el conteo **exacto**. Se hará con un identificador aleatorio en una cookie propia del sitio, del que se guarda solo el hash por día. Es exacto por navegador, no por persona: dos dispositivos cuentan como dos y borrar cookies cuenta como visitante nuevo. Sigue sin guardarse IP ni navegador. Esto modifica, con su autorización, la regla anterior de no guardar identificadores de visitantes; la encuesta sigue siendo anónima y no se cruza con este identificador.
 
+## Estado al cierre del 7/oct
+
+Publicados: sesión persistente, contador de visitas, perfil v2 con historial y rivales, y panel privado del dueño. Pendientes: premium (cobro, análisis de contrincante y matchups, top 15 por organizador) y ranking por país.
+
+**Para la entrega de premium:** el dueño quiere ver en su panel cuántas cuentas son premium. Hoy el panel muestra cuentas registradas y registros nuevos; la cifra de premium se añade cuando existan los pagos, con su ajuste de diseño.
+
 ## Orden propuesto por Claude Code (aprobado por el dueño el 7/oct)
 
 1. Sesión persistente (sin pantalla nueva; es lo más corto y lo usa el dueño a diario).

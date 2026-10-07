@@ -1,6 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
-## Panel privado del dueño — en PR, sin publicar (Claude Code, 7/oct)
+## Publicación del 7/oct por la noche — perfil v2 y panel del dueño (Claude Code)
+
+Por orden explícita del dueño: PR #30 (`aee2479`) y PR #31 (`87c4e0a`) fusionadas, CI de main correcta y despliegue `37699120256` (`assets_only=true`) correcto. `public.json` idéntico (SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`).
+
+- **Rol `admin` concedido** a `users.id = 1` (Bucaro19) en una transacción, por su orden («dame el rol de admin»): 1 fila insertada; es el único admin.
+- Comprobado en producción por HTTP, sin sesión: `panel.php` 401 con «Tu sesión venció» y sin cifras ni script del panel; `panel-api.php` 401 `login_required`; `stats.php`, `visits.php` y `accounts.php` 403; `cuenta.html` sirve `cuenta.js` v3 con el panel de rival; API de cuenta anónima correcta.
+- **No comprobado directamente:** el panel y el perfil v2 con la sesión real del dueño (no se usan sus cookies). Pendiente de que él los abra.
+- **Pedido nuevo del dueño:** ver en el panel cuántos usuarios crearon cuenta (ya está: «Cuentas registradas» y «Registros nuevos») y **cuántos son premium cuando exista**. Añadir esa cifra al panel en la entrega de premium, con su ajuste de diseño.
+
+## Panel privado del dueño — publicado (Claude Code, 7/oct)
 
 El dueño entregó el handoff `design_handoff_smash_gt_panel/` y se implementó completo: [PANEL-DUENO.md](PANEL-DUENO.md). **Estado: rama `feat/owner-panel`, apilada sobre `feat/cuentas-v2` (fusionar primero el PR del perfil v2). Falta fusionar, desplegar y conceder el rol `admin` a la cuenta del dueño (`users.id = 1`, Bucaro19) con su visto bueno; sin ese rol nadie puede abrir el panel.** No necesita migración.
 
