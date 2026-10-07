@@ -58,8 +58,8 @@ try {
         $pdo = smash_database_connect($db);
         $status = smash_database_status($pdo);
         verify($status['ok'] && $status['schemaReady'], 'actual database diagnostic');
-        verify($status['tableCount'] === 34 && $status['counts']['characters'] === 87, 'installed schema');
-        verify($status['migrations'] === ['001_accounts_competition', '002_sessions_visits'], 'installed migrations are reported');
+        verify($status['tableCount'] === 35 && $status['counts']['characters'] === 87, 'installed schema');
+        verify($status['migrations'] === ['001_accounts_competition', '002_sessions_visits', '003_visit_networks'], 'installed migrations are reported');
         verify($status['counts']['players'] === 0 && $status['counts']['cuts'] === 0, 'read only, no inserted data');
         verify((bool)$pdo->getAttribute(PDO::ATTR_EMULATE_PREPARES) === false, 'native prepared statements');
         verify($pdo->query('SELECT @@session.time_zone')->fetchColumn() === '+00:00', 'UTC');
