@@ -3,7 +3,7 @@ import ftplib
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from publish_data import export
 from deploy import deploy, validate_public_data, validate_study_data, FILES
 
@@ -60,8 +60,15 @@ class ExportTests(unittest.TestCase):
             for name in FILES:
                 (source / name).parent.mkdir(parents=True, exist_ok=True)
                 (source / name).write_text("test")
-            deploy(ftp, source)
+            with patch.dict("os.environ", {"SMASH_FTP_DIR": ""}):
+                deploy(ftp, source)
             self.assertEqual(ftp.cwd.call_args_list[0].args, ("ranking-smash-ultimate",))
+            root_ftp = Mock()
+            with patch.dict("os.environ", {"SMASH_FTP_DIR": "."}):
+                deploy(root_ftp, source)
+            self.assertEqual(root_ftp.cwd.call_args_list[0].args, ("data",))
+            with patch.dict("os.environ", {"SMASH_FTP_DIR": "../otro"}), self.assertRaises(ValueError):
+                deploy(Mock(), source)
             self.assertEqual(ftp.rename.call_args_list[-1].args[1], "data/public.json")
             ftp.delete.assert_not_called()
             assets_ftp = Mock()
