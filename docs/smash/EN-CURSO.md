@@ -8,7 +8,16 @@
 - El dueño autorizó publicar esta información. No se modifica cálculo, contrato/validación ni `public.json`; no se implementó una simulación TrueSkill ni se cambió el orden de jugadores. Se reutiliza la pantalla de metodología, sin pantalla nueva que necesite handoff.
 - Validación local: 48 pruebas del ranking/exportación/despliegue correctas, `git diff --check` correcto, HTML con IDs únicos y fragmentos válidos. Revisión visual en navegador: tabla de escritorio y filas apiladas en iframe de 390 px legibles. JavaScript de metodología sigue cargando torneos/datos. No se modificaron scripts del modelo ni datos.
 - CI de la PR detectó una prueba de paridad intermitente: comparaba `players.updated_at` generado por SQL en importaciones ejecutadas en segundos distintos. Solo esa comparación entre importadores omite ese metadato de reloj; conserva fechas del paquete/fuente y todas las columnas de resultados. Snapshots de rollback/conflicto mantienen el timestamp. Corrección limitada a pruebas, sin tocar importadores de producción.
-- Pendiente al preparar: CI, fusión y despliegue `assets_only=true`. Registrar la evidencia de cierre aquí al completarlo.
+- **Publicado y verificado:** PR #23 fusionada en `82858eb`; evidencia de cierre abajo. Siguen pendientes los pasos de configuración privada/cron y la prueba real de SQL del dueño; no confundir publicación de información con activación de la automatización.
+
+### Cierre — guía del dueño y comparación pública
+
+- CI del último commit de PR #23: `37665496993` y `37665508275`, completas/correctas (check y MySQL 8.0/MariaDB 10.11). Dos jobs detenidos instalando dependencias se cancelaron y se reintentaron; ambos terminaron correctamente. No se ignoró el fallo inicial de la prueba de timestamps: quedó corregido solo en el test.
+- Despliegue `37666259662` desde main `82858eb`, `assets_only=true`, correcto. URL para compartir: **https://rankingsmashbros.com/metodologia.html#trueskill**. Página y CSS servidos coinciden byte por byte con main; vista en navegador con cinco filas de comparación y catálogo cargado (42 eventos/7,526 sets en la vista combinada).
+- `public.json` idéntico antes/después, SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`. No recálculo, cambios de posiciones, contrato ni esquema.
+- API anónima: ok=true, authenticated=false, oauthReady=true; encuesta/opiniones 200; worker y bibliotecas de sincronización/importación 403. No se enviaron paquetes ni se escribió en SQL durante esta entrega.
+- Archivo privado local conservado, ignorado y con permisos 600. `SMASH_SQL_SYNC_ENABLED=false` comprobado tras publicar. El dueño todavía debe subir el archivo privado, comprobar PHP/worker y crear el cron; guía práctica PENDIENTES-DUENO-BANAHOSTING.md. Diagnóstico autenticado, prueba con cron real y activación siguen pendientes.
+- Los documentos de operación/continuidad enlazan la guía. La evaluación empírica de TrueSkill con los mismos sets no se ejecutó ni se encargó; no sustituir el modelo actual basándose solo en la comparación conceptual.
 
 ## Cuentas — nueva entrega de Codex
 

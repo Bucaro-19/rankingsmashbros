@@ -2,6 +2,8 @@
 
 Actualizado: 7 de octubre de 2026. Esta es tu lista práctica; el detalle técnico está en [CARGA-SEMANAL-SQL.md](CARGA-SEMANAL-SQL.md).
 
+La comunidad ya puede leer la [comparación pública con TrueSkill](https://rankingsmashbros.com/metodologia.html#trueskill), publicada y verificada sin cambiar puntos ni puestos. Los pasos de este documento se refieren a la automatización SQL pendiente.
+
 ## Qué ya está hecho
 
 El sitio, las cuentas OAuth, la base y el primer corte están funcionando. El código para recibir y cargar los cortes semanales ya está publicado. La clave de sincronización está preparada en tu Mac y guardada también en GitHub Secrets. **No necesitas crear otra clave ni ejecutar otra vez `install.sql`.**
