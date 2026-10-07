@@ -35,7 +35,7 @@ Carpeta `docs/smash/migrations/`, un archivo por versión, en orden. Solo crean 
 
 | Versión | Tablas | Estado en producción |
 |---|---|---|
-| `002_sessions_visits` | `user_sessions` (sesión persistente), `site_visit_days` y `site_visitor_days` (conteo de visitas, aún sin uso) | Pendiente de aplicar al escribir esto; comprobar con `SELECT version FROM schema_migrations` |
+| `002_sessions_visits` | `user_sessions` (sesión persistente), `site_visit_days` y `site_visitor_days` (conteo de visitas, aún sin uso) | **Aplicada el 7/oct/2026** desde la Mac del dueño, por su orden; 34 tablas verificadas |
 
 Aplicación: phpMyAdmin → base `ivcjgjlk_smash` → Importar el archivo, o un agente desde la Mac del dueño con su visto bueno explícito. Verificar después 34 tablas y ambas versiones en `schema_migrations`.
 
