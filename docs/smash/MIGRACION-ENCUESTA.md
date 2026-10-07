@@ -152,7 +152,7 @@ La pausa duró desde el paso 2 hasta el despliegue (minutos); durante ese rato l
 
 ### Sin verificar todavía
 - **Escritura real por la web en producción.** Ninguna respuesta ha entrado aún por el formulario nuevo. Lo comprobado es el código en bases desechables, la conexión del PHP web (diagnóstico de Codex) y que el mismo usuario de base escribe (importador). Falta la respuesta de prueba del paso 5 del protocolo; depende de la decisión del dueño.
-- **Panel con la clave del dueño:** debe mostrar 13 respuestas reales. El diagnóstico del panel ahora incluye `phpVersion`; anotarla aquí.
+- **Panel con la clave del dueño:** el dueño entró después del despliegue y pegó el diagnóstico: `connection=connected`, MariaDB 11.4.13, `schemaReady=true`, `survey_responses=14` y **`phpVersion=8.1`** (el PHP que sirve el sitio es el mismo 8.1 de la Terminal). Eso prueba que la sesión administrativa y la lectura SQL del panel nuevo funcionan en producción. No dijo expresamente cuántas respuestas mostró el panel; lo esperado son 13.
 - **Huella del archivo congelado después del despliegue:** repetir `sha256sum` y confirmar `ae9f754a…`.
 
 ## Pendiente fuera de esta entrega
