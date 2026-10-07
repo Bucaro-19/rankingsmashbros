@@ -1,6 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
-## Enlace al panel solo para el dueño y preparación de premium — en PR (Claude Code, 7/oct)
+## Decisiones del dueño para premium y reparto de trabajo — 7/oct, noche
+
+- **Precio:** 3 USD al mes o 24 USD al año. **Pasarela:** Recurrente. El puesto, el perfil y el historial con rivales siguen gratis; pagar no cambia puntos.
+- **Encargo paralelo a Codex:** guardar en SQL los personajes de cada game para el matchup exacto. Documento y prompt: [ENCARGO-CODEX-SELECCIONES-POR-GAME.md](ENCARGO-CODEX-SELECCIONES-POR-GAME.md). Las tablas ya existen; falta llevar los datos al paquete y a los dos importadores. Codex no toca cuentas, contador, panel ni premium.
+- **Claude Code:** integración de cobros con Recurrente y la condición premium de las cuentas. Requiere que el dueño tenga cuenta en Recurrente y deje sus llaves en un archivo privado del servidor (nunca por chat). Las pantallas de premium esperan el handoff del brief BRIEF-CLAUDE-DESIGN-ANALISIS-RIVAL.md.
+- **Briefs entregados al dueño para Claude Design:** análisis de rival (premium) y rediseño de Método y Tu opinión (BRIEF-CLAUDE-DESIGN-METODO-Y-OPINION.md).
+- **Regla nueva del dueño:** Claude Code puede fusionar y desplegar (`assets_only=true`) sus propios cambios sin pedir permiso cada vez. Siguen necesitando orden expresa: migraciones y escrituras en la base de producción, publicar un corte nuevo, y fusionar cambios de otro agente.
+- PR #33 fusionada (`12273f7`) y desplegada (`37700879178`): el enlace al panel aparece solo para la cuenta `admin`; comprobado por HTTP que la API anónima no incluye la clave `panel`. `public.json` idéntico.
+
+## Enlace al panel solo para el dueño y preparación de premium — publicado (Claude Code, 7/oct)
 
 - Pedido del dueño después de ver el panel: un acceso visible solo para él. `account-api.php` añade `panel: true` únicamente a la cuenta con rol `admin` (las demás no reciben la clave); `cuenta.html` muestra «Panel privado ↗» junto a las pestañas y el inicio muestra «Panel» en el encabezado tras confirmar con el servidor. Pruebas HTTP: cuenta normal sin la clave, dueño con ella. Revisado en navegador local con ambas cuentas.
 - **Brief para Claude Design del análisis de rival (premium):** [BRIEF-CLAUDE-DESIGN-ANALISIS-RIVAL.md](BRIEF-CLAUDE-DESIGN-ANALISIS-RIVAL.md). Define los únicos datos que existirán.
