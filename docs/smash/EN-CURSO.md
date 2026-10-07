@@ -1,8 +1,22 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Carga automática a SQL — activada el 7 de octubre (Claude Code)
+
+**Estado: `SMASH_SQL_SYNC_ENABLED=true` desde el 7/oct 20:32 UTC, activada por orden explícita del dueño después de la prueba del circuito real.** Falta por ocurrir la primera carga de un corte nuevo (domingo 11/oct).
+
+- Pasos del dueño en cPanel, según la salida que pegó: `/usr/local/bin/php` es PHP 8.1.34 CLI con mbstring, pdo_mysql y zlib; `private-smash/sync.local.php` con permisos 600 (122 bytes); worker manual `{"ok":true,"status":"idle"}`; un solo cron `*/5 * * * *` con el comando documentado (captura de pantalla de Cron Jobs).
+- Verificado directamente desde la Mac del dueño: `publish_sql.py diagnostic` devolvió `ok:true`, `phpVersion` 8.1, `memoryLimit` 2048M, `maxExecutionTime` 30 e `inboxWritable:true`. La clave se leyó del archivo local solo hacia el entorno del subproceso; no se imprimió.
+- `publish_sql.py check` validó el paquete original (`/tmp/smash-ranking-package.json`, hash `ecb1d4a5cd44f87250537a85d0d166fa6f9824ff3408f0b55c98ac6102fd9e45`); `send` devolvió `sql_synchronized`, `jobId` 1, transporte `dce58f65d9d8abecc775fb6d3058b3fb7242848d477875fbff6851c98f7ed1e0`.
+- Lo procesó el cron real, no una ejecución manual: `sync_jobs` id 1, `ranking_import`, `succeeded`, inicio 20:30:02 UTC (tick de cinco minutos), fin 20:30:04, sin `error_code`. Línea del registro del worker pegada por el dueño: `already_imported`, `cutId` 1, pico de memoria 141082624 bytes (~134.5 MiB, con límite de 512M).
+- Sin duplicados: antes y después 1 corte publicado (cutId 1), 188 posiciones por vista, 8985 sets, 3435 jugadores, 81 `cut_events`, 5272 `cut_set_results`. Un segundo `send` del mismo paquete devolvió el mismo `jobId` 1; `sync_jobs` sigue con una fila.
+- `public.json` sin cambios: SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`.
+- La publicación programada ya dispara en este repositorio: run `37670973001` (7/oct 18:58 UTC, evento `schedule`, omitido por no ser domingo). Queda resuelta la duda anotada más abajo.
+- **Pendiente de comprobar el domingo 11/oct o el lunes 12:** que `smash-publish.yml` publique el corte nuevo y que su paso de SQL termine `sql_synchronized` con un `cutId` 2. Si la web se publica y SQL falla, la ejecución queda en rojo: reenviar el paquete de ese corte (artefacto `smash-gt-paquete-sql`) con `publish_sql.py send`, o usar el respaldo `weekly_ranking_load.py`; no borrar cortes.
+- Observación: la CI de `main` `37667860684` seguía con el job de MariaDB 10.11 en curso más de hora y media después de iniciar (los otros dos jobs correctos); parece el atasco de entorno ya descrito, no un fallo de pruebas.
+
 ## Relevo vigente a Claude Code
 
-El dueño pidió detener a Codex y documentar la continuidad. Leer primero **[RELEVO-CLAUDE-CONTINUACION.md](RELEVO-CLAUDE-CONTINUACION.md)**: prompt listo, estado comprobado, configuración pendiente de BanaHosting y opciones para avanzar remotamente. Recomendación: historial disponible desde SQL/estadísticas de rivales; el dueño no seleccionó todavía ese módulo ni agenda/estudio TrueSkill. Esta entrega solo documenta; no cambia código, datos ni producción.
+El dueño pidió detener a Codex y documentar la continuidad. Leer primero **[RELEVO-CLAUDE-CONTINUACION.md](RELEVO-CLAUDE-CONTINUACION.md)**: prompt listo, estado comprobado, configuración de BanaHosting (ya completada, ver bloque anterior) y opciones para avanzar remotamente. Recomendación: historial disponible desde SQL/estadísticas de rivales; el dueño no seleccionó todavía ese módulo ni agenda/estudio TrueSkill. Esta entrega solo documenta; no cambia código, datos ni producción.
 
 ## Encargo vigente — dueño remoto y transparencia del método
 

@@ -1,6 +1,6 @@
 # Carga semanal del ranking a SQL — BanaHosting y respaldo desde la Mac
 
-Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`, «preparación del transporte privado para cargar semanalmente el ranking en SQL». **La automatización SQL aún no está activada.** El transporte desatendido en BanaHosting ya está implementado y publicado; faltan configuración privada, cron y prueba real. El cargador desde la Mac queda como respaldo.
+Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`, «preparación del transporte privado para cargar semanalmente el ranking en SQL». **La automatización SQL está activada desde el 7/oct/2026 (`SMASH_SQL_SYNC_ENABLED=true`)**: configuración privada, cron y prueba del circuito real completados; evidencia en EN-CURSO.md, «Carga automática a SQL — activada». Falta observar la primera carga de un corte nuevo, el domingo 11/oct. Las frases de «pendiente» de los bloques siguientes describen el estado anterior a esa activación. El cargador desde la Mac queda como respaldo.
 
 **Guía práctica para el dueño, cuando vuelva a su computadora:** [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). Contiene los pasos de File Manager/Terminal/Cron y lo que ejecutará el agente después, sin incluir claves.
 

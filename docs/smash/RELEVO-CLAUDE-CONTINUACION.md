@@ -22,6 +22,8 @@ El dueño pidió dejar documentada la continuidad y detener el trabajo de Codex 
 
 ## Prioridad operativa: terminar BanaHosting cuando el dueño esté listo
 
+> **Actualización, 7/oct 20:32 UTC:** completado. Archivo privado, cron y prueba real verificados; `SMASH_SQL_SYNC_ENABLED=true`. Ver el primer bloque de EN-CURSO.md. El texto siguiente y el prompt de arriba describen el estado previo.
+
 Leer [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md) y [CARGA-SEMANAL-SQL.md](CARGA-SEMANAL-SQL.md).
 
 El receptor, cola, importador PHP y worker CLI están publicados. Última comprobación: receptor `sync_not_configured`, variable **`SMASH_SQL_SYNC_ENABLED=false`**. No se confirmó subida del archivo ni instalación del cron.

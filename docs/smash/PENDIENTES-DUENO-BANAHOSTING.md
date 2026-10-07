@@ -4,6 +4,8 @@ Actualizado: 7 de octubre de 2026. Esta es tu lista práctica; el detalle técni
 
 La comunidad ya puede leer la [comparación pública con TrueSkill](https://rankingsmashbros.com/metodologia.html#trueskill), publicada y verificada sin cambiar puntos ni puestos. Los pasos de este documento se refieren a la automatización SQL pendiente.
 
+> **Completado el 7 de octubre de 2026.** El dueño hizo los pasos 1 a 4 y Claude Code los del paso 5: diagnóstico, reenvío del corte del 4/oct procesado por el cron real sin duplicar nada, y variable activada. No hay que repetir nada de esta lista; se conserva como referencia. Evidencia en EN-CURSO.md. Lo único por observar es la primera carga de un corte nuevo, el domingo 11/oct.
+
 ## Qué ya está hecho
 
 El sitio, las cuentas OAuth, la base y el primer corte están funcionando. El código para recibir y cargar los cortes semanales ya está publicado. La clave de sincronización está preparada en tu Mac y guardada también en GitHub Secrets. **No necesitas crear otra clave ni ejecutar otra vez `install.sql`.**
