@@ -7,9 +7,9 @@
   <title>Tu cuenta — Smash GT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./cuenta.css?v=20261007-v3">
+  <link rel="stylesheet" href="./cuenta.css?v=20261008-1">
   <script src="./characters.js?v=20261006-design2" defer></script>
-  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./cuenta.js?v=20261007-v4" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
+  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./premium.js?v=20261008-1" defer></script><script src="./cuenta.js?v=20261008-1" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#account-content">Saltar al contenido</a>
@@ -20,6 +20,7 @@
   <div id="account-tabs" class="account-tabs" hidden><div role="tablist" aria-label="Mi cuenta">
     <button id="tab-profile" role="tab" aria-selected="true" aria-controls="profile-screen">Mi perfil</button>
     <button id="tab-characters" role="tab" aria-selected="false" aria-controls="characters-screen" tabindex="-1">Mis personajes</button>
+    <button id="tab-premium" role="tab" aria-selected="false" aria-controls="premium-screen" tabindex="-1">Premium</button>
   </div><a id="tab-panel" class="tab-link" href="./panel.php" hidden>Panel privado ↗</a></div>
   <main id="account-content" tabindex="-1">
     <p id="loading" class="account-loading" role="status">Cargando tu cuenta…</p>
@@ -47,7 +48,7 @@
     </section>
     <section id="profile-screen" class="account-container" role="tabpanel" aria-labelledby="tab-profile" hidden>
       <div class="profile-layout"><section class="player-card" aria-label="Tu carta de jugador"><div class="card-art"><strong id="card-rank" aria-hidden="true"></strong><img id="card-portrait" alt="" hidden></div>
-        <div class="card-copy"><div class="identity"><div id="account-avatar" class="avatar"></div><div><h1 id="account-tag"></h1><p id="account-role" class="note"></p></div></div>
+        <div class="card-copy"><div class="identity"><div id="account-avatar" class="avatar"></div><div><h1 id="account-tag"></h1><span class="premium-badge" hidden>Premium</span><p id="account-role" class="note"></p></div></div>
           <dl id="account-facts" class="facts"></dl>
           <div><div class="section-line"><p class="kicker muted">Mis personajes elegidos</p><button id="edit-characters" class="text-button">Editar →</button></div><div id="profile-mains"></div></div>
           <div id="detected-block" hidden><p id="detected-title" class="kicker muted"></p><div id="detected-chips" class="detected-chips"></div></div>
@@ -74,6 +75,7 @@
       </div>
       <div class="save-bar"><span id="unsaved-label" role="status">Sin cambios pendientes</span><div><button id="discard-characters" class="outline" disabled>Descartar</button><button id="save-characters" class="primary" disabled><span>Guardar</span></button></div></div>
     </section>
+    <section id="premium-screen" class="account-container premium" role="tabpanel" aria-labelledby="tab-premium" hidden></section>
   </main>
   <footer class="account-footer">Hecho para la comunidad de Guatemala · <a href="https://ingporras.com/">INGPORRAS ↗</a><p>Proyecto independiente · Ranking experimental BT-PILOTO-3</p></footer>
   <dialog id="rival-dialog" class="rival-dialog" aria-labelledby="rival-tag"><div class="rival-art"><strong id="rival-rank-art" aria-hidden="true"></strong><img id="rival-portrait" alt="" hidden><button id="close-rival" class="rival-close" aria-label="Cerrar detalle">×</button></div>
