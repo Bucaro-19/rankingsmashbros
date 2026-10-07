@@ -1,5 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Encargo vigente — dueño remoto y transparencia del método
+
+- El dueño está trabajando remotamente y pidió dejar por escrito los pasos que requieren su computadora/cPanel. Guía: [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). No pedir claves por chat; el archivo local ya existe. El agente puede continuar diagnóstico/envío/lecturas/activación después de recibir evidencia de la configuración del servidor.
+- Revisión directa antes de esta entrega: `SMASH_SQL_SYNC_ENABLED=false`, receptor POST 503 `sync_not_configured`, public.json SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`. No se ha confirmado subida del archivo ni cron; no activar SQL todavía.
+- Se preparó la explicación pública en la página existente `metodologia.html#trueskill`: Bradley–Terry regularizado frente a TrueSkill clásico, incertidumbre, actualización, pesos, repeticiones y actividad. Rankup 2024 declara separar puntos de invitacionales del ranking TrueSkill; sus parámetros exactos no están detallados en la página revisada. Fuentes enlazadas de Microsoft y de la liga.
+- El dueño autorizó publicar esta información. No se modifica cálculo, contrato/validación ni `public.json`; no se implementó una simulación TrueSkill ni se cambió el orden de jugadores. Se reutiliza la pantalla de metodología, sin pantalla nueva que necesite handoff.
+- Validación local: 48 pruebas del ranking/exportación/despliegue correctas, `git diff --check` correcto, HTML con IDs únicos y fragmentos válidos. Revisión visual en navegador: tabla de escritorio y filas apiladas en iframe de 390 px legibles. JavaScript de metodología sigue cargando torneos/datos. No se modificaron scripts del modelo ni datos.
+- CI de la PR detectó una prueba de paridad intermitente: comparaba `players.updated_at` generado por SQL en importaciones ejecutadas en segundos distintos. Solo esa comparación entre importadores omite ese metadato de reloj; conserva fechas del paquete/fuente y todas las columnas de resultados. Snapshots de rollback/conflicto mantienen el timestamp. Corrección limitada a pruebas, sin tocar importadores de producción.
+- Pendiente al preparar: CI, fusión y despliegue `assets_only=true`. Registrar la evidencia de cierre aquí al completarlo.
+
 ## Cuentas — nueva entrega de Codex
 
 - Revisadas entregas de Claude Code: encuesta en SQL y cierre de migración, cargador semanal operado desde la Mac, sin reinstalar tablas. Base de trabajo `main` en `99d65c3`.

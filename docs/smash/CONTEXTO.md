@@ -27,6 +27,8 @@
 - `data/public.json` puede ser más viejo en Git que en producción: comprobar antes de reemplazar. La publicación semanal no hace commit del corte.
 
 ## Operación
+- Dueño remoto: pasos pendientes de configuración privada/cron en [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). El agente debe probar el circuito real antes de activar SQL automático.
+- Comparación pública de modelos: `metodologia.html#trueskill`, TrueSkill clásico frente al BT-PILOTO-3 actual, con fuentes/limitaciones. Es divulgación; no cambia el método ni introduce posiciones TrueSkill. Estado de publicación y prueba en EN-CURSO.md.
 - Secretos del pipeline en GitHub Secrets: STARTGG_TOKEN, FTP_SERVER/USERNAME/PASSWORD, SMASH_FEEDBACK_ADMIN_HASH. Credenciales de base y OAuth en archivos privados hermanos del sitio. No imprimir ni copiar secretos al repo/documentación. El token compartido en chat necesita rotación por el dueño; no reutilizar desde mensajes.
 - Actualización: `.github/workflows/smash-publish.yml`. Variables `SMASH_SYNC_ENABLED=true`, `SMASH_RELEASE_MODE=weekly`: domingo 00:00 Guatemala; puede demorar. Conservar último corte ante fallo/importación parcial.
 - `.github/workflows/smash-deploy-snapshot.yml`: `assets_only=true` preserva public.json; false sube snapshot versionado. JSON se renombra al final. No borrar feedback-data ni otros proyectos.

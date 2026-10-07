@@ -1,5 +1,11 @@
 # Relevo para Claude Code — importar datos a la base conectada
 
+## Dueño remoto — pasos pendientes y comparación pública
+
+Lista práctica del dueño: [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). No activar `SMASH_SQL_SYNC_ENABLED` hasta probar el cron y el reenvío idempotente en hosting. No repetir instalación ni regenerar la clave por rutina.
+
+La comparación con TrueSkill se añade a la metodología existente por solicitud del dueño; no cambia el cálculo ni incorpora resultados TrueSkill. Leer EN-CURSO.md para publicación y evidencia. La evaluación de ambos con los mismos sets sigue pendiente de un encargo; no sustituir BT-PILOTO-3 por inferencia.
+
 ## Actualización vigente — automatización en BanaHosting, 7/oct
 
 El dueño eligió hosting independiente de la Mac. Codex preparó el transporte HTTPS autenticado, importador PHP y worker CLI usando las tablas existentes, con paridad Python/PHP y prueba del paquete real en SQL local desechable. Leer primero el bloque vigente de CARGA-SEMANAL-SQL.md y EN-CURSO.md. Falta configuración privada/cron, prueba end-to-end en producción y activación de la variable; no declarar automatización completa. No rehacer encuestas/OAuth ni instalar tablas. Las secciones antiguas de este documento son archivo histórico.

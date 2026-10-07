@@ -8,7 +8,7 @@
   <title>Metodología y torneos — Smash GT</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./arena.css">
-  <link rel="stylesheet" href="./metodologia.css?v=20261006-activity">
+  <link rel="stylesheet" href="./metodologia.css?v=20261007-trueskill">
   <script src="./metodologia.js?v=20261006-scope" defer></script>
 </head>
 <body>
@@ -27,7 +27,7 @@
     </div>
 
     <p id="method-view" class="methodology-note" role="status">Cargando alcance del cálculo…</p>
-    <div class="review-links"><a href="./metodologia.html">Guatemala + internacionales</a><a href="./metodologia.html?scope=guatemala">Solo Guatemala</a></div>
+    <div class="review-links"><a href="./metodologia.html">Guatemala + internacionales</a><a href="./metodologia.html?scope=guatemala">Solo Guatemala</a><a href="#trueskill">Comparación con TrueSkill ↓</a></div>
     <section class="methodology-section" aria-labelledby="selection-title">
       <p class="eyebrow">01 / SELECCIÓN</p><h2 id="selection-title">QUÉ CUENTA.</h2>
       <div class="methodology-cards">
@@ -67,6 +67,26 @@
       </div>
       <p class="methodology-note">Por ejemplo, dos personas pueden cumplir 2 torneos y 4 sets. Si una participó en ocho meses y otra en dos, sus fichas mostrarán esa diferencia, pero la primera no queda arriba automáticamente: el orden depende de sus resultados y rivales. Un mes sin registro no demuestra inactividad fuera de nuestra cobertura.</p>
       <div class="review-links"><a href="./analisis-top20.html">Ver el estudio de propuestas de constancia ↗</a><a href="./encuesta.php">Opinar sin crear una cuenta ↗</a></div>
+    </section>
+
+    <section id="trueskill" class="methodology-section" aria-labelledby="trueskill-title">
+      <p class="eyebrow">MODELOS DE MEDICIÓN</p><h2 id="trueskill-title">SMASH GT Y TRUESKILL.</h2>
+      <p class="methodology-note">Ambos buscan estimar la fuerza de un jugador a partir de sus resultados y rivales. Nuestro método <strong>BT-PILOTO-3 usa Bradley–Terry regularizado</strong>. Esta comparación describe el TrueSkill clásico documentado por Microsoft; no reproduce una configuración particular de otra liga.</p>
+      <div class="points-table-wrap comparison-table-wrap"><table class="points-table comparison-table"><caption>Qué mide cada modelo y cómo se actualiza</caption><thead><tr><th scope="col">Aspecto</th><th scope="col">Smash GT · BT-PILOTO-3</th><th scope="col">TrueSkill clásico</th></tr></thead><tbody>
+        <tr><th scope="row">Estimación</th><td data-label="Smash GT">Una fuerza por jugador, ajustada conjuntamente con la de sus rivales.</td><td data-label="TrueSkill">Habilidad estimada (μ) e incertidumbre sobre ella (σ).</td></tr>
+        <tr><th scope="row">Actualización</th><td data-label="Smash GT">Recalculamos con todos los sets admitidos del año hasta el corte. No hay un peso extra por ser más reciente.</td><td data-label="TrueSkill">Actualiza tras cada resultado y contempla cambios de habilidad entre encuentros. El orden y los parámetros importan.</td></tr>
+        <tr><th scope="row">Pocos resultados</th><td data-label="Smash GT">La regularización modera estimaciones extremas. No publicamos una medida de confianza por jugador.</td><td data-label="TrueSkill">Mantiene incertidumbre explícita. Una clasificación conservadora puede usar μ − 3σ; no es la única forma de ordenar.</td></tr>
+        <tr><th scope="row">Torneos y repeticiones</th><td data-label="Smash GT">Pesamos eventos por fuerza estimada o tamaño y reducimos la influencia de enfrentar repetidamente al mismo rival.</td><td data-label="TrueSkill">Esas reglas propias de Smash GT no forman parte del modelo básico.</td></tr>
+        <tr><th scope="row">Marcador y actividad</th><td data-label="Smash GT">3–0 y 3–2 son una victoria de set. No hay bono de asistencia; más resultados aportan evidencia y los eventos pueden desempatar.</td><td data-label="TrueSkill">El clásico usa el resultado, sin premiar el margen. La incertidumbre puede reducirse con más evidencia; no equivale a puntos de asistencia.</td></tr>
+      </tbody></table></div>
+      <div class="source-grid points-context">
+        <div><h3>Con peras y manzanas</h3><p>Decir “parece fuerte” es distinto de decir “tenemos muchos resultados para confiar en esa estimación”. TrueSkill representa ambas cosas. Nuestro método modera los casos con poca evidencia, pero esa regularización no es una medida de incertidumbre.</p></div>
+        <div><h3>¿Qué vimos en Rankup?</h3><p>La página de <a href="https://www.start.gg/league/smash-gt-rankup-league/details" target="_blank" rel="noopener noreferrer">Smash Gt Rankup! League 2024</a> separa puntos para actividad y clasificación a invitacionales del ranking que declara calcular con TrueSkill. Su tabla de “Points” no debe interpretarse como la clasificación TrueSkill.</p><p>La página no detalla parámetros, orden de procesamiento ni si clasifica por μ o por una estimación conservadora. No podemos atribuirle una configuración exacta. Consulta revisada el 7/oct/2026.</p></div>
+      </div>
+      <p class="methodology-note"><strong>No afirmamos que un modelo sea mejor.</strong> Para evaluarlos debemos usar los mismos sets, periodo y reglas de participación, revisar diferencias y comprobar qué tan bien predicen resultados posteriores. No hemos publicado esa prueba ni posiciones calculadas con TrueSkill. Comparar directamente una liga de 2024 con nuestro corte de 2026 mezclaría temporadas y cobertura.</p>
+      <p class="methodology-note">Esta explicación no cambia puntos, elegibilidad ni puestos. Smash GT sigue siendo un piloto independiente; tampoco reproduce el cálculo final de UltRank. Cualquier cambio de método debe anunciarse y evaluarse antes de aplicarse.</p>
+      <p class="source-links"><a href="https://www.microsoft.com/en-us/research/project/trueskill-ranking-system/" target="_blank" rel="noopener noreferrer">Documentación de TrueSkill · Microsoft ↗</a><a href="https://www.start.gg/league/smash-gt-rankup-league/details" target="_blank" rel="noopener noreferrer">Reglas de Rankup 2024 ↗</a></p>
+      <div class="review-links"><a href="./encuesta.php">Opinar sobre la metodología ↗</a><a href="./metodologia.html#trueskill">Enlace directo a esta comparación ↗</a></div>
     </section>
 
     <section class="methodology-section" aria-labelledby="ultrank-title">
