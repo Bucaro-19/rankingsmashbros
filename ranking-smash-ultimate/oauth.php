@@ -31,6 +31,9 @@ try {
     session_regenerate_id(true);
     $_SESSION['smash_account_csrf'] = bin2hex(random_bytes(24));
     $_SESSION['smash_account'] = ['id' => $id, 'at' => time(), 'url' => $identity['url'], 'avatarUrl' => $identity['avatarUrl'], 'version' => $user['connectionVersion']];
+    smash_account_remember_revoke($pdo, $_COOKIE[SMASH_ACCOUNT_REMEMBER_COOKIE] ?? null);
+    $remember = smash_account_remember_create($pdo, $_SESSION['smash_account'], time());
+    if ($remember !== null) smash_account_remember_set($remember, time());
     account_redirect('vinculada');
 } catch (Throwable $error) {
     // No application logging of codes, state, tokens, provider bodies or driver errors.

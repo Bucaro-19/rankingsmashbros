@@ -4,6 +4,10 @@ declare(strict_types=1);
 // to verify identity and then discarded. No email, passwords or reporter scopes.
 const SMASH_ACCOUNT_CALLBACK = 'https://rankingsmashbros.com/oauth.php';
 const SMASH_ACCOUNT_MAX_AGE = 28800;
+// «Keep me signed in»: an own random identifier in a cookie, only its SHA-256 in SQL.
+// Ninety days, renewed while the browser keeps visiting. Never a provider token.
+const SMASH_ACCOUNT_REMEMBER_COOKIE = 'smash_recordar';
+const SMASH_ACCOUNT_REMEMBER_AGE = 7776000;
 
 final class SmashAccountError extends RuntimeException
 {
@@ -185,13 +189,81 @@ function smash_account_login(PDO $pdo, array $identity, int $now): string
             $q->execute([$identity['playerId'], $identity['tag'], $at, $id]);
         }
         $q = $pdo->prepare("INSERT INTO oauth_connections (user_id, scopes, revoked_at) VALUES (?, 'user.identity', NULL)
-            ON DUPLICATE KEY UPDATE scopes = 'user.identity', revoked_at = NULL, updated_at = UTC_TIMESTAMP(6)"); $q->execute([$id]);
+            ON DUPLICATE KEY UPDATE scopes = 'user.identity',
+            updated_at = IF(revoked_at IS NULL, updated_at, UTC_TIMESTAMP(6)), revoked_at = NULL"); $q->execute([$id]);
         $pdo->commit(); return $id;
     } catch (Throwable $error) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         if ($error instanceof SmashAccountError) throw $error;
         throw new SmashAccountError('account_write_failed');
     }
+}
+
+// A second device signing in keeps the connection version (see the IF above, evaluated before
+// revoked_at is cleared), so earlier browsers stay signed in. Disconnecting revokes the
+// connection and re-linking starts a new version: every older session and cookie stops working.
+
+function smash_account_remember_token($value): ?string
+{
+    return is_string($value) && preg_match('/\A[0-9a-f]{64}\z/D', $value) === 1 ? $value : null;
+}
+
+function smash_account_remember_set(?string $token, int $now): void
+{
+    setcookie(SMASH_ACCOUNT_REMEMBER_COOKIE, $token ?? '', ['expires' => $token === null ? 1 : $now + SMASH_ACCOUNT_REMEMBER_AGE,
+        'path' => '/', 'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', 'httponly' => true, 'samesite' => 'Lax']);
+}
+
+// Returns the cookie value, or null when it could not be stored (for example before migration
+// 002 is installed): the visitor is still signed in for this browser session.
+function smash_account_remember_create(PDO $pdo, array $account, int $now): ?string
+{
+    try {
+        $token = bin2hex(random_bytes(32)); $at = gmdate('Y-m-d H:i:s', $now);
+        $q = $pdo->prepare('DELETE FROM user_sessions WHERE user_id = ? AND (expires_at <= ? OR revoked_at IS NOT NULL)');
+        $q->execute([$account['id'], $at]);
+        $q = $pdo->prepare('INSERT INTO user_sessions (user_id, token_hash, connection_version, profile_url, avatar_url, created_at, last_used_at, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+        $q->execute([$account['id'], hash('sha256', $token), $account['version'], $account['url'] ?? null, $account['avatarUrl'] ?? null,
+            $at, $at, gmdate('Y-m-d H:i:s', $now + SMASH_ACCOUNT_REMEMBER_AGE)]);
+        return $q->rowCount() === 1 ? $token : null;
+    } catch (PDOException $error) { return null; }
+}
+
+// Rebuilds the signed-in session from the cookie. Valid only while the user is active and the
+// start.gg connection is the same one, not revoked, that existed when the cookie was issued.
+function smash_account_remember_restore(PDO $pdo, $token, int $now): ?array
+{
+    $token = smash_account_remember_token($token);
+    if ($token === null) return null;
+    try {
+        $at = gmdate('Y-m-d H:i:s', $now);
+        $q = $pdo->prepare("SELECT s.id, s.user_id, s.profile_url, s.avatar_url, s.last_used_at, o.updated_at AS version
+            FROM user_sessions s JOIN users u ON u.id = s.user_id AND u.status = 'active'
+            JOIN oauth_connections o ON o.user_id = s.user_id AND o.revoked_at IS NULL AND o.updated_at = s.connection_version
+            WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > ?");
+        $q->execute([hash('sha256', $token), $at]); $row = $q->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return null;
+        // One write per day at most keeps the ninety days sliding without a write on every visit.
+        if (strcmp(substr((string)$row['last_used_at'], 0, 10), substr($at, 0, 10)) < 0) {
+            $q = $pdo->prepare('UPDATE user_sessions SET last_used_at = ?, expires_at = ? WHERE id = ?');
+            $q->execute([$at, gmdate('Y-m-d H:i:s', $now + SMASH_ACCOUNT_REMEMBER_AGE), $row['id']]);
+        }
+        return ['id' => (string)$row['user_id'], 'at' => $now, 'url' => $row['profile_url'], 'avatarUrl' => $row['avatar_url'], 'version' => $row['version']];
+    } catch (PDOException $error) {
+        // A storage failure is not a rejected cookie: the caller must keep it and answer «unavailable».
+        throw new SmashAccountError('account_unavailable');
+    }
+}
+
+// Signing out ends this browser's cookie; disconnecting ($userId) ends every one of the account.
+function smash_account_remember_revoke(PDO $pdo, $token, ?string $userId = null): void
+{
+    try {
+        $token = smash_account_remember_token($token);
+        if ($token !== null) { $q = $pdo->prepare('DELETE FROM user_sessions WHERE token_hash = ?'); $q->execute([hash('sha256', $token)]); }
+        if ($userId !== null) { $q = $pdo->prepare('DELETE FROM user_sessions WHERE user_id = ?'); $q->execute([$userId]); }
+    } catch (PDOException $error) {}
 }
 
 function smash_account_user(PDO $pdo, string $id): array

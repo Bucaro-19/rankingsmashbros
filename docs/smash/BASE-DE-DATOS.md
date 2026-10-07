@@ -29,6 +29,16 @@ SELECT id, name FROM characters WHERE id IN (1319, 1766, 1897, 1746);
 
 `install.sql` se puede repetir en ESTA instalación sin borrar datos. `IF NOT EXISTS` **no adapta una tabla vieja** de estructura diferente. No se necesita `CREATE DATABASE`, `DROP TABLE`, desactivar claves foráneas ni crear usuarios desde SQL. No se ejecuta en el servidor por el despliegue FTP.
 
+## Migraciones posteriores a la instalación
+
+Carpeta `docs/smash/migrations/`, un archivo por versión, en orden. Solo crean o amplían; se pueden repetir sin cambios. `schema.sql` e `install.sql` siguen describiendo la versión 001; una base nueva se instala con `install.sql` y después con cada migración. Las pruebas (`test_schema.py`) aplican todo dos veces en MySQL 8.0 y MariaDB 10.11.
+
+| Versión | Tablas | Estado en producción |
+|---|---|---|
+| `002_sessions_visits` | `user_sessions` (sesión persistente), `site_visit_days` y `site_visitor_days` (conteo de visitas, aún sin uso) | Pendiente de aplicar al escribir esto; comprobar con `SELECT version FROM schema_migrations` |
+
+Aplicación: phpMyAdmin → base `ivcjgjlk_smash` → Importar el archivo, o un agente desde la Mac del dueño con su visto bueno explícito. Verificar después 34 tablas y ambas versiones en `schema_migrations`.
+
 ## Archivos
 
 - `schema.sql`: fuente del esquema, sin catálogo.

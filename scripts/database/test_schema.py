@@ -27,6 +27,12 @@ class SchemaTests(unittest.TestCase):
                     cursor.execute((ROOT / 'docs/smash' / filename).read_text())
                     while cursor.nextset():
                         pass
+            # Versioned migrations are applied in order after the base schema and must be repeatable too.
+            for migration in sorted((ROOT / 'docs/smash/migrations').glob('*.sql')):
+                with cls.db.cursor() as cursor:
+                    cursor.execute(migration.read_text())
+                    while cursor.nextset():
+                        pass
 
     @classmethod
     def tearDownClass(cls):
@@ -58,9 +64,9 @@ class SchemaTests(unittest.TestCase):
 
     def test_repeatable_installation_and_catalog(self):
         self.assertEqual(self.execute('SELECT COUNT(*) FROM characters')[0][0], 87)
-        self.assertEqual(self.execute('SELECT COUNT(*) FROM schema_migrations')[0][0], 1)
+        self.assertEqual(self.execute('SELECT version FROM schema_migrations ORDER BY version'), (('001_accounts_competition',), ('002_sessions_visits',)))
         self.assertEqual(self.execute("SELECT name FROM characters WHERE id=1897")[0][0], 'Sora')
-        self.assertEqual(self.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()')[0][0], 31)
+        self.assertEqual(self.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()')[0][0], 34)
 
     def test_pending_opponent_and_foreign_unranked_player(self):
         self.assertEqual(self.execute('SELECT winner_entrant_id FROM sets WHERE id=500')[0][0], None)
@@ -113,6 +119,22 @@ class SchemaTests(unittest.TestCase):
         self.execute("INSERT INTO rankings(cut_id,scope,player_id,player_tag,rank_position,rating,wins,losses,events_count,previous_rank,previous_cut_id,previous_cut_at) VALUES (2,'combined',1,'Juan',1,2501,4,1,2,1,1,'2026-10-04 11:43:18.348499')")
         self.rejects("INSERT INTO rankings(cut_id,scope,player_id,player_tag,rank_position,rating,wins,losses,events_count,previous_rank,previous_cut_id,previous_cut_at) VALUES (2,'guatemala',1,'Juan',1,2501,4,1,2,1,1,'2026-10-04 11:43:18.348499')")
         self.rejects(insert, (3,'2026-10-12 00:00:00','2026','BT-PILOTO-3','c'*64,'invalid json'))
+
+    def test_persistent_sessions_and_visit_counters(self):
+        insert = 'INSERT INTO user_sessions(user_id,token_hash,connection_version,created_at,last_used_at,expires_at) VALUES (%s,%s,%s,%s,%s,%s)'
+        at = '2026-10-07 00:00:00'
+        self.execute(insert, (1, 'a'*64, at, at, at, '2027-01-05 00:00:00'))
+        self.rejects(insert, (2, 'a'*64, at, at, at, '2027-01-05 00:00:00'))
+        self.rejects(insert, (999, 'b'*64, at, at, at, '2027-01-05 00:00:00'))
+        self.execute('DELETE FROM users WHERE id=1')
+        self.assertEqual(self.execute('SELECT COUNT(*) FROM user_sessions')[0][0], 0)
+        count = 'INSERT INTO site_visit_days(day,page,views) VALUES (%s,%s,1) ON DUPLICATE KEY UPDATE views=views+1'
+        for _ in range(3):
+            self.execute(count, ('2026-10-07', 'inicio'))
+        self.assertEqual(self.execute('SELECT views FROM site_visit_days')[0][0], 3)
+        self.execute("INSERT INTO site_visitor_days(day,visitor_hash,views) VALUES ('2026-10-07',%s,1),('2026-10-08',%s,1)", ('c'*64, 'c'*64))
+        self.rejects("INSERT INTO site_visitor_days(day,visitor_hash,views) VALUES ('2026-10-07',%s,1)", ('c'*64,))
+        self.assertEqual(self.execute('SELECT COUNT(DISTINCT visitor_hash) FROM site_visitor_days')[0][0], 1)
 
     def test_notification_dedup_and_correct_recipient(self):
         self.execute('INSERT INTO notifications(id,user_id,type,deduplication_key,title,body) VALUES (1,1,%s,%s,%s,%s)', ('match_ready','a'*64,'Tu rival','Lucas'))

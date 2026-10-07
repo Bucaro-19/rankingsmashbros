@@ -1,5 +1,18 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Sesión persistente — en PR, sin publicar (Claude Code, 7/oct)
+
+Primer punto de la hoja de ruta, aprobado por el dueño («lo normal, como Facebook»). **Estado: código y pruebas en la rama `feat/persistent-session`; falta fusionar, desplegar y aplicar la migración 002 en producción.** Detalle en CUENTAS-OAUTH.md, «Mantener la sesión iniciada».
+
+- Cookie propia `smash_recordar` de 90 días que se renueva con el uso; en SQL solo su SHA-256 (`user_sessions`). Sin tokens de start.gg, IP ni navegador. Cerrar sesión termina ese navegador; desvincular termina todos.
+- Cambio deliberado respecto a la entrega de cuentas: iniciar sesión en un segundo dispositivo **ya no cierra** el primero. La versión de la conexión solo cambia al volver a vincular después de desvincular.
+- Migración nueva `docs/smash/migrations/002_sessions_visits.sql` (3 tablas: `user_sessions`, `site_visit_days`, `site_visitor_days`). Las dos de visitas quedan creadas para la siguiente entrega; ningún código las usa todavía.
+- Orden seguro: el código se puede publicar antes de la migración. Sin la tabla, el ingreso funciona como hoy (sesión de navegador de ocho horas) y simplemente no emite la cookie.
+- El diagnóstico del panel ahora informa `migrations`; tras aplicar la 002 debe listar ambas versiones y `tableCount` 34.
+- Pruebas locales en MariaDB desechable (13.0.2): `test_schema.py` 9, `test_accounts.php`, `test_accounts_http.py` 8, diagnóstico, importadores, encuesta y sincronización; 48 de Python del ranking y Node sin cambios. Nada probado aún en producción ni con el proveedor real.
+
+**Brief listo para el dueño:** [BRIEF-CLAUDE-DESIGN-PANEL-ESTADISTICAS.md](BRIEF-CLAUDE-DESIGN-PANEL-ESTADISTICAS.md), para pedir a Claude Design el panel de estadísticas. Define los únicos datos que existirán; el contador de visitas del servidor es la siguiente entrega y no necesita esperar el diseño.
+
 ## Pedidos nuevos del dueño — 7 de octubre
 
 Panel administrativo de estadísticas, sesión persistente, historial/rivales gratis, análisis de contrincante y top 15 por organizador como premium, y ranking por país a futuro. Registro y estado técnico en [HOJA-DE-RUTA-DUENO-2026-10-07.md](HOJA-DE-RUTA-DUENO-2026-10-07.md). Nada implementado; el orden propuesto espera confirmación del dueño.
