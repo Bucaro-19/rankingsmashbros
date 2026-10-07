@@ -11,3 +11,7 @@ El diseño entregado por el propietario (`design_handoff_smash_gt_ranking/`) es 
 Cualquier pantalla nueva debe pedirse primero a **Claude Design**. No diseñarla ni implementarla sin ese handoff. Preparar el brief de funciones, estados, datos disponibles y comportamiento móvil, entregárselo al dueño para solicitar el diseño, y luego implementar la referencia recibida. El trabajo de backend, importación y conexión puede continuar sin pantalla nueva.
 
 Para continuidad en Claude Code, leer también `docs/smash/SIGUIENTE-FASE.md`. Mantener el estado de instalación, pruebas, commits y pendientes actualizado; distinguir confirmación del dueño de verificación directa.
+
+## Fusiones y despliegues (instrucción del dueño, 7/oct/2026)
+
+Claude Code puede fusionar y desplegar con `assets_only=true` sus propios cambios sin pedir permiso cada vez, con la CI en verde. Siguen necesitando la orden expresa del dueño: migraciones y escrituras en la base de producción, publicar un corte nuevo del ranking, y fusionar cambios hechos por otro agente.
