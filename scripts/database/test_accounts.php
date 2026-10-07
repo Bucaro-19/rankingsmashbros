@@ -65,6 +65,14 @@ foreach ($public['players'] as $player) {
     }
 }
 check_account(smash_account_profile($public,null)['views']['combined']['rank'] === null, 'Unlinked account has no fabricated rank');
+check_account((array)smash_account_profile($public,null)['rivals'] === [], 'Unlinked account has no rivals');
+$top=$public['players'][0]; $rivals=(array)smash_account_profile($public,$top['id'])['rivals']; $met=[];
+foreach ($public['results'] as $set) if (in_array($top['id'],$set['playerIds'],true)) foreach ($set['playerIds'] as $other) if ($other!==$top['id']) $met[$other]=true;
+check_account(count($rivals)>0 && array_keys($rivals)==array_keys($met) && !isset($rivals[$top['id']]), 'Rivals are exactly the opponents in the published sets');
+foreach ($rivals as $other=>$rival) {
+    $ranked=null; foreach ($public['players'] as $candidate) if ($candidate['id']===(string)$other) $ranked=$candidate;
+    check_account($ranked===null ? $rival['combined']===null : ($rival['combined']===['rank'=>$ranked['rank'],'points'=>$ranked['rating']] && $rival['tag']===$ranked['tag']), 'Rival place and points match the cut; unranked rivals have none');
+}
 echo "OAuth, identity, configuration and published ranking contracts passed.\n";
 $db = getenv('SMASH_SCHEMA_TEST_DB');
 if (!$db) { echo "SQL tests skipped: no disposable database configured.\n"; exit; }

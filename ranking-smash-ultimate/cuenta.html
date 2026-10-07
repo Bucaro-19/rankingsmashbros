@@ -7,9 +7,9 @@
   <title>Tu cuenta — Smash GT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./cuenta.css?v=20261007-1">
+  <link rel="stylesheet" href="./cuenta.css?v=20261007-v2">
   <script src="./characters.js?v=20261006-design2" defer></script>
-  <script src="./account-model.js?v=20261007-1" defer></script><script src="./cuenta.js?v=20261007-2" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
+  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./cuenta.js?v=20261007-v2" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#account-content">Saltar al contenido</a>
@@ -29,28 +29,43 @@
         <p class="lead">Vincula tu cuenta de start.gg para ver tu perfil, elegir tus mains y seguir tu temporada.</p>
         <div id="login-notice" class="notice" role="status" hidden></div>
         <form id="oauth-form" action="./oauth.php" method="post"><input id="oauth-csrf" name="csrf" type="hidden"><button id="oauth-button" class="primary" type="submit"><span>Continuar con start.gg ↗</span></button></form>
-        <p class="note">Te llevamos a start.gg para autorizar. Tu contraseña se escribe allá: nunca pasa por Smash GT.</p>
-        <ul class="login-benefits"><li><strong>Recibimos</strong> tu alias, tu foto disponible y tu ID de jugador.</li><li><strong>No pedimos</strong> tu contraseña ni tu correo.</li><li>Puedes <strong>desvincular</strong> tu cuenta cuando quieras.</li></ul>
+        <p class="note">La autorización ocurre en start.gg y luego regresas aquí. Tu contraseña se escribe allá: nunca pasa por Smash GT.</p>
+        <ul class="login-benefits"><li><strong>Recibimos</strong> tu alias, tu foto si existe y tu ID de start.gg.</li><li><strong>Te identificamos</strong> por ese ID, nunca solo por tu alias.</li><li><strong>No pedimos</strong> tu contraseña ni un token de API.</li><li>Puedes <strong>desvincular</strong> tu cuenta cuando quieras.</li></ul>
         <p class="login-foot">¿Solo quieres ver tu puesto? Es gratis y no necesitas cuenta. <a href="./#ranking">Buscar en el ranking ↗</a></p>
       </div>
     </section>
     <section id="account-error" class="account-container error-screen" role="alert" hidden><h1>Fuera de<br><span>la arena.</span></h1><p>No pudimos cargar tu cuenta. Tus personajes guardados no se modificaron.</p><button id="retry-account" class="primary"><span>Reintentar</span></button><a class="outline" href="./#ranking">Ver ranking público</a></section>
-    <section id="onboarding" class="account-container onboarding" aria-labelledby="onboarding-title" hidden><p class="kicker">✓ Cuenta vinculada</p><h1 id="onboarding-title">Ya estás<br><span>dentro.</span></h1><p id="linked-player"></p>
-      <fieldset><legend>¿Cómo participas?</legend><div class="role-options"><button type="button" data-roles="player" aria-pressed="true"><b>Jugador</b><span>Mi puesto, mis torneos y mis personajes.</span></button><button type="button" data-roles="organizer" aria-pressed="false"><b>Organizador</b><span>Me interesa organizar torneos.</span></button><button type="button" data-roles="player,organizer" aria-pressed="false"><b>Ambos</b><span>Juego y también organizo.</span></button></div></fieldset>
-      <p class="note">Estos son intereses de tu perfil. La verificación por torneo y los reportes estarán disponibles en una siguiente fase.</p><p id="role-error" role="alert" hidden></p><button id="save-role" class="primary"><span>Entrar a mi perfil</span></button>
+    <section id="onboarding" class="account-container onboarding" aria-labelledby="onboarding-title" hidden><p class="kicker">Cuentas · Beta</p><h1 id="onboarding-title">Ya estás<br><span>dentro.</span></h1>
+      <div id="linked-card" class="linked-card" role="status"></div>
+      <button id="other-account" class="link-button" type="button">¿No eres tú? Usar otra cuenta de start.gg</button>
+      <fieldset><legend>¿Qué te interesa?</legend><p class="note">Elige uno o ambos. Puedes cambiarlo después.</p><div class="role-options">
+        <button type="button" role="checkbox" data-role="player" aria-checked="true"><span class="check" aria-hidden="true"></span><span><b>Jugador</b><span>Mi puesto, mis torneos y mis personajes.</span></span></button>
+        <button type="button" role="checkbox" data-role="organizer" aria-checked="false"><span class="check" aria-hidden="true"></span><span><b>Organizador</b><span>Me interesa organizar torneos.</span></span></button>
+      </div></fieldset>
+      <div id="organizer-note" class="info-note" hidden><span aria-hidden="true">i</span><p><strong>Organizar se verifica por torneo</strong> cuando abramos esa función. Marcarlo solo guarda tu interés: no habilita reportes ni administración.</p></div>
+      <p id="role-error" role="alert" hidden></p><button id="save-role" class="primary"><span>Ir a mi perfil</span></button>
     </section>
     <section id="profile-screen" class="account-container" role="tabpanel" aria-labelledby="tab-profile" hidden>
-      <div class="profile-layout"><section class="player-card" aria-label="Tu carta de jugador"><div class="card-art"><strong id="card-rank" aria-hidden="true">?</strong><img id="card-portrait" alt="" hidden></div>
-        <div class="card-copy"><div class="identity"><div id="account-avatar" class="avatar"></div><div><h1 id="account-tag"></h1><p id="account-role" class="note"></p></div></div><a id="startgg-link" target="_blank" rel="noopener noreferrer" hidden>Ver perfil en start.gg ↗</a>
-          <div class="section-line"><p class="kicker muted">Mains</p><button id="edit-characters" class="text-button">Editar →</button></div><div id="profile-mains"></div>
+      <div class="profile-layout"><section class="player-card" aria-label="Tu carta de jugador"><div class="card-art"><strong id="card-rank" aria-hidden="true"></strong><img id="card-portrait" alt="" hidden></div>
+        <div class="card-copy"><div class="identity"><div id="account-avatar" class="avatar"></div><div><h1 id="account-tag"></h1><p id="account-role" class="note"></p></div></div>
+          <dl id="account-facts" class="facts"></dl>
+          <div><div class="section-line"><p class="kicker muted">Mis personajes elegidos</p><button id="edit-characters" class="text-button">Editar →</button></div><div id="profile-mains"></div></div>
+          <div id="detected-block" hidden><p id="detected-title" class="kicker muted"></p><div id="detected-chips" class="detected-chips"></div></div>
           <dl class="cut-details"><div><dt>Temporada</dt><dd id="account-season"></dd></div><div><dt>Corte</dt><dd id="account-cut"></dd></div></dl>
         </div></section>
-        <div class="profile-details"><div class="scope-line"><div class="scope-control" role="group" aria-label="Ranking a mostrar"><button type="button" data-scope="guatemala" aria-pressed="false">Solo Guatemala</button><button type="button" data-scope="combined" aria-pressed="true">+ Internacional</button></div><p class="note">Tu puesto básico siempre es gratis.</p></div>
-          <section id="account-ranking" class="rank-panel" aria-label="Puesto nacional"></section><div id="account-stats" class="stat-grid"></div>
-          <section aria-labelledby="history-title"><div class="history-heading"><h2 id="history-title">Historial de torneos</h2><div id="history-filters" class="history-filters" role="group" aria-label="Filtrar torneos"></div></div><p class="note"><strong>Cuenta</strong>: suma en esta vista. <strong>Asistido</strong>: aparece en el corte combinado, pero queda fuera de esta vista.</p><p id="history-coverage" class="note"></p><div id="account-history" class="history-list"></div></section>
+        <div class="profile-details">
+          <div id="player-content">
+            <div class="scope-line"><div class="scope-control" role="group" aria-label="Ranking a mostrar"><button type="button" data-scope="guatemala" aria-pressed="false">Solo Guatemala</button><button type="button" data-scope="combined" aria-pressed="true">+ Internacional</button></div><p id="scope-status" class="note" role="status"></p></div>
+            <section id="account-ranking" class="rank-panel" aria-label="Puesto nacional"></section>
+            <div><div id="account-stats" class="stat-grid"></div><p id="stats-note" class="note stats-note"></p></div>
+            <section aria-labelledby="history-title"><div class="history-heading"><h2 id="history-title">Historial de torneos</h2><div id="history-filters" class="history-filters" role="group" aria-label="Filtrar torneos"></div></div><p id="history-legend" class="note"></p><p id="history-coverage" class="note"></p><div id="account-history" class="history-list"></div></section>
+          </div>
+          <section id="no-player" class="rank-panel" aria-label="Sin jugador vinculado" hidden><p class="kicker yellow">Sin jugador vinculado</p><h2>Aún no te vemos<br>en la arena</h2><p class="lead">Tu cuenta de start.gg no tiene un perfil de jugador con sets en los torneos que seguimos. No buscamos jugadores por alias ni se puede reclamar otro perfil con un enlace.</p>
+            <ul class="login-benefits plain"><li>¿Compites con otra cuenta de start.gg? Sal e ingresa con esa.</li><li>¿Aún no juegas torneos? Tu perfil se llenará solo después de tu primer torneo en start.gg.</li></ul>
+            <div class="button-row"><button id="no-player-other" class="primary" type="button"><span>Usar otra cuenta</span></button><a class="outline" href="./#ranking">Ver ranking</a></div></section>
         </div>
       </div>
-      <details class="account-settings"><summary>Ajustes de cuenta</summary><div><button id="change-role" class="outline">Cambiar cómo participo</button><button id="logout" class="outline">Cerrar sesión</button><button id="disconnect" class="outline danger">Desvincular de Smash GT</button></div><p class="note">Desvincular cierra tus sesiones de Smash GT. Conserva tus preferencias y el ranking público; puedes volver a autorizar en start.gg.</p><p id="settings-error" role="alert" hidden></p></details>
+      <details class="account-settings"><summary>Ajustes de cuenta</summary><div><button id="change-role" class="outline">Cambiar mis intereses</button><button id="logout" class="outline">Cerrar sesión</button><button id="disconnect" class="outline danger">Desvincular de Smash GT</button></div><p class="note">Desvincular cierra tus sesiones de Smash GT. Conserva tus preferencias y el ranking público; puedes volver a autorizar en start.gg.</p><p id="settings-error" role="alert" hidden></p></details>
     </section>
     <section id="characters-screen" class="account-container" role="tabpanel" aria-labelledby="tab-characters" hidden><p class="kicker">Mis personajes</p><h1>Tu main<br><span>y dos más.</span></h1><p class="lead">Elegir personajes personaliza tu perfil. No cambia tus puntos, resultados ni los personajes detectados en el ranking público.</p>
       <p id="character-message" class="notice" role="status" hidden></p>
@@ -61,7 +76,11 @@
     </section>
   </main>
   <footer class="account-footer">Hecho para la comunidad de Guatemala · <a href="https://ingporras.com/">INGPORRAS ↗</a><p>Proyecto independiente · Ranking experimental BT-PILOTO-3</p></footer>
-  <dialog id="event-dialog" aria-labelledby="event-title"><button id="close-event" class="outline dialog-close" aria-label="Cerrar resultados">×</button><h2 id="event-title"></h2><div id="event-results"></div></dialog>
+  <dialog id="rival-dialog" class="rival-dialog" aria-labelledby="rival-tag"><div class="rival-art"><strong id="rival-rank-art" aria-hidden="true"></strong><img id="rival-portrait" alt="" hidden><button id="close-rival" class="rival-close" aria-label="Cerrar detalle">×</button></div>
+    <div class="rival-body"><div><p id="rival-kicker" class="kicker"></p><h2 id="rival-tag"></h2><p id="rival-sub" class="note"></p></div>
+      <div id="rival-cells" class="rival-cells"></div>
+      <div><p class="kicker muted">Sus sets contra ti · <span id="rival-season"></span></p><div id="rival-sets" class="rival-sets"></div><p class="note">Sets disponibles en el corte publicado; no es el historial completo de start.gg.</p></div>
+      <a id="rival-link" class="outline" target="_blank" rel="noopener noreferrer" hidden>Ver perfil en start.gg ↗</a></div></dialog>
   <noscript><p class="notice">Activa JavaScript para vincular tu cuenta y consultar tu perfil. El <a href="./#ranking">ranking público</a> sigue disponible.</p></noscript>
 </body>
 </html>

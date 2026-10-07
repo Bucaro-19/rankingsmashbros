@@ -386,7 +386,33 @@ function smash_account_profile(array $public, ?string $playerId): array
             'results' => array_values(array_filter($view['results'] ?? [], static fn($set) => $playerId !== null && in_array($playerId, $set['playerIds'], true))),
             'detected' => $player['mains'] ?? [], 'mainCoverage' => $player['mainCoverage'] ?? null];
     }
-    return ['generatedAt' => $public['generatedAt'], 'seasonYear' => $public['seasonYear'],
+    // Opponents this player met, with their place in each view of the same published cut.
+    // A rival outside a view has no entry there: no place is not a weak rival, and nothing is invented.
+    $rivals = [];
+    if ($playerId !== null) {
+        $index = ['combined' => [], 'guatemala' => []];
+        foreach (['combined' => $public, 'guatemala' => $public['localRanking']] as $scope => $view) {
+            foreach ($view['players'] as $candidate) $index[$scope][(string)$candidate['id']] = $candidate;
+        }
+        foreach ([$public['results'] ?? [], $public['localRanking']['results'] ?? []] as $sets) {
+            foreach ($sets as $set) {
+                $position = array_search($playerId, $set['playerIds'], true);
+                if ($position === false) continue;
+                $other = $set['playerIds'][1 - $position] ?? null;
+                if (!is_string($other) || $other === '' || $other === $playerId || isset($rivals[$other])) continue;
+                $entry = ['tag' => is_string($set['playerTags'][1 - $position] ?? null) ? $set['playerTags'][1 - $position] : null, 'url' => null, 'main' => null];
+                foreach (['combined', 'guatemala'] as $scope) {
+                    $ranked = $index[$scope][$other] ?? null;
+                    $entry[$scope] = $ranked === null ? null : ['rank' => $ranked['rank'] ?? null, 'points' => $ranked['rating'] ?? null];
+                    if ($ranked === null) continue;
+                    $entry['tag'] = $ranked['tag'] ?? $entry['tag']; $entry['url'] = $entry['url'] ?? ($ranked['url'] ?? null);
+                    $entry['main'] = $entry['main'] ?? ($ranked['mains'][0]['characterId'] ?? null);
+                }
+                $rivals[$other] = $entry;
+            }
+        }
+    }
+    return ['rivals' => (object)$rivals, 'generatedAt' => $public['generatedAt'], 'seasonYear' => $public['seasonYear'],
         'methodVersion' => $public['methodVersion'], 'eligibilityRules' => $public['eligibilityRules'],
         'historyCoverage' => 'Resultados disponibles en el corte publicado. No es tu historial completo de start.gg.', 'views' => $profiles];
 }

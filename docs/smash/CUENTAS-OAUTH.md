@@ -59,6 +59,10 @@ Verificado con el proveedor real: autorización básica, intercambio de código,
 - Normalmente hay un intercambio de token y una consulta GraphQL por ingreso. Consultar perfil, alternar vistas y guardar mains usa hosting/datos compartidos, no vuelve a start.gg. OAuth no prueba que exista una cuota independiente o tarifa por jugador.
 - El código de aplicación no registra secretos, códigos o cuerpos de error. Los logs de acceso del hosting pueden registrar la URL de callback; tratarlos como privados. No afirmar que un comentario del código desactiva los logs del servidor.
 
+## Perfil v2 — 7 de octubre (Claude Code)
+
+`cuenta.html`, `cuenta.css`, `cuenta.js` y `account-model.js` siguen ahora el handoff `design_handoff_smash_gt_cuentas_v2/`. Alcance, datos y límites en EN-CURSO.md, «Perfil v2». Contrato nuevo de `account-api.php`: `profile.rivals[playerId] = {tag, url, main, combined:{rank,points}|null, guatemala:{rank,points}|null}`, calculado del corte publicado para los oponentes del usuario autenticado; no acepta parámetros del navegador.
+
 ## Mantener la sesión iniciada — 7 de octubre (Claude Code)
 
 Pedido del dueño: no autorizar con start.gg en cada visita, «lo normal, como Facebook». Requiere la migración `002_sessions_visits`.
