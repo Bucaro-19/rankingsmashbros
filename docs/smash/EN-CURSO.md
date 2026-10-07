@@ -1,5 +1,16 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Contador de visitas — en PR, sin publicar (Claude Code, 7/oct)
+
+Segundo punto de la hoja de ruta. **Estado: rama `feat/visit-counter`; falta fusionar, desplegar y aplicar la migración 003.** Documento: [VISITAS.md](VISITAS.md).
+
+- Archivos nuevos: `visits.php` (biblioteca, denegada en `.htaccess`), `visita.php`, `visita.js` y la etiqueta en cinco páginas. La encuesta y el panel de opiniones no se cuentan.
+- Migración `003_visit_networks.sql`: tabla `site_network_days`. Sin ella el contador no cuenta y no rompe nada.
+- Identidad por cookie propia firmada; la IP solo como HMAC con clave privada autogenerada en `private-smash/visits.key`. Decisión y límites en VISITAS.md.
+- Solo recoge datos. El panel espera el handoff de Claude Design; el handoff `design_handoff_smash_gt_cuentas_v2/` que dejó el dueño es el perfil renovado con panel de rival, **no** el panel de estadísticas.
+- También: `cuenta.js` cambia de versión en `cuenta.html` (el despliegue anterior no la cambió y un navegador con la versión en caché no guardaba la pista del encabezado) y `.gitignore` excluye `design_handoff_*/`.
+- Pruebas locales en MariaDB desechable y navegador; siete fallas provocadas detectadas por las pruebas. Nada en producción todavía.
+
 ## Sesión persistente — publicada el 7 de octubre (Claude Code)
 
 Primer punto de la hoja de ruta, aprobado por el dueño («lo normal, como Facebook»). **Estado: PR #27 fusionada (`fcd2985`), desplegada y con la migración 002 aplicada en producción.** Falta que el dueño vuelva a entrar con start.gg una vez para recibir la cookie y confirme que ya no se le pide. Detalle en CUENTAS-OAUTH.md, «Mantener la sesión iniciada».

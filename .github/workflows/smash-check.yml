@@ -27,6 +27,7 @@ jobs:
           node --check ranking-smash-ultimate/analisis-top20.js
           node --check ranking-smash-ultimate/account-model.js
           node --check ranking-smash-ultimate/cuenta.js
+          node --check ranking-smash-ultimate/visita.js
           node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs
       - name: Verificar PHP en la versión del hosting y en la mínima admitida
         run: |
@@ -79,6 +80,8 @@ jobs:
           php scripts/database/test_connection.php
           php scripts/database/test_accounts.php
           python scripts/database/test_accounts_http.py
+          php scripts/database/test_visits.php
+          python scripts/database/test_visits_http.py
           python scripts/database/test_diagnostic_http.py
           python scripts/database/test_import_ranking.py
           python scripts/database/test_weekly_ranking_load.py

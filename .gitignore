@@ -15,3 +15,6 @@ config.local.php
 # OAuth credentials: real files stay local; examples contain placeholders only
 oauth.local.php
 sync.local.php
+
+# Referencias de Claude Design: locales, nunca versionadas
+design_handoff_*/
