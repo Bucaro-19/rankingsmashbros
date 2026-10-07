@@ -1,12 +1,12 @@
 # Base de datos — cuentas, historial y competición
 
-Versión inicial `001_accounts_competition`, preparada el 7 de octubre de 2026. **El dueño confirmó que importó `install.sql` en BanaHosting y todo terminó correctamente.** Base seleccionada: `ivcjgjlk_smash`, según la captura de phpMyAdmin. La confirmación es del dueño; el agente todavía no se ha conectado a MySQL ni consultado conteos/versiones en producción. Tener estas tablas no activa por sí solo cuentas, reportes ni notificaciones: faltan conexión PHP, importadores y módulos.
+Versión inicial `001_accounts_competition`. **Conexión PHP e instalación confirmadas por el diagnóstico de BanaHosting compartido por el dueño el 6 de octubre de 2026 (Guatemala): MariaDB 11.4.13, 31 tablas y 87 selecciones, schemaReady=true.** Base seleccionada: `ivcjgjlk_smash`, según la captura de phpMyAdmin. El agente recibió el resultado del dueño; no lo leyó directamente en el navegador. Tener estas tablas no activa por sí solo cuentas, reportes ni notificaciones: faltan importadores y módulos.
 
 ## Estado instalado
 
 - PR #1 fusionada en `main`, commit `cb89570`; SQL instalado reportado por el dueño. No reinstalar ni recrear tablas como siguiente paso.
-- Esquema esperado: 31 tablas, 87 selecciones y versión `001_accounts_competition`. Verificar estos valores al configurar la conexión; no presentarlos como conteos ya consultados en el servidor.
-- Dueño creó usuario y archivo privado. Ruta observada /home/ivcjgjlk/private-smash/config.local.php sin abrir contenido. Conector y diagnóstico administrativos publicados (PR #4–#6, último commit `8d509c2`, despliegue `37578387425` correcto). Asociación/permisos y versión todavía por verificar: el navegador de la herramienta bloqueó el diagnóstico y se pidió al dueño su resumen manual (ver EN-CURSO.md). Credenciales no compartidas ni solicitadas en chat.
+- Diagnóstico compartido: 31 tablas, 87 selecciones y versión `001_accounts_competition`; missingTables=[], engineCompatible=true y schemaReady=true. MariaDB 11.4.13. Jugadores, torneos, eventos, sets, cortes, rankings, usuarios y respuestas SQL están en cero, como corresponde antes de importar.
+- Dueño creó usuario y archivo privado. Ruta observada /home/ivcjgjlk/private-smash/config.local.php sin abrir contenido. Conector y diagnóstico administrativos publicados (PR #4–#6, último commit `8d509c2`, despliegue `37578387425` correcto). El diagnóstico confirma conexión y lectura desde PHP; permisos de escritura aún deben probarse al importar. La herramienta de Chrome bloqueó la visualización, pero el dueño compartió el resumen exitoso (ver EN-CURSO.md). Credenciales no compartidas ni solicitadas en chat.
 - Web y encuesta siguen funcionando con JSON/archivo; todavía no se importaron cortes ni respuestas a la base.
 - Siguiente entrega: `SIGUIENTE-FASE.md`. Toda pantalla nueva requiere handoff de Claude Design, por instrucción del dueño.
 
@@ -89,9 +89,9 @@ Fuentes oficiales revisadas el 7 de octubre:
 
 ## Lo que sigue
 
-1. Instalación confirmada por el dueño. Verificar estructura/versiones con la conexión privada, sin repetir importación por rutina.
-2. Configurar conexión PHP privada y preparar el paquete/importador transaccional. El JSON público no incluye tournamentId/entrantIds: completar la exportación con relaciones reales de la captura antes de cargar. Ver SIGUIENTE-FASE.md. Mantener la web leyendo JSON hasta verificar paridad.
+1. Instalación y conexión confirmadas por el diagnóstico del dueño. No repetir instalación ni configuración por rutina.
+2. Preparar el paquete/importador transaccional y comprobar permisos de escritura. El JSON público no incluye tournamentId/entrantIds: completar la exportación con relaciones reales de la captura antes de cargar. Ver SIGUIENTE-FASE.md. Mantener la web leyendo JSON hasta verificar paridad.
 3. Migrar encuesta desde `feedback-data/respuestas-2026.php`, saltando guarda PHP y usando sha256 de cada línea como import_hash. Mantener respaldo y verificar conteos/pruebas internas antes de cambiar lectura/escritura.
-4. OAuth, perfil con historial/mains, prueba de torneo activo, reportes y avisos por etapas. La base ya se instaló según el dueño; los módulos todavía no están conectados. No se han movido respuestas ni modificado ranking/despliegue.
+4. OAuth, perfil con historial/mains, prueba de torneo activo, reportes y avisos por etapas. La base está instalada y conectada; los módulos todavía no están implementados. No se han movido respuestas ni modificado el cálculo/ranking con esta conexión.
 
 Las respuestas anteriores ya se comprobaron en el dominio nuevo. La carpeta feedback-data permanece protegida. El acceso SSH/MySQL de un agente aún no está configurado; no abrir acceso remoto universal para instalar esto.

@@ -14,7 +14,7 @@
 - Claude Code debe leer AGENTS.md/CLAUDE.md, este contexto, EN-CURSO.md y SIGUIENTE-FASE.md, y mantener el relevo actualizado.
 
 ## Base de datos (fase actual)
-- Dueño confirmó importación exitosa de `docs/smash/install.sql` en `ivcjgjlk_smash` (BanaHosting). v1 preparada en PR #1/main `cb89570`: 31 tablas/87 selecciones esperadas; conteos y versión pendientes de verificación directa. Guía `BASE-DE-DATOS.md`; siguiente fase `SIGUIENTE-FASE.md`. Falta conectar PHP/importadores; no reinstalar por rutina.
+- Instalación y conexión PDO confirmadas por el diagnóstico del hosting compartido por el dueño el 6/oct/2026 (Guatemala): MariaDB 11.4.13, schema 001_accounts_competition, 31 tablas, 87 selecciones, missingTables=[], schemaReady=true. Conector publicado en PR #4–#6; último despliegue 37578387425. El agente recibió el resultado, no lo leyó directamente en Chrome (la herramienta bloqueó la página). Los demás conteos están en cero antes de importar. Guía `BASE-DE-DATOS.md`; siguiente fase `SIGUIENTE-FASE.md`: paquete privado/importadores. No reinstalar ni volver a pedir credenciales por rutina.
 - OAuth para identidad y acceso autorizado; no garantiza multiplicar cuota. Tokens persistentes cifrados en servidor, llave fuera de la base/Git. La web actual sigue con JSON.
 
 ## Arquitectura

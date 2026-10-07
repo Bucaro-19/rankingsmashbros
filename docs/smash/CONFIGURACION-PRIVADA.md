@@ -1,6 +1,6 @@
 # Ingresar el usuario MySQL desde cPanel
 
-El dueño confirmó que creó el usuario MySQL. El agente observó el archivo en `/home/ivcjgjlk/private-smash/config.local.php` desde la lista de cPanel, sin abrir su contenido. Conector PDO y diagnóstico publicados (PR #4–#6; último despliegue `37578387425`). El dueño ya renovó la sesión, pero Chrome de la herramienta bloqueó el diagnóstico; falta recibir su resumen manual para verificar la conexión. Comprobar EN-CURSO.md para el estado vigente. Base confirmada: `ivcjgjlk_smash`.
+Configuración completada. El agente observó el archivo en `/home/ivcjgjlk/private-smash/config.local.php` desde la lista de cPanel, sin abrir su contenido. Conector PDO y diagnóstico publicados (PR #4–#6; último despliegue `37578387425`). El dueño compartió su diagnóstico exitoso el 6/oct/2026 (Guatemala): MariaDB 11.4.13, 31 tablas, 87 selecciones y schemaReady=true. No repetir estos pasos por rutina; faltan importadores. Comprobar EN-CURSO.md para el estado vigente. Base confirmada: `ivcjgjlk_smash`.
 
 ## Archivo que debe completar el dueño
 
@@ -32,7 +32,7 @@ Ruta observada en la sesión de cPanel: `/home/ivcjgjlk/private-smash/config.loc
 
 ## Continuidad para Claude Code
 
-- Dueño ya instaló SQL y creó usuario; no solicitar esas acciones de nuevo salvo fallo verificado.
+- Dueño ya instaló SQL y creó usuario; diagnóstico compartido confirma conexión y esquema. No solicitar esas acciones de nuevo salvo fallo verificado. Conteos en cero fuera del catálogo son normales antes de importar; la encuesta aún usa archivo.
 - Plantilla en Git contiene únicamente placeholders. `config.local.php` real está ignorado y el despliegue no lo incluye.
 - Conector en ranking-smash-ultimate/database.php. Diagnóstico JSON en `opiniones.php?diagnostico=base`, solo para sesión administrativa vigente (GET, cache no-store). No es una pantalla nueva; no lee ni migra respuestas. Anónimo recibe 401. No leer/imprimir el archivo real de configuración con herramientas.
 - Implementar validación de config, prepared statements nativos, utf8mb4 y UTC; tratar excepciones con mensajes saneados. Separar verificación de conexión de importación/cuentas.
