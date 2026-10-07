@@ -1,5 +1,14 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Panel privado del dueño — en PR, sin publicar (Claude Code, 7/oct)
+
+El dueño entregó el handoff `design_handoff_smash_gt_panel/` y se implementó completo: [PANEL-DUENO.md](PANEL-DUENO.md). **Estado: rama `feat/owner-panel`, apilada sobre `feat/cuentas-v2` (fusionar primero el PR del perfil v2). Falta fusionar, desplegar y conceder el rol `admin` a la cuenta del dueño (`users.id = 1`, Bucaro19) con su visto bueno; sin ese rol nadie puede abrir el panel.** No necesita migración.
+
+- Acceso solo con rol `admin`; 401 sin sesión, 403 sin pistas para otras cuentas.
+- Cifras calculadas en `stats.php` desde el contador y las cuentas; periodos de días completos, distintos reales, semanas y comparación solo cuando hay historia.
+- Producción hoy está en el «primer día»: el contador empezó el 7/oct, así que al publicarlo el dueño verá Hoy y las cuentas; los periodos dirán «Sin datos todavía» hasta el 8/oct.
+- Pruebas SQL, HTTP y de modelo en verde; revisión en navegador en escritorio y móvil.
+
 ## Perfil v2 con historial de sets y panel de rival — en PR, sin publicar (Claude Code, 7/oct)
 
 Tercer punto de la hoja de ruta (la parte gratuita). Implementa el handoff de Claude Design `design_handoff_smash_gt_cuentas_v2/` (carpeta local del dueño, sin versionar; su README nombra el repo anterior, el correcto es este). **Estado: rama `feat/cuentas-v2`; falta fusionar y desplegar. No necesita migración.**

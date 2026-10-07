@@ -21,6 +21,9 @@ Options -Indexes
 <Files "visits.php">
   Require all denied
 </Files>
+<Files "stats.php">
+  Require all denied
+</Files>
 <Files "ranking-import.php">
   Require all denied
 </Files>
