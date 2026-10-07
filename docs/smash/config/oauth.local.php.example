@@ -1,0 +1,9 @@
+<?php
+// Guardar como private-smash/oauth.local.php, hermano del sitio y fuera del document root.
+// Nunca subir el archivo completado a Git ni pegar client_secret en el chat.
+return [
+    'enabled' => false, // true solo tras registrar la app y completar los valores.
+    'client_id' => 'CLIENT_ID_AQUI',
+    'client_secret' => 'CLIENT_SECRET_AQUI',
+    'redirect_uri' => 'https://rankingsmashbros.com/oauth.php',
+];

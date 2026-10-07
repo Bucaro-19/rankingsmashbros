@@ -1,4 +1,11 @@
-# Importación de ranking e historial — 7 de octubre de 2026, Guatemala
+# Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
+
+## Cuentas — nueva entrega de Codex
+
+- Revisadas entregas de Claude Code: encuesta en SQL y cierre de migración, cargador semanal operado desde la Mac, sin reinstalar tablas. Base de trabajo `main` en `99d65c3`.
+- Handoff de Claude Design leído e implementado: ingreso, elección de intereses, perfil y editor de mains. Backend OAuth/sesiones y preferencias sobre las tablas existentes; sin cambios al cálculo ni JSON. Detalles/activación: [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md).
+- El dueño confirmó **OAuth Application aún no registrada**. El botón queda desactivado hasta configurar el archivo privado. Tokens descartados después de verificar identidad; reportes/agenda y sincronización personal quedan para otra fase.
+- Pruebas locales con base desechable: vinculación por IDs, roles sin permisos administrativos, guardado/rollback, revocación y paridad de ambas vistas. No se creó ningún usuario real ni se usaron tokens de producción. Pendientes de cierre: CI, publicación y prueba real de OAuth tras registro.
 
 ## Estado vigente
 
@@ -32,7 +39,7 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 - **Migración cerrada el 7/oct:** dominio anterior redirigido (`rsvp-graduacion#26`), su archivo congelado e importado, y la prueba del dueño marcada `is_test=1`. Estado final: 16 filas, 13 de comunidad y 3 de prueba. Evidencia en MIGRACION-ENCUESTA.md, «Cierre».
 - No revertir el PR ni desplegar ramas anteriores: `deploy.py` rechaza páginas de encuesta que no sean las de SQL y los despliegues solo corren desde `main`.
 - Hallazgo para el dueño: el repositorio es público, así que los artefactos de Actions los puede descargar cualquier usuario con sesión en GitHub.
-- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación pendiente; requiere que el dueño registre la app OAuth en start.gg.
+- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación en esta entrega; activación real pendiente de que el dueño registre la app OAuth en start.gg.
 
 ### Carga semanal del ranking a SQL — preparada, sin activar (Claude Code)
 

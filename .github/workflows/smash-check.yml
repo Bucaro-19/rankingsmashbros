@@ -25,7 +25,9 @@ jobs:
           node --check ranking-smash-ultimate/app.js
           node --check ranking-smash-ultimate/metodologia.js
           node --check ranking-smash-ultimate/analisis-top20.js
-          node --test scripts/smash/test_app.cjs
+          node --check ranking-smash-ultimate/account-model.js
+          node --check ranking-smash-ultimate/cuenta.js
+          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs
       - name: Verificar PHP en la versión del hosting y en la mínima admitida
         run: |
           # El servidor usa PHP 8.1; el código publicado debe seguir siendo válido desde 7.4.
@@ -73,6 +75,8 @@ jobs:
           for file in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$file"; done
           python scripts/database/test_schema.py
           php scripts/database/test_connection.php
+          php scripts/database/test_accounts.php
+          python scripts/database/test_accounts_http.py
           python scripts/database/test_diagnostic_http.py
           python scripts/database/test_import_ranking.py
           python scripts/database/test_weekly_ranking_load.py
