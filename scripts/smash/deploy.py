@@ -153,6 +153,17 @@ def validate_top20_study(data):
         raise ValueError('El estudio del top 20 está incompleto o mezcla escenarios incompatibles.') from None
 
 
+def require_sql_survey(source):
+    # Production stores survey answers in SQL. A checkout that still has the file-backed pages
+    # (an old branch or a revert) must never be published: answers would go to a frozen file and
+    # those already in SQL would vanish from the private panel.
+    marker = '<meta name="smash-survey-storage" content="sql">'
+    for page in ("encuesta.php", "opiniones.php"):
+        text = (source / page).read_text(encoding="utf-8")
+        if marker not in text or "require_once __DIR__ . '/survey.php';" not in text or "respuestas-2026" in text:
+            raise ValueError("Esta versión de " + page + " no usa la encuesta en SQL; no se publica.")
+
+
 def deploy(ftp, source, *, assets_only=False, admin_hash=None):
     # FTP credentials must have the same root as the existing portfolio workflow.
     # No deletion or recursive synchronization of the site's root.
@@ -235,6 +246,10 @@ def main():
     for name in FILES[:-1] if args.assets_only else FILES:
         if not (source / name).is_file():
             raise SystemExit("Faltan archivos de publicación.")
+    try:
+        require_sql_survey(source)
+    except ValueError as error:
+        raise SystemExit(str(error)) from None
     required = ("FTP_SERVER", "FTP_USERNAME", "FTP_PASSWORD")
     if not all(os.environ.get(name) for name in required):
         raise SystemExit("Faltan secretos de publicación.")

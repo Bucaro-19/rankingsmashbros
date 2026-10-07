@@ -34,6 +34,8 @@ function smash_survey_connect(string $siteRoot): PDO
         // The hosting default is not strict: without this an over-long or invalid value
         // would be truncated with a warning instead of rejecting the statement.
         $pdo->exec("SET SESSION sql_mode = CONCAT(@@sql_mode, ',STRICT_TRANS_TABLES')");
+        // A stalled table must fail this request quickly instead of parking a PHP worker.
+        $pdo->exec('SET SESSION innodb_lock_wait_timeout = 5, lock_wait_timeout = 5');
     } catch (PDOException $error) {
         throw new SmashSurveyStorageError('session_setup_failed');
     }
@@ -49,17 +51,30 @@ function smash_survey_clean_text(string $value): string
     return is_string($clean) ? $clean : '';
 }
 
-// One rendered form can store at most one answer. The key is a domain-separated hash of the
-// random per-session form token; it identifies a submission attempt, never a person.
-function smash_survey_submission_key(string $formToken): string
+// Retry key of a web answer: the random per-session form token plus the exact answer. Sending
+// the same answer again with the same form (lost confirmation, browser resend) hits the unique
+// key and adds nothing; a different answer is a different key and is stored like any other.
+// The key identifies a submission attempt, never a person.
+function smash_survey_submission_key(string $formToken, array $row): string
 {
     if (!preg_match('/\A[0-9a-f]{48}\z/D', $formToken)) throw new SmashSurveyStorageError('invalid_form_token');
-    return hash('sha256', "smashgt-encuesta-web-v1\n" . $formToken);
+    $answer = json_encode([$row['season_year'], $row['role'], $row['eligibility'], $row['minimum_activity'],
+        $row['international'], $row['clarity'], $row['confidence'], $row['source_url'], $row['comment']],
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if (!is_string($answer)) throw new SmashSurveyStorageError('invalid_answer');
+    return hash('sha256', "smashgt-encuesta-web-v1\n" . $formToken . "\n" . hash('sha256', $answer));
+}
+
+// Reason code or class name of a failure, safe to log: never a message, a value or a visitor datum.
+function smash_survey_failure_code(Throwable $failure): string
+{
+    $reason = ($failure instanceof SmashSurveyStorageError || $failure instanceof SmashDatabaseError) ? $failure->reason : null;
+    return is_string($reason) && preg_match('/\A[a-z_]{1,60}\z/D', $reason) ? $reason : get_class($failure);
 }
 
 // Builds the stored row from an answer already validated by the form handler. The checks are
 // repeated here so no other caller can put out-of-contract values into the table.
-function smash_survey_row_from_answer(array $answer, string $submissionKey, int $now): array
+function smash_survey_row_from_answer(array $answer, int $now): array
 {
     foreach (SMASH_SURVEY_OPTIONS as $field => $allowed) {
         if (!is_string($answer[$field] ?? null) || !in_array($answer[$field], $allowed, true)) {
@@ -74,8 +89,7 @@ function smash_survey_row_from_answer(array $answer, string $submissionKey, int 
     $source = $answer['source'] ?? null;
     $comment = $answer['comment'] ?? null;
     // Byte limits, exactly as the form handler has always enforced them.
-    if (!is_string($source) || !is_string($comment) || strlen($source) > 250 || strlen($comment) > 2000
-        || !preg_match('/\A[0-9a-f]{64}\z/D', $submissionKey) || $now < 1) {
+    if (!is_string($source) || !is_string($comment) || strlen($source) > 250 || strlen($comment) > 2000 || $now < 1) {
         throw new SmashSurveyStorageError('invalid_answer');
     }
     $comment = smash_survey_clean_text($comment);
@@ -93,30 +107,43 @@ function smash_survey_row_from_answer(array $answer, string $submissionKey, int 
         'source_url' => $source === '' ? null : $source,
         'comment' => $comment === '' ? null : $comment,
         'is_test' => strpos($comment, SMASH_SURVEY_INTERNAL_TEST_PREFIX) === 0 ? 1 : 0,
-        'import_hash' => $submissionKey,
     ];
 }
 
 // Returns 'inserted' or 'already_saved'. Anything else throws: the caller must not report
 // success, must not mark the session and must not write anywhere else.
-function smash_survey_store(PDO $pdo, array $answer, string $submissionKey, int $now): string
+function smash_survey_store(PDO $pdo, array $answer, string $formToken, int $now): string
 {
-    $row = smash_survey_row_from_answer($answer, $submissionKey, $now);
+    $row = smash_survey_row_from_answer($answer, $now);
+    $row['import_hash'] = smash_survey_submission_key($formToken, $row);
+    // Own the transaction: a caller's pending work must never be committed or rolled back here.
+    if ($pdo->inTransaction()) throw new SmashSurveyStorageError('transaction_already_active');
     $columns = array_keys($row);
+    $confirmed = false;
     try {
+        // Explicit transaction: the answer is durable because it was committed, not because the
+        // server happens to run with autocommit.
+        $pdo->beginTransaction();
         $insert = $pdo->prepare('INSERT INTO survey_responses (' . implode(', ', $columns) . ') VALUES ('
             . implode(', ', array_fill(0, count($columns), '?')) . ')');
         $insert->execute(array_values($row));
-        if ($insert->rowCount() !== 1) throw new SmashSurveyStorageError('write_unconfirmed');
-        return 'inserted';
+        $confirmed = $insert->rowCount() === 1;
+        if ($confirmed) $pdo->commit();
+        else $pdo->rollBack();
     } catch (PDOException $error) {
-        // Integrity errors include both a CHECK violation and the unique submission key. Only a
-        // row that really exists under this key means an earlier attempt of this form was saved.
-        if (substr((string)$error->getCode(), 0, 2) === '23' && smash_survey_key_exists($pdo, $submissionKey)) {
+        try {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+        } catch (PDOException $ignored) {
+        }
+        // Integrity errors include CHECK violations as well as the unique retry key. Only a row
+        // that really exists under this key means this same answer of this form is already stored.
+        if (substr((string)$error->getCode(), 0, 2) === '23' && smash_survey_key_exists($pdo, $row['import_hash'])) {
             return 'already_saved';
         }
         throw new SmashSurveyStorageError('write_failed');
     }
+    if (!$confirmed) throw new SmashSurveyStorageError('write_unconfirmed');
+    return 'inserted';
 }
 
 function smash_survey_key_exists(PDO $pdo, string $submissionKey): bool

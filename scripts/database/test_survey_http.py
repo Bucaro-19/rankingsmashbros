@@ -1,10 +1,14 @@
 """Real submit and real read of the survey over HTTP against a disposable database.
 
-An isolated PHP site, session folder and private config are created per run. Every value is
-invented; nothing here can reach production: the database must be smash_schema_test* on 127.0.0.1.
+An isolated PHP site, session folder, error log and private config are created per run. Every value
+is invented; nothing here can reach production: the database must be smash_schema_test* on 127.0.0.1.
+The server runs like production where it matters: a non-UTC PHP time zone, a non-strict global
+sql_mode, errors that would be displayed unless the pages hide them, and the legacy answers file
+still present on disk.
 """
 import hashlib
 import http.cookiejar
+import json
 import os
 from pathlib import Path
 import re
@@ -19,6 +23,7 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / 'ranking-smash-ultimate'
+IMPORTER = ROOT / 'scripts/database/import_survey.php'
 DATABASE = os.environ.get('SMASH_SCHEMA_TEST_DB', '')
 VALID = dict(role='jugador', eligibility='nacionalidad-local', minimum='2-eventos-4-sets',
              international='todos-validos', clarity='4', confidence='5', comment='', source='', website='')
@@ -28,10 +33,16 @@ REVIEW = 'Revisa las respuestas e intenta de nuevo.'
 RECENT = 'Ya recibimos una respuesta reciente de esta sesión. Gracias.'
 COLUMNS = ['id', 'submitted_at', 'season_year', 'role', 'eligibility', 'minimum_activity', 'international',
            'clarity', 'confidence', 'source_url', 'comment', 'is_test', 'import_hash']
+GUARD = '<?php http_response_code(404); exit; ?>\n'
+DECOY = 'RESPUESTA-ANTIGUA-DEL-ARCHIVO-INVENTADA'
+PRIVATE = 'COMENTARIO-PRIVADO-INVENTADO'
 
 
-def submission_key(nonce):
-    return hashlib.sha256(('smashgt-encuesta-web-v1\n' + nonce).encode()).hexdigest()
+def file_line(at, comment, **changes):
+    entry = dict(submittedAt=at, seasonYear=2026, role='jugador', eligibility='nacionalidad-local',
+                 minimum='2-eventos-4-sets', international='todos-validos', clarity=4, confidence=5, source='', comment=comment)
+    entry.update(changes)
+    return json.dumps(entry, ensure_ascii=False, separators=(',', ':'))
 
 
 @unittest.skipUnless(DATABASE, 'Requires disposable database service')
@@ -45,6 +56,9 @@ class SurveyHttpTests(unittest.TestCase):
         cls.password = os.environ['SMASH_SCHEMA_TEST_PASSWORD']
         cls.db = pymysql.connect(host='127.0.0.1', port=cls.port_db, user='root', password=cls.password,
                                  database=DATABASE, charset='utf8mb4', autocommit=True)
+        # Production's global sql_mode is not strict; both CI engines default to strict.
+        cls.global_mode = cls.execute('SELECT @@GLOBAL.sql_mode')[0][0]
+        cls.execute("SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'")
         cls.temp = tempfile.TemporaryDirectory(prefix='smash-survey-http-')
         home = Path(cls.temp.name)
         cls.site, cls.private, cls.sessions = home / 'site', home / 'private-smash', home / 'sessions'
@@ -53,19 +67,28 @@ class SurveyHttpTests(unittest.TestCase):
         for filename in ('database.php', 'survey.php', 'encuesta.php', 'opiniones.php'):
             (cls.site / filename).write_bytes((SITE / filename).read_bytes())
         (cls.site / 'feedback-data/admin-auth.php').write_text("<?php return '" + '$2y$12$' + 'A' * 53 + "';")
+        # The frozen legacy file stays on the server after the migration: it must never be read or written.
+        cls.legacy = cls.site / 'feedback-data/respuestas-2026.php'
+        cls.legacy_bytes = (GUARD + file_line('2026-09-29T10:00:00+00:00', DECOY) + '\n').encode()
+        cls.legacy.write_bytes(cls.legacy_bytes)
+        cls.tree = sorted(str(path.relative_to(cls.site)) for path in cls.site.rglob('*'))
+        cls.log = home / 'php-error.log'
         cls.config = cls.private / 'config.local.php'
         cls.write_config()
-        cls.admin = 'smashsurveyhttptestonly'
-        # Synthetic administrator session, created exclusively for this temporary test site.
-        subprocess.run(['php', '-d', f'session.save_path={cls.sessions}', '-r',
-                        f'session_name("SMASHGT_ADMIN");session_id("{cls.admin}");session_start();'
-                        '$_SESSION["smash_admin"]=true;$_SESSION["smash_admin_at"]=time();session_write_close();'],
-                       check=True, capture_output=True)
+        cls.admin, cls.expired = 'smashsurveyhttptestonly', 'smashsurveyhttpexpired'
+        # Synthetic administrator sessions, created exclusively for this temporary test site.
+        for session, age in ((cls.admin, 0), (cls.expired, 9 * 3600)):
+            subprocess.run(['php', '-d', f'session.save_path={cls.sessions}', '-r',
+                            f'session_name("SMASHGT_ADMIN");session_id("{session}");session_start();'
+                            f'$_SESSION["smash_admin"]=true;$_SESSION["smash_admin_at"]=time()-{age};session_write_close();'],
+                           check=True, capture_output=True)
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', 0))
             port = sock.getsockname()[1]
-        cls.process = subprocess.Popen(['php', '-d', f'session.save_path={cls.sessions}', '-S', f'127.0.0.1:{port}',
-                                        '-t', str(cls.site)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cls.process = subprocess.Popen(
+            ['php', '-d', f'session.save_path={cls.sessions}', '-d', 'date.timezone=America/Guatemala',
+             '-d', 'display_errors=1', '-d', 'log_errors=1', '-d', f'error_log={cls.log}', '-d', 'opcache.enable=0',
+             '-S', f'127.0.0.1:{port}', '-t', str(cls.site)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         cls.base = f'http://127.0.0.1:{port}'
         for _ in range(100):
             try:
@@ -81,6 +104,7 @@ class SurveyHttpTests(unittest.TestCase):
         cls.process.terminate()
         cls.process.wait(timeout=5)
         cls.execute('DELETE FROM survey_responses')
+        cls.execute('SET GLOBAL sql_mode = %s', (cls.global_mode,))
         cls.db.close()
         cls.temp.cleanup()
 
@@ -100,21 +124,37 @@ class SurveyHttpTests(unittest.TestCase):
         self.write_config()
         self.execute('DELETE FROM survey_responses')
 
+    def tearDown(self):
+        # No double writing, no fallback: the legacy file is untouched and nothing new appears in the site.
+        self.assertEqual(self.legacy.read_bytes(), self.legacy_bytes)
+        self.assertEqual(sorted(str(path.relative_to(self.site)) for path in self.site.rglob('*')), self.tree)
+        log = self.log.read_text() if self.log.exists() else ''
+        # The server log may only carry reason codes: no answer text, no visitor or connection data.
+        for line in log.splitlines():
+            self.assertRegex(line, r'^\[[^\]]+\] Smash GT (encuesta|opiniones): [a-záéíóú ]+ \([A-Za-z_\\]+\)$')
+        for private in (PRIVATE, DECOY, '127.0.0.1', 'disposable-test-only', 'wrong-test-only', 'PHPSESSID', 'SMASHGT_ADMIN'):
+            self.assertNotIn(private, log)
+
     def count(self):
         return self.execute('SELECT COUNT(*) FROM survey_responses')[0][0]
+
+    def connections(self):
+        return int(self.execute("SHOW GLOBAL STATUS LIKE 'Connections'")[0][1])
 
     def visitor(self):
         return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
 
-    def fetch(self, opener, path, fields=None, cookie=None):
-        data = urllib.parse.urlencode(fields).encode() if fields is not None else None
+    def fetch(self, opener, path, fields=None, cookie=None, body=None):
+        data = urllib.parse.urlencode(fields).encode() if fields is not None else body
         request = urllib.request.Request(self.base + path, data=data, headers={'Cookie': cookie} if cookie else {})
         try:
             response = opener.open(request, timeout=10)
         except urllib.error.HTTPError as error:
             response = error
         with response:
-            return response.status, dict(response.headers), response.read().decode()
+            text = response.read().decode()
+        self.assertNotIn(DECOY, text)  # the legacy file is never a source again
+        return response.status, dict(response.headers), text
 
     def form(self, opener):
         status, _, body = self.fetch(opener, '/encuesta.php')
@@ -124,9 +164,19 @@ class SurveyHttpTests(unittest.TestCase):
     def submit(self, opener, nonce, **changes):
         return self.fetch(opener, '/encuesta.php', {**VALID, 'nonce': nonce, **changes})
 
-    def panel(self, authenticated=True):
-        return self.fetch(urllib.request.build_opener(), '/opiniones.php',
-                          cookie=f'SMASHGT_ADMIN={self.admin}' if authenticated else None)
+    def panel(self, session='admin'):
+        cookie = {'admin': self.admin, 'expired': self.expired, 'unknown': 'nobodyknowsthissession', None: None}[session]
+        return self.fetch(urllib.request.build_opener(), '/opiniones.php', cookie=f'SMASHGT_ADMIN={cookie}' if cookie else None)
+
+    def key(self, nonce, **answer):
+        """Retry key computed by the library itself for a form token and an answer."""
+        values = dict(role='jugador', eligibility='nacionalidad-local', minimum='2-eventos-4-sets',
+                      international='todos-validos', clarity=4, confidence=5, source='', comment='')
+        values.update(answer)
+        script = ('require $argv[1]."/database.php"; require $argv[1]."/survey.php";'
+                  'echo smash_survey_submission_key($argv[2], smash_survey_row_from_answer(json_decode($argv[3], true), 1790000000));')
+        return subprocess.run(['php', '-r', script, str(SITE), nonce, json.dumps(values)], check=True,
+                              capture_output=True, text=True).stdout
 
     def seed(self, at, **changes):
         row = dict(season_year=2026, role='jugador', eligibility='nacionalidad-local', minimum_activity='2-eventos-4-sets',
@@ -137,13 +187,16 @@ class SurveyHttpTests(unittest.TestCase):
                      list(row.values()))
 
     def assert_no_leak(self, body):
-        for text in ('SQLSTATE', 'PDOException', 'Fatal error', 'Warning:', 'Deprecated:', 'Stack trace',
+        for text in ('SQLSTATE', 'PDOException', 'Fatal error', 'Warning', 'Deprecated', 'Notice', 'Stack trace',
                      str(self.temp.name), 'config.local', 'disposable-test-only', 'wrong-test-only'):
             self.assertNotIn(text, body)
 
     # --- survey form ---------------------------------------------------------------------
 
     def test_form_is_served_without_touching_the_database(self):
+        before = self.connections()
+        _, _, body = self.fetch(self.visitor(), '/encuesta.php')
+        self.assertEqual(self.connections(), before)
         self.config.unlink()
         status, headers, body = self.fetch(self.visitor(), '/encuesta.php')
         self.assertEqual(status, 200)
@@ -156,25 +209,29 @@ class SurveyHttpTests(unittest.TestCase):
     def test_valid_answer_is_stored_once_anonymously_and_session_limit_applies(self):
         person = self.visitor()
         nonce = self.form(person)
-        before = self.execute('SELECT UTC_TIMESTAMP()')[0][0]
-        status, _, body = self.submit(person, nonce, role='organizador', eligibility='otra', minimum='otro',
-                                      international='ninguno', clarity='2', confidence='3',
-                                      comment='  Texto inventado con ñ y 🎮\nsegunda línea  ',
-                                      source=' https://www.start.gg/tournament/inventado/details ')
+        before, connections = self.execute('SELECT UTC_TIMESTAMP()')[0][0], self.connections()
+        answer = dict(role='organizador', eligibility='otra', minimum='otro', international='ninguno', clarity='2', confidence='3')
+        status, _, body = self.submit(person, nonce, comment='  Texto inventado con ñ y 🎮\nsegunda línea  ',
+                                      source=' https://www.start.gg/tournament/inventado/details ', **answer)
         self.assertEqual(status, 200)
         self.assertIn(SAVED, body)
         self.assertNotIn('class="survey-form"', body)
+        self.assertEqual(self.connections(), connections + 1)  # exactly one connection for one stored answer
         description = [column[0] for column in self.execute('SHOW COLUMNS FROM survey_responses')]
         self.assertEqual(description, COLUMNS)  # nothing about the visitor can be stored
         rows = self.execute('SELECT submitted_at, season_year, role, eligibility, minimum_activity, international,'
                             ' clarity, confidence, source_url, comment, is_test, import_hash FROM survey_responses')
         self.assertEqual(len(rows), 1)
         row = rows[0]
-        self.assertLessEqual(abs((row[0] - before).total_seconds()), 15)  # stored in UTC from the PHP clock
+        self.assertLessEqual(abs((row[0] - before).total_seconds()), 15)  # UTC, although PHP runs in Guatemala time
         self.assertEqual(row[0].microsecond, 0)
+        expected_key = self.key(nonce, comment='Texto inventado con ñ y 🎮\nsegunda línea',
+                                source='https://www.start.gg/tournament/inventado/details',
+                                **{**answer, 'clarity': 2, 'confidence': 3})
         self.assertEqual(row[1:12], (2026, 'organizador', 'otra', 'otro', 'ninguno', 2, 3,
                                      'https://www.start.gg/tournament/inventado/details',
-                                     'Texto inventado con ñ y 🎮\nsegunda línea', 0, submission_key(nonce)))
+                                     'Texto inventado con ñ y 🎮\nsegunda línea', 0, expected_key))
+        connections = self.connections()
         # A browser refresh re-posts the consumed form: rejected, nothing added.
         _, _, body = self.submit(person, nonce)
         self.assertIn(REVIEW, body)
@@ -183,6 +240,7 @@ class SurveyHttpTests(unittest.TestCase):
         _, _, body = self.submit(person, self.form(person))
         self.assertIn(RECENT, body)
         self.assertEqual(self.count(), 1)
+        self.assertEqual(self.connections(), connections)  # neither rejection opened a connection
         # Another person is not limited by somebody else's session, even with identical answers.
         other = self.visitor()
         _, _, body = self.submit(other, self.form(other))
@@ -192,7 +250,7 @@ class SurveyHttpTests(unittest.TestCase):
         self.assertIn(SAVED, body)
         self.assertEqual(self.count(), 3)
 
-    def test_rejected_requests_store_nothing_and_do_not_consume_the_form(self):
+    def test_rejected_requests_store_nothing_open_no_connection_and_do_not_consume_the_form(self):
         person = self.visitor()
         nonce = self.form(person)
         outsider = self.visitor()
@@ -208,6 +266,7 @@ class SurveyHttpTests(unittest.TestCase):
             (person, dict(comment='a' * 2001), 'demasiado largo'),
             (person, dict(comment='ñ' * 1001), 'demasiado largo'),         # limit is bytes, as before
         ]
+        connections = self.connections()
         for opener, changes, expected in cases:
             with self.subTest(changes=str(changes)[:40]):
                 status, _, body = self.submit(opener, changes.get('nonce', nonce), **{k: v for k, v in changes.items() if k != 'nonce'})
@@ -216,6 +275,7 @@ class SurveyHttpTests(unittest.TestCase):
                 self.assertNotIn(SAVED, body)
                 self.assert_no_leak(body)
         self.assertEqual(self.count(), 0)
+        self.assertEqual(self.connections(), connections)  # spam and mistakes never reach the database
         # None of the rejections rotated the form token or started the five-minute limit.
         _, _, body = self.submit(person, nonce, comment='ñ' * 1000)
         self.assertIn(SAVED, body)
@@ -232,7 +292,7 @@ class SurveyHttpTests(unittest.TestCase):
                     self.config.unlink()
                 else:
                     self.config.write_text('<?php SECRET-MARKER syntax error')
-                status, _, body = self.submit(person, nonce, comment='Comentario inventado que no debe perderse en silencio')
+                status, _, body = self.submit(person, nonce, comment=PRIVATE)
                 self.assertEqual(status, 200)
                 self.assertIn(STORAGE_ERROR, body)
                 self.assertNotIn(SAVED, body)
@@ -241,35 +301,45 @@ class SurveyHttpTests(unittest.TestCase):
                 self.assertIn(f'value="{nonce}"', body)  # form token kept: the visitor can retry at once
         self.write_config()
         self.assertEqual(self.count(), 0)
-        self.assertFalse((self.site / 'feedback-data/respuestas-2026.php').exists())  # no second source, no fallback
-        _, _, body = self.submit(person, nonce, comment='Comentario inventado que no debe perderse en silencio')
+        log = self.log.read_text()
+        for reason in ('connection_denied', 'config_missing', 'config_invalid'):
+            self.assertIn(f'Smash GT encuesta: respuesta no guardada ({reason})', log)  # the owner can see why
+        _, _, body = self.submit(person, nonce, comment=PRIVATE)
         self.assertIn(SAVED, body)
         self.assertEqual(self.count(), 1)
 
-    def test_lost_acknowledgement_retry_does_not_duplicate(self):
+    def test_lost_confirmation_retry_does_not_duplicate_and_a_changed_answer_is_not_discarded(self):
         person = self.visitor()
         nonce = self.form(person)
         # The first attempt reached the database but the visitor never saw the confirmation and the
-        # session was not updated (connection cut, or PHP stopped right after the INSERT).
-        self.seed('2026-10-06 12:00:00', import_hash=submission_key(nonce), comment='Primera versión inventada')
+        # session was not updated (connection cut, or PHP stopped right after the commit).
+        self.seed('2026-10-06 12:00:00', import_hash=self.key(nonce, comment='Primera versión inventada'), comment='Primera versión inventada')
         status, _, body = self.submit(person, nonce, comment='Primera versión inventada')
         self.assertEqual(status, 200)
         self.assertIn(SAVED, body)
         self.assertEqual(self.count(), 1)
-        self.assertEqual(self.execute('SELECT comment FROM survey_responses')[0][0], 'Primera versión inventada')
         # The form is now consumed like any confirmed answer.
         _, _, body = self.submit(person, nonce, comment='Primera versión inventada')
         self.assertIn(REVIEW, body)
         self.assertEqual(self.count(), 1)
+        # Same lost confirmation, but the visitor (or the next person on a shared device) then sends
+        # a different answer with that form: it is stored, never answered with a false "received".
+        other = self.visitor()
+        nonce = self.form(other)
+        self.seed('2026-10-06 12:05:00', import_hash=self.key(nonce, comment='Texto original inventado'), comment='Texto original inventado')
+        _, _, body = self.submit(other, nonce, comment='Texto corregido inventado')
+        self.assertIn(SAVED, body)
+        self.assertEqual(sorted(row[0] for row in self.execute('SELECT comment FROM survey_responses')),
+                         ['Primera versión inventada', 'Texto corregido inventado', 'Texto original inventado'])
 
     def test_internal_test_prefix_is_flagged_and_invalid_bytes_are_substituted(self):
         tester, person = self.visitor(), self.visitor()
         _, _, body = self.submit(tester, self.form(tester), comment='PRUEBA TÉCNICA INTERNA — inventada')
         self.assertIn(SAVED, body)
-        data = urllib.parse.urlencode({**VALID, 'nonce': self.form(person)}).encode() + b'&comment=bytes%FFinventados'
-        request = urllib.request.Request(self.base + '/encuesta.php', data=data.replace(b'comment=&', b''))
-        with person.open(request, timeout=10) as response:
-            self.assertIn(SAVED, response.read().decode())
+        fields = {key: value for key, value in VALID.items() if key != 'comment'}
+        raw = urllib.parse.urlencode({**fields, 'nonce': self.form(person)}).encode() + b'&comment=bytes%FFinventados'
+        _, _, body = self.fetch(person, '/encuesta.php', body=raw)
+        self.assertIn(SAVED, body)
         rows = dict(self.execute('SELECT comment, is_test FROM survey_responses'))
         self.assertEqual(rows, {'PRUEBA TÉCNICA INTERNA — inventada': 1, 'bytes�inventados': 0})
         _, _, body = self.panel()
@@ -290,8 +360,10 @@ class SurveyHttpTests(unittest.TestCase):
 
     def test_panel_shows_community_answers_with_the_existing_rules(self):
         self.seed_panel()
+        connections = self.connections()
         status, headers, body = self.panel()
         self.assertEqual(status, 200)
+        self.assertEqual(self.connections(), connections + 1)
         self.assertIn('no-store', headers['Cache-Control'])
         self.assertIn('<meta name="smash-survey-storage" content="sql">', body)
         self.assertIn('<strong>3</strong><span>respuestas reales recibidas</span>', body)
@@ -314,6 +386,11 @@ class SurveyHttpTests(unittest.TestCase):
         for hidden in ('PRUEBA TÉCNICA INTERNA', 'Temporada siguiente inventada'):
             self.assertNotIn(hidden, body)
         self.assert_no_leak(body)
+        # The existing administrator diagnostic also tells which PHP serves the site.
+        _, _, diagnostic = self.fetch(urllib.request.build_opener(), '/opiniones.php?diagnostico=base', cookie=f'SMASHGT_ADMIN={self.admin}')
+        status = json.loads(diagnostic)
+        self.assertEqual((status['connection'], status['counts']['survey_responses']), ('connected', 5))
+        self.assertRegex(status['phpVersion'], r'^\d+\.\d+$')
 
     def test_panel_without_answers_and_panel_with_unreadable_database_are_different(self):
         _, _, empty = self.panel()
@@ -321,7 +398,7 @@ class SurveyHttpTests(unittest.TestCase):
         self.assertIn('Aún no hay respuestas de la comunidad.', empty)
         self.assertNotIn('No se pudieron leer las respuestas', empty)
         self.seed_panel()
-        for broken in ('wrong-password', 'missing-config'):
+        for broken, reason in (('wrong-password', 'connection_denied'), ('missing-config', 'config_missing')):
             with self.subTest(broken=broken):
                 if broken == 'wrong-password':
                     self.write_config('wrong-test-only')
@@ -335,40 +412,124 @@ class SurveyHttpTests(unittest.TestCase):
                 self.assertIn('Cerrar sesión', body)
                 self.assertIn('href="./opiniones.php?diagnostico=base"', body)
                 self.assert_no_leak(body)
+                self.assertIn(f'Smash GT opiniones: lectura fallida ({reason})', self.log.read_text())
 
-    def test_answers_are_never_exposed_without_the_administrator_session(self):
+    def test_answers_are_never_exposed_without_a_valid_administrator_session(self):
         self.seed_panel()
-        self.config.unlink()  # the login page must not need the database at all
-        status, _, body = self.panel(authenticated=False)
-        self.assertEqual(status, 200)
-        self.assertIn('name="password"', body)
-        for private in ('negrita', 'respuestas reales recibidas', 'comment-card', 'Mismo segundo'):
-            self.assertNotIn(private, body)
-        self.write_config()
+        private = ('negrita', 'respuestas reales recibidas', 'comment-card', 'Mismo segundo', 'rating-grid', 'LO QUE PROPONEN')
+        connections = self.connections()
+        # With the database reachable: a leak would show here.
+        for session in (None, 'expired', 'unknown'):
+            with self.subTest(session=session):
+                status, _, body = self.panel(session)
+                self.assertEqual(status, 200)
+                self.assertIn('name="password"', body)
+                for text in private:
+                    self.assertNotIn(text, body)
         for path in ('/opiniones.php?diagnostico=base', '/encuesta.php'):
             _, _, body = self.fetch(self.visitor(), path)
-            self.assertNotIn('negrita', body)
-            self.assertNotIn('Mismo segundo', body)
+            for text in private:
+                self.assertNotIn(text, body)
+        login = self.visitor()
+        _, _, page = self.fetch(login, '/opiniones.php')
+        nonce = re.search(r'name="nonce" value="([0-9a-f]{48})"', page).group(1)
+        _, _, body = self.fetch(login, '/opiniones.php', dict(action='login', nonce=nonce, password='clave-inventada-incorrecta'))
+        self.assertIn('Clave incorrecta.', body)
+        for text in private:
+            self.assertNotIn(text, body)
+        self.assertEqual(self.connections(), connections)  # none of these requests even connected
+        # And the login page does not need the database at all.
+        self.config.unlink()
+        status, _, body = self.panel(None)
+        self.assertEqual(status, 200)
+        self.assertIn('name="password"', body)
+
+    # --- importer command line: the gate used before reopening submissions -----------------
+
+    def importer(self, *arguments):
+        done = subprocess.run(['php', str(IMPORTER), *arguments], capture_output=True, text=True, timeout=30)
+        output = done.stdout + done.stderr
+        for private in (PRIVATE, 'Línea inventada', 'disposable-test-only', str(self.temp.name)):
+            self.assertNotIn(private, output)
+        try:
+            return done.returncode, json.loads(done.stdout or done.stderr)
+        except ValueError:
+            return done.returncode, output
+
+    def test_importer_command_line_compare_gate(self):
+        folder = Path(self.temp.name)
+        shared = file_line('2026-09-30T10:00:00+00:00', 'Línea inventada compartida ' + PRIVATE)
+        first, second, empty = folder / 'archivo-a.php', folder / 'archivo-b.php', folder / 'solo-guarda.php'
+        first.write_text(GUARD + '\n'.join([shared, file_line('2026-09-30T11:00:00+00:00', 'Línea inventada A2'),
+                                            file_line('2026-09-30T12:00:00+00:00', 'PRUEBA TÉCNICA INTERNA inventada')]) + '\n')
+        second.write_text(GUARD + '\n'.join([shared, file_line('2026-10-01T09:00:00+00:00', 'Línea inventada B2', role='otro')]) + '\n')
+        empty.write_text(GUARD)
+        site = ['--site-root', str(self.site)]
+        try:
+            code, report = self.importer('--file', str(first), *site, '--compare', '--no-extra')
+            self.assertEqual((code, report['ok'], report['missingInDatabase']), (1, False, 3))  # nothing imported yet
+            self.assertEqual(self.importer('--file', str(first), *site, '--apply')[0], 0)
+            code, report = self.importer('--file', str(first), *site, '--compare', '--no-extra')
+            self.assertEqual((code, report['ok'], report['matched'], report['databaseRowsNotInFile'], report['files']), (0, True, 3, 0, 1))
+            self.assertEqual(self.importer('--file', str(second), *site, '--apply')[1]['inserted'], 1)
+            # One file alone no longer explains the table...
+            code, report = self.importer('--file', str(first), *site, '--compare', '--no-extra')
+            self.assertEqual((code, report['ok'], report['fileFullyStored'], report['databaseRowsNotInFile']), (1, False, True, 1))
+            self.assertEqual(self.importer('--file', str(first), *site, '--compare')[0], 0)  # ...but its lines are all stored
+            # ...every imported source together does: the shared line counts once.
+            code, report = self.importer('--file', str(first), '--file', str(second), *site, '--compare', '--no-extra')
+            self.assertEqual((code, report['ok'], report['files'], report['rowsPerFile'], report['fileRows'], report['matched'],
+                              report['databaseRows'], report['databaseRowsNotInFile'], report['fileTestRows'], report['databaseTestRows']),
+                             (0, True, 2, [3, 2], 4, 4, 4, 0, 1, 1))
+            # A stray row (an answer received by the SQL form, or anything else) fails the strict gate only.
+            self.seed('2026-10-06 12:00:00', comment='Fila ajena a los archivos')
+            both = ['--file', str(first), '--file', str(second), *site, '--compare']
+            self.assertEqual(self.importer(*both, '--no-extra')[0], 1)
+            self.assertEqual(self.importer(*both)[0], 0)
+            # A stored value that differs from its line always fails.
+            self.execute("UPDATE survey_responses SET clarity = 1 WHERE comment = 'Línea inventada A2'")
+            code, report = self.importer(*both)
+            self.assertEqual((code, report['ok'], report['valueMismatches'], report['matched']), (1, False, 1, 3))
+            # Comparing against a file without answers proves nothing.
+            code, report = self.importer('--file', str(empty), *site, '--compare')
+            self.assertEqual((code, report['ok'], report['fileRows']), (1, False, 0))
+            for invalid in (['--file', str(first), *site, '--apply', '--compare'],
+                            ['--file', str(first), *site, '--no-extra'],
+                            ['--file', str(first), '--file', str(second), *site, '--apply'],
+                            ['--file', str(first), '--file', str(second)],
+                            ['--file', str(first), '--compare'],
+                            [*site, '--compare'],
+                            ['--file', str(first), *site, *site, '--compare']):
+                with self.subTest(invalid=invalid[-2:]):
+                    code, report = self.importer(*invalid)
+                    self.assertEqual(code, 2)
+                    self.assertIn('Uso:', report)
+        finally:
+            for path in (first, second, empty):
+                path.unlink()
 
 
 class SurveyStaticContractTests(unittest.TestCase):
     """Checks that need no database: they also run in the plain CI job."""
 
-    def test_library_is_denied_by_the_web_server_and_holds_no_secret(self):
+    def test_libraries_and_logs_are_denied_by_the_web_server_and_the_library_does_not_log(self):
         htaccess = (SITE / '.htaccess').read_text()
-        for library in ('database.php', 'survey.php'):
-            self.assertRegex(htaccess, r'<Files "%s">\s*Require all denied\s*</Files>' % re.escape(library))
+        for name in ('database.php', 'survey.php', 'error_log'):
+            self.assertRegex(htaccess, r'<Files "%s">\s*Require all denied\s*</Files>' % re.escape(name))
         source = (SITE / 'survey.php').read_text()
-        for forbidden in ('REMOTE_ADDR', 'HTTP_USER_AGENT', 'session_id(', 'error_log(', 'file_put_contents', 'fopen('):
+        for forbidden in ('REMOTE_ADDR', 'HTTP_USER_AGENT', 'HTTP_X_FORWARDED', 'session_id(', 'error_log(', 'file_put_contents', 'fopen(', 'setcookie('):
             self.assertNotIn(forbidden, source)
 
-    def test_pages_no_longer_use_the_file_and_never_print_errors(self):
+    def test_pages_no_longer_use_the_file_never_print_errors_and_log_reason_codes_only(self):
         for page in ('encuesta.php', 'opiniones.php'):
             source = (SITE / page).read_text()
-            self.assertNotIn('respuestas-2026', source)
-            self.assertNotIn('flock(', source)
+            for forbidden in ('respuestas-2026', 'respuestas-', 'flock(', 'fwrite(', 'file_put_contents', 'REMOTE_ADDR', 'HTTP_USER_AGENT'):
+                self.assertNotIn(forbidden, source)
             self.assertIn("ini_set('display_errors', '0');", source)
             self.assertIn("require_once __DIR__ . '/survey.php';", source)
+            logged = re.findall(r'error_log\((.*)\);', source)
+            self.assertEqual(len(logged), 1, page)
+            self.assertRegex(logged[0], r"^'Smash GT [a-z]+: [a-záéíóú ]+ \(' \. smash_survey_failure_code\(\$failure\) \. '\)'$")
 
 
 if __name__ == '__main__':

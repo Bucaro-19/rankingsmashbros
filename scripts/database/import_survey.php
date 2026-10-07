@@ -230,35 +230,49 @@ function smash_survey_compare(PDO $pdo, array $rows): array
     return $result;
 }
 
-const SMASH_SURVEY_USAGE = "Uso: php import_survey.php --file RUTA [--site-root CARPETA_DEL_SITIO] [--apply | --compare [--no-extra]]\n";
+const SMASH_SURVEY_USAGE = "Uso: php import_survey.php --file RUTA [--site-root CARPETA_DEL_SITIO] [--apply]\n"
+    . "     php import_survey.php --file RUTA [--file OTRA ...] --site-root CARPETA_DEL_SITIO --compare [--no-extra]\n";
 
 function smash_survey_cli(array $argv): int
 {
-    $options = ['file' => null, 'site-root' => null, 'apply' => false, 'compare' => false, 'no-extra' => false];
+    $options = ['file' => [], 'site-root' => null, 'apply' => false, 'compare' => false, 'no-extra' => false];
     for ($i = 1; $i < count($argv); $i++) {
         if (in_array($argv[$i], ['--apply', '--compare', '--no-extra'], true)) $options[substr($argv[$i], 2)] = true;
-        elseif (in_array($argv[$i], ['--file', '--site-root'], true) && isset($argv[$i + 1])) $options[substr($argv[$i], 2)] = $argv[++$i];
+        elseif ($argv[$i] === '--file' && isset($argv[$i + 1])) $options['file'][] = $argv[++$i];
+        elseif ($argv[$i] === '--site-root' && isset($argv[$i + 1]) && $options['site-root'] === null) $options['site-root'] = $argv[++$i];
         else {
             fwrite(STDERR, SMASH_SURVEY_USAGE);
             return 2;
         }
     }
-    if ($options['file'] === null || (($options['apply'] || $options['compare']) && $options['site-root'] === null)
+    // Several files are only meaningful for the comparison: every source that was imported.
+    if (count($options['file']) < 1 || (count($options['file']) > 1 && !$options['compare'])
+        || (($options['apply'] || $options['compare']) && $options['site-root'] === null)
         || ($options['apply'] && $options['compare']) || ($options['no-extra'] && !$options['compare'])) {
         fwrite(STDERR, SMASH_SURVEY_USAGE);
         return 2;
     }
     try {
-        $rows = smash_survey_parse_file($options['file']);
+        $rows = [];
+        $perFile = [];
+        foreach ($options['file'] as $path) {
+            $parsed = smash_survey_parse_file($path);
+            $perFile[] = count($parsed);
+            // The same line present in two source files is one answer.
+            foreach ($parsed as $row) $rows[$row['import_hash']] = $row;
+        }
+        $rows = array_values($rows);
         $summary = ['fileRows' => count($rows),
             'testRows' => count(array_filter($rows, static fn($row) => $row['is_test'] === 1)), 'applied' => false];
         if ($options['site-root'] !== null) {
             require_once $options['site-root'] . '/database.php';
             $pdo = smash_database_connect(smash_database_config($options['site-root']));
             if ($options['compare']) {
-                $summary = smash_survey_compare($pdo, $rows);
-                // --no-extra is the check before reopening submissions: nothing but the file's lines may exist yet.
-                $ok = $summary['fileFullyStored'] && (!$options['no-extra'] || $summary['databaseRowsNotInFile'] === 0);
+                $summary = ['files' => count($perFile), 'rowsPerFile' => $perFile] + smash_survey_compare($pdo, $rows);
+                // Comparing against nothing proves nothing. --no-extra is the check before reopening
+                // submissions: nothing but the lines of the listed files may exist yet.
+                $ok = $summary['fileRows'] > 0 && $summary['fileFullyStored']
+                    && (!$options['no-extra'] || $summary['databaseRowsNotInFile'] === 0);
                 echo json_encode(['ok' => $ok] + $summary, JSON_PRETTY_PRINT) . "\n";
                 return $ok ? 0 : 1;
             }

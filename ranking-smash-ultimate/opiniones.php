@@ -68,6 +68,8 @@ if (($_GET['diagnostico'] ?? '') === 'base') {
     try {
         $config = smash_database_config(__DIR__);
         $status = smash_database_status(smash_database_connect($config));
+        // Version of the PHP that serves the site (it can differ from the command-line one).
+        $status['phpVersion'] = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
         echo json_encode($status, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     } catch (SmashDatabaseError $error) {
         http_response_code(503);
@@ -124,6 +126,8 @@ if ($authenticated) {
     } catch (Throwable $failure) {
         $rows = [];
         $readError = true;
+        error_log('Smash GT opiniones: lectura fallida (' . smash_survey_failure_code($failure) . ')');
+        $failure = null;
     }
 }
 $total = count($rows);

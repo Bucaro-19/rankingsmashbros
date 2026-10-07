@@ -98,7 +98,7 @@ Las respuestas anteriores ya se comprobaron en el dominio nuevo. La carpeta feed
 
 ## `survey_responses.import_hash` desde la encuesta en SQL
 
-La columna UNIQUE guarda la huella de origen de cada respuesta: sha256 de la línea para las importadas del archivo, y `sha256("smashgt-encuesta-web-v1\n" + nonce del formulario)` para las recibidas por la web (clave de reintento; no identifica a la persona). No asumir que `import_hash IS NULL` significa «respuesta web». Para separar unas de otras, `import_survey.php --compare` contra el archivo. Contrato completo en MIGRACION-ENCUESTA.md.
+La columna UNIQUE guarda la huella de origen de cada respuesta: sha256 de la línea para las importadas del archivo, y una clave de reintento para las recibidas por la web: `sha256("smashgt-encuesta-web-v1\n" + nonce + "\n" + sha256(respuesta))` (no identifica a la persona). No asumir que `import_hash IS NULL` significa «respuesta web». Para separar unas de otras, `import_survey.php --compare` contra el archivo. Contrato completo en MIGRACION-ENCUESTA.md.
 
 ## Acceso directo a la base (desde la Mac del dueño)
 

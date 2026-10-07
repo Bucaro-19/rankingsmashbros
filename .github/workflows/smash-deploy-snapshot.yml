@@ -16,6 +16,8 @@ env:
   SMASH_FTP_DIR: ${{ vars.SMASH_FTP_DIR }}
 jobs:
   deploy:
+    # Solo main se publica: otra rama podría traer páginas anteriores a la encuesta en SQL.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

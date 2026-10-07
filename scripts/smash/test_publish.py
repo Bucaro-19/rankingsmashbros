@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 from publish_data import export
-from deploy import deploy, validate_public_data, validate_study_data, FILES
+from deploy import deploy, require_sql_survey, validate_public_data, validate_study_data, FILES
 
 
 def snapshot():
@@ -145,6 +145,28 @@ class ExportTests(unittest.TestCase):
             self.assertRegex(htaccess, r'<Files "%s">\s*Require all denied\s*</Files>' % re.escape(library))
         # The admin hash file is the only PHP loaded from the protected folder; it is written by deploy().
         self.assertEqual(FILES[-1], "data/public.json")
+
+    def test_file_backed_survey_pages_are_never_published(self):
+        site = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate"
+        require_sql_survey(site)  # the pages in this checkout
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            for page in ("encuesta.php", "opiniones.php"):
+                (source / page).write_text((site / page).read_text())
+            require_sql_survey(source)
+            legacy = "<?php $path = __DIR__ . '/feedback-data/respuestas-2026.php'; ?><title>x</title>"
+            for page, content in [("encuesta.php", legacy), ("opiniones.php", legacy),
+                                  ("encuesta.php", (site / "encuesta.php").read_text().replace('content="sql"', 'content="file"')),
+                                  ("opiniones.php", (site / "opiniones.php").read_text() + "<!-- respuestas-2026 -->")]:
+                original = (source / page).read_text()
+                (source / page).write_text(content)
+                with self.subTest(page=page), self.assertRaises(ValueError):
+                    require_sql_survey(source)
+                (source / page).write_text(original)
+        # Deploys only run from main: another ref could carry the pages of before the migration.
+        workflows = Path(__file__).resolve().parents[2] / ".github/workflows"
+        for name in ("smash-deploy-snapshot.yml", "smash-publish.yml"):
+            self.assertIn("github.ref == 'refs/heads/main'", (workflows / name).read_text(), name)
 
 
 if __name__ == "__main__":

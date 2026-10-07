@@ -23,11 +23,12 @@ env:
   SMASH_FTP_DIR: ${{ vars.SMASH_FTP_DIR }}
 jobs:
   publish:
+    # Solo main se publica: otra rama podría traer páginas anteriores a la encuesta en SQL.
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' ||
       (vars.SMASH_SYNC_ENABLED == 'true' &&
         ((vars.SMASH_RELEASE_MODE == 'testing' && github.event.schedule == '23 12 * * *') ||
-         ((vars.SMASH_RELEASE_MODE == 'weekly' || vars.SMASH_RELEASE_MODE == 'production') && github.event.schedule == '0 0 * * 0')))
+         ((vars.SMASH_RELEASE_MODE == 'weekly' || vars.SMASH_RELEASE_MODE == 'production') && github.event.schedule == '0 0 * * 0'))))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

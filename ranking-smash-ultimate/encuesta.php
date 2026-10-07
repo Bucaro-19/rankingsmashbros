@@ -59,12 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'role' => $role, 'eligibility' => $eligibility, 'minimum' => $minimum,
                     'international' => $international, 'clarity' => (int)$clarity,
                     'confidence' => (int)$confidence, 'source' => $source, 'comment' => $comment,
-                ], smash_survey_submission_key($_SESSION['smash_survey_nonce']), time());
-                // 'already_saved': an earlier attempt of this same form was stored and its answer
-                // to the browser was lost. The form token stores one answer at most.
+                ], $_SESSION['smash_survey_nonce'], time());
+                // 'already_saved': this same answer of this same form was stored by an earlier
+                // attempt whose confirmation never reached the browser.
                 $saved = $outcome === 'inserted' || $outcome === 'already_saved';
             } catch (Throwable $failure) {
                 $saved = false;
+                // Only a reason code reaches the server log: no answer text, no visitor data.
+                error_log('Smash GT encuesta: respuesta no guardada (' . smash_survey_failure_code($failure) . ')');
+                $failure = null;
             }
             if ($saved) {
                 $_SESSION['smash_survey_last'] = time();
