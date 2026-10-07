@@ -7,3 +7,8 @@ Options -Indexes
     Header set Cache-Control "no-store"
   </Files>
 </IfModule>
+
+# Included by PHP only; never served as a standalone endpoint.
+<Files "database.php">
+  Require all denied
+</Files>

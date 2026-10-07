@@ -50,6 +50,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install PyMySQL==1.1.2 cryptography==46.0.2
+      - name: Install PHP MySQL driver
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq php-cli php-mysql
       - name: Verify catalog seed matches UI
         run: node scripts/database/build_character_seed.cjs --check
       - name: Install schema twice and test competition workflows
@@ -57,4 +59,9 @@ jobs:
           SMASH_SCHEMA_TEST_DB: smash_schema_test
           SMASH_SCHEMA_TEST_PORT: '33306'
           SMASH_SCHEMA_TEST_PASSWORD: disposable-test-only
-        run: python scripts/database/test_schema.py
+        run: |
+          php -l ranking-smash-ultimate/database.php
+          php -l ranking-smash-ultimate/opiniones.php
+          python scripts/database/test_schema.py
+          php scripts/database/test_connection.php
+          python scripts/database/test_diagnostic_http.py

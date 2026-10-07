@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+ini_set('display_errors', '0');
+require_once __DIR__ . '/database.php';
+
 ini_set('session.use_strict_mode', '1');
 session_name('SMASHGT_ADMIN');
 session_set_cookie_params([
@@ -41,8 +44,36 @@ if (!is_string($passwordHash) || strlen($passwordHash) < 50) {
     exit('Panel temporalmente no disponible.');
 }
 if (!isset($_SESSION['smash_admin_nonce'])) $_SESSION['smash_admin_nonce'] = bin2hex(random_bytes(24));
-$authenticated = ($_SESSION['smash_admin'] ?? false) === true
-    && time() - (int)($_SESSION['smash_admin_at'] ?? 0) < 8 * 3600;
+$authenticated = smash_admin_session_valid($_SESSION, time());
+// Read-only JSON for the existing administrator; no new login or UI is added.
+if (($_GET['diagnostico'] ?? '') === 'base') {
+    header('Content-Type: application/json; charset=utf-8');
+    if (!$authenticated) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'error' => ['code' => 'login_required', 'message' => 'Inicia sesión en el panel de opiniones.']]);
+        exit;
+    }
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        header('Allow: GET');
+        http_response_code(405);
+        echo json_encode(['ok' => false, 'error' => ['code' => 'method_not_allowed']]);
+        exit;
+    }
+    session_write_close();
+    try {
+        $config = smash_database_config(__DIR__);
+        $status = smash_database_status(smash_database_connect($config));
+        echo json_encode($status, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    } catch (SmashDatabaseError $error) {
+        http_response_code(503);
+        echo json_encode(['ok' => false, 'error' => ['code' => $error->reason,
+            'message' => smash_database_error_message($error->reason)]], JSON_UNESCAPED_UNICODE);
+    } catch (Throwable $error) {
+        http_response_code(503);
+        echo json_encode(['ok' => false, 'error' => ['code' => 'diagnostic_failed', 'message' => 'No se pudo completar el diagnóstico.']]);
+    }
+    exit;
+}
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nonce = $_POST['nonce'] ?? '';

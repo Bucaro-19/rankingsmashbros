@@ -4,13 +4,21 @@
 
 - El dueño confirmó: ejecutó `install.sql` en phpMyAdmin y todo terminó correctamente. Base de la captura: `ivcjgjlk_smash`. Confirmación del dueño, no conexión/verificación directa del agente.
 - PR #1 del repo nuevo fusionada en `main`, commit `cb89570`. Preparó v1 `001_accounts_competition`: 31 tablas/87 selecciones esperadas. CI correcto: 46 Python + 12 Node y 8 pruebas por motor (MySQL 8.0/MariaDB 10.11), run `37574948355`.
-- No volver a instalar ni borrar/recrear tablas. El dueño confirmó que creó el usuario MySQL. Configuración privada, asociación/permisos, host y versión aún pendientes de prueba. Plantilla e instrucciones en CONFIGURACION-PRIVADA.md; no pedir contraseñas por chat.
+- No reinstalar tablas. Archivo observado sin abrir contenido: /home/ivcjgjlk/private-smash/config.local.php. Conector PDO y diagnóstico administrativo preparados en rama feat/private-database-connection; publicación/verificación real pendiente. No pedir contraseñas por chat.
 - La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`; no se importaron cortes ni respuestas a MySQL.
 - Dominios/repos: sitio activo https://rankingsmashbros.com/, repo Bucaro-19/rankingsmashbros. Graduación es legado.
 
 ## Instrucción nueva del dueño
 
 Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su handoff. Documentar funciones/estados en un brief y entregarlo al dueño; no inventar la pantalla en código. Backend/importadores pueden avanzar sin pantallas. Regla guardada en AGENTS.md y CLAUDE.md.
+
+## Conexión PHP — entrega activa
+
+- database.php carga únicamente el archivo privado hermano del sitio, valida formato y conecta mediante PDO con utf8mb4, UTC y prepared statements nativos. No imprime secretos/excepciones.
+- opiniones.php?diagnostico=base ofrece JSON de conteos/versiones solo a sesión administrativa válida; no UI nueva ni cambios a respuestas. Anónimo 401; POST 405.
+- Chrome del dueño tenía sesión válida del panel. El navegador integrado no la tenía. Usar la sesión existente, nunca extraer cookies ni contraseñas.
+- Pruebas locales: configuración privada, supresión de salida y sesiones; 4 contratos HTTP; 46 Python + 12 Node. CI validará también PDO en MySQL 8.0/MariaDB 10.11.
+- Despliegue previsto assets_only=true, conservar public.json, config privado y feedback-data. Verificar diagnóstico real antes de declarar conexión exitosa.
 
 ## Próximo trabajo
 
