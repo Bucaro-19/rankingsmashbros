@@ -12,6 +12,9 @@ permissions:
 concurrency:
   group: smash-gt-publication
   cancel-in-progress: false
+env:
+  SMASH_PUBLIC_URL: ${{ vars.SMASH_PUBLIC_URL || 'https://ingporras.com/ranking-smash-ultimate' }}
+  SMASH_FTP_DIR: ${{ vars.SMASH_FTP_DIR }}
 jobs:
   characters:
     runs-on: ubuntu-latest
@@ -29,7 +32,7 @@ jobs:
           [[ "$CAPTURE_RUN" =~ ^[0-9]+$ ]] || exit 1
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$CAPTURE_RUN" --jq '.path == ".github/workflows/smash-publish.yml" and .head_branch == "main"' | grep -qx true
           gh run download "$CAPTURE_RUN" --repo "$GITHUB_REPOSITORY" --name smash-gt-capturas --dir scripts/smash/data
-          curl -fsS --max-time 30 https://ingporras.com/ranking-smash-ultimate/data/public.json -o scripts/smash/data/characters-before.json
+          curl -fsS --max-time 30 "$SMASH_PUBLIC_URL/data/public.json" -o scripts/smash/data/characters-before.json
       - uses: actions/cache/restore@v4
         with:
           path: scripts/smash/data/characters-cache.json

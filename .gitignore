@@ -1,0 +1,9 @@
+scripts/smash/data/
+scripts/smash/__pycache__/
+__pycache__/
+.env
+.env.*
+!**/.env.example
+.DS_Store
+.claude/
+design_handoff_smash_gt_ranking/

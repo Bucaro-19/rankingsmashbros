@@ -156,13 +156,18 @@ def validate_top20_study(data):
 def deploy(ftp, source, *, assets_only=False, admin_hash=None):
     # FTP credentials must have the same root as the existing portfolio workflow.
     # No deletion or recursive synchronization of the site's root.
-    try:
-        ftp.cwd("ranking-smash-ultimate")
-    except ftplib.error_perm as error:
-        if not str(error).startswith("550"):
-            raise
-        ftp.mkd("ranking-smash-ultimate")
-        ftp.cwd("ranking-smash-ultimate")
+    # SMASH_FTP_DIR selects the site folder below the FTP root; "." publishes at the root itself.
+    remote = os.environ.get("SMASH_FTP_DIR") or "ranking-smash-ultimate"
+    if not re.fullmatch(r"\.|[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*", remote) or ".." in remote.split("/"):
+        raise ValueError("SMASH_FTP_DIR inválido.")
+    if remote != ".":
+        try:
+            ftp.cwd(remote)
+        except ftplib.error_perm as error:
+            if not str(error).startswith("550"):
+                raise
+            ftp.mkd(remote)
+            ftp.cwd(remote)
     try:
         ftp.cwd("data")
     except ftplib.error_perm as error:
@@ -246,7 +251,7 @@ def main():
             phase = "subida"
             deploy(ftp, source, assets_only=args.assets_only, admin_hash=admin_hash)
             ftp.quit()
-    except (ftplib.Error, OSError, EOFError) as error:
+    except (ftplib.Error, OSError, EOFError, ValueError) as error:
         raise SystemExit(f"Publicación incompleta durante {phase}: {type(error).__name__}: {error}. No se eliminó el contenido anterior.") from None
     print("Smash GT publicado en su subcarpeta; " + ("corte de datos conservado." if args.assets_only else "datos reemplazados después de completar la subida."))
 

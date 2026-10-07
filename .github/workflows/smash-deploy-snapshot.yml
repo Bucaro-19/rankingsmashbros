@@ -11,6 +11,9 @@ permissions:
 concurrency:
   group: smash-gt-publication
   cancel-in-progress: false
+env:
+  SMASH_PUBLIC_URL: ${{ vars.SMASH_PUBLIC_URL || 'https://ingporras.com/ranking-smash-ultimate' }}
+  SMASH_FTP_DIR: ${{ vars.SMASH_FTP_DIR }}
 jobs:
   deploy:
     runs-on: ubuntu-latest

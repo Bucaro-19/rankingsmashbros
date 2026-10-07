@@ -2,7 +2,7 @@
 
 ## Producto y restricciones
 - Web: https://ingporras.com/ranking-smash-ultimate/ en BanaHosting, HTML/CSS/JS vanilla, PHP para encuesta anónima y panel privado de opiniones.
-- Repo privado `Bucaro-19/rsvp-graduacion`. No enlazarlo públicamente. El cálculo está en Python privado; el navegador solo presenta resultados.
+- Repo `Bucaro-19/rankingsmashbros`, público por decisión del dueño (6 de octubre de 2026). Dominio comprado: `rankingsmashbros.com`; migración en `MIGRACION.md`. Hasta completarla, producción sigue en la URL de arriba y la publica el repo viejo `Bucaro-19/rsvp-graduacion`. El cálculo corre en Actions; el navegador solo presenta resultados.
 - Ranking experimental 2026, no oficial ni fórmula exacta de UltRank. Perfiles de país GT y excepciones documentadas son candidatos, no nacionalidad verificada.
 - Torneos locales: 20 participantes activos (un set competitivo cada uno), incluyendo interior del país. Extranjeros: 64 activos. Jugadores: 2 eventos y 4 sets, participación local; DQ/bye/WO no cuentan.
 - BT-PILOTO-3: Bradley–Terry regularizado, pesos TTS estimados de tabla fijada y repeticiones de rivales. No cambiar pesos ni elegir posiciones a mano.
