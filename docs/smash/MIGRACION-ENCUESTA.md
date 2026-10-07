@@ -78,7 +78,7 @@ Estado: `survey_responses` es una copia; `encuesta.php` sigue escribiendo al arc
 
 # Entrega 2 — encuesta y panel leen y escriben en SQL (Claude Code, 7 de octubre de 2026)
 
-Rama `feat/survey-sql-storage`. Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`. Estado de ejecución y evidencia de producción: sección «Transición en producción» al final; hasta que esa sección diga lo contrario, producción sigue en la era del archivo.
+Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`. Fusionada como PR #13 (`033bd6a`) y publicada el 7 de octubre: ver «Transición en producción» al final para la evidencia y lo que falta verificar.
 
 ## Qué cambia
 - `ranking-smash-ultimate/survey.php` (nuevo, biblioteca denegada por `.htaccess`): conexión con modo estricto de sesión, fila a partir de una respuesta validada, escritura con contrato de reintento y lectura en la forma que el panel ya renderiza.
@@ -135,5 +135,25 @@ Si el archivo del dominio anterior tiene líneas que el del sitio nuevo no tiene
 - **Después de que SQL aceptó respuestas:** no volver a las páginas del archivo ni revertir este PR en `main`. `deploy.py` rechaza publicarlas y los despliegues solo salen de `main`, pero la regla es de operación: se corrige hacia adelante. Si la base falla, la encuesta informa el error sin aceptar y el panel muestra el aviso de lectura.
 - El archivo congelado y sus respaldos se conservan. El importador se puede repetir en cualquier momento: no duplica.
 
+## Transición en producción — ejecutada el 7 de octubre de 2026
+
+**Estado: producción escribe y lee la encuesta en SQL.** `main` = `033bd6a` (PR #13). El archivo quedó congelado como histórico.
+
+Salidas pegadas por el dueño desde la Terminal de cPanel (solo conteos y huellas) y verificación directa de Claude Code:
+
+1. **Estado previo (dueño).** Archivo del sitio nuevo: permisos 644, 4576 bytes, 14 líneas (guarda + 13), sha256 `ae9f754a39adf2277ea69d63aa64c296a0f76385e02865e865efe587cadbe2c0`. El respaldo del 7 de octubre tenía el mismo tamaño y la misma huella: ninguna respuesta nueva desde la primera copia.
+2. **Pausa e importación final (dueño).** `chmod 440` al archivo; respaldo `~/private-smash/respuestas-2026.final-2026-10-07.php` con la misma huella. Importador del commit `b0e6503` (sha256 del archivo `c5b9529eaa593237d1ae136c40c7ea76ed0a186ea30dc3e6e4ba6699bf5cba9a`, igual al calculado en local). Validación: 13 filas, 1 de prueba. Dos aplicaciones: `inserted=0`, `alreadyPresent=13`. `--compare --no-extra`: `matched=13`, `missingInDatabase=0`, `valueMismatches=0`, `databaseRowsNotInFile=0`, salida 0.
+3. **Archivo del dominio anterior (dueño).** Está en `/home/ivcjgjlk/ingporras.com/ranking-smash-ultimate/feedback-data/respuestas-2026.php` (no bajo `public_html`): 15 líneas, sha256 `61fb7fa2de26861f420146f975c37793f79c1e8ef76c08700fea68b2df207e73`. Tenía **una respuesta más** que el del sitio nuevo, recibida en el dominio anterior después de copiar la carpeta. Copia en `~/private-smash/respuestas-2026.dominio-anterior-2026-10-07.php`. Importación: `inserted=1`, `alreadyPresent=13`; repetición `inserted=0`, `alreadyPresent=14`. Comparación con los dos archivos y `--no-extra`: `files=2`, `rowsPerFile=[13,14]`, `fileRows=14`, `matched=14`, `databaseRows=14`, `databaseRowsNotInFile=0`, salida 0. **Ese archivo no se congeló.**
+4. **Verificación desde la Mac (Claude Code, solo agregados).** 14 filas, 14 huellas distintas, 1 de prueba, 13 de comunidad (9 jugadores, 2 organizadores, 2 espectadores), última respuesta 2026-10-07 01:56:11 UTC.
+5. **Fusión y despliegue (Claude Code, con autorización explícita del dueño).** PR #13 fusionada, checks correctos en `37646484712` y `37646492751` (suites nuevas confirmadas en los logs sobre MariaDB 10.11 y MySQL 8.0, lint de PHP 7.4 y 8.1). Despliegue `smash-deploy-snapshot.yml` con `assets_only=true`: run `37647575579`, correcto, sobre `033bd6a`.
+6. **Verificación HTTP posterior (Claude Code).** Marcador `smash-survey-storage=sql` en `encuesta.php` y `opiniones.php`; 403 en `survey.php`, `database.php`, `feedback-data/` y el archivo de respuestas; diagnóstico anónimo 401; inicio, encuesta, opiniones, metodología y `public.json` 200; `public.json` con la misma huella de antes (`1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`); formulario servido con nonce, texto de privacidad con el dominio nuevo y sin errores visibles. La base seguía con 14 filas.
+
+La pausa duró desde el paso 2 hasta el despliegue (minutos); durante ese rato la página anterior respondía con su mensaje de error de guardado.
+
+### Sin verificar todavía
+- **Escritura real por la web en producción.** Ninguna respuesta ha entrado aún por el formulario nuevo. Lo comprobado es el código en bases desechables, la conexión del PHP web (diagnóstico de Codex) y que el mismo usuario de base escribe (importador). Falta la respuesta de prueba del paso 5 del protocolo; depende de la decisión del dueño.
+- **Panel con la clave del dueño:** debe mostrar 13 respuestas reales. El diagnóstico del panel ahora incluye `phpVersion`; anotarla aquí.
+- **Huella del archivo congelado después del despliegue:** repetir `sha256sum` y confirmar `ae9f754a…`.
+
 ## Pendiente fuera de esta entrega
-- La encuesta del dominio anterior (`ingporras.com/ranking-smash-ultimate/encuesta.php`) sigue viva y escribe en **su** archivo. Hasta redirigirla al dominio nuevo, cualquier respuesta enviada allí queda fuera de SQL. Opciones: congelar también ese archivo o adelantar la redirección de `encuesta.php` y `opiniones.php` (cambio en el repo anterior, requiere visto bueno del dueño).
+- La encuesta del dominio anterior (`ingporras.com/ranking-smash-ultimate/encuesta.php`) sigue viva y escribe en **su** archivo, que no está congelado. Ya ocurrió una vez: una respuesta entró por ahí y hubo que importarla. Mientras siga así, traer lo nuevo repitiendo el importador sobre ese archivo (`--file` con la ruta del paso 3, `--site-root ~/rankingsmashbros.com --apply`); no duplica. Solución definitiva propuesta al dueño y pendiente de su respuesta: redirigir `encuesta.php` y `opiniones.php` del dominio anterior al nuevo (cambio en el repo anterior), congelar ese archivo e importarlo una última vez.

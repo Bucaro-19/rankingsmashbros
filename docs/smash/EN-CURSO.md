@@ -6,7 +6,7 @@
 - PR #1 del repo nuevo fusionada en `main`, commit `cb89570`. Preparó v1 `001_accounts_competition`: 31 tablas/87 selecciones esperadas. CI correcto: 46 Python + 12 Node y 8 pruebas por motor (MySQL 8.0/MariaDB 10.11), run `37574948355`.
 - No reinstalar tablas. Archivo observado sin abrir contenido: /home/ivcjgjlk/private-smash/config.local.php. Conector y diagnóstico publicados: PR #4 `a29355e`, PR #5 `e8e7d55`, PR #6 `8d509c2`; último despliegue `37578387425`, correcto. Conexión y esquema confirmados por el diagnóstico compartido; no pedir contraseñas por chat.
 - Conteos iniciales del diagnóstico (antes de importar): characters=87 y demás tablas consultadas=0. Primera carga real completada por Codex el 7/oct/2026: cutId=1, status=published, 188 rankings combined + 188 guatemala, 3435 jugadores de contexto, 43 torneos, 47 eventos, 4498 entrants, 8985 sets y 17970 slots. Usuarios siguen en cero. Posteriormente el dueño ejecutó el importador de Claude: 13 respuestas SQL, incluida 1 prueba interna; conteos/hashes únicos verificados directamente por Codex.
-- La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`. El corte/historial ya están en SQL; las 12 respuestas de la comunidad siguen en su archivo protegido.
+- La web pública sigue leyendo JSON. Desde el 7/oct la encuesta y el panel usan SQL (ver «Encuesta y panel en SQL» abajo); `feedback-data/respuestas-2026.php` quedó congelado como archivo histórico. El corte/historial ya están en SQL.
 - Dominios/repos: sitio activo https://rankingsmashbros.com/, repo Bucaro-19/rankingsmashbros. Graduación es legado.
 
 ## Instrucción nueva del dueño
@@ -24,13 +24,18 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 
 ## Próximo trabajo
 
-### Encuesta y panel en SQL — entrega de Claude Code (7 de octubre)
+### Encuesta y panel en SQL — publicado el 7 de octubre (Claude Code)
 
-- Código, pruebas y protocolo en la rama `feat/survey-sql-storage`; detalle completo en MIGRACION-ENCUESTA.md, «Entrega 2». **Hasta que esa sección registre la transición, producción sigue escribiendo y leyendo el archivo.**
-- Resumen: `survey.php` nuevo; `encuesta.php` escribe y `opiniones.php` lee `survey_responses`; sin doble escritura ni respaldo al archivo; reintentos sin duplicar mediante una clave derivada del nonce y de la respuesta, guardada en `import_hash`; importador con `--compare`. La pausa de envíos del protocolo es congelar el archivo con `chmod 440`.
-- Verificado antes de producción: suites nuevas en SQLite y MariaDB local desechable, más dos comparaciones únicas con datos inventados (panel antiguo y nuevo con HTML idéntico; escritor antiguo y nuevo con los mismos valores guardados).
-- Hallazgos para el dueño: (1) la encuesta del dominio anterior sigue viva y escribe en su propio archivo; (2) el repositorio es público, así que los artefactos de Actions los puede descargar cualquier usuario con sesión en GitHub.
-- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación pendiente, después de la encuesta y de la carga semanal; requiere que el dueño registre la app OAuth en start.gg.
+- **Producción escribe y lee la encuesta en `survey_responses`.** PR #13 fusionada (`033bd6a`), despliegue `37647575579` correcto. Contratos, protocolo ejecutado y evidencia: MIGRACION-ENCUESTA.md, «Entrega 2» y «Transición en producción».
+- Base al publicar: 14 filas (13 de comunidad + 1 prueba), todas importadas de los dos archivos y comparadas fila por fila. El archivo del sitio nuevo quedó congelado (440) con dos respaldos en `private-smash/`.
+- **Falta:** una respuesta de prueba real por el formulario nuevo (decisión del dueño), que el dueño confirme el panel (13 respuestas) y anote `phpVersion`, y resolver la encuesta del dominio anterior, que sigue viva y escribe en su propio archivo sin congelar.
+- No revertir el PR ni desplegar ramas anteriores: `deploy.py` rechaza páginas de encuesta que no sean las de SQL y los despliegues solo corren desde `main`.
+- Hallazgo para el dueño: el repositorio es público, así que los artefactos de Actions los puede descargar cualquier usuario con sesión en GitHub.
+- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación pendiente; requiere que el dueño registre la app OAuth en start.gg.
+
+### Carga semanal del ranking a SQL — preparada, sin activar (Claude Code)
+
+- PR #14 (`feat/weekly-sql-loader`): cargador de un comando operado desde la Mac del dueño y artefacto propio del paquete SQL con 90 días. Documento: CARGA-SEMANAL-SQL.md. Nada programado. Primera prueba real posible: después de la publicación del domingo 11 de octubre.
 
 ### Ranking/historial — entrega completada por Codex
 
