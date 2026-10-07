@@ -116,3 +116,5 @@ Codex también confirmó lectura directa y ejecutó la simulación del importado
 ## Cuentas — 7/oct, nueva entrega
 
 Se reutilizan `users`, `user_roles`, `user_characters`, `oauth_connections` y `players`, sin migración ni reinstalación. `oauth_connections.updated_at` invalida sesiones anteriores al revocar/reautorizar. Los tokens no se persisten en esta fase. La elección de organizador no toca `tournament_staff`. Consultar [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md) para alcance, privacidad, pruebas y activación pendiente del registro de la aplicación por el dueño. Pruebas hechas únicamente con usuarios sintéticos en SQL local desechable.
+
+Cierre verificado por Codex: PR #18 `4229d26`, despliegue `37655240917` correcto, sin migración. Lectura directa posterior: `users=0`, `survey_responses=16`; beta con OAuth desactivado (`oauthReady=false`). No se escribieron fixtures en producción. Activación/prueba real del proveedor aún pendiente.

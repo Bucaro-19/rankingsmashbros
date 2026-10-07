@@ -2,6 +2,8 @@
 
 ## Implementación — 7 de octubre de 2026
 
+Código integrado: PR #18, `main` en `4229d26`. CI `37654934247` y `37654969407` correctas, incluyendo MySQL 8.0, MariaDB 10.11 y lint PHP 7.4/8.1. Beta publicada mediante `assets_only=true`, run `37655240917` correcto. API real devuelve `oauthReady=false`; ranking JSON sin cambios y producción con cero usuarios al verificar. Evidencia detallada en EN-CURSO.md.
+
 `cuenta.html`, `cuenta.css` y `cuenta.js` implementan el handoff local de Claude Design (`SmashRankingGT/design_handoff_smash_gt_cuentas/`), sin copiar su runtime ni sus usuarios de demostración. Backend: `accounts.php`, `account-api.php` y `oauth.php`. `account-model.js` contiene comportamiento puro del editor y movimientos.
 
 No reinstalar las tablas: se usa el esquema `001_accounts_competition` existente. No cambiar el cálculo, la validación o la versión de `data/public.json`.
@@ -21,7 +23,7 @@ Agenda, torneo en curso, reportes, notificaciones, top 15 por organizador y veri
 
 ## Registrar la aplicación (dueño)
 
-1. Abrir [Developer Settings de start.gg](https://www.start.gg/admin/developer) con su cuenta y crear una **OAuth Application** (no un Personal Access Token).
+1. Abrir [Developer Settings de start.gg](https://www.start.gg/admin/profile/developer/applications) con su cuenta y crear una **OAuth Application** (no un Personal Access Token).
 2. Nombre sugerido: **Smash GT**. Sitio: `https://rankingsmashbros.com/`. Descripción: perfil y ranking de Smash Ultimate Guatemala con personajes elegidos e historial disponible.
 3. Registrar exactamente esta URL de retorno HTTPS, sin barra final ni carpeta extra: **`https://rankingsmashbros.com/oauth.php`**.
 4. La aplicación solicita únicamente **`user.identity`**. No requiere `user.email`, `tournament.manager` ni `tournament.reporter` para esta entrega.

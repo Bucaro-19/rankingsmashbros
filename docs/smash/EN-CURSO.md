@@ -5,7 +5,16 @@
 - Revisadas entregas de Claude Code: encuesta en SQL y cierre de migración, cargador semanal operado desde la Mac, sin reinstalar tablas. Base de trabajo `main` en `99d65c3`.
 - Handoff de Claude Design leído e implementado: ingreso, elección de intereses, perfil y editor de mains. Backend OAuth/sesiones y preferencias sobre las tablas existentes; sin cambios al cálculo ni JSON. Detalles/activación: [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md).
 - El dueño confirmó **OAuth Application aún no registrada**. El botón queda desactivado hasta configurar el archivo privado. Tokens descartados después de verificar identidad; reportes/agenda y sincronización personal quedan para otra fase.
-- Pruebas locales con base desechable: vinculación por IDs, roles sin permisos administrativos, guardado/rollback, revocación y paridad de ambas vistas. No se creó ningún usuario real ni se usaron tokens de producción. Pendientes de cierre: CI, publicación y prueba real de OAuth tras registro.
+- Pruebas locales con base desechable: vinculación por IDs, roles sin permisos administrativos, guardado/rollback, revocación y paridad de ambas vistas. No se creó ningún usuario real ni se usaron tokens de producción. CI y publicación cerradas; pendiente la prueba real de OAuth tras el registro de la aplicación.
+
+## Cierre de cuentas — publicado y comprobado
+
+- PR #18 fusionada el 7/oct: `4229d26`. CI `37654934247` (push) y `37654969407` (PR), correctas en los tres jobs; incluyen MySQL 8.0, MariaDB 10.11 y lint PHP 7.4/8.1.
+- Despliegue `37655240917`, correcto, `assets_only=true`, desde `main`. Sitio: https://rankingsmashbros.com/cuenta.html. Ingreso desactivado: API real devuelve `ok=true`, `authenticated=false`, `oauthReady=false` y `no-store, private`.
+- Verificado directamente por HTTP y navegador: pantalla de ingreso 200, biblioteca `accounts.php` 403, escritura sin CSRF 403, encuesta y opiniones 200. JSON íntegro conservado, SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`.
+- Lectura SQL real de conteos (sin escritura): `users=0`, `survey_responses=16`. No se crearon cuentas sintéticas en producción. Perfil/editor/guardado, filtros y sets revisados en base local desechable; también versión móvil a 390 px sin desbordamiento.
+- Próxima acción del dueño: registrar **OAuth Application**, retorno exacto `https://rankingsmashbros.com/oauth.php`, alcance `user.identity`, credenciales en `private-smash/oauth.local.php`. Pasos completos y ejemplo seguro: CUENTAS-OAUTH.md. No pedir secrets por chat ni configurar tokens de usuarios desde mensajes antiguos.
+- Próxima acción técnica, después de configurar: probar autorización/cancelación reales, vinculación del jugador, guardado, cierre y desvinculación. No afirmar que el proveedor fue probado por pasar tests simulados.
 
 ## Estado vigente
 
