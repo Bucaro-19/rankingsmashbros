@@ -5,8 +5,8 @@
 - El dueño compartió el resultado real del diagnóstico privado: connection=connected, MariaDB 11.4.13, schemaVersion=001_accounts_competition, tableCount=31, missingTables=[], engineCompatible=true y schemaReady=true. Base de la instalación: `ivcjgjlk_smash`. Evidencia recibida del dueño el 6/oct/2026 (Guatemala), no lectura directa del agente mediante navegador.
 - PR #1 del repo nuevo fusionada en `main`, commit `cb89570`. Preparó v1 `001_accounts_competition`: 31 tablas/87 selecciones esperadas. CI correcto: 46 Python + 12 Node y 8 pruebas por motor (MySQL 8.0/MariaDB 10.11), run `37574948355`.
 - No reinstalar tablas. Archivo observado sin abrir contenido: /home/ivcjgjlk/private-smash/config.local.php. Conector y diagnóstico publicados: PR #4 `a29355e`, PR #5 `e8e7d55`, PR #6 `8d509c2`; último despliegue `37578387425`, correcto. Conexión y esquema confirmados por el diagnóstico compartido; no pedir contraseñas por chat.
-- Conteos del diagnóstico: characters=87; players, tournaments, events, sets, cuts, rankings, users y survey_responses=0. Estado inicial esperado: catálogo instalado; importadores/cuentas aún pendientes. Las 12 respuestas de la comunidad siguen en el archivo protegido y no se perdieron por tener survey_responses=0.
-- La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`; no se importaron cortes ni respuestas a MySQL.
+- Conteos iniciales del diagnóstico (antes de importar): characters=87 y demás tablas consultadas=0. Primera carga real completada por Codex el 7/oct/2026: cutId=1, status=published, 188 rankings combined + 188 guatemala, 3435 jugadores de contexto, 43 torneos, 47 eventos, 4498 entrants, 8985 sets y 17970 slots. Usuarios y survey_responses siguen en cero; no se crearon cuentas ni se migró la encuesta.
+- La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`. El corte/historial ya están en SQL; las 12 respuestas de la comunidad siguen en su archivo protegido.
 - Dominios/repos: sitio activo https://rankingsmashbros.com/, repo Bucaro-19/rankingsmashbros. Graduación es legado.
 
 ## Instrucción nueva del dueño
@@ -19,22 +19,23 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 - opiniones.php?diagnostico=base ofrece cuerpo JSON de conteos/versiones solo a sesión administrativa válida. Navegaciones que aceptan text/html reciben text/plain; clientes API application/json. Anónimo 401; POST 405. El panel existente incluye el enlace «Comprobar conexión a la base de datos» únicamente tras autenticarse. No pantalla nueva ni cambios a respuestas.
 - El dueño renovó la sesión en Chrome; el panel mostró 12 respuestas antes y después de publicar. La herramienta de Chrome devolvió ERR_BLOCKED_BY_CLIENT al abrir el diagnóstico, tanto por navegación directa como por clic en su enlace. Cambiar el formato no resolvió ese bloqueo, pero el dueño lo abrió manualmente y compartió la respuesta exitosa. La limitación de la herramienta no bloquea la siguiente fase ni requiere más cambios a ciegas. Nunca extraer cookies ni contraseñas.
 - Pruebas locales: configuración privada, supresión de salida y sesiones; 6 contratos HTTP; 46 Python + 12 Node. Última CI `37578278589`/`37578275593`: todos los checks correctos, incluida conexión PDO real sobre MySQL 8.0/MariaDB 10.11. Esas bases son desechables, no el hosting.
-- Último despliegue assets_only=true: `37578387425`, correcto. Verificación HTTP real: diagnóstico anónimo 401/login_required en ambos formatos y cache no-store/private; acceso directo a database.php 403; inicio, encuesta y opiniones 200. public.json idéntico tras los tres despliegues (SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`). No se importaron ni modificaron datos SQL/encuesta.
-- Conexión cerrada: el diagnóstico confirma que PHP lee el archivo privado, conecta y consulta el esquema compatible. No prueba permisos de escritura ni importaciones: comprobarlos con el futuro importador transaccional. Próxima acción inmediata: preparar el paquete privado con IDs reales y el importador del corte/historial.
+- Último despliegue assets_only=true: `37578387425`, correcto. Verificación HTTP real: diagnóstico anónimo 401/login_required en ambos formatos y cache no-store/private; acceso directo a database.php 403; inicio, encuesta y opiniones 200. public.json idéntico tras despliegues y carga SQL (SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`). El importador CLI no requiere un nuevo despliegue del sitio.
+- Conexión y primera carga cerradas: lectura y escritura transaccional verificadas directamente desde la Mac. Solo se crearon datos de contexto y un corte; el frontend y la encuesta conservan su almacenamiento actual.
 
 ## Próximo trabajo
 
-### Entrega activa — Codex
+### Ranking/historial — entrega completada por Codex
 
-- Rama feat/ranking-database-import; checkout separado /tmp/smash-ranking-db-import. El checkout principal queda disponible para Claude. Reparto y prompt: TRABAJO-PARALELO-2026-10-07.md.
+- PR #9 fusionada en main, commit e685fb2. Checkout separado /tmp/smash-ranking-db-import; el principal queda disponible para Claude. Reparto y prompt: TRABAJO-PARALELO-2026-10-07.md.
 - ranking_package.py genera paquete determinista desde combined.json y public.json sin recalcular ni consultar API. import_ranking.py valida y escribe con transacción/bloqueo/paridad; modo predeterminado de simulación. Guía IMPORTACION-RANKING.md.
 - Lectura directa desde la Mac confirmada mediante configuración privada ya provisionada: MariaDB 11.4.13 y cuts=0. No se imprimieron credenciales. La simulación real del corte Oct4 terminó validated_no_writes: 3435 jugadores de contexto, 43 torneos, 47 eventos, 4498 entrants, 8985 sets y 17970 slots; vistas de 188 jugadores cada una (42/39 eventos y 2648/2624 resultados). No confundir jugadores de contexto con clasificados guatemaltecos.
-- Hasta aquí no se escribieron datos productivos. CI y primera importación/repetición pendientes. La encuesta queda asignada a Claude para preparar código/tests, sin activar escritura SQL todavía. SQL semanal automático aún pendiente: Actions prepara artefacto privado, no tiene acceso remoto a MySQL.
-- Verificación local: 46 Python del ranking, 12 Node y 4 contratos del paquete correctos; 6 casos SQL reales esperan CI en MySQL/MariaDB.
+- Primera importación real: imported/cutId=1; repetición: already_imported/cutId=1. Consulta directa confirmó published, generated_at=2026-10-04 11:43:18.348499, 188 jugadores por vista, players=3435, sets=8985, users=0 y survey_responses=0. Hash del paquete: ecb1d4a5cd44f87250537a85d0d166fa6f9824ff3408f0b55c98ac6102fd9e45. El importador verificó paridad completa antes de publicar y nuevamente al repetir; no fabricó el corte anterior.
+- CI 37581615922 y 37581612335 correcta: 46 pruebas Python del ranking, 12 Node, 4 contratos del paquete y 6 casos SQL reales por motor (MySQL 8.0/MariaDB 10.11), además de las pruebas de esquema/conector existentes.
+- La encuesta queda asignada a Claude para preparar código/tests, sin activar escritura SQL todavía. SQL semanal automático aún pendiente: Actions prepara artefacto privado; no tiene acceso remoto a MySQL. No abrir ese acceso a las IP variables de Actions.
 
-Leer `SIGUIENTE-FASE.md`: paquete/importación transaccional e idempotente del corte real (faltan tournamentId/entrantIds en el JSON público), manteniendo JSON público; migración de encuesta con respaldo y conteos; después OAuth y perfil según handoff de Design. Mantener método y calendario semanal. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
+Siguiente: integrar/revisar el PR de Claude para migrar encuesta con respaldo y conteos, y preparar transporte privado/autenticado para automatizar la carga SQL semanal. Mantener JSON público y método/calendario actuales. Después OAuth y perfil según handoff de Design. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
 
-Este relevo documenta instalación, conector publicado y diagnóstico exitoso recibido del dueño; falta implementar importadores. Consultar Git/Actions antes de retomar.
+Este relevo documenta instalación, conector y primera importación/repetición de ranking completadas. Encuesta y automatización SQL pendientes. Consultar Git/Actions antes de retomar.
 
 ---
 ## Archivo histórico del rediseño (trabajo completado)

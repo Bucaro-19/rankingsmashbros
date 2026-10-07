@@ -7,7 +7,7 @@ Versión inicial `001_accounts_competition`. **Conexión PHP e instalación conf
 - PR #1 fusionada en `main`, commit `cb89570`; SQL instalado reportado por el dueño. No reinstalar ni recrear tablas como siguiente paso.
 - Diagnóstico compartido: 31 tablas, 87 selecciones y versión `001_accounts_competition`; missingTables=[], engineCompatible=true y schemaReady=true. MariaDB 11.4.13. Jugadores, torneos, eventos, sets, cortes, rankings, usuarios y respuestas SQL están en cero, como corresponde antes de importar.
 - Dueño creó usuario y archivo privado. Ruta observada /home/ivcjgjlk/private-smash/config.local.php sin abrir contenido. Conector y diagnóstico administrativos publicados (PR #4–#6, último commit `8d509c2`, despliegue `37578387425` correcto). El diagnóstico confirma conexión y lectura desde PHP; permisos de escritura aún deben probarse al importar. La herramienta de Chrome bloqueó la visualización, pero el dueño compartió el resumen exitoso (ver EN-CURSO.md). Credenciales no compartidas ni solicitadas en chat.
-- Web y encuesta siguen funcionando con JSON/archivo; todavía no se importaron cortes ni respuestas a la base.
+- Primer corte/historial importado y comparado por Codex el 7/oct/2026 (PR #9): cutId=1 publicado, 188 rankings por vista, 3435 jugadores de contexto, 43 torneos, 47 eventos y 8985 sets. Repetición confirmó ausencia de duplicados. Web/encuesta siguen con JSON/archivo; usuarios y respuestas SQL permanecen en cero. Detalles en IMPORTACION-RANKING.md y EN-CURSO.md.
 - Siguiente entrega: `SIGUIENTE-FASE.md`. Toda pantalla nueva requiere handoff de Claude Design, por instrucción del dueño.
 
 ## Instalación inicial (referencia; ya ejecutada por el dueño)
@@ -90,7 +90,7 @@ Fuentes oficiales revisadas el 7 de octubre:
 ## Lo que sigue
 
 1. Instalación y conexión confirmadas por el diagnóstico del dueño. No repetir instalación ni configuración por rutina.
-2. Preparar el paquete/importador transaccional y comprobar permisos de escritura. El JSON público no incluye tournamentId/entrantIds: completar la exportación con relaciones reales de la captura antes de cargar. Ver SIGUIENTE-FASE.md. Mantener la web leyendo JSON hasta verificar paridad.
+2. Paquete/importador transaccional y escritura completados. Mantener la web leyendo JSON; preparar transporte privado/autenticado para importar semanalmente el paquete que emite Actions, sin abrir MySQL a las IP variables de Actions. Ver SIGUIENTE-FASE.md.
 3. Migrar encuesta desde `feedback-data/respuestas-2026.php`, saltando guarda PHP y usando sha256 de cada línea como import_hash. Mantener respaldo y verificar conteos/pruebas internas antes de cambiar lectura/escritura.
 4. OAuth, perfil con historial/mains, prueba de torneo activo, reportes y avisos por etapas. La base está instalada y conectada; los módulos todavía no están implementados. No se han movido respuestas ni modificado el cálculo/ranking con esta conexión.
 
