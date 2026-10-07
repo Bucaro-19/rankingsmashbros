@@ -6,7 +6,7 @@
 - Ranking experimental 2026, no oficial ni fórmula exacta de UltRank. Perfiles de país GT y excepciones documentadas son candidatos, no nacionalidad verificada.
 - Torneos locales: 20 participantes activos (un set competitivo cada uno), incluyendo interior del país. Extranjeros: 64 activos. Jugadores: 2 eventos y 4 sets, participación local; DQ/bye/WO no cuentan.
 - BT-PILOTO-3: Bradley–Terry regularizado, pesos TTS estimados de tabla fijada y repeticiones de rivales. No cambiar pesos ni elegir posiciones a mano.
-- Top 100 principal; búsqueda y puesto básico de todos gratuitos. Donaciones/premium, agenda y top 15 por organizador siguen pendientes. Cuentas y backend OAuth preparados: activación pendiente del registro de la app por el dueño; ver CUENTAS-OAUTH.md.
+- Top 100 principal; búsqueda y puesto básico de todos gratuitos. Donaciones/premium, agenda y top 15 por organizador siguen pendientes. Cuentas y backend OAuth preparados: OAuth configurado y vinculación real de Bucaro19 comprobada; ver CUENTAS-OAUTH.md.
 - Constancia: estudio publicado, sin bono aprobado. Calendario de meses, torneos y sets en la ficha. Consulta gratuita sin cuenta.
 
 ## Diseño y relevo

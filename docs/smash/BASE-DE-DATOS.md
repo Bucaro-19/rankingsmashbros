@@ -120,3 +120,5 @@ Se reutilizan `users`, `user_roles`, `user_characters`, `oauth_connections` y `p
 Cierre verificado por Codex: PR #18 `4229d26`, despliegue `37655240917` correcto, sin migración. Lectura directa posterior: `users=0`, `survey_responses=16`; beta con OAuth desactivado (`oauthReady=false`). No se escribieron fixtures en producción. Activación/prueba real del proveedor aún pendiente.
 
 Actualización posterior del dueño: app OAuth registrada y archivo privado habilitado; Codex comprobó `oauthReady=true`. La llave local se preservó en un archivo ignorado y el ejemplo se restauró a placeholders. No se escribieron usuarios ni datos de prueba al verificar la configuración; la vinculación real todavía debe probarse.
+
+Vinculación real posterior comprobada en Chrome: Bucaro19, perfil esperado y datos de corte disponibles. Lectura directa: `users=1` y una conexión activa sin access/refresh tokens persistidos. No cuenta sintética. Intercambio de código y GraphQL real confirmados; no se modificaron preferencias del propietario como prueba.

@@ -4,7 +4,7 @@
 
 - Revisadas entregas de Claude Code: encuesta en SQL y cierre de migración, cargador semanal operado desde la Mac, sin reinstalar tablas. Base de trabajo `main` en `99d65c3`.
 - Handoff de Claude Design leído e implementado: ingreso, elección de intereses, perfil y editor de mains. Backend OAuth/sesiones y preferencias sobre las tablas existentes; sin cambios al cálculo ni JSON. Detalles/activación: [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md).
-- El dueño ya registró **OAuth Application** y configuró el archivo privado. API real con `oauthReady=true`; prueba de vinculación real pendiente. Tokens descartados después de verificar identidad; reportes/agenda y sincronización personal quedan para otra fase.
+- El dueño ya registró **OAuth Application** y configuró el archivo privado. API real con `oauthReady=true`; vinculación real del propietario comprobada en Chrome. Tokens descartados después de verificar identidad; reportes/agenda y sincronización personal quedan para otra fase.
 - Pruebas locales con base desechable: vinculación por IDs, roles sin permisos administrativos, guardado/rollback, revocación y paridad de ambas vistas. No se creó ningún usuario real ni se usaron tokens de producción. CI y publicación cerradas; pendiente la prueba real de OAuth tras el registro de la aplicación.
 
 ## Cierre de cuentas — publicado y comprobado
@@ -18,11 +18,19 @@
 
 ## Activación OAuth y protección local — actualización del dueño
 
-El dueño confirmó que registró la aplicación, subió `oauth.local.php` al archivo privado del servidor y puso `enabled=true`. Codex comprobó directamente que `account-api.php` devuelve `ok=true`, `authenticated=false` y **`oauthReady=true`**. Esto confirma que la configuración pasó la validación del backend; todavía no equivale a una autorización real completada.
+El dueño confirmó que registró la aplicación, subió `oauth.local.php` al archivo privado del servidor y puso `enabled=true`. Codex comprobó directamente que `account-api.php` devuelve `ok=true`, `authenticated=false` y **`oauthReady=true`**. La configuración pasó la validación del backend y posteriormente se completó la autorización real en Chrome.
 
 El dueño había colocado su client secret en el ejemplo local versionado. Se preservó el contenido en `docs/smash/config/oauth.local.php` (permisos 600, ignorado por Git) y se restauró `oauth.local.php.example` con placeholders. No se imprimió el secreto. La comparación de su valor contra el índice, archivos versionados y objetos del historial local disponible no encontró coincidencias; no se declara una auditoría de clones o fuentes externas.
 
-El cierre documental anterior estaba en `docs/accounts-activation`, commit `5cd9afe`, sin PR por errores de GitHub. Esta entrega incorpora ese cierre y la protección de credenciales a una rama nueva; no duplicar la entrega de código ni desplegar otra vez por cambios de documentación/.gitignore. La prueba real de vinculación sigue pendiente.
+El cierre documental anterior estaba en `docs/accounts-activation`, commit `5cd9afe`, sin PR por errores de GitHub. Esta entrega incorpora ese cierre y la protección de credenciales a una rama nueva; no duplicar la entrega de código ni desplegar otra vez por cambios de documentación/.gitignore. La vinculación real del propietario fue comprobada; ver evidencia siguiente.
+
+## Vinculación real comprobada — Bucaro19
+
+- En Chrome, el proveedor reconoció la aplicación registrada por el dueño, `rankingsmashbross`, con enlace a `https://rankingsmashbros.com/` y permiso exclusivo de información básica. Se completó Approve y el callback regresó a la cuenta autenticada.
+- Perfil real observado: Bucaro19 y enlace `https://www.start.gg/user/7a6063d8`, coincidente con el perfil que el dueño compartió al iniciar el proyecto. Foto, país GT de perfil, intereses jugador/organizador, ranking combinado #177 (1276 puntos), cuatro eventos disponibles y mains detectados Lucas/Hero/Incineroar. El puesto pertenece al corte Oct4; no es una recalculación nueva ni nacionalidad verificada.
+- Lectura directa posterior confirmó un usuario y una vinculación activa con **ambas columnas de tokens NULL**. No se imprimieron credenciales, códigos, state ni tokens. Cuenta real del propietario; no se agregó una cuenta sintética de pruebas.
+- La consulta GraphQL de identidad y el intercambio de código funcionan con el proveedor real. Guardado, cancelación, revocación y rollback tienen pruebas desechables previas; no se hicieron cambios arbitrarios a mains ni cierre/desvinculación de la sesión real del dueño.
+- Pestaña del perfil conservada en Chrome para el dueño. Continúan pendientes agenda/torneo en curso, verificación de organizadores, reportes y notificaciones; nuevas pantallas requieren handoff de Claude Design.
 
 ## Estado vigente
 
@@ -56,7 +64,7 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 - **Migración cerrada el 7/oct:** dominio anterior redirigido (`rsvp-graduacion#26`), su archivo congelado e importado, y la prueba del dueño marcada `is_test=1`. Estado final: 16 filas, 13 de comunidad y 3 de prueba. Evidencia en MIGRACION-ENCUESTA.md, «Cierre».
 - No revertir el PR ni desplegar ramas anteriores: `deploy.py` rechaza páginas de encuesta que no sean las de SQL y los despliegues solo corren desde `main`.
 - Hallazgo para el dueño: el repositorio es público, así que los artefactos de Actions los puede descargar cualquier usuario con sesión en GitHub.
-- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación en esta entrega; configuración habilitada por el dueño (`oauthReady=true`), autorización real pendiente.
+- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación en esta entrega; configuración habilitada y autorización real comprobada con el propietario.
 
 ### Carga semanal del ranking a SQL — preparada, sin activar (Claude Code)
 

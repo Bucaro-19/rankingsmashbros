@@ -2,13 +2,13 @@
 
 ## Implementación — 7 de octubre de 2026
 
-Código integrado: PR #18, `main` en `4229d26`. CI `37654934247` y `37654969407` correctas, incluyendo MySQL 8.0, MariaDB 10.11 y lint PHP 7.4/8.1. Beta publicada mediante `assets_only=true`, run `37655240917` correcto. API real devuelve `oauthReady=false`; ranking JSON sin cambios y producción con cero usuarios al verificar. Evidencia detallada en EN-CURSO.md.
+Código integrado: PR #18, `main` en `4229d26`. CI `37654934247` y `37654969407` correctas, incluyendo MySQL 8.0, MariaDB 10.11 y lint PHP 7.4/8.1. Beta publicada mediante `assets_only=true`, run `37655240917` correcto. Al publicar, el API devolvía `oauthReady=false` y producción tenía cero usuarios. Después el dueño registró/configuró la app y se verificó la vinculación real de Bucaro19, con un usuario y una conexión activa sin tokens persistidos; el cálculo sigue sin cambios. Evidencia detallada en EN-CURSO.md.
 
 `cuenta.html`, `cuenta.css` y `cuenta.js` implementan el handoff local de Claude Design (`SmashRankingGT/design_handoff_smash_gt_cuentas/`), sin copiar su runtime ni sus usuarios de demostración. Backend: `accounts.php`, `account-api.php` y `oauth.php`. `account-model.js` contiene comportamiento puro del editor y movimientos.
 
 No reinstalar las tablas: se usa el esquema `001_accounts_competition` existente. No cambiar el cálculo, la validación o la versión de `data/public.json`.
 
-Actualización del dueño: **aplicación registrada y archivo privado habilitado**. Codex comprobó `oauthReady=true` mediante el API público. La autorización real y vinculación todavía requieren completar la prueba; una configuración válida no demuestra que el proveedor ya aceptó las credenciales.
+Actualización del dueño: **aplicación registrada y archivo privado habilitado**. Codex comprobó `oauthReady=true` mediante el API público. Después se comprobó la autorización real en Chrome: identidad Bucaro19, enlace al perfil esperado, foto, ranking e historial disponibles. El intercambio de código y la consulta GraphQL de identidad funcionaron con el proveedor real.
 
 ## Qué funciona en esta fase
 
@@ -38,7 +38,7 @@ La copia local editable es `docs/smash/config/oauth.local.php`, ignorada por Git
 
 El despliegue tampoco incluye la copia local. El archivo de producción sigue siendo `/home/ivcjgjlk/private-smash/oauth.local.php`, fuera del sitio público. No subir ninguna copia a una carpeta pública.
 
-## Activación y prueba real pendiente
+## Activación y comprobación real
 
 Tras publicar el backend y completar la configuración privada:
 
@@ -47,7 +47,7 @@ Tras publicar el backend y completar la configuración privada:
 3. Probar cancelación, cerrar sesión y nueva autorización; desvincular y verificar que otra pestaña/sesión ya no pueda guardar preferencias.
 4. Comprobar conteos desde el diagnóstico privado. Solo este paso crea un usuario real; las pruebas automatizadas usan bases desechables. No declarar OAuth productivo hasta terminar esta prueba.
 
-Se verificó el contrato contra documentación oficial, con transporte simulado en pruebas. La consulta GraphQL de identidad y el comportamiento real del proveedor deben confirmarse durante esta activación.
+Verificado con el proveedor real: autorización básica, intercambio de código, identidad y perfil del propietario. Las pruebas desechables cubren cancelación, cierre, desvinculación y guardado; estos cambios no se ejercitaron arbitrariamente sobre las preferencias o sesión real del dueño.
 
 ## Sesiones, credenciales y consumo
 
