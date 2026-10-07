@@ -36,7 +36,7 @@ class AccountHttpTests(unittest.TestCase):
         cls.site, cls.private, cls.sessions = home/'site', home/'private-smash', home/'sessions'
         for path in (cls.site/'data', cls.private, cls.sessions):
             path.mkdir(parents=True)
-        for filename in ('accounts.php', 'database.php', 'account-api.php', 'oauth.php', 'cuenta.html', 'cuenta.css', 'cuenta.js', 'account-model.js', 'characters.js'):
+        for filename in ('accounts.php', 'database.php', 'stats.php', 'account-api.php', 'oauth.php', 'cuenta.html', 'cuenta.css', 'cuenta.js', 'account-model.js', 'characters.js'):
             shutil.copyfile(SITE/filename, cls.site/filename)
         shutil.copyfile(SITE/'data/public.json', cls.site/'data/public.json')
         shutil.copytree(SITE/'assets', cls.site/'assets')
@@ -150,6 +150,8 @@ class AccountHttpTests(unittest.TestCase):
                              (expected['rank'],expected['rating'],expected['wins'],expected['losses']))
         self.assertTrue(any(not e['counts'] for e in data['profile']['views']['guatemala']['events']))
         self.assertNotIn('connectionVersion',data['user'])
+        # Ordinary accounts never learn that a private panel exists.
+        self.assertNotIn('panel',data); self.assertNotIn('panel',json.dumps(data['user']))
 
     def test_preferences_identity_is_server_bound(self):
         data=self.login(); csrf=data['csrf']

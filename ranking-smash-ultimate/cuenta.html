@@ -7,9 +7,9 @@
   <title>Tu cuenta — Smash GT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./cuenta.css?v=20261007-v2">
+  <link rel="stylesheet" href="./cuenta.css?v=20261007-v3">
   <script src="./characters.js?v=20261006-design2" defer></script>
-  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./cuenta.js?v=20261007-v3" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
+  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./cuenta.js?v=20261007-v4" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#account-content">Saltar al contenido</a>
@@ -20,7 +20,7 @@
   <div id="account-tabs" class="account-tabs" hidden><div role="tablist" aria-label="Mi cuenta">
     <button id="tab-profile" role="tab" aria-selected="true" aria-controls="profile-screen">Mi perfil</button>
     <button id="tab-characters" role="tab" aria-selected="false" aria-controls="characters-screen" tabindex="-1">Mis personajes</button>
-  </div></div>
+  </div><a id="tab-panel" class="tab-link" href="./panel.php" hidden>Panel privado ↗</a></div>
   <main id="account-content" tabindex="-1">
     <p id="loading" class="account-loading" role="status">Cargando tu cuenta…</p>
     <section id="login-screen" class="login-layout" aria-labelledby="login-title" hidden>

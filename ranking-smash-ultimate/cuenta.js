@@ -53,7 +53,7 @@
       // Signed in again from the private panel: go back there. Only this fixed destination exists.
       try{if(sessionStorage.getItem('smashgt.volver')==='panel'){sessionStorage.removeItem('smashgt.volver');location.replace('./panel.php');return;}}catch{}
       saved=[...data.user.chosen];chosen=[...saved];roles=data.user.roles.length?[...data.user.roles]:['player'];
-      $('header-account').textContent=data.user.tag;$('header-account').href='./cuenta.html';
+      $('header-account').textContent=data.user.tag;$('header-account').href='./cuenta.html';$('tab-panel').hidden=data.panel!==true;
       if(!data.user.roles.length){renderOnboarding();setScreen('onboarding',true);}else setScreen('profile',true);
       if(location.hash==='#vinculada')history.replaceState(null,'','./cuenta.html');
     }catch(error){
