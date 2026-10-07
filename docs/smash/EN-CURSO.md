@@ -32,6 +32,15 @@ El cierre documental anterior estaba en `docs/accounts-activation`, commit `5cd9
 - La consulta GraphQL de identidad y el intercambio de código funcionan con el proveedor real. Guardado, cancelación, revocación y rollback tienen pruebas desechables previas; no se hicieron cambios arbitrarios a mains ni cierre/desvinculación de la sesión real del dueño.
 - Pestaña del perfil conservada en Chrome para el dueño. Continúan pendientes agenda/torneo en curso, verificación de organizadores, reportes y notificaciones; nuevas pantallas requieren handoff de Claude Design.
 
+## Redespliegue solicitado por el dueño — 7/oct
+
+- La entrega de protección y cierre OAuth ya estaba fusionada: PR #19, `main` en `0328693`. No quedaron PR abiertas de Claude ni cambios locales pendientes; CI de main `37657991274` correcta.
+- A petición explícita del dueño se volvió a publicar desde `main` con `assets_only=true`: [run 37658175611](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37658175611), terminado correctamente. No se recalculó el ranking ni se reemplazó el corte.
+- Verificación HTTP posterior: index/cuenta, JS y estilos servidos coinciden byte por byte con main; encuesta/opiniones 200; accounts.php, database.php y feedback-data/ 403. API anónima 200, `oauthReady=true`, `authenticated=false`, `Cache-Control: no-store, private`. La autorización real de Bucaro19 fue comprobada antes de este redespliegue, según la sección anterior.
+- `data/public.json` idéntico antes/después: SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`, corte 2026-10-04T11:43:18.348499+00:00, 188 jugadores por vista.
+- Archivo OAuth local conservado e ignorado, ejemplo sin credenciales. Protección adicional en `.git/info/exclude` para conservar la exclusión local al cambiar de rama; no es un archivo para publicar. El despliegue no incluye los archivos de configuración privados.
+- Continúan los pendientes de operación semanal/SQL y módulos posteriores descritos arriba. Este cierre solo registra el redespliegue verificado y no requiere volver a publicar documentos.
+
 ## Estado vigente
 
 - El dueño compartió el resultado real del diagnóstico privado: connection=connected, MariaDB 11.4.13, schemaVersion=001_accounts_competition, tableCount=31, missingTables=[], engineCompatible=true y schemaReady=true. Base de la instalación: `ivcjgjlk_smash`. Evidencia recibida del dueño el 6/oct/2026 (Guatemala), no lectura directa del agente mediante navegador.
