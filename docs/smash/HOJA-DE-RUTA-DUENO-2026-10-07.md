@@ -25,7 +25,13 @@ Registro de lo que el dueño pidió en conversación con Claude Code después de
 
 Panel de estadísticas, ficha de rival/historial, análisis premium, top 15 por organizador y cualquier pantalla de pago son **pantallas nuevas**: requieren brief y handoff de Claude Design antes de implementarse. El backend, la migración y las pruebas pueden avanzar sin pantalla.
 
-## Orden propuesto por Claude Code (pendiente de confirmación del dueño)
+## Decisiones del dueño después de leer esto (7/oct)
+
+- Aprobó el orden propuesto.
+- Sesión: «lo normal, como Facebook» → 90 días renovables y varios dispositivos a la vez. Implementación en curso; ver EN-CURSO.md.
+- Visitantes: prefiere el conteo **exacto**. Se hará con un identificador aleatorio en una cookie propia del sitio, del que se guarda solo el hash por día. Es exacto por navegador, no por persona: dos dispositivos cuentan como dos y borrar cookies cuenta como visitante nuevo. Sigue sin guardarse IP ni navegador. Esto modifica, con su autorización, la regla anterior de no guardar identificadores de visitantes; la encuesta sigue siendo anónima y no se cruza con este identificador.
+
+## Orden propuesto por Claude Code (aprobado por el dueño el 7/oct)
 
 1. Sesión persistente (sin pantalla nueva; es lo más corto y lo usa el dueño a diario).
 2. Conteo de visitas y registros en el servidor, más el brief de Claude Design para el panel.

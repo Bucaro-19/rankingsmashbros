@@ -3,6 +3,7 @@
 The synthetic login helper is written ONLY to that temporary site. It is never a
 production endpoint, deploy file, browser mock, or alternative OAuth implementation.
 """
+import hashlib
 import http.cookiejar
 import json
 import os
@@ -48,7 +49,9 @@ class AccountHttpTests(unittest.TestCase):
         smash_account_session_start(); $pdo=smash_account_connect(__DIR__);
         $id=smash_account_login($pdo,['startggId'=>'8999101','playerId'=>'184005','tag'=>'Jugador QA','url'=>null],time());
         $user=smash_account_user($pdo,$id);
-        $_SESSION['smash_account']=['id'=>$id,'at'=>time()-(isset($_GET['expired'])?28800:0),'version'=>$user['connectionVersion']];
+        $_SESSION['smash_account']=['id'=>$id,'at'=>time()-(isset($_GET['expired'])?28800:0),'version'=>$user['connectionVersion'],
+            'url'=>'https://www.start.gg/user/fixture','avatarUrl'=>'https://images.start.gg/fixture.png'];
+        if (isset($_GET['remember'])) smash_account_remember_set(smash_account_remember_create($pdo,$_SESSION['smash_account'],time()),time());
         session_regenerate_id(true); header('Location: ./cuenta.html',true,303);
         ''')
         (cls.site/'fixture-state.php').write_text('''<?php require __DIR__.'/accounts.php'; smash_account_session_start(); $_SESSION['smash_oauth_pending']=['state'=>'fixture-state','at'=>time()]; echo '{}';''')
@@ -93,8 +96,29 @@ class AccountHttpTests(unittest.TestCase):
         raw=response.read().decode()
         return response.status, response.headers, json.loads(raw) if raw.startswith('{') else raw
 
-    def login(self):
-        self.request('/fixture-login.php')
+    def cookie(self, name):
+        return next((c for c in self.cookies if c.name == name), None)
+
+    def drop_browser_session(self):
+        # Closing the browser, or the hosting clearing idle PHP sessions: only the long cookie is left.
+        session = next(c for c in self.cookies if c.name != 'smash_recordar')
+        self.cookies.clear(session.domain, session.path, session.name)
+
+    def with_cookie(self, token, body=None, csrf=None):
+        headers = {'Accept':'application/json', 'Cookie':'smash_recordar='+token}
+        if body is not None: headers.update({'Content-Type':'application/json','X-CSRF-Token':csrf or ''})
+        req=urllib.request.Request(self.base+'/account-api.php', data=json.dumps(body).encode() if body is not None else None, headers=headers)
+        try: response=urllib.request.build_opener().open(req,timeout=10)
+        except urllib.error.HTTPError as error: response=error
+        return response.status, response.headers, json.loads(response.read().decode())
+
+    def stored(self, token):
+        with self.db.cursor() as q:
+            q.execute('SELECT COUNT(*) FROM user_sessions WHERE token_hash=%s',(hashlib.sha256(token.encode()).hexdigest(),))
+            return q.fetchone()[0]
+
+    def login(self, remember=False):
+        self.request('/fixture-login.php'+('?remember=1' if remember else ''))
         status, _, data=self.request()
         self.assertEqual(status,200)
         self.assertTrue(data['authenticated'])
@@ -144,17 +168,67 @@ class AccountHttpTests(unittest.TestCase):
         first_cookie=next(iter(self.cookies)).value
         self.assertEqual(self.request(body={'action':'logout'},csrf=data['csrf'])[0],200)
         self.assertFalse(self.request()[2]['authenticated']); self.assertNotEqual(next(iter(self.cookies)).value,first_cookie)
-        data=self.login()
-        # Separate browser login changes the connection version: the first browser must reauthorize.
-        old_client=self.client
-        self.setUp(); newer=self.login()
-        new_client=self.client; self.client=old_client
-        self.assertEqual(self.request()[0],401)
-        self.client=new_client
+        data=self.login(remember=True)
+        # Signing in on a second device keeps the first one signed in.
+        old_client, old_cookies=self.client, self.cookies; old_token=self.cookie('smash_recordar').value
+        self.setUp(); newer=self.login(remember=True)
+        new_client, new_cookies=self.client, self.cookies; new_token=self.cookie('smash_recordar').value
+        self.client=old_client
+        self.assertTrue(self.request()[2]['authenticated'])
+        self.client, self.cookies=new_client, new_cookies
         self.assertEqual(self.request(body={'action':'disconnect'},csrf=newer['csrf'])[0],200)
-        self.assertFalse(self.request()[2]['authenticated'])
+        self.assertFalse(self.request()[2]['authenticated']); self.assertIsNone(self.cookie('smash_recordar'))
+        # Disconnecting ends every browser of the account: live sessions and long cookies alike.
+        self.assertEqual((self.stored(old_token),self.stored(new_token)),(0,0))
+        self.client, self.cookies=old_client, old_cookies
+        self.assertEqual(self.request()[0],401); self.assertIsNone(self.cookie('smash_recordar'))
+        self.assertFalse(self.with_cookie(old_token)[2]['authenticated'])
+        self.client, self.cookies=new_client, new_cookies
         # Re-linking preserves the user's choices without retaining provider tokens.
         self.assertEqual(self.login()['user']['chosen'],['1766','1319'])
+
+    def test_remembered_browser_resumes_without_start_gg(self):
+        data=self.login(remember=True); remembered=self.cookie('smash_recordar'); token=remembered.value
+        self.assertRegex(token,r'^[0-9a-f]{64}$'); self.assertTrue(remembered.has_nonstandard_attr('HttpOnly'))
+        self.assertEqual(remembered.get_nonstandard_attr('SameSite'),'Lax'); self.assertEqual(remembered.path,'/')
+        self.assertGreater(remembered.expires,time.time()+89*86400); self.assertEqual(self.stored(token),1)
+        with self.db.cursor() as q:
+            q.execute('SELECT COUNT(*) FROM user_sessions WHERE token_hash=%s',(token,)); self.assertEqual(q.fetchone()[0],0)
+        self.assertNotIn(token,json.dumps(data))
+        self.drop_browser_session()
+        status, headers, resumed=self.request()
+        self.assertEqual(status,200); self.assertTrue(resumed['authenticated']); self.assertEqual(resumed['user']['tag'],'Jugador QA')
+        self.assertEqual((resumed['user']['avatarUrl'],resumed['user']['url']),('https://images.start.gg/fixture.png','https://www.start.gg/user/fixture'))
+        self.assertIn('no-store',headers['Cache-Control'])
+        # The resumed browser can save with the CSRF token of its new session.
+        self.assertEqual(self.request(body={'action':'roles','roles':['player']},csrf=resumed['csrf'])[0],200)
+        # A session past its eight hours resumes too, also when the first request is a write.
+        self.setUp(); self.request('/fixture-login.php?remember=1&expired=1')
+        self.assertTrue(self.request()[2]['authenticated'])
+        self.setUp(); csrf=self.login()['csrf']; self.request('/fixture-login.php?remember=1&expired=1')
+        self.assertEqual(self.request(body={'action':'roles','roles':['player']},csrf=csrf)[0],200)
+        self.assertTrue(self.request()[2]['authenticated'])
+
+    def test_remembered_cookie_rejections_and_logout(self):
+        self.login(remember=True); token=self.cookie('smash_recordar').value
+        status, headers, data=self.with_cookie('f'*64)
+        self.assertEqual(status,200); self.assertFalse(data['authenticated']); self.assertIn('smash_recordar=deleted',' '.join(headers.get_all('Set-Cookie')))
+        for malformed in ('F'*64, token+'0', 'x'):
+            self.assertFalse(self.with_cookie(malformed)[2]['authenticated'])
+        self.assertEqual(self.stored(token),1)
+        # A copied cookie cannot write without the CSRF token of its own session.
+        self.assertEqual(self.with_cookie(token,body={'action':'characters','characters':['1766']},csrf='forged')[0],403)
+        with self.db.cursor() as q:
+            q.execute("UPDATE user_sessions SET expires_at='2026-01-01 00:00:00' WHERE token_hash=%s",(hashlib.sha256(token.encode()).hexdigest(),))
+        self.assertFalse(self.with_cookie(token)[2]['authenticated'])
+        data=self.login(remember=True); token=self.cookie('smash_recordar').value
+        self.assertTrue(self.with_cookie(token)[2]['authenticated'])
+        self.assertEqual(self.request(body={'action':'logout'},csrf=data['csrf'])[0],200)
+        self.assertIsNone(self.cookie('smash_recordar')); self.assertEqual(self.stored(token),0)
+        self.assertFalse(self.request()[2]['authenticated']); self.assertFalse(self.with_cookie(token)[2]['authenticated'])
+        # Without the long cookie nothing changes: the session still ends after eight hours.
+        self.setUp(); self.request('/fixture-login.php?expired=1')
+        self.assertFalse(self.request()[2]['authenticated'])
 
     def test_oauth_rejects_unsigned_callbacks_and_missing_csrf(self):
         # No test ever contacts start.gg; unsigned callbacks fail before the transport.

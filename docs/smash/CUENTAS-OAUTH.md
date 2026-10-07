@@ -59,6 +59,21 @@ Verificado con el proveedor real: autorización básica, intercambio de código,
 - Normalmente hay un intercambio de token y una consulta GraphQL por ingreso. Consultar perfil, alternar vistas y guardar mains usa hosting/datos compartidos, no vuelve a start.gg. OAuth no prueba que exista una cuota independiente o tarifa por jugador.
 - El código de aplicación no registra secretos, códigos o cuerpos de error. Los logs de acceso del hosting pueden registrar la URL de callback; tratarlos como privados. No afirmar que un comentario del código desactiva los logs del servidor.
 
+## Mantener la sesión iniciada — 7 de octubre (Claude Code)
+
+Pedido del dueño: no autorizar con start.gg en cada visita, «lo normal, como Facebook». Requiere la migración `002_sessions_visits`.
+
+- Al terminar una autorización correcta, `oauth.php` crea un identificador aleatorio de 32 bytes y lo entrega en la cookie **`smash_recordar`**: HttpOnly, Secure con HTTPS, SameSite=Lax, ruta `/`, 90 días. En `user_sessions` se guarda únicamente su SHA-256, con la versión de la conexión, el enlace de perfil y el avatar que antes solo vivían en la sesión PHP.
+- `account-api.php` restablece la sesión con esa cookie cuando la sesión PHP no existe o superó sus ocho horas. Solo es válida si el usuario sigue activo y la conexión es la misma, sin revocar, que existía al emitirla. Al usarla en un día nuevo se renuevan los 90 días (una escritura diaria como máximo).
+- Una cookie desconocida, mal formada, vencida o de una conexión revocada se borra del navegador. Un fallo de la base **no** la consume: responde 503 y la conserva.
+- «Cerrar sesión» borra la fila de ese navegador y la cookie. «Desvincular» borra todas las filas de la cuenta; además la conexión queda revocada y, al volver a vincular, cambia de versión, por lo que ninguna cookie o sesión anterior revive.
+- **Varios dispositivos:** un ingreso nuevo ya no cambia `oauth_connections.updated_at` si la conexión está vigente, así que el teléfono y la computadora pueden estar abiertos a la vez. Antes cada ingreso cerraba los demás; ese comportamiento se sustituyó a propósito.
+- Las escrituras siguen exigiendo el token CSRF de la sesión: copiar la cookie no basta para guardar cambios desde otro sitio.
+- Sigue sin guardarse ningún token de start.gg. Tampoco IP, navegador ni identificador de la sesión PHP. Quien use un equipo compartido debe cerrar sesión.
+- Sin la migración instalada, el ingreso funciona igual que antes y no emite la cookie.
+
+Pruebas: `test_accounts.php` (hash, renovación, vencimiento, segundo dispositivo, usuario desactivado, tabla ausente, desvincular y revincular) y `test_accounts_http.py` (reanudar sin sesión PHP y con sesión vencida, escritura tras reanudar, cookies falsas o vencidas, cierre de sesión, dos navegadores y desvinculación).
+
 ## Verificación reproducible
 
 - `node --test scripts/smash/test_accounts.cjs`: movimientos con cortes reales, búsqueda normalizada, intercambio/compactación de personajes y filtros de historial.

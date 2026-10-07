@@ -100,13 +100,16 @@ function smash_database_status(PDO $pdo): array
         $missing = array_values(array_diff(smash_database_expected_tables(), $tables));
         $schema = in_array('schema_migrations', $tables, true)
             ? $pdo->query("SELECT version FROM schema_migrations WHERE version='001_accounts_competition'")->fetchColumn() : false;
+        // Later migrations add tables without replacing the base version checked above.
+        $migrations = in_array('schema_migrations', $tables, true)
+            ? array_map('strval', $pdo->query('SELECT version FROM schema_migrations ORDER BY version')->fetchAll(PDO::FETCH_COLUMN)) : [];
         $counts = [];
         // Names are fixed server-side; no request value becomes an SQL identifier.
         foreach (['characters','players','tournaments','events','sets','cuts','rankings','users','survey_responses'] as $table) {
             $counts[$table] = in_array($table, $tables, true) ? (int)$pdo->query('SELECT COUNT(*) FROM `' . $table . '`')->fetchColumn() : null;
         }
         return ['ok' => true, 'connection' => 'connected', 'engine' => $engine, 'version' => $version,
-            'schemaVersion' => $schema ?: null, 'tableCount' => count($tables), 'missingTables' => $missing,
+            'schemaVersion' => $schema ?: null, 'migrations' => $migrations, 'tableCount' => count($tables), 'missingTables' => $missing,
             'engineCompatible' => $compatible,
             'schemaReady' => $compatible && !$missing && $schema === '001_accounts_competition' && $counts['characters'] >= 87,
             'counts' => $counts];

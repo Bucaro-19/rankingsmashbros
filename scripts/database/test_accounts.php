@@ -86,11 +86,47 @@ try {
     account_rejects(function () use ($pdo,$id,$version) { smash_account_preferences($pdo,$id,'characters',['characters'=>['1766']],$version); }, 'account_write_failed');
     $pdo->exec('DROP TRIGGER smash_account_fixture_failure');
     check_account(smash_account_user($pdo,$id)['chosen']===['1319','1766'],'Failed replacement rolls back the deletion');
+    // «Keep me signed in»: own random identifier, only its hash stored, bound to the connection.
+    $now=time(); $account=['id'=>$id,'version'=>$version,'url'=>'https://www.start.gg/user/fixture','avatarUrl'=>'https://images.start.gg/fixture.png'];
+    $token=smash_account_remember_create($pdo,$account,$now);
+    check_account(smash_account_remember_token($token)===$token,'Cookie value is 64 hexadecimal characters');
+    $stored=$pdo->query("SELECT token_hash, profile_url, avatar_url FROM user_sessions WHERE user_id=$id")->fetchAll(PDO::FETCH_ASSOC);
+    check_account(count($stored)===1 && $stored[0]['token_hash']===hash('sha256',$token) && strpos(json_encode($stored),$token)===false,'Only the hash of the cookie is stored');
+    $restored=smash_account_remember_restore($pdo,$token,$now+60);
+    check_account($restored===['id'=>$id,'at'=>$now+60,'url'=>$account['url'],'avatarUrl'=>$account['avatarUrl'],'version'=>$version],'Cookie restores the same verified account');
+    check_account(smash_account_session_valid(['smash_account'=>$restored],$now+60),'Restored session is a normal session');
+    foreach ([str_repeat('f',64),strtoupper($token),$token.'0',[$token],null,''] as $bad) check_account(smash_account_remember_restore($pdo,$bad,$now)===null,'Unknown or malformed cookies are rejected');
+    $expiry=static fn()=>$pdo->query("SELECT expires_at FROM user_sessions WHERE user_id=$id")->fetchColumn();
+    $first=$expiry(); smash_account_remember_restore($pdo,$token,$now+3600*3);
+    $later=$now+86400*30; check_account(smash_account_remember_restore($pdo,$token,$later)!==null && $expiry()>$first,'Use on a later day renews the ninety days');
+    check_account(smash_account_remember_restore($pdo,$token,$later+SMASH_ACCOUNT_REMEMBER_AGE-5)!==null,'Still valid just before the renewed expiry');
+    $pdo->exec("UPDATE user_sessions SET last_used_at='2026-01-01 00:00:00', expires_at='2026-01-02 00:00:00' WHERE user_id=$id");
+    check_account(smash_account_remember_restore($pdo,$token,$now)===null,'Expired cookies are rejected and not renewed');
+    $token=smash_account_remember_create($pdo,$account,$now);
+    check_account((int)$pdo->query("SELECT COUNT(*) FROM user_sessions WHERE user_id=$id")->fetchColumn()===1,'Expired rows are removed when a new cookie is issued');
+    check_account(smash_account_login($pdo,$identity,$now)===$id && smash_account_user($pdo,$id)['connectionVersion']===$version,'A second device signing in keeps the connection version');
+    check_account(smash_account_remember_restore($pdo,$token,$now)!==null,'The first device stays signed in');
+    $second=smash_account_remember_create($pdo,$account,$now);
+    smash_account_remember_revoke($pdo,$second);
+    check_account(smash_account_remember_restore($pdo,$second,$now)===null && smash_account_remember_restore($pdo,$token,$now)!==null,'Signing out ends only that browser');
+    $pdo->exec("UPDATE users SET status='disabled' WHERE id=$id");
+    check_account(smash_account_remember_restore($pdo,$token,$now)===null,'Disabled accounts cannot resume');
+    $pdo->exec("UPDATE users SET status='active' WHERE id=$id");
+    $pdo->exec('RENAME TABLE user_sessions TO user_sessions_fixture_away');
+    check_account(smash_account_remember_create($pdo,$account,$now)===null,'Without migration 002 sign-in still works, only without the cookie');
+    account_rejects(static fn()=>smash_account_remember_restore($pdo,$token,$now),'account_unavailable');
+    smash_account_remember_revoke($pdo,$token,$id);
+    $pdo->exec('RENAME TABLE user_sessions_fixture_away TO user_sessions');
+    check_account(smash_account_remember_restore($pdo,$token,$now)!==null,'A storage failure does not consume the cookie');
     smash_account_preferences($pdo,$id,'disconnect',[],$version);
+    check_account(smash_account_remember_restore($pdo,$token,$now)===null,'Disconnecting ends every remembered browser');
     account_rejects(static fn() => smash_account_user($pdo,$id),'login_required');
     account_rejects(function () use ($pdo,$id,$version) { smash_account_preferences($pdo,$id,'roles',['roles'=>['organizer']],$version); },'login_required');
     check_account(smash_account_login($pdo,$identity,time())===$id,'Reauthorization reuses same account');
     check_account(smash_account_user($pdo,$id)['chosen']===['1319','1766'],'Reauthorization preserves preferences');
+    check_account(smash_account_user($pdo,$id)['connectionVersion']!==$version && smash_account_remember_restore($pdo,$token,$now)===null,'Re-linking starts a new version: old cookies stay dead');
+    smash_account_remember_create($pdo,$account,$now); smash_account_remember_revoke($pdo,null,$id);
+    check_account((int)$pdo->query("SELECT COUNT(*) FROM user_sessions WHERE user_id=$id")->fetchColumn()===0,'All cookies of the account can be removed');
     account_rejects(function () use ($pdo,$id,$version) { smash_account_preferences($pdo,$id,'roles',['roles'=>['organizer']],$version); },'login_required');
     check_account((int)$pdo->query("SELECT COUNT(*) FROM oauth_connections WHERE user_id=$id AND access_token_encrypted IS NULL AND refresh_token_encrypted IS NULL")->fetchColumn()===1,'No provider tokens stored');
     $pdo->beginTransaction();
@@ -98,10 +134,11 @@ try {
     check_account($pdo->inTransaction(),'Caller transaction remains owned by caller'); $pdo->rollBack();
     $pdo->exec("UPDATE users SET status='disabled' WHERE id=$id");
     account_rejects(static fn()=>smash_account_login($pdo,$identity,time()),'account_disabled');
-    echo "SQL linking, preferences, rollback, role isolation, expiry and revocation passed.\n";
+    echo "SQL linking, preferences, remembered sessions, rollback, role isolation, expiry and revocation passed.\n";
 } finally {
     if ($pdo->inTransaction()) $pdo->rollBack();
     $pdo->exec('DROP TRIGGER IF EXISTS smash_account_fixture_failure');
+    if ((int)$pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='user_sessions_fixture_away'")->fetchColumn()===1) $pdo->exec('RENAME TABLE user_sessions_fixture_away TO user_sessions');
     if ($id!==null) { foreach (['user_characters','user_roles','oauth_connections'] as $table) $pdo->exec("DELETE FROM $table WHERE user_id=$id"); $pdo->exec("DELETE FROM users WHERE id=$id"); }
     $pdo->exec('DELETE FROM players WHERE id=8999002');
 }
