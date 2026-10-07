@@ -4,7 +4,7 @@
 
 - El dueño confirmó: ejecutó `install.sql` en phpMyAdmin y todo terminó correctamente. Base de la captura: `ivcjgjlk_smash`. Confirmación del dueño, no conexión/verificación directa del agente.
 - PR #1 del repo nuevo fusionada en `main`, commit `cb89570`. Preparó v1 `001_accounts_competition`: 31 tablas/87 selecciones esperadas. CI correcto: 46 Python + 12 Node y 8 pruebas por motor (MySQL 8.0/MariaDB 10.11), run `37574948355`.
-- No reinstalar tablas. Archivo observado sin abrir contenido: /home/ivcjgjlk/private-smash/config.local.php. Conector PDO y diagnóstico administrativo preparados en rama feat/private-database-connection; publicación/verificación real pendiente. No pedir contraseñas por chat.
+- No reinstalar tablas. Archivo observado sin abrir contenido: /home/ivcjgjlk/private-smash/config.local.php. Conector PDO y diagnóstico publicados: PR #4/main `a29355e`, despliegue `37577617156` correcto. Conexión real pendiente de visualizar el diagnóstico con la sesión renovada; no pedir contraseñas por chat.
 - La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`; no se importaron cortes ni respuestas a MySQL.
 - Dominios/repos: sitio activo https://rankingsmashbros.com/, repo Bucaro-19/rankingsmashbros. Graduación es legado.
 
@@ -12,19 +12,20 @@
 
 Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su handoff. Documentar funciones/estados en un brief y entregarlo al dueño; no inventar la pantalla en código. Backend/importadores pueden avanzar sin pantallas. Regla guardada en AGENTS.md y CLAUDE.md.
 
-## Conexión PHP — entrega activa
+## Conexión PHP — publicada, comprobación de producción pendiente
 
 - database.php carga únicamente el archivo privado hermano del sitio, valida formato y conecta mediante PDO con utf8mb4, UTC y prepared statements nativos. No imprime secretos/excepciones.
 - opiniones.php?diagnostico=base ofrece JSON de conteos/versiones solo a sesión administrativa válida; no UI nueva ni cambios a respuestas. Anónimo 401; POST 405.
-- Chrome del dueño tenía sesión válida del panel. El navegador integrado no la tenía. Usar la sesión existente, nunca extraer cookies ni contraseñas.
-- Pruebas locales: configuración privada, supresión de salida y sesiones; 4 contratos HTTP; 46 Python + 12 Node. CI validará también PDO en MySQL 8.0/MariaDB 10.11.
-- Despliegue previsto assets_only=true, conservar public.json, config privado y feedback-data. Verificar diagnóstico real antes de declarar conexión exitosa.
+- El dueño renovó la sesión en Chrome; el panel mostró nuevamente 12 respuestas. Chrome bloqueó la visualización de la respuesta application/json del diagnóstico. PR #5 prepara el mismo cuerpo como text/plain al aceptar text/html; clientes API mantienen application/json. No cambia autenticación ni contenido, y no añade pantalla. Nunca extraer cookies ni contraseñas. La importación de SQL y la existencia del archivo privado no prueban conexión PDO.
+- Pruebas locales: configuración privada, supresión de salida y sesiones; 4 contratos HTTP; 46 Python + 12 Node. CI `37577421479` y `37577417212`: todos los checks correctos, incluida conexión PDO real sobre MySQL 8.0/MariaDB 10.11.
+- Despliegue assets_only=true: `37577617156`, correcto. Verificación HTTP real: diagnóstico anónimo 401/login_required y cache no-store/private; acceso directo a database.php 403; inicio, encuesta y opiniones 200. public.json idéntico antes/después (SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`). No se importaron ni modificaron datos SQL/encuesta.
+- Próxima acción inmediata: publicar PR #5 y, con sesión renovada, abrir opiniones.php?diagnostico=base y registrar engine/version/schemaReady/tableCount/counts. No declarar conexión exitosa hasta obtener esa respuesta del hosting.
 
 ## Próximo trabajo
 
 Leer `SIGUIENTE-FASE.md`: conexión privada PDO y diagnóstico sin datos secretos; paquete/importación transaccional e idempotente del corte real (faltan tournamentId/entrantIds en el JSON público), manteniendo JSON público; migración de encuesta con respaldo y conteos; después OAuth y perfil según handoff de Design. Mantener método y calendario semanal. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
 
-Este relevo documenta el cierre de instalación; la implementación de conexión/importadores está pendiente. Consultar Git/Actions antes de retomar.
+Este relevo documenta instalación y conector publicados; falta comprobar la conexión de producción autenticada y después implementar importadores. Consultar Git/Actions antes de retomar.
 
 ---
 ## Archivo histórico del rediseño (trabajo completado)

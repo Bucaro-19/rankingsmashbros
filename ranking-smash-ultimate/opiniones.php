@@ -47,7 +47,11 @@ if (!isset($_SESSION['smash_admin_nonce'])) $_SESSION['smash_admin_nonce'] = bin
 $authenticated = smash_admin_session_valid($_SESSION, time());
 // Read-only JSON for the existing administrator; no new login or UI is added.
 if (($_GET['diagnostico'] ?? '') === 'base') {
-    header('Content-Type: application/json; charset=utf-8');
+    // Browser navigations can use a plain-text JSON body without a JSON viewer.
+    // API clients keep application/json; content and access rules are identical.
+    $browserRead = strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'text/html') !== false;
+    header('Content-Type: ' . ($browserRead ? 'text/plain' : 'application/json') . '; charset=utf-8');
+    header('Vary: Accept');
     if (!$authenticated) {
         http_response_code(401);
         echo json_encode(['ok' => false, 'error' => ['code' => 'login_required', 'message' => 'Inicia sesión en el panel de opiniones.']]);

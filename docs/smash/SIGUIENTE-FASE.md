@@ -5,7 +5,7 @@
 - Repo: Bucaro-19/rankingsmashbros. Sitio: https://rankingsmashbros.com/. No continuar sobre los cambios obsoletos de rsvp-graduacion.
 - El dueño informó que importó `install.sql` exitosamente en BanaHosting. Captura: base `ivcjgjlk_smash`. Esquema preparado en PR #1/main `cb89570`, versión `001_accounts_competition`.
 - Esperados: 31 tablas/87 selecciones. Solo CI consultó esos conteos en bases desechables, no en producción. La versión exacta de MySQL/MariaDB del hosting, usuario y permisos deben verificarse al conectar.
-- Conector/diagnóstico PDO preparados en esta entrega; estado de despliegue y verificación en EN-CURSO.md. Archivo privado observado /home/ivcjgjlk/private-smash/config.local.php sin abrirlo. No hay importador de cortes/encuesta ni login OAuth activo. El agente no recibe ni copia credenciales DB. No volver a pedir instalación ni modificar tablas sin migración versionada.
+- Conector/diagnóstico PDO publicados (PR #4/main `a29355e`, despliegue `37577617156` correcto). Verificación del hosting pendiente de visualizar el diagnóstico en el navegador; estado en EN-CURSO.md. Archivo privado observado /home/ivcjgjlk/private-smash/config.local.php sin abrirlo. No hay importador de cortes/encuesta ni login OAuth activo. El agente no recibe ni copia credenciales DB. No volver a pedir instalación ni modificar tablas sin migración versionada.
 - Web pública sigue leyendo `data/public.json`; encuesta/opiniones siguen usando archivo protegido. No activar funciones incompletas mediante botones nuevos.
 
 ## Regla de diseño obligatoria del dueño
@@ -16,7 +16,7 @@ El diseño actual vive en index.html/arena.css/app.js. No portar support.js ni d
 
 ## Entrega 1 — conexión privada y diagnóstico
 
-Implementación en database.php y opiniones.php?diagnostico=base. Solo resumen JSON administrativo, no nueva pantalla. Revisar EN-CURSO.md para resultados de producción antes de repetir trabajo.
+Implementación publicada en database.php y opiniones.php?diagnostico=base. Solo resumen JSON administrativo, no nueva pantalla. CI correcto en ambos motores; acceso anónimo 401 y library 403 verificados en producción. El dueño ya renovó la sesión, pero Chrome bloqueó la visualización del JSON. PR #5 prepara texto legible en navegador (mismo cuerpo, acceso protegido) antes de verificar conteos/motor. Revisar EN-CURSO.md antes de repetir trabajo.
 
 1. El dueño confirmó que creó el usuario MySQL; comprobar su vínculo a `ivcjgjlk_smash`, administrado por cPanel. Plantilla e instrucciones: CONFIGURACION-PRIVADA.md. No pedir su contraseña por chat. El dueño configura un archivo privado en el servidor, fuera del document root, con host/puerto, base, usuario y contraseña.
 2. Preparar plantilla sin secretos e instrucciones. Nombre sugerido: `config.local.php`, ignorado por Git. Ruta fuera del sitio, por ejemplo `/home/<cuenta>/private-smash/config.local.php`, ajustada al hosting real. Evitar credenciales en .htaccess, URL, JS o logs. FTP publica solo archivos de la allowlist y no debe subir ese config.
@@ -75,4 +75,4 @@ El esquema usa IDs reales y relaciones. **No generar tournamentId/entrantId desd
 
 ## Mensaje listo para iniciar Claude Code
 
-> Lee AGENTS.md, CLAUDE.md y docs/smash/{CONTEXTO,EN-CURSO,BASE-DE-DATOS,SIGUIENTE-FASE}. La instalación de install.sql en ivcjgjlk_smash terminó correctamente según el dueño. Comienza por la conexión PHP privada y su diagnóstico; no recrees tablas ni pidas contraseñas por chat. Después prepara el paquete/importador de cortes con relaciones reales: el JSON público aún carece de tournamentId/entrantIds. Mantén el cálculo y la web actual, documenta pruebas y pendientes. Toda pantalla nueva se solicita primero a Claude Design; el backend puede avanzar sin ella.
+> Lee AGENTS.md, CLAUDE.md y docs/smash/{CONTEXTO,EN-CURSO,BASE-DE-DATOS,SIGUIENTE-FASE}. La instalación de install.sql en ivcjgjlk_smash terminó correctamente según el dueño. El conector PDO ya está publicado; comienza verificando su diagnóstico con la sesión administrativa renovada, sin recrear tablas ni pedir contraseñas por chat. Después prepara el paquete/importador de cortes con relaciones reales: el JSON público aún carece de tournamentId/entrantIds. Mantén el cálculo y la web actual, documenta pruebas y pendientes. Toda pantalla nueva se solicita primero a Claude Design; el backend puede avanzar sin ella.
