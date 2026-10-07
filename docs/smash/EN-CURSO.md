@@ -4,7 +4,7 @@
 
 - El dueño confirmó: ejecutó `install.sql` en phpMyAdmin y todo terminó correctamente. Base de la captura: `ivcjgjlk_smash`. Confirmación del dueño, no conexión/verificación directa del agente.
 - PR #1 del repo nuevo fusionada en `main`, commit `cb89570`. Preparó v1 `001_accounts_competition`: 31 tablas/87 selecciones esperadas. CI correcto: 46 Python + 12 Node y 8 pruebas por motor (MySQL 8.0/MariaDB 10.11), run `37574948355`.
-- No volver a instalar ni borrar/recrear tablas. La conexión PHP, usuario/host/permisos y versión de producción todavía no están confirmados. No pedir contraseñas por chat.
+- No volver a instalar ni borrar/recrear tablas. El dueño confirmó que creó el usuario MySQL. Configuración privada, asociación/permisos, host y versión aún pendientes de prueba. Plantilla e instrucciones en CONFIGURACION-PRIVADA.md; no pedir contraseñas por chat.
 - La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`; no se importaron cortes ni respuestas a MySQL.
 - Dominios/repos: sitio activo https://rankingsmashbros.com/, repo Bucaro-19/rankingsmashbros. Graduación es legado.
 

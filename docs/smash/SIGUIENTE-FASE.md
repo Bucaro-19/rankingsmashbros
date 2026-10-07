@@ -16,7 +16,7 @@ El diseño actual vive en index.html/arena.css/app.js. No portar support.js ni d
 
 ## Entrega 1 — conexión privada y diagnóstico
 
-1. Confirmar que existe un usuario MySQL vinculado a `ivcjgjlk_smash`; cPanel administra ese vínculo. No pedir su contraseña por chat. El dueño configura un archivo privado en el servidor, fuera del document root, con host/puerto, base, usuario y contraseña.
+1. El dueño confirmó que creó el usuario MySQL; comprobar su vínculo a `ivcjgjlk_smash`, administrado por cPanel. Plantilla e instrucciones: CONFIGURACION-PRIVADA.md. No pedir su contraseña por chat. El dueño configura un archivo privado en el servidor, fuera del document root, con host/puerto, base, usuario y contraseña.
 2. Preparar plantilla sin secretos e instrucciones. Nombre sugerido: `config.local.php`, ignorado por Git. Ruta fuera del sitio, por ejemplo `/home/<cuenta>/private-smash/config.local.php`, ajustada al hosting real. Evitar credenciales en .htaccess, URL, JS o logs. FTP publica solo archivos de la allowlist y no debe subir ese config.
 3. Conector PDO (`pdo_mysql`), utf8mb4, UTC, excepciones y prepared statements nativos. La instalación SQL no prueba permisos de PHP. No exponer PDOException con datos de conexión al visitante.
 4. Diagnóstico CLI/control administrativo protegido: SELECT VERSION(), versión del esquema, tablas y catálogo. Nunca una página pública que muestre credenciales o información de la base. Si no hay SSH/CLI, definir con el dueño el mecanismo protegido antes de publicarlo.

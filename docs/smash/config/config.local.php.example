@@ -1,0 +1,12 @@
+<?php
+// Copiar a private-smash/config.local.php EN EL SERVIDOR, fuera de todos los sitios.
+// Completar ahi. No subir el archivo completado a Git ni pegar credenciales en chat.
+return [
+    'database' => [
+        'host' => 'localhost',
+        'port' => 3306,
+        'name' => 'ivcjgjlk_smash',
+        'user' => 'USUARIO_MYSQL_COMPLETO',
+        'password' => 'CONTRASENA_MYSQL',
+    ],
+];
