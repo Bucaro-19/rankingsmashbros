@@ -25,7 +25,7 @@ php scripts/database/import_survey.php --file RUTA --site-root SITIO --apply # e
 `--site-root` es la carpeta que contiene `database.php`; las credenciales salen de `../private-smash/config.local.php` por el conector existente, sin cambios. Sin `--apply` nunca queda nada escrito. Salida: resumen JSON de conteos (`fileRows`, `inserted`, `alreadyPresent`, `testRows`, `tableRowsBefore/After`). Códigos: 0 correcto, 1 rechazo, 2 uso incorrecto.
 
 ## Qué se verificó y cómo
-- `php scripts/database/test_import_survey.php` sin variables: análisis, 30 casos de rechazo, privacidad de errores y la secuencia completa de importación sobre SQLite en memoria (sustituto del motor, mismo SQL).
+- `php scripts/database/test_import_survey.php` sin variables: análisis, 38 casos de rechazo, privacidad de errores y la secuencia completa de importación sobre SQLite en memoria (sustituto del motor, mismo SQL).
 - Con `SMASH_SCHEMA_TEST_DB=smash_schema_test SMASH_SCHEMA_TEST_PORT=33306 SMASH_SCHEMA_TEST_PASSWORD=...` repite la secuencia sobre el esquema real instalado con `install.sql`: simulación sin escritura, primera importación, valores guardados iguales al archivo, repetición sin cambios, línea añadida, archivo inválido, fallo a mitad de transacción con rollback y conflicto de hash no sobrescrito. Borra `survey_responses` antes y después, y se niega a correr si la base no se llama `smash_schema_test*`.
 - Ejecutado por Claude Code en una MariaDB local desechable **13.0.2** (Homebrew) con `install.sql` (31 tablas, 87 personajes): pasó. También el CLI de punta a punta: validar, simular, aplicar, repetir, archivo dañado y uso incorrecto.
 - **No verificado:** MariaDB 10.11 y MySQL 8.0 de CI (el workflow no se tocó, por encargo) ni MariaDB 11.4.13 de producción.
