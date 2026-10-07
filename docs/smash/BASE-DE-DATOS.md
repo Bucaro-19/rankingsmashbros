@@ -26,7 +26,7 @@ SELECT id, name FROM characters WHERE id IN (1319, 1766, 1897, 1746);
 - `schema.sql`: fuente del esquema, sin catálogo.
 - `seed-characters.sql`: catálogo generado desde `ranking-smash-ultimate/characters.js`, más el ID real 1746 de Random Character. Conserva el nombre desconocido en futuras importaciones en vez de inventar equivalencias por ID. Los assets locales se resuelven contra la URL del sitio.
 - `install.sql`: archivo único generado con ambos. Regenerar tras cambiar el esquema o catálogo: `node scripts/database/build_character_seed.cjs`. Verificar: añadir `--check`.
-- `scripts/database/test_schema.py`: pruebas reales sobre bases locales desechables en CI. MySQL 8.0 y MariaDB 10.11; instalación y catálogo dos veces, claves foráneas, sets pendientes, versiones/reportes, cortes y entregas de notificaciones. No usa ni acepta el servidor de producción.
+- `scripts/database/test_schema.py`: pruebas reales sobre bases locales desechables en CI. MySQL 8.0 y MariaDB 10.11; instalación y catálogo dos veces, claves foráneas, sets pendientes, versiones/reportes, cortes y entregas de notificaciones. No usa ni acepta el servidor de producción. Validado: run `37574948355`, 8 pruebas por motor correctas; las 58 pruebas existentes del ranking/UI también pasan.
 
 ## Tablas y propósito
 
