@@ -1,5 +1,9 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Relevo vigente a Claude Code
+
+El dueño pidió detener a Codex y documentar la continuidad. Leer primero **[RELEVO-CLAUDE-CONTINUACION.md](RELEVO-CLAUDE-CONTINUACION.md)**: prompt listo, estado comprobado, configuración pendiente de BanaHosting y opciones para avanzar remotamente. Recomendación: historial disponible desde SQL/estadísticas de rivales; el dueño no seleccionó todavía ese módulo ni agenda/estudio TrueSkill. Esta entrega solo documenta; no cambia código, datos ni producción.
+
 ## Encargo vigente — dueño remoto y transparencia del método
 
 - El dueño está trabajando remotamente y pidió dejar por escrito los pasos que requieren su computadora/cPanel. Guía: [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). No pedir claves por chat; el archivo local ya existe. El agente puede continuar diagnóstico/envío/lecturas/activación después de recibir evidencia de la configuración del servidor.

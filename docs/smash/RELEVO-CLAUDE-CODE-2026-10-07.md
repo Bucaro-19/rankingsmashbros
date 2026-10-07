@@ -1,5 +1,7 @@
 # Relevo a Claude Code — siguiente entrega, 7 de octubre de 2026
 
+**Archivo histórico de un encargo ya completado.** El relevo vigente es [RELEVO-CLAUDE-CONTINUACION.md](RELEVO-CLAUDE-CONTINUACION.md). No ejecutar el prompt antiguo siguiente para rehacer encuesta/OAuth ni asumir sus conteos iniciales como estado actual.
+
 El dueño encargó a Claude Code continuar el backend y pidió el prompt de Claude Design para ingreso/perfil. Codex no inició estas funciones ni envió mensajes a otra sesión de Claude. Este documento sustituye el encargo limitado de TRABAJO-PARALELO-2026-10-07.md, ya completado.
 
 ## Prompt listo para pegar en Claude Code
@@ -38,4 +40,3 @@ El dueño encargó a Claude Code continuar el backend y pidió el prompt de Clau
 - Concretar las pruebas/operación antes de activar el automatismo. El calendario sigue domingo 00:00 Guatemala; consultar variables y ejecuciones actuales.
 - El dueño recibe el brief de Claude Design para ingreso/perfil/edición de mains. Esperar su handoff para pantallas nuevas. OAuth se implementará con IDs verificados, state/CSRF, sesiones, tokens protegidos y permisos reales; una selección de rol no otorga permisos de organizador en start.gg.
 - Historial/rank desde base/caché, sin consultas API por cada visita. Pendientes posteriores: top 15 por organizador con atribución definida, agenda/torneo activo, propuestas de resultados y avisos. No prometerlos como ya implementados.
-

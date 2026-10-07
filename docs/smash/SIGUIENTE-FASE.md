@@ -1,5 +1,9 @@
 # Relevo para Claude Code — importar datos a la base conectada
 
+## Punto de entrada vigente — continuidad solicitada por el dueño
+
+Leer **[RELEVO-CLAUDE-CONTINUACION.md](RELEVO-CLAUDE-CONTINUACION.md)** antes de los encargos históricos siguientes. Encuesta/OAuth ya están publicados; la automatización SQL espera configuración y prueba de BanaHosting. El dueño aún no eligió el siguiente módulo. Esta entrega es únicamente documental.
+
 ## Dueño remoto — pasos pendientes y comparación pública
 
 Lista práctica del dueño: [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). No activar `SMASH_SQL_SYNC_ENABLED` hasta probar el cron y el reenvío idempotente en hosting. No repetir instalación ni regenerar la clave por rutina.
