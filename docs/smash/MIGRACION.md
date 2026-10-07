@@ -17,9 +17,9 @@
 - Activadas aquí `SMASH_SYNC_ENABLED=true` y `SMASH_RELEASE_MODE=weekly`. El repo viejo sigue con las suyas: publican a dominios distintos y no chocan. El domingo 11 de octubre es la primera actualización semanal de este repo y la primera prueba real del `STARTGG_TOKEN` nuevo; si falla, se conserva el corte actual.
 
 ## Falta ahora
-1. Dueño: entrar a `https://rankingsmashbros.com/opiniones.php` con su clave y confirmar que aparecen las respuestas anteriores de la encuesta.
+1. Hecho: panel privado consultado en el dominio nuevo; 12 respuestas reales antes y después de publicar el conector PHP. Encuesta sigue usando su archivo protegido, todavía no SQL.
 2. Lunes 12 de octubre: comprobar que el semanal de este repo publicó. Si sí: `SMASH_SYNC_ENABLED=false` en el repo viejo, redirección de `ingporras.com/ranking-smash-ultimate/` al dominio nuevo, actualizar enlaces del portafolio y los `ingporras.com` de pies de página y documentación, y después quitar Smash del repo viejo.
-3. Base de datos: dueño confirmó importación exitosa de install.sql en ivcjgjlk_smash. Conexión/importadores pendientes; ver BASE-DE-DATOS.md y SIGUIENTE-FASE.md.
+3. Base de datos instalada y conectada: el dueño compartió diagnóstico exitoso el 6/oct/2026 (Guatemala), MariaDB 11.4.13, 31 tablas, 87 selecciones y schemaReady=true. Importadores pendientes; ver BASE-DE-DATOS.md y SIGUIENTE-FASE.md. No reinstalar ni pedir credenciales por rutina.
 
 ## Lista original (referencia)
 1. (Hecho) Dueño, en cPanel de BanaHosting: agregar `rankingsmashbros.com` como dominio adicional, apuntar el DNS y activar SSL. Anotar la carpeta raíz que cPanel le asigna.
