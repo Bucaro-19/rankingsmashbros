@@ -1,5 +1,14 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Rediseño de Método — publicado (Claude Code, 7/oct)
+
+Primera mitad del handoff `design_handoff_smash_gt_metodo_opinion/` (carpeta local del dueño). «Tu opinión» (`encuesta.php`) va en la siguiente entrega y reutiliza `paginas.css` y `cabecera.js`.
+
+- `metodologia.html` reescrita con el encabezado y pie del inicio, índice (barra plegable en móvil, columna lateral en escritorio, sección actual marcada), franja de cifras, pasos numerados, cuadro de cuatro casos como tabla real con forma de tarjetas, comparación con TrueSkill que se apila en móvil, y lista de torneos agrupada por mes con búsqueda, «Ver los N torneos» e insignias por vista.
+- **El contenido no cambió:** una comprobación automática al generar la página confirmó que todos los párrafos del texto anterior siguen presentes; lo único sustituido es el pie viejo por el pie común del sitio. Se conservan los anclajes `#torneos`, `#puntos-en-claro` y `#trueskill`, y el selector de vista sigue siendo un enlace `?scope=guatemala`.
+- Archivos nuevos: `paginas.css` (base común de las páginas de lectura) y `cabecera.js` (el aviso de sesión del encabezado, que antes vivía dentro de `app.js`; ahora lo comparten inicio y Método). `metodologia.css` y `metodologia.js` reescritos. Sin cambios en datos ni en el cálculo.
+- Revisado en navegador contra copia local: escritorio y 375 px, ambas vistas, búsqueda, «ver todos», índice, sin desbordamiento horizontal ni errores propios en consola.
+
 ## Reparto vigente — 7/oct, cierre de la noche
 
 - **Codex:** datos del análisis de rival, solo servidor. Encargo y prompt: [ENCARGO-CODEX-API-ANALISIS-RIVAL.md](ENCARGO-CODEX-API-ANALISIS-RIVAL.md). Su PR #36 (personajes por game) está abierta con CI en verde y espera la orden del dueño para fusionar y publicar.
