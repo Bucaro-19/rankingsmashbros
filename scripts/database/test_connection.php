@@ -60,7 +60,7 @@ try {
         verify($status['ok'] && $status['schemaReady'], 'actual database diagnostic');
         verify($status['tableCount'] === 31 && $status['counts']['characters'] === 87, 'installed schema');
         verify($status['counts']['players'] === 0 && $status['counts']['cuts'] === 0, 'read only, no inserted data');
-        verify($pdo->getAttribute(PDO::ATTR_EMULATE_PREPARES) === false, 'native prepared statements');
+        verify((bool)$pdo->getAttribute(PDO::ATTR_EMULATE_PREPARES) === false, 'native prepared statements');
         verify($pdo->query('SELECT @@session.time_zone')->fetchColumn() === '+00:00', 'UTC');
         $bad = $db;
         $bad['password'] = 'incorrect-test-only';
