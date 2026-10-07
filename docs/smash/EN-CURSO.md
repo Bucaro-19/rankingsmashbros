@@ -37,10 +37,12 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 
 - Claude entregó importador CLI repetible, pruebas inventadas y MIGRACION-ENCUESTA.md. El dueño ya ejecutó una primera copia en cPanel; el archivo sigue siendo la fuente de encuesta/opiniones.
 - Codex verificó directamente solo agregados de producción: 13 filas, 13 hashes distintos, 1 is_test. Sin leer comentarios ni ejecutar escrituras.
-- Revisión completada: protección de la transacción del llamador y regresión; integración en CI MySQL 8.0/MariaDB 10.11 con extensiones SQLite/mbstring explícitas. Sintaxis y suite SQLite locales correctas. CI `37582761629` correcta sobre `b7d842a`; ejecución de la suite nueva confirmada en logs sobre MySQL 8.0.46 y MariaDB 10.11.19. El dueño autorizó fusionar PR #10 una vez revisada; consultar su estado en GitHub antes de retomar.
+- PR #10 revisada y fusionada en main `972225d`: protección de la transacción del llamador y regresión; integración en CI MySQL 8.0/MariaDB 10.11 con extensiones SQLite/mbstring explícitas. Sintaxis y suite SQLite locales correctas. CI `37582761629` correcta sobre `b7d842a`; suite nueva confirmada en logs sobre MySQL 8.0.46 y MariaDB 10.11.19. Checks del commit final correctos: `37582899820` y `37582895363`.
 - Pendientes: repetición real con versión revisada, hash/tamaño del respaldo y comparación de valores. Después, transición controlada del archivo a SQL con pausa de envíos y verificación final; no activar doble escritura ni asumir que el despliegue FTP es atómico.
 
 Siguiente: completar la transición de encuesta y preparar transporte privado/autenticado para automatizar la carga SQL semanal. Mantener JSON público y método/calendario actuales. Después OAuth y perfil según handoff de Design. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
+
+El dueño encargó esa continuación a Claude Code. Relevo/prompt vigente en **RELEVO-CLAUDE-CODE-2026-10-07.md**; sustituye el encargo paralelo anterior, ya cumplido. Prompt de ingreso/perfil/mains para el dueño en **BRIEF-CLAUDE-DESIGN-CUENTAS.md**. Codex solo preparó el relevo y el brief; no inició la transición ni OAuth y no envió mensajes a otras sesiones.
 
 Este relevo documenta instalación, conector y primera importación/repetición de ranking completadas. Encuesta y automatización SQL pendientes. Consultar Git/Actions antes de retomar.
 
