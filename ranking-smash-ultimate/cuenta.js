@@ -44,6 +44,8 @@
     $('loading').hidden=false;$('account-error').hidden=true;
     try {
       data=await request();
+      // Display hint for the home page header only; never proof of a session.
+      try{if(data.authenticated)localStorage.setItem('smashgt.cuenta',data.user.tag);else localStorage.removeItem('smashgt.cuenta');}catch{}
       if(!data.authenticated){renderLogin();return;}
       saved=[...data.user.chosen];chosen=[...saved];roles=data.user.roles.length?[...data.user.roles]:['player'];
       $('header-account').textContent=data.user.tag;$('header-account').href='./cuenta.html';

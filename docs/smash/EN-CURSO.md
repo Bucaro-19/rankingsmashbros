@@ -1,8 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
-## Sesión persistente — en PR, sin publicar (Claude Code, 7/oct)
+## Sesión persistente — publicada el 7 de octubre (Claude Code)
 
-Primer punto de la hoja de ruta, aprobado por el dueño («lo normal, como Facebook»). **Estado: código y pruebas en la rama `feat/persistent-session`; falta fusionar, desplegar y aplicar la migración 002 en producción.** Detalle en CUENTAS-OAUTH.md, «Mantener la sesión iniciada».
+Primer punto de la hoja de ruta, aprobado por el dueño («lo normal, como Facebook»). **Estado: PR #27 fusionada (`fcd2985`), desplegada y con la migración 002 aplicada en producción.** Falta que el dueño vuelva a entrar con start.gg una vez para recibir la cookie y confirme que ya no se le pide. Detalle en CUENTAS-OAUTH.md, «Mantener la sesión iniciada».
+
+- CI de main `fcd2985` correcta; despliegue `37688777954`, `assets_only=true`, correcto. `public.json` idéntico (SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`).
+- Migración 002 aplicada desde la Mac del dueño por su orden explícita («aplica la migración 002»): de 31 a 34 tablas, `schema_migrations` con ambas versiones, las tres tablas nuevas InnoDB utf8mb4 y vacías. Sin cambios en lo existente: cuts=1, users=1, survey_responses=16, rankings=376.
+- Producción comprobada por HTTP: API anónima `ok`, `authenticated=false`, `oauthReady=true`; una cookie `smash_recordar` inventada devuelve 200 sin sesión y el servidor la borra (`Secure; HttpOnly; SameSite=Lax`), lo que confirma código nuevo y lectura de `user_sessions`. Bibliotecas 403; encuesta, opiniones y cuenta 200.
+- No comprobado todavía: emisión y uso de la cookie con la cuenta real (requiere una autorización del dueño en start.gg).
+- **Encabezado de la página principal** (pedido del dueño el mismo día, en PR aparte): el enlace «Tu cuenta · Beta» muestra el alias cuando hay sesión. `cuenta.js` guarda el alias como pista visual en `localStorage` (`smashgt.cuenta`) y `app.js` la confirma con `account-api.php`; quien nunca inició sesión no genera ninguna petición de cuenta. La pista no autentica nada. Probado en navegador contra copia local con base desechable: sin sesión, con sesión y después de cerrar sesión.
+- **Decisión del dueño para el contador de visitas:** autorizó usar también la IP («si jalemos la ip no hay problema»). Diseño previsto: guardar una huella con clave privada, no la IP en claro; documentar el cambio de la regla de privacidad en esa entrega.
 
 - Cookie propia `smash_recordar` de 90 días que se renueva con el uso; en SQL solo su SHA-256 (`user_sessions`). Sin tokens de start.gg, IP ni navegador. Cerrar sesión termina ese navegador; desvincular termina todos.
 - Cambio deliberado respecto a la entrega de cuentas: iniciar sesión en un segundo dispositivo **ya no cierra** el primero. La versión de la conexión solo cambia al volver a vincular después de desvincular.
