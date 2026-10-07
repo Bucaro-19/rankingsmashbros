@@ -28,14 +28,17 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 
 - **Producción escribe y lee la encuesta en `survey_responses`.** PR #13 fusionada (`033bd6a`), despliegue `37647575579` correcto. Contratos, protocolo ejecutado y evidencia: MIGRACION-ENCUESTA.md, «Entrega 2» y «Transición en producción».
 - Base al publicar: 14 filas (13 de comunidad + 1 prueba), todas importadas de los dos archivos y comparadas fila por fila. El archivo del sitio nuevo quedó congelado (440) con dos respaldos en `private-smash/`.
-- **Falta:** una respuesta de prueba real por el formulario nuevo (decisión del dueño), que el dueño confirme el panel (13 respuestas) y anote `phpVersion`, y resolver la encuesta del dominio anterior, que sigue viva y escribe en su propio archivo sin congelar.
+- Verificado después: una respuesta de prueba real entró por el formulario nuevo y quedó con `is_test=1` (15 filas: 13 de comunidad, 2 de prueba); el diagnóstico del panel, abierto por el dueño, dio `phpVersion=8.1`.
+- **Falta:** redirigir la encuesta del dominio anterior (PR `Bucaro-19/rsvp-graduacion#26` abierta, espera el visto bueno del dueño) y, ya redirigida, congelar e importar por última vez su archivo. Pasos en MIGRACION-ENCUESTA.md, «Pendiente fuera de esta entrega».
 - No revertir el PR ni desplegar ramas anteriores: `deploy.py` rechaza páginas de encuesta que no sean las de SQL y los despliegues solo corren desde `main`.
 - Hallazgo para el dueño: el repositorio es público, así que los artefactos de Actions los puede descargar cualquier usuario con sesión en GitHub.
 - Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación pendiente; requiere que el dueño registre la app OAuth en start.gg.
 
 ### Carga semanal del ranking a SQL — preparada, sin activar (Claude Code)
 
-- PR #14 (`feat/weekly-sql-loader`): cargador de un comando operado desde la Mac del dueño y artefacto propio del paquete SQL con 90 días. Documento: CARGA-SEMANAL-SQL.md. Nada programado. Primera prueba real posible: después de la publicación del domingo 11 de octubre.
+- PR #14 fusionada (`0c727fc`): cargador de un comando operado desde la Mac del dueño (`scripts/database/weekly_ranking_load.py`) y artefacto propio del paquete SQL con 90 días. Documento: CARGA-SEMANAL-SQL.md. Nada programado.
+- **Siguiente acción, lunes 12 de octubre:** comprobar que la publicación del domingo 11 terminó bien y dejó el artefacto `smash-gt-paquete-sql`; después, desde la Mac, `status`, `load` (simulación) y `load --apply`. Es la primera prueba real de la descarga y del segundo corte.
+- **Vigilar antes del domingo:** al cierre de esta entrega (7/oct, 16:05 UTC) el workflow `smash-publish.yml` todavía no había generado ninguna ejecución programada en este repositorio, ni el tick diario de las 12:23 UTC que debe aparecer como omitido. En el repositorio anterior ese tick llegó con unas seis horas de retraso, así que puede ser demora de GitHub. Si el jueves sigue sin aparecer ninguno, la publicación del domingo podría no dispararse sola: lanzarla a mano con `workflow_dispatch` desde `main`. El primer tick también es la primera evaluación real de la condición `if` del trabajo, que ahora exige `main`.
 
 ### Ranking/historial — entrega completada por Codex
 
