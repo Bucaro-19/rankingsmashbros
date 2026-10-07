@@ -150,10 +150,16 @@ Salidas pegadas por el dueño desde la Terminal de cPanel (solo conteos y huella
 
 La pausa duró desde el paso 2 hasta el despliegue (minutos); durante ese rato la página anterior respondía con su mensaje de error de guardado.
 
-### Sin verificar todavía
-- **Escritura real por la web en producción.** Ninguna respuesta ha entrado aún por el formulario nuevo. Lo comprobado es el código en bases desechables, la conexión del PHP web (diagnóstico de Codex) y que el mismo usuario de base escribe (importador). Falta la respuesta de prueba del paso 5 del protocolo; depende de la decisión del dueño.
-- **Panel con la clave del dueño:** el dueño entró después del despliegue y pegó el diagnóstico: `connection=connected`, MariaDB 11.4.13, `schemaReady=true`, `survey_responses=14` y **`phpVersion=8.1`** (el PHP que sirve el sitio es el mismo 8.1 de la Terminal). Eso prueba que la sesión administrativa y la lectura SQL del panel nuevo funcionan en producción. No dijo expresamente cuántas respuestas mostró el panel; lo esperado son 13.
-- **Huella del archivo congelado después del despliegue:** repetir `sha256sum` y confirmar `ae9f754a…`.
+### Verificado después de publicar
+- **Escritura real por la web (Claude Code, con autorización del dueño).** Una sola respuesta enviada por `https://rankingsmashbros.com/encuesta.php` el 7 de octubre a las 16:04:00 UTC, con comentario que empieza por `PRUEBA TÉCNICA INTERNA`. La página mostró el agradecimiento, sin errores. Leída desde otra conexión (Mac del dueño): fila nueva con `is_test=1`, temporada 2026, hora UTC del momento y clave de 64 caracteres. Totales: **15 filas, 2 de prueba, 13 de comunidad** (sin cambio en las de comunidad).
+- **Panel con la clave del dueño.** El dueño entró después del despliegue y pegó el diagnóstico: `connection=connected`, MariaDB 11.4.13, `schemaReady=true`, `survey_responses=14` (antes de la prueba) y **`phpVersion=8.1`**: el PHP que sirve el sitio es el mismo 8.1 de la Terminal. No dijo expresamente cuántas respuestas mostró el panel; lo esperado son 13.
+
+### Sin verificar
+- **Huella del archivo congelado después del despliegue:** repetir `sha256sum` y confirmar `ae9f754a…`. Se pedirá junto con la importación final del archivo del dominio anterior.
 
 ## Pendiente fuera de esta entrega
-- La encuesta del dominio anterior (`ingporras.com/ranking-smash-ultimate/encuesta.php`) sigue viva y escribe en **su** archivo, que no está congelado. Ya ocurrió una vez: una respuesta entró por ahí y hubo que importarla. Mientras siga así, traer lo nuevo repitiendo el importador sobre ese archivo (`--file` con la ruta del paso 3, `--site-root ~/rankingsmashbros.com --apply`); no duplica. Solución definitiva propuesta al dueño y pendiente de su respuesta: redirigir `encuesta.php` y `opiniones.php` del dominio anterior al nuevo (cambio en el repo anterior), congelar ese archivo e importarlo una última vez.
+- La encuesta del dominio anterior (`ingporras.com/ranking-smash-ultimate/encuesta.php`) sigue viva y escribe en **su** archivo, que no está congelado. Ya ocurrió una vez: una respuesta entró por ahí y hubo que importarla. El dueño eligió redirigirla: PR `Bucaro-19/rsvp-graduacion#26` (302 de `encuesta.php` y `opiniones.php` al dominio nuevo), **abierta y sin fusionar; requiere su visto bueno**. Pasos que faltan, en orden:
+  1. Fusionar esa PR y publicar el repo anterior con «Publicar captura Smash GT» (`assets_only=true`). Comprobar que las dos URL antiguas responden 302 hacia el dominio nuevo.
+  2. Dueño, en la Terminal de cPanel: congelar el archivo del dominio anterior (`chmod 440`), importarlo con `--apply` (solo añade líneas nuevas, si las hay) y comparar con los dos archivos (`--file` dos veces, `--compare`, sin `--no-extra`). Esperado: `fileFullyStored=true` y `databaseRowsNotInFile` igual al número de respuestas recibidas por la web (1 al cierre de esta entrega: la prueba). Repetir `sha256sum` del archivo congelado del sitio nuevo.
+  3. Anotar aquí los resultados.
+  Mientras no se haga, traer lo nuevo repitiendo el importador sobre ese archivo; no duplica.
