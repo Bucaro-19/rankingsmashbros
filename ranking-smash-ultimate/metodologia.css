@@ -63,3 +63,15 @@
 .points-table td { color: #c4cedd; }
 .points-context { margin-top: 24px; }
 @media(max-width:620px) { .points-table th,.points-table td { padding: 13px 11px; font-size: 12px; } .points-table tbody th { width: 36%; } }
+
+.comparison-table tbody th { width: 22%; }
+.comparison-table td { width: 39%; }
+#trueskill .source-grid a { color: #ffe364; text-decoration: underline; text-underline-offset: 3px; }
+@media(max-width:620px) {
+  .comparison-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .comparison-table tbody tr { display: grid; padding: 18px; border-top: 1px solid #354760; }
+  .comparison-table tbody th, .comparison-table td { width: auto; border: 0; padding: 0; }
+  .comparison-table tbody th { margin-bottom: 14px; font-size: 14px; }
+  .comparison-table td + td { margin-top: 16px; }
+  .comparison-table td::before { content: attr(data-label); display: block; margin-bottom: 4px; color: #fff; font-weight: 700; }
+}

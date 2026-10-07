@@ -1,6 +1,8 @@
 # Carga semanal del ranking a SQL — BanaHosting y respaldo desde la Mac
 
-Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`, «preparación del transporte privado para cargar semanalmente el ranking en SQL». **Nada de esto está activado como tarea automática.** Lo entregado es un cargador de un solo comando, probado, que el dueño o un agente ejecuta desde la Mac del dueño, más el diseño del transporte desatendido en el servidor para una entrega posterior.
+Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`, «preparación del transporte privado para cargar semanalmente el ranking en SQL». **La automatización SQL aún no está activada.** El transporte desatendido en BanaHosting ya está implementado y publicado; faltan configuración privada, cron y prueba real. El cargador desde la Mac queda como respaldo.
+
+**Guía práctica para el dueño, cuando vuelva a su computadora:** [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). Contiene los pasos de File Manager/Terminal/Cron y lo que ejecutará el agente después, sin incluir claves.
 
 ## Actualización vigente — elección del dueño, 7/oct
 
