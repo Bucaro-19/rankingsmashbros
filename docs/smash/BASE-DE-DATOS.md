@@ -1,8 +1,16 @@
 # Base de datos — cuentas, historial y competición
 
-El dueño confirmó que todavía no ha creado las tablas y autorizó preparar el modelo completo. Versión inicial `001_accounts_competition`, 7 de octubre de 2026. **La instalación en BanaHosting sigue pendiente de que el dueño importe el SQL.** Tener estas tablas no activa por sí solo cuentas, reportes ni notificaciones: todavía faltan sus módulos PHP y sincronización.
+Versión inicial `001_accounts_competition`, preparada el 7 de octubre de 2026. **El dueño confirmó que importó `install.sql` en BanaHosting y todo terminó correctamente.** Base seleccionada: `ivcjgjlk_smash`, según la captura de phpMyAdmin. La confirmación es del dueño; el agente todavía no se ha conectado a MySQL ni consultado conteos/versiones en producción. Tener estas tablas no activa por sí solo cuentas, reportes ni notificaciones: faltan conexión PHP, importadores y módulos.
 
-## Crear la base en BanaHosting
+## Estado instalado
+
+- PR #1 fusionada en `main`, commit `cb89570`; SQL instalado reportado por el dueño. No reinstalar ni recrear tablas como siguiente paso.
+- Esquema esperado: 31 tablas, 87 selecciones y versión `001_accounts_competition`. Verificar estos valores al configurar la conexión; no presentarlos como conteos ya consultados en el servidor.
+- Usuario MySQL, asociación/permisos, host y versión del motor: aún no confirmados. Contraseña/configuración privada: no compartida ni solicitada en chat.
+- Web y encuesta siguen funcionando con JSON/archivo; todavía no se importaron cortes ni respuestas a la base.
+- Siguiente entrega: `SIGUIENTE-FASE.md`. Toda pantalla nueva requiere handoff de Claude Design, por instrucción del dueño.
+
+## Instalación inicial (referencia; ya ejecutada por el dueño)
 
 1. En cPanel → MySQL Databases / Database Wizard, crear una base exclusiva para Smash y un usuario exclusivo. Asociarlo a esa base con permisos para instalar las tablas. No reutilizar la base de otro sitio. cPanel añade su propio prefijo: conservar los nombres completos.
 2. Abrir phpMyAdmin y **seleccionar esa base vacía**. En SQL ejecutar `SELECT VERSION();`. El esquema requiere **MySQL 8.0.16+ o MariaDB 10.6+**; no usa collation exclusiva de MySQL. Si la versión es anterior, adaptar antes de importar.
@@ -81,9 +89,9 @@ Fuentes oficiales revisadas el 7 de octubre:
 
 ## Lo que sigue
 
-1. Dueño crea base vacía/importa `install.sql` y confirma versión y nombres (sin contraseña).
-2. Configurar conexión PHP privada y carga transaccional de public.json; mantener la web leyendo JSON hasta verificar paridad.
+1. Instalación confirmada por el dueño. Verificar estructura/versiones con la conexión privada, sin repetir importación por rutina.
+2. Configurar conexión PHP privada y preparar el paquete/importador transaccional. El JSON público no incluye tournamentId/entrantIds: completar la exportación con relaciones reales de la captura antes de cargar. Ver SIGUIENTE-FASE.md. Mantener la web leyendo JSON hasta verificar paridad.
 3. Migrar encuesta desde `feedback-data/respuestas-2026.php`, saltando guarda PHP y usando sha256 de cada línea como import_hash. Mantener respaldo y verificar conteos/pruebas internas antes de cambiar lectura/escritura.
-4. OAuth, perfil con historial/mains, prueba de torneo activo, reportes y avisos por etapas. Esta entrega **solo prepara la base**, no mueve respuestas ni modifica ranking/despliegue.
+4. OAuth, perfil con historial/mains, prueba de torneo activo, reportes y avisos por etapas. La base ya se instaló según el dueño; los módulos todavía no están conectados. No se han movido respuestas ni modificado ranking/despliegue.
 
 Las respuestas anteriores ya se comprobaron en el dominio nuevo. La carpeta feedback-data permanece protegida. El acceso SSH/MySQL de un agente aún no está configurado; no abrir acceso remoto universal para instalar esto.

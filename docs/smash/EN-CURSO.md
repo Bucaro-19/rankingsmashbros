@@ -1,14 +1,28 @@
-# Base de datos — fase actual (7 de octubre de 2026)
+# Base instalada — siguiente fase (7 de octubre de 2026)
 
-El dueño confirmó que NO existen tablas y autorizó preparar la base para cuentas, historial, roles simultáneos, próximo rival, estadísticas, reportes revisados y notificaciones. Trabajar en el repo nuevo desde main, no en la carpeta obsoleta de graduación.
+## Estado vigente
 
-- Rama: `feat/database-foundation`. Esquema v1, 31 tablas, `docs/smash/install.sql` único (incluye catálogo de 87 selecciones). Ver `BASE-DE-DATOS.md` para instrucciones y contratos; `REVISION-CUENTAS.md` conserva el análisis previo.
-- El dueño instalará mediante phpMyAdmin. Todavía NO se ha instalado en BanaHosting ni configurado conexión PHP. No pedir contraseñas en chat. Primero confirmar importación y versión.
-- PR #1 del repo nuevo. CI run `37574948355`: 46 pruebas Python + 12 Node, y 8 pruebas de integración por motor en MySQL 8.0 y MariaDB 10.11, correctas. Instalación/catálogo repetidos sin duplicados. `install.sql` listo para importar. Confirmar estado de la PR/main antes de repetir trabajo.
-- OAuth no garantiza una cuota independiente ilimitada. Datos compartidos en DB/caché; credenciales de usuarios para identidad/operaciones autorizadas. Tokens persistentes solo cifrados; el esquema no cifra automáticamente.
-- Siguiente fase autorizada: conexión privada/importador y migración de encuesta cuando exista la base, después cuentas y torneo activo. Ranking/método y actualización semanal siguen intactos.
+- El dueño confirmó: ejecutó `install.sql` en phpMyAdmin y todo terminó correctamente. Base de la captura: `ivcjgjlk_smash`. Confirmación del dueño, no conexión/verificación directa del agente.
+- PR #1 del repo nuevo fusionada en `main`, commit `cb89570`. Preparó v1 `001_accounts_competition`: 31 tablas/87 selecciones esperadas. CI correcto: 46 Python + 12 Node y 8 pruebas por motor (MySQL 8.0/MariaDB 10.11), run `37574948355`.
+- No volver a instalar ni borrar/recrear tablas. La conexión PHP, usuario/host/permisos y versión de producción todavía no están confirmados. No pedir contraseñas por chat.
+- La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`; no se importaron cortes ni respuestas a MySQL.
+- Dominios/repos: sitio activo https://rankingsmashbros.com/, repo Bucaro-19/rankingsmashbros. Graduación es legado.
+
+## Instrucción nueva del dueño
+
+Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su handoff. Documentar funciones/estados en un brief y entregarlo al dueño; no inventar la pantalla en código. Backend/importadores pueden avanzar sin pantallas. Regla guardada en AGENTS.md y CLAUDE.md.
+
+## Próximo trabajo
+
+Leer `SIGUIENTE-FASE.md`: conexión privada PDO y diagnóstico sin datos secretos; paquete/importación transaccional e idempotente del corte real (faltan tournamentId/entrantIds en el JSON público), manteniendo JSON público; migración de encuesta con respaldo y conteos; después OAuth y perfil según handoff de Design. Mantener método y calendario semanal. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
+
+Este relevo documenta el cierre de instalación; la implementación de conexión/importadores está pendiente. Consultar Git/Actions antes de retomar.
 
 ---
+## Archivo histórico del rediseño (trabajo completado)
+
+Las listas de pendientes anteriores se conservan como historial; el estado vigente está arriba.
+
 
 # Rediseño y mains automáticos — 6 de octubre de 2026
 
