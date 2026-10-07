@@ -1,5 +1,9 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Pedidos nuevos del dueño — 7 de octubre
+
+Panel administrativo de estadísticas, sesión persistente, historial/rivales gratis, análisis de contrincante y top 15 por organizador como premium, y ranking por país a futuro. Registro y estado técnico en [HOJA-DE-RUTA-DUENO-2026-10-07.md](HOJA-DE-RUTA-DUENO-2026-10-07.md). Nada implementado; el orden propuesto espera confirmación del dueño.
+
 ## Carga automática a SQL — activada el 7 de octubre (Claude Code)
 
 **Estado: `SMASH_SQL_SYNC_ENABLED=true` desde el 7/oct 20:32 UTC, activada por orden explícita del dueño después de la prueba del circuito real.** Falta por ocurrir la primera carga de un corte nuevo (domingo 11/oct).
