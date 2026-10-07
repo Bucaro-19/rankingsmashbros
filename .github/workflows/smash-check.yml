@@ -15,7 +15,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Verificar importación, exportación y destino de publicación
-        run: python -m unittest discover -s scripts/smash -v
+        run: |
+          python -m unittest discover -s scripts/smash -v
+          python scripts/database/test_import_ranking.py
       - name: Verificar JavaScript
         run: |
           node --check ranking-smash-ultimate/characters.js
@@ -65,3 +67,4 @@ jobs:
           python scripts/database/test_schema.py
           php scripts/database/test_connection.php
           python scripts/database/test_diagnostic_http.py
+          python scripts/database/test_import_ranking.py
