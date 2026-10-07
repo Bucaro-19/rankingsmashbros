@@ -1,6 +1,6 @@
 # Ingresar el usuario MySQL desde cPanel
 
-El dueño confirmó que creó el usuario MySQL. El agente observó el archivo en `/home/ivcjgjlk/private-smash/config.local.php` desde la lista de cPanel, sin abrir su contenido. Conector PDO y diagnóstico publicados en PR #4 (`a29355e`), despliegue `37577617156`; falta comprobar la conexión con una sesión administrativa renovada. Comprobar EN-CURSO.md para el estado vigente. Base confirmada: `ivcjgjlk_smash`.
+El dueño confirmó que creó el usuario MySQL. El agente observó el archivo en `/home/ivcjgjlk/private-smash/config.local.php` desde la lista de cPanel, sin abrir su contenido. Conector PDO y diagnóstico publicados en PR #4 (`a29355e`), despliegue `37577617156`; falta comprobar la conexión con la sesión administrativa renovada. Comprobar EN-CURSO.md para el estado vigente. Base confirmada: `ivcjgjlk_smash`.
 
 ## Archivo que debe completar el dueño
 

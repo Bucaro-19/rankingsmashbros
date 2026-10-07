@@ -54,8 +54,10 @@ class DiagnosticTests(unittest.TestCase):
         cls.process.wait(timeout=5)
         cls.temp.cleanup()
 
-    def request(self, *, authenticated=False, method='GET'):
+    def request(self, *, authenticated=False, method='GET', accept=None):
         headers = {'Cookie': f'SMASHGT_ADMIN={self.session_id}'} if authenticated else {}
+        if accept is not None:
+            headers['Accept'] = accept
         request = urllib.request.Request(self.url, headers=headers, method=method)
         try:
             response = urllib.request.urlopen(request, timeout=5)
@@ -95,6 +97,21 @@ class DiagnosticTests(unittest.TestCase):
         status, headers, body = self.request(authenticated=True, method='POST')
         self.assertEqual(status, 405)
         self.assertEqual(headers['Allow'], 'GET')
+
+    def test_browser_readable_body_preserves_auth_and_sanitized_errors(self):
+        for authenticated, expected_status, expected_code in [
+                (False, 401, 'login_required'), (True, 503, 'config_missing')]:
+            with self.subTest(authenticated=authenticated):
+                status, headers, body = self.request(authenticated=authenticated,
+                    accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+                self.assertEqual(status, expected_status)
+                self.assertTrue(headers['Content-Type'].startswith('text/plain;'))
+                self.assertEqual(headers['Vary'], 'Accept')
+                self.assertEqual(json.loads(body)['error']['code'], expected_code)
+                self.assertNotIn(str(self.temp.name), body)
+                self.assertIn('no-store', headers['Cache-Control'])
+        _, headers, _ = self.request(accept='application/json')
+        self.assertTrue(headers['Content-Type'].startswith('application/json;'))
 
 
 if __name__ == '__main__':
