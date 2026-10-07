@@ -1,6 +1,6 @@
 # Contador de visitas — estadísticas privadas del dueño
 
-Pedido del dueño el 7 de octubre de 2026: saber cuánta gente entra y cuánta se registra. Esta entrega **solo recoge los datos**; el panel para verlos espera el handoff de Claude Design (brief: BRIEF-CLAUDE-DESIGN-PANEL-ESTADISTICAS.md). Requiere las migraciones 002 y 003.
+Pedido del dueño el 7 de octubre de 2026: saber cuánta gente entra y cuánta se registra. Los datos se ven en el panel privado: [PANEL-DUENO.md](PANEL-DUENO.md). Requiere las migraciones 002 y 003.
 
 ## Qué se cuenta
 

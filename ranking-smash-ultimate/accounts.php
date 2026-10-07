@@ -256,6 +256,29 @@ function smash_account_remember_restore(PDO $pdo, $token, int $now): ?array
     }
 }
 
+// Signed in for this browser session, or again through the «keep me signed in» cookie.
+// $connect is called only when a cookie has to be checked, so anonymous visitors open no connection.
+function smash_account_resume(callable $connect, int $now): bool
+{
+    if (smash_account_session_valid($_SESSION, $now)) return true;
+    $token = $_COOKIE[SMASH_ACCOUNT_REMEMBER_COOKIE] ?? null;
+    if ($token === null) return false;
+    $account = smash_account_remember_token($token) === null ? null : smash_account_remember_restore($connect(), $token, $now);
+    if ($account === null) { smash_account_remember_set(null, $now); return false; }
+    session_regenerate_id(true);
+    $_SESSION['smash_account'] = $account;
+    smash_account_remember_set($token, $now);
+    return true;
+}
+
+// The account of the current session, re-read from SQL: active user, live connection, same version.
+function smash_account_current(PDO $pdo): array
+{
+    $user = smash_account_user($pdo, $_SESSION['smash_account']['id']);
+    if (($_SESSION['smash_account']['version'] ?? null) !== $user['connectionVersion']) throw new SmashAccountError('login_required');
+    unset($user['connectionVersion']); return $user;
+}
+
 // Signing out ends this browser's cookie; disconnecting ($userId) ends every one of the account.
 function smash_account_remember_revoke(PDO $pdo, $token, ?string $userId = null): void
 {

@@ -15,19 +15,7 @@ function account_pdo(): PDO {
     static $pdo = null;
     return $pdo ?? ($pdo = smash_account_connect(__DIR__));
 }
-// Signed in for this browser session, or again through the «keep me signed in» cookie.
-function account_signed_in(): bool {
-    $now = time();
-    if (smash_account_session_valid($_SESSION, $now)) return true;
-    $token = $_COOKIE[SMASH_ACCOUNT_REMEMBER_COOKIE] ?? null;
-    if ($token === null) return false;
-    $account = smash_account_remember_token($token) === null ? null : smash_account_remember_restore(account_pdo(), $token, $now);
-    if ($account === null) { smash_account_remember_set(null, $now); return false; }
-    session_regenerate_id(true);
-    $_SESSION['smash_account'] = $account;
-    smash_account_remember_set($token, $now);
-    return true;
-}
+function account_signed_in(): bool { return smash_account_resume('account_pdo', time()); }
 function account_sign_out(?string $userId = null): void {
     $token = $_COOKIE[SMASH_ACCOUNT_REMEMBER_COOKIE] ?? null;
     if ($token !== null || $userId !== null) {
@@ -37,11 +25,7 @@ function account_sign_out(?string $userId = null): void {
     unset($_SESSION['smash_account'], $_SESSION['smash_oauth_pending']); session_regenerate_id(true);
     $_SESSION['smash_account_csrf'] = bin2hex(random_bytes(24));
 }
-function account_verified_user(PDO $pdo): array {
-    $user = smash_account_user($pdo, $_SESSION['smash_account']['id']);
-    if (($_SESSION['smash_account']['version'] ?? null) !== $user['connectionVersion']) throw new SmashAccountError('login_required');
-    unset($user['connectionVersion']); return $user;
-}
+function account_verified_user(PDO $pdo): array { return smash_account_current($pdo); }
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'], true)) {
     header('Allow: GET, POST'); account_response(405, ['ok' => false, 'reason' => 'method_not_allowed']);
 }
