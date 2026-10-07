@@ -76,6 +76,16 @@ function smash_stats_weeks(PDO $pdo, string $from, string $to): array
     return array_reverse($weeks);
 }
 
+// Accounts with a paid period running, real charges only. Null while premium is not installed.
+function smash_stats_premium(PDO $pdo, int $now): ?int
+{
+    try {
+        $q = $pdo->prepare("SELECT COUNT(DISTINCT user_id) FROM premium_subscriptions WHERE live_mode = 1 AND status IN ('active', 'past_due', 'canceled') AND current_period_end > ?");
+        $q->execute([gmdate('Y-m-d H:i:s', $now)]);
+        return (int)$q->fetchColumn();
+    } catch (PDOException $error) { return null; }
+}
+
 function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
 {
     try {
@@ -90,7 +100,7 @@ function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
             'yesterday' => null, 'daily' => [], 'periods' => [], 'weekly' => []];
         $total = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
         $linked = (int)$pdo->query('SELECT COUNT(*) FROM oauth_connections WHERE revoked_at IS NULL')->fetchColumn();
-        $report['accounts'] = ['total' => $total, 'linked' => $linked];
+        $report['accounts'] = ['total' => $total, 'linked' => $linked, 'premium' => smash_stats_premium($pdo, $now)];
         $season = $seasonYear . '-01-01';
         foreach (['7' => 7, '30' => 30, '90' => 90, 'season' => null] as $name => $length) {
             $from = $length === null ? $season : smash_stats_shift($yesterday, -($length - 1));

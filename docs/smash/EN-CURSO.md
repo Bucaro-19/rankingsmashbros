@@ -1,5 +1,12 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Cobros de premium con Recurrente — servidor listo, sin pantallas (Claude Code, 7/oct)
+
+Documento: [PREMIUM.md](PREMIUM.md). Biblioteca `premium.php`, `premium-api.php`, `recurrente-webhook.php` y migración `004_premium.sql`. El dueño guardó su llave de **prueba** de Recurrente en su Mac; se comprobó contra el sandbox (cuenta Ingporras, ambiente `sandbox`) sin imprimirla. Premium queda **apagado** en producción hasta que exista el archivo privado. El panel del dueño ya muestra cuántas cuentas son premium.
+
+- **Aviso para Codex y cualquier agente:** el checkout principal de la Mac (`rankingsmashbros/`) lo está usando Codex en `feat/game-selections-sql`. Claude Code trabaja en un worktree aparte; no cambiar de rama ni tocar los cambios sin commit de ese checkout.
+- El archivo de la llave no estaba ignorado por Git: se añadió a `.git/info/exclude` del checkout del dueño y a `.gitignore` en esta entrega (`recurrente.local.php`, `recurrente.local.txt`).
+
 ## Decisiones del dueño para premium y reparto de trabajo — 7/oct, noche
 
 - **Precio:** 3 USD al mes o 24 USD al año. **Pasarela:** Recurrente. El puesto, el perfil y el historial con rivales siguen gratis; pagar no cambia puntos.
