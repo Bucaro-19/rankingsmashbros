@@ -6,7 +6,10 @@
   const art=(id,kind='icon')=>{const c=char(id);return c?`<img src="${escape(c[kind])}" alt="" loading="lazy">`:'<span aria-hidden="true">?</span>';};
   const safeLink=value=>{try{const u=new URL(value);return u.protocol==='https:'&&['www.start.gg','start.gg'].includes(u.hostname)&&!u.username&&!u.password?u.href:null;}catch{return null;}};
   const date=value=>{const day=String(value||'').slice(0,10).split('-');return day.length===3?`${day[2]}/${day[1]}/${day[0]}`:'Sin fecha';};
-  let data=null, scope='combined', historyFilter='all', screen='login', chosen=[], saved=[], activeSlot=0, saving=false, roles=['player'];
+  let data=null, scope='combined', historyFilter='all', screen='login', chosen=[], saved=[], activeSlot=0, saving=false, roles=['player'], openEvents=new Set(), rivalOpener=null;
+  const scopeName=()=>scope==='combined'?'+ Internacional':'Solo Guatemala';
+  const number=value=>Number(value).toLocaleString('en');
+  const initials=tag=>escape(String(tag).trim().slice(0,2).toUpperCase());
   const dirty=()=>AccountModel.dirty(chosen,saved);
   const view=()=>data.profile.views[scope];
   async function request(body=null) {
@@ -56,46 +59,89 @@
     }
   }
   function renderOnboarding() {
-    $('linked-player').textContent=`Cuenta vinculada: ${data.user.tag}. ${data.user.playerId?'Tu perfil se vinculó por el ID verificado de start.gg.':'Tu cuenta todavía no tiene un jugador vinculado en start.gg.'}`;
-    all('[data-roles]').forEach(button=>{const selected=button.dataset.roles.split(',');button.setAttribute('aria-pressed',String(selected.length===roles.length&&selected.every(role=>roles.includes(role))));});
+    const user=data.user, best=data.profile.views.combined, local=data.profile.views.guatemala, rules=data.profile.eligibilityRules;
+    let sub='Sin jugador vinculado', note='Tu cuenta de start.gg no tiene sets en los torneos que seguimos. No buscamos por alias: si compites con otra cuenta de start.gg, ingresa con esa.', ring='none';
+    if(user.playerId&&(best.rank!=null||local.rank!=null)){ring='found';note='';sub=`Jugador encontrado por tu ID de start.gg · #${best.rank??local.rank} en ${best.rank!=null?'+ Internacional':'Solo Guatemala'}`;}
+    else if(user.playerId&&best.events.length){ring='pending';sub='Jugador encontrado · aún sin puesto';const sets=best.wins+best.losses;
+      const progress=`Llevas ${best.countedEvents} ${best.countedEvents===1?'torneo que cuenta':'torneos que cuentan'} y ${sets} ${sets===1?'set válido':'sets válidos'} en ${data.profile.seasonYear}.`;
+      note=AccountModel.requirements(best,rules).every(r=>r.done)?`${progress} Cumples la actividad mínima, pero todavía no apareces entre los clasificados de este corte; tu perfil explica el detalle.`
+        :`${progress} Para clasificar necesitas ${rules.playerMinimumEvents} torneos y ${rules.playerMinimumSets} sets. Tu perfil ya muestra tu progreso.`;}
+    $('linked-card').className=`linked-card ${ring}`;
+    $('linked-card').innerHTML=`<div><span class="linked-avatar">${user.avatarUrl?`<img src="${escape(user.avatarUrl)}" alt="">`:initials(user.tag)}</span><div><span class="linked-ok">✓ Cuenta vinculada</span><strong>${escape(user.tag)}</strong><span>${escape(sub)}</span></div></div>${note?`<p>${escape(note)}</p>`:''}`;
+    all('[data-role]').forEach(button=>{const on=roles.includes(button.dataset.role);button.setAttribute('aria-checked',String(on));button.querySelector('.check').textContent=on?'✓':'';});
+    $('organizer-note').hidden=!roles.includes('organizer');
   }
   function renderProfile() {
-    const v=view(), user=data.user, mains=user.chosen.length?user.chosen:v.detected.slice(0,3).map(c=>c.characterId), selected=user.chosen.length>0;
+    const v=view(), user=data.user, name=scopeName();
+    const chosenIds=user.chosen, cardMain=chosenIds[0]??v.detected[0]?.characterId??null;
     $('account-tag').textContent=user.tag;
-    $('account-role').textContent=`${user.roles.map(r=>r==='player'?'Jugador':'Organizador').join(' · ')}${user.country?' · País de perfil: '+user.country:''}`;
-    $('account-avatar').innerHTML=user.avatarUrl?`<img src="${escape(user.avatarUrl)}" alt="Foto de ${escape(user.tag)}">`:escape(user.tag.slice(0,2).toUpperCase());
-    const link=safeLink(user.url);$('startgg-link').hidden=!link;if(link)$('startgg-link').href=link;
-    $('card-rank').textContent=v.rank??'?';const c=char(mains[0]);$('card-portrait').hidden=!c;if(c)$('card-portrait').src=c.portrait;
+    const interests=user.roles.map(r=>r==='player'?'Jugador':'Organizador (por verificar)');
+    $('account-role').textContent=interests.length?`Intereses: ${interests.join(' · ')}`:'Sin intereses elegidos';
+    $('account-avatar').innerHTML=user.avatarUrl?`<img src="${escape(user.avatarUrl)}" alt="Foto de ${escape(user.tag)}">`:initials(user.tag);
+    const link=safeLink(user.url);
+    // Country is what the start.gg profile declares; it is not a verified nationality.
+    $('account-facts').innerHTML=(user.country?`<div><dt>País en start.gg</dt><dd>${escape(user.country)}</dd></div>`:'')+(link?`<div><dt>Perfil público</dt><dd><a href="${escape(link)}" target="_blank" rel="noopener noreferrer">${escape(link.replace(/^https:\/\/(www\.)?/,''))} ↗</a></dd></div>`:'');
+    $('account-facts').hidden=!user.country&&!link;
+    $('card-rank').textContent=v.rank??'';const c=char(cardMain);$('card-portrait').hidden=!c;if(c)$('card-portrait').src=c.portrait;
     $('account-season').textContent=data.profile.seasonYear;$('account-cut').textContent=date(data.profile.generatedAt);
-    $('profile-mains').innerHTML=mains.length?mains.map((id,i)=>`<div class="main-row">${art(id)}<div><strong>${escape(char(id)?.name||'Personaje sin ícono disponible')}</strong><small>${i===0?'Main':'Secundario '+i}</small></div><span class="origin ${selected?'chosen':''}">${selected?'Elegido':'Detectado'}</span></div>`).join(''):'<p class="note">No hay personajes registrados. Puedes elegir los tuyos en Mis personajes.</p>';
+    $('profile-mains').innerHTML=chosenIds.length?chosenIds.map((id,i)=>`<div class="main-row">${art(id)}<div><strong>${escape(char(id)?.name||'Personaje sin ícono disponible')}</strong><small>${i===0?'Principal':'Secundario '+i}</small></div></div>`).join(''):'<p class="note">Aún no eliges personajes. Mientras tanto tu carta usa el más detectado en torneos.</p>';
+    const games=v.detected.reduce((n,d)=>n+d.games,0);
+    $('detected-block').hidden=!v.detected.length;$('detected-title').textContent=`Detectados · ${name}`;
+    $('detected-chips').innerHTML=v.detected.map(d=>`<span class="detected-chip" title="${escape(d.name)}">${art(d.characterId)}<b>${escape(d.name)}</b><small>${games?Math.round(d.games/games*100):0}%</small></span>`).join('');
+    $('player-content').hidden=!user.playerId;$('no-player').hidden=!!user.playerId;
+    if(!user.playerId)return;
     all('[data-scope]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.scope===scope)));
-    const mv=AccountModel.movement(v), scopeName=scope==='combined'?'+ Internacional':'Solo Guatemala';
+    $('scope-status').innerHTML=`Mostrando <strong>${name}</strong> · ${scope==='combined'?'incluye torneos fuera del país.':'solo torneos en Guatemala.'} Tu puesto básico siempre es gratis.`;
+    const panel=$('account-ranking');
     if(v.rank!=null) {
-      const gap=v.top100Points==null?null:Math.max(0,v.top100Points-v.points);
-      $('account-ranking').innerHTML=`<div class="rank-heading"><div><p class="kicker muted">Puesto nacional · ${scopeName}</p><div class="rank-number"><small>#</small>${v.rank}</div><span class="movement ${mv.kind}">${escape(mv.text)}</span></div><div><div class="rank-points">${v.points}</div><p class="kicker muted">puntos Smash GT</p></div></div><p>${v.rank<=100?'<span class="top-badge">Top 100</span>':'Fuera del top 100 · '}De ${v.total} clasificados en esta vista.</p>${v.rank>100&&gap!==null?`<p class="note">Diferencia de ${gap} puntos respecto al #100. El puesto depende también del desempate.</p>`:''}`;
+      const mv=AccountModel.movement(v), gap=v.top100Points==null?null:Math.max(0,v.top100Points-v.points);
+      panel.setAttribute('aria-label','Puesto nacional');
+      panel.innerHTML=`<div class="rank-heading"><div class="rank-main"><p class="kicker muted">Puesto nacional · ${name}</p><div class="rank-number"><small>#</small>${String(v.rank).padStart(2,'0')}</div><span class="movement ${mv.kind}">${escape(mv.text)}</span>${v.previousCutAt?`<p class="note">Comparado con el corte del ${date(v.previousCutAt)}</p>`:''}</div><div><div class="rank-points">${number(v.points)}</div><p class="kicker muted">puntos · ${name}</p></div></div>`
+        +(v.rank<=100?`<p class="top-line"><span class="top-badge">Top 100</span>De ${v.total} clasificados en esta vista.</p>`
+          :`<div class="gap"><div><strong>Fuera del top 100 · de ${v.total} clasificados</strong>${gap!==null?`<span>Faltan ${number(gap)} pts para el #100</span>`:''}</div>${gap!==null&&v.top100Points>0?`<div class="progress"><span style="width:${Math.min(100,Math.round(v.points/v.top100Points*100))}%"></span></div>`:''}</div>`);
     } else {
-      const rule=data.profile.eligibilityRules, count=v.countedEvents, sets=v.wins+v.losses;
-      $('account-ranking').innerHTML=`<p class="kicker" style="color:var(--yellow)">Sin puesto · ${scopeName}</p><h2>Tu temporada<br>está por escribirse.</h2><p class="lead">No apareces en los clasificados de esta vista y corte. La actividad mínima es una parte de las reglas; también se revisan pertenencia al ranking y participación local.</p><div class="activity-progress">${[[count,rule.playerMinimumEvents,'Torneos que cuentan'],[sets,rule.playerMinimumSets,'Sets válidos registrados']].map(([n,max,label])=>`<div><p>${label}: <strong>${n}/${max}</strong></p><div class="progress" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${Math.min(n,max)}"><span style="width:${Math.min(100,n/max*100)}%"></span></div></div>`).join('')}</div><a href="./metodologia.html">Entender los requisitos ↗</a>${scope==='guatemala'&&data.profile.views.combined.rank!=null?`<button class="outline" id="other-scope">Con + Internacional tienes el puesto #${data.profile.views.combined.rank} →</button>`:''}`;
-      $('other-scope')?.addEventListener('click',()=>changeScope('combined'));
+      const reqs=AccountModel.requirements(v,data.profile.eligibilityRules), none=!v.events.length, missing=reqs.filter(r=>!r.done), other=scope==='guatemala'?data.profile.views.combined:data.profile.views.guatemala;
+      const text=none?'Tu jugador está vinculado, pero aún no tiene sets en torneos que cuenten esta temporada. Aparecerás al cumplir los requisitos.'
+        :missing.length?`Para tener puesto en esta vista necesitas ${reqs[0].max} torneos que cuenten y ${reqs[1].max} sets válidos. Te falta: ${missing.map(r=>r.label==='Sets válidos'?`${r.missing} ${r.missing===1?'set válido':'sets válidos'}`:`${r.missing} ${r.missing===1?'torneo que cuente':'torneos que cuenten'}`).join(' y ')}.`
+        :'Cumples la actividad mínima, pero no apareces entre los clasificados de esta vista y corte. También se revisan la pertenencia al ranking y la participación local.';
+      panel.setAttribute('aria-label','Sin puesto');
+      panel.innerHTML=`<div><p class="kicker yellow">${none||!missing.length?'Sin puesto':'Actividad insuficiente'} · ${name}</p><h2>${none?`Sin torneos en ${escape(data.profile.seasonYear)}`:missing.length?'Casi clasificas':'Sin puesto en esta vista'}</h2><p class="lead">${text}</p></div><div class="requirements">${reqs.map(r=>`<div><p><span>${r.label}</span><strong>${r.shown} / ${r.max}</strong></p><div class="pips" role="progressbar" aria-label="${r.label}" aria-valuemin="0" aria-valuemax="${r.max}" aria-valuenow="${r.shown}">${Array.from({length:r.max},(_,i)=>`<span class="${i<r.shown?'on':''}"></span>`).join('')}</div><small class="${r.done?'done':''}">${r.done?'✓ Cumplido':(r.missing===1?'Falta ':'Faltan ')+r.missing}</small></div>`).join('')}</div><a href="./metodologia.html">Entender los requisitos ↗</a>${other.rank!=null?`<button class="outline hint" id="other-scope">En ${scope==='guatemala'?'+ Internacional':'Solo Guatemala'} sí tienes puesto: #${other.rank} →</button>`:''}`;
+      $('other-scope')?.addEventListener('click',()=>changeScope(scope==='guatemala'?'combined':'guatemala'));
     }
-    const total=v.wins+v.losses;
-    $('account-stats').innerHTML=[[v.wins,'Victorias','green'],[v.losses,'Derrotas','red'],[total?Math.round(v.wins/total*100)+'%':'—','Sets ganados',''],[`${v.countedEvents} de ${v.events.length}`,'Torneos disponibles que cuentan','']].map(([n,label,color])=>`<div><strong class="${color}">${n}</strong><small>${label}</small></div>`).join('');
+    $('account-stats').innerHTML=[[v.wins,'Sets ganados','green'],[v.losses,'Sets perdidos','red'],[v.countedEvents,'Torneos que cuentan',''],[v.events.length,'Torneos asistidos','']].map(([n,label,color])=>`<div><strong class="${color}">${n}</strong><small>${label}</small></div>`).join('');
+    $('stats-note').textContent=`Ganados y perdidos: sets de torneos que cuentan en ${name}. Asistidos: tu actividad disponible en el corte ${data.profile.seasonYear}.`;
+    $('history-legend').innerHTML=`<strong>Cuenta en ranking</strong>: suma en ${name}. <strong>Solo actividad</strong>: jugaste, pero no entra al cálculo de esta vista; te decimos por qué.`;
     $('history-coverage').textContent=data.profile.historyCoverage;renderHistory();
   }
   function changeScope(next){scope=next;historyFilter='all';renderProfile();}
+  // Sets of one tournament as this player lived them. Events outside the view keep their sets from the combined cut.
+  function eventSets(event){return (event.counts?view():data.profile.views.combined).results.filter(set=>String(set.eventId)===event.id);}
+  function rivalOf(id){return id==null?null:data.profile.rivals[id]??null;}
   function renderHistory() {
-    const v=view();
-    $('history-filters').innerHTML=[['all','Todos',v.events.length],['counted','Cuentan',v.events.filter(e=>e.counts).length],['excluded','Solo asistidos',v.events.filter(e=>!e.counts).length]].map(([filter,label,n])=>`<button data-filter="${filter}" aria-pressed="${filter===historyFilter}">${label} · ${n}</button>`).join('');
+    const v=view(), me=data.user.playerId;
+    $('history-filters').innerHTML=[['all','Toda la actividad',v.events.length],['counted','Cuentan',v.events.filter(e=>e.counts).length],['excluded','Solo actividad',v.events.filter(e=>!e.counts).length]].map(([filter,label,n])=>`<button data-filter="${filter}" aria-pressed="${filter===historyFilter}">${label} · ${n}</button>`).join('');
     all('[data-filter]').forEach(button=>button.addEventListener('click',()=>{historyFilter=button.dataset.filter;renderHistory();}));
     const events=AccountModel.history(v,historyFilter);
-    $('account-history').innerHTML=events.length?events.map(e=>{const url=safeLink(e.url);return `<article class="history-row ${e.counts?'':'excluded'}"><div><p class="note">${date(e.date)} · ${escape(e.country||'País no disponible')}</p>${url?`<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(e.name)} ↗</a>`:`<strong>${escape(e.name)}</strong>`}<p class="note">${escape(e.eventName)}</p></div><button class="history-record" data-event="${escape(e.id)}" aria-label="Ver sets de ${escape(e.name)}">${e.wins} G – ${e.losses} P</button><span class="event-badge">${e.counts?'Cuenta':'Asistido'}</span>${e.reason?`<p class="note">No cuenta: ${escape(e.reason)}</p>`:''}</article>`;}).join(''):'<p class="empty">No hay torneos disponibles para este filtro y corte.</p>';
-    all('[data-event]').forEach(button=>button.addEventListener('click',()=>openEvent(button.dataset.event)));
+    $('account-history').innerHTML=events.length?events.map(e=>{
+      const url=safeLink(e.url), sets=eventSets(e), open=openEvents.has(e.id);
+      const rows=open?sets.map(set=>{const rival=AccountModel.opponent(set,me), score=AccountModel.setScore(set,me), known=rivalOf(rival.id), place=known?.[scope]?.rank;
+        return `<li><span class="result ${score.won?'won':'lost'}" aria-label="${score.won?'Ganado':'Perdido'}">${score.won?'G':'P'}</span><span class="versus">vs</span>${known?`<button class="rival-open" data-rival="${escape(rival.id)}" aria-label="Ver detalle de ${escape(known.tag||rival.tag)}">${known.main&&char(known.main)?art(known.main):''}<span>${escape(known.tag||rival.tag)}</span><small>${place!=null?'#'+place:'sin puesto'}</small></button>`:`<span class="rival-name">${escape(rival.tag)}</span>`}<b>${escape(score.text)}</b></li>`;}).join(''):'';
+      return `<article class="history-row ${e.counts?'':'excluded'}"><div class="history-top"><div><p class="note">${date(e.date)}${e.country?' · '+escape(e.country):''}</p>${url?`<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(e.name)} ↗</a>`:`<strong>${escape(e.name)}</strong>`}<p class="place">${escape(e.eventName)}</p></div><div class="history-record"><b>${e.wins}–${e.losses}</b><small>sets G–P</small></div><span class="event-badge">${e.counts?'Cuenta en ranking':'Solo actividad'}</span></div>${e.reason?`<p class="why">No cuenta: ${escape(e.reason)}</p>`:''}${sets.length?`<button class="sets-toggle" data-event="${escape(e.id)}" aria-expanded="${open}">${open?'Ocultar sets ▴':`Ver ${sets.length} ${sets.length===1?'set':'sets'} ▾`}</button>`:''}${open?`<ul class="set-list">${rows}</ul>`:''}</article>`;}).join('')
+      :`<p class="empty">${v.events.length?'No hay torneos en este filtro.':`Aún no tienes torneos en la temporada ${escape(data.profile.seasonYear)}. Cuando juegues uno registrado en start.gg, aparecerá aquí.`}</p>`;
+    all('[data-event]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.event;if(openEvents.has(id))openEvents.delete(id);else openEvents.add(id);renderHistory();$('account-history').querySelector(`[data-event="${CSS.escape(id)}"]`)?.focus();}));
+    all('[data-rival]').forEach(button=>button.addEventListener('click',()=>openRival(button.dataset.rival,button)));
   }
-  function openEvent(id) {
-    const event=view().events.find(e=>e.id===id);$('event-title').textContent=event.name;
-    const results=(event.counts?view():data.profile.views.combined).results.filter(set=>String(set.eventId)===id);
-    $('event-results').innerHTML=(event.reason?`<p class="notice">${escape(event.reason)} Estos sets se muestran como historial.</p>`:'')+(results.length?results.map(set=>`<article class="event-result"><strong>${escape(set.score||'Marcador no disponible')}</strong><p>${escape(set.playerTags?.join(' vs ')||'Tags no disponibles')}</p>${safeLink(set.url)?`<a href="${escape(safeLink(set.url))}" target="_blank" rel="noopener noreferrer">Ver en start.gg ↗</a>`:''}</article>`).join(''):'<p class="note">Estos resultados están fuera de esta vista. Cambia a + Internacional para consultarlos.</p>');
-    $('event-dialog').showModal();
+  function openRival(id,opener) {
+    const rival=rivalOf(id), me=data.user.playerId;if(!rival)return;
+    const place=rival[scope], h2h=AccountModel.headToHead(data.profile.views.combined.results,me,id), main=char(rival.main), link=safeLink(rival.url);
+    $('rival-kicker').textContent=`Rival · ${scopeName()}`;$('rival-tag').textContent=rival.tag||'Rival sin alias';
+    $('rival-sub').textContent=main?`Más usado en torneos: ${main.name}`:'Sin personaje detectado en el corte';
+    $('rival-rank-art').textContent=place?.rank??'';$('rival-portrait').hidden=!main;if(main)$('rival-portrait').src=main.portrait;
+    $('rival-cells').innerHTML=[[place?.rank!=null?'#'+place.rank:'Sin puesto','Puesto',''],[place?.points!=null?number(place.points):'—','Puntos','blue'],[`${h2h.wins}–${h2h.losses}`,'Tú vs. G–P','']].map(([n,label,color])=>`<div><strong class="${color}">${n}</strong><small>${label}</small></div>`).join('');
+    $('rival-season').textContent=data.profile.seasonYear;
+    $('rival-sets').innerHTML=h2h.sets.map(set=>{const score=AccountModel.setScore(set,me);return `<div><span class="result ${score.won?'won':'lost'}" aria-label="${score.won?'Ganaste':'Perdiste'}">${score.won?'G':'P'}</span><p><strong>${escape(set.tournament||'Torneo')}</strong><small>${date(set.date)}</small></p><b>${escape(score.text)}</b></div>`;}).join('')||'<p class="note">No hay sets entre ustedes en este corte.</p>';
+    $('rival-link').hidden=!link;if(link)$('rival-link').href=link;
+    rivalOpener=opener;$('rival-dialog').showModal();$('close-rival').focus();
   }
   function renderCharacters() {
     const names=['Main','Secundario 1','Secundario 2'];
@@ -132,8 +178,9 @@
   all('[role=tab]').forEach(tab=>tab.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?'profile':event.key==='End'?'characters':tab.id==='tab-profile'?'characters':'profile';if(setScreen(next))$(`tab-${next}`).focus();}}));
   $('edit-characters').addEventListener('click',()=>setScreen('characters'));
   all('[data-scope]').forEach(button=>button.addEventListener('click',()=>changeScope(button.dataset.scope)));
-  all('[data-roles]').forEach(button=>button.addEventListener('click',()=>{roles=button.dataset.roles.split(',');renderOnboarding();}));
-  $('save-role').addEventListener('click',async()=>{const button=$('save-role');button.disabled=true;try{await request({action:'roles',roles});data.user.roles=[...roles];setScreen('profile',true);}catch{message('role-error','No se guardó tu elección. Intenta de nuevo.','error');}finally{button.disabled=false;}});
+  all('[data-role]').forEach(button=>button.addEventListener('click',()=>{const role=button.dataset.role;roles=roles.includes(role)?roles.filter(r=>r!==role):[...roles,role].sort((a,b)=>a==='player'?-1:b==='player'?1:0);message('role-error','');renderOnboarding();}));
+  $('other-account').addEventListener('click',()=>closeAccount('logout'));$('no-player-other').addEventListener('click',()=>closeAccount('logout'));
+  $('save-role').addEventListener('click',async()=>{const button=$('save-role');if(!roles.length){message('role-error','Elige al menos un interés para continuar.','error');return;}button.disabled=true;try{await request({action:'roles',roles});data.user.roles=[...roles];setScreen('profile',true);}catch{message('role-error','No se guardó tu elección. Intenta de nuevo.','error');}finally{button.disabled=false;}});
   $('change-role').addEventListener('click',()=>{renderOnboarding();setScreen('onboarding');});
   $('character-search').addEventListener('input',renderGrid);
   $('discard-characters').addEventListener('click',()=>{chosen=[...saved];message('character-message','');renderCharacters();});
@@ -143,7 +190,10 @@
     try{await request({action});chosen=[...saved];await load();$('header-account').textContent='Ver ranking ↗';$('header-account').href='./#ranking';}catch{message('settings-error','No pudimos completar la operación. Intenta de nuevo.','error');}
   }
   $('logout').addEventListener('click',()=>closeAccount('logout'));$('disconnect').addEventListener('click',()=>closeAccount('disconnect'));
-  $('close-event').addEventListener('click',()=>$('event-dialog').close());
+  $('close-rival').addEventListener('click',()=>$('rival-dialog').close());
+  // A click on the dimmed area outside the panel closes it, like Esc.
+  $('rival-dialog').addEventListener('click',event=>{if(event.target===$('rival-dialog'))$('rival-dialog').close();});
+  $('rival-dialog').addEventListener('close',()=>{rivalOpener?.isConnected&&rivalOpener.focus();rivalOpener=null;});
   window.addEventListener('beforeunload',event=>{if(dirty()){event.preventDefault();event.returnValue='';}});
   document.addEventListener('error',event=>{if(event.target.tagName==='IMG'){event.target.hidden=true;const fallback=document.createElement('span');fallback.textContent='?';fallback.setAttribute('aria-label','Imagen no disponible');event.target.after(fallback);}},true);
   load();

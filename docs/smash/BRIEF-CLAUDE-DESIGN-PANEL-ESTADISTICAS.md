@@ -8,9 +8,10 @@ Usa la web actual y los handoffs anteriores como referencia: Big Shoulders Displ
 
 Solo estos; no diseñes métricas que no estén en la lista.
 
-- **Vistas de página por día** y por página: inicio/ranking, metodología, cuenta, encuesta y análisis.
+- **Vistas de página por día** y por página: inicio/ranking, metodología, cuenta, análisis del top 20 y análisis de torneos. La encuesta no se cuenta.
 - **Visitantes distintos por día** y en un periodo (7, 30 y 90 días, y temporada). Se cuentan por navegador: una persona con teléfono y computadora cuenta como dos. Debe poder decirse en una nota breve.
 - De esos visitantes, **cuántos tenían sesión iniciada**.
+- **Redes distintas por día** y en el periodo: una segunda medida, más baja que la de visitantes porque varias personas pueden compartir una red. Mostrarla como dato secundario, con una nota breve.
 - **Cuentas registradas**: total, nuevas por día y cuántas siguen vinculadas.
 - **Cuántos entraron hoy/ayer** y comparación con el periodo anterior equivalente.
 - Fecha y hora de la última actualización de los datos (hora de Guatemala).

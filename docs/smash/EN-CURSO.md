@@ -1,15 +1,27 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
-## Contador de visitas — en PR, sin publicar (Claude Code, 7/oct)
+## Perfil v2 con historial de sets y panel de rival — en PR, sin publicar (Claude Code, 7/oct)
 
-Segundo punto de la hoja de ruta. **Estado: rama `feat/visit-counter`; falta fusionar, desplegar y aplicar la migración 003.** Documento: [VISITAS.md](VISITAS.md).
+Tercer punto de la hoja de ruta (la parte gratuita). Implementa el handoff de Claude Design `design_handoff_smash_gt_cuentas_v2/` (carpeta local del dueño, sin versionar; su README nombra el repo anterior, el correcto es este). **Estado: rama `feat/cuentas-v2`; falta fusionar y desplegar. No necesita migración.**
+
+- Vinculación: tarjeta de cuenta con el estado del jugador, intereses como dos casillas (Jugador / Organizador) con la nota de verificación por torneo, y «¿No eres tú? Usar otra cuenta».
+- Perfil: datos de start.gg (país declarado, perfil público), personajes elegidos y detectados con porcentaje por vista, texto de alcance, movimiento explícito («Subiste n puestos · antes #x»), barra hacia el #100, panel de requisitos con medidores y atajo a la otra vista, y estado «sin jugador vinculado».
+- Historial: filtros con conteo, insignia «Cuenta en ranking / Solo actividad» con motivo, y sets desplegables por torneo con G/P, rival, puesto del rival y marcador.
+- Panel de rival: puesto y puntos en la vista activa, récord contra ti y la lista de sets entre ambos, con enlace a start.gg. Se cierra con Esc, con × o al tocar fuera, y devuelve el foco.
+- Datos: todo sale del corte publicado. `account-api.php` añade `profile.rivals` (alias, enlace, personaje más usado y puesto/puntos por vista de cada oponente). Un rival sin puesto en la vista dice «sin puesto»; no se inventan posiciones. El marcador se lee del texto publicado por start.gg; en 25 de 2,648 sets (victorias sin marcador) se muestra «—».
+- **No incluido:** evolución entre cortes y lectura desde SQL (solo hay un corte en la base; se añadirá cuando existan varios), ciudad del torneo, puesto final y número de inscritos por evento (no están en el corte publicado), y la carga animada de tres pasos del ingreso (la autorización es una redirección completa a start.gg).
+- Pruebas: 10 de `test_accounts.cjs` (movimiento, requisitos, marcador, enfrentamientos) y paridad de `rivals` en `test_accounts.php`. Revisión en navegador contra copia local con base desechable, en escritorio y a 375 px, con cuatro jugadores: con puesto, con actividad suficiente pero sin puesto, con actividad insuficiente y sin jugador; sin errores de consola ni desbordamiento horizontal. El panel de rival se comprobó por geometría y contenido (el panel del navegador estaba oculto y no refrescaba capturas).
+
+## Contador de visitas — publicado el 7 de octubre (Claude Code)
+
+Segundo punto de la hoja de ruta. **Estado: PR #29 fusionada (`9f939d1`), despliegue `37694700196` correcto y migración 003 aplicada por orden del dueño (35 tablas; cuts=1, users=1, survey_responses=16 sin cambios).** Documento: [VISITAS.md](VISITAS.md). Comprobado en producción: `visits.php` 403, `visita.php` GET 405 y origen ajeno 403, y una visita real desde navegador quedó contada (1 vista de inicio, 1 visitante, 1 red). `public.json` idéntico. El brief del panel se actualizó con los datos reales (sin encuesta, con redes distintas).
 
 - Archivos nuevos: `visits.php` (biblioteca, denegada en `.htaccess`), `visita.php`, `visita.js` y la etiqueta en cinco páginas. La encuesta y el panel de opiniones no se cuentan.
 - Migración `003_visit_networks.sql`: tabla `site_network_days`. Sin ella el contador no cuenta y no rompe nada.
 - Identidad por cookie propia firmada; la IP solo como HMAC con clave privada autogenerada en `private-smash/visits.key`. Decisión y límites en VISITAS.md.
 - Solo recoge datos. El panel espera el handoff de Claude Design; el handoff `design_handoff_smash_gt_cuentas_v2/` que dejó el dueño es el perfil renovado con panel de rival, **no** el panel de estadísticas.
 - También: `cuenta.js` cambia de versión en `cuenta.html` (el despliegue anterior no la cambió y un navegador con la versión en caché no guardaba la pista del encabezado) y `.gitignore` excluye `design_handoff_*/`.
-- Pruebas locales en MariaDB desechable y navegador; siete fallas provocadas detectadas por las pruebas. Nada en producción todavía.
+- Pruebas locales en MariaDB desechable y navegador; siete fallas provocadas detectadas por las pruebas.
 
 ## Sesión persistente — publicada el 7 de octubre (Claude Code)
 
