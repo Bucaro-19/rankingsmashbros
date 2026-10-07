@@ -96,7 +96,10 @@ jobs:
         run: python scripts/smash/audit.py scripts/smash/data/combined.json scripts/smash/curation.json scripts/smash/data/auditoria.md --points-csv scripts/smash/data/ultrank_players.csv
       - name: Preparar paquete privado para importar el corte a SQL
         continue-on-error: true
-        run: python scripts/database/ranking_package.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json scripts/smash/data/database-package.json
+        run: |
+          # Una ejecución reanudada trae el paquete del corte anterior: nunca debe quedar como si fuera el de este.
+          rm -f scripts/smash/data/database-package.json
+          python scripts/database/ranking_package.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json scripts/smash/data/database-package.json
       - name: Guardar auditoría para revisión
         uses: actions/upload-artifact@v4
         with:
@@ -112,6 +115,15 @@ jobs:
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           SMASH_FEEDBACK_ADMIN_HASH: ${{ secrets.SMASH_FEEDBACK_ADMIN_HASH }}
         run: python scripts/smash/deploy.py
+      # Solo existe si el corte se publicó: el cargador semanal lo descarga para llevarlo a SQL.
+      # Retención mayor que la de las capturas para poder recuperar una semana omitida.
+      - name: Guardar el paquete SQL del corte publicado
+        uses: actions/upload-artifact@v4
+        with:
+          name: smash-gt-paquete-sql
+          path: scripts/smash/data/database-package.json
+          retention-days: 90
+          if-no-files-found: ignore
       - name: Guardar capturas privadas para revisar cobertura o reanudar una publicación
         if: always()
         uses: actions/upload-artifact@v4
