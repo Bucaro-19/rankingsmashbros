@@ -121,6 +121,31 @@ class ExportTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "estudio completo"):
             validate_study_data(valid)
 
+    def test_php_libraries_are_published_denied_and_uploaded_before_their_callers(self):
+        # The allowlist is independent of the file tree: a committed but unlisted PHP file would
+        # deploy "successfully" and break the pages that require it. Files replace one by one,
+        # so a library must already be in place (and denied by .htaccess) when its caller lands.
+        import re
+        site = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate"
+        pages = sorted(path.name for path in site.glob("*.php"))
+        self.assertEqual(pages, sorted(name for name in FILES if name.endswith(".php")))
+        htaccess = (site / ".htaccess").read_text()
+        libraries = set()
+        for page in pages:
+            source = (site / page).read_text()
+            required = re.findall(r"require(?:_once)?\s+__DIR__\s*\.\s*'/([A-Za-z0-9_.-]+\.php)'", source)
+            self.assertEqual(len(required), len(re.findall(r"\brequire(?:_once)?\b[^;]*\.php'", source)), page)
+            for library in required:
+                libraries.add(library)
+                self.assertIn(library, FILES, f"{page} requires {library}")
+                self.assertLess(FILES.index(library), FILES.index(page), f"{library} must upload before {page}")
+        self.assertEqual(libraries, {"database.php", "survey.php"})
+        for library in libraries:
+            self.assertLess(FILES.index(".htaccess"), FILES.index(library))
+            self.assertRegex(htaccess, r'<Files "%s">\s*Require all denied\s*</Files>' % re.escape(library))
+        # The admin hash file is the only PHP loaded from the protected folder; it is written by deploy().
+        self.assertEqual(FILES[-1], "data/public.json")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -134,6 +134,10 @@ try {
         $pdo->rollBack();
         verify($count() === 0, "$engine caller controls rollback");
 
+        $empty = smash_survey_compare($pdo, $rows);
+        verify($empty['matched'] === 0 && $empty['missingInDatabase'] === 3 && $empty['fileFullyStored'] === false
+            && $empty['databaseRows'] === 0, "$engine compare reports a file that was never imported");
+
         $dry = smash_survey_import($pdo, $rows, false);
         verify($dry['inserted'] === 3 && $dry['applied'] === false && $count() === 0, "$engine dry run writes nothing");
         $first = smash_survey_import($pdo, $rows, true);
@@ -148,6 +152,12 @@ try {
         verify((int)$pdo->query('SELECT COUNT(*) FROM survey_responses WHERE is_test = 1')->fetchColumn() === 1, "$engine is_test kept");
         verify((int)$pdo->query('SELECT COUNT(*) FROM survey_responses WHERE comment IS NULL OR source_url IS NULL')->fetchColumn() === 2, "$engine NULLs");
 
+        // Row-by-row evidence, counts only and without writing.
+        verify(smash_survey_compare($pdo, $rows) === ['fileRows' => 3, 'matched' => 3, 'missingInDatabase' => 0,
+            'valueMismatches' => 0, 'fileTestRows' => 1, 'databaseRows' => 3, 'databaseTestRows' => 1,
+            'databaseRowsNotInFile' => 0, 'fileFullyStored' => true], "$engine compare proves the copy");
+        verify($dump() === $stored && !$pdo->inTransaction(), "$engine compare is read-only");
+
         $second = smash_survey_import($pdo, smash_survey_parse_file($file), true);
         verify($second['inserted'] === 0 && $second['alreadyPresent'] === 3 && $count() === 3, "$engine repeat is a no-op");
         verify($dump() === $stored, "$engine repeat changes no value");
@@ -157,6 +167,14 @@ try {
         fixture($file, array_merge($valid, [$extra]));
         $third = smash_survey_import($pdo, smash_survey_parse_file($file), true);
         verify($third['inserted'] === 1 && $third['alreadyPresent'] === 3 && $count() === 4, "$engine appended line");
+
+        // Rows that are not lines of this file (another file, or answers received by the SQL form,
+        // which carry their own key or none) are counted apart and never fail the copy check.
+        $pending->execute(array_merge(array_slice(array_values($rows[1]), 0, 11), [null]));
+        $apart = smash_survey_compare($pdo, $rows);
+        verify($apart['fileFullyStored'] === true && $apart['matched'] === 3 && $apart['databaseRows'] === 5
+            && $apart['databaseRowsNotInFile'] === 2, "$engine compare separates rows that are not in the file");
+        $pdo->exec('DELETE FROM survey_responses WHERE import_hash IS NULL');
 
         // An invalid line anywhere rejects the file before any write.
         fixture($file, array_merge($valid, [line(['submittedAt' => '2026-10-06T12:00:00+00:00']), line(['clarity' => 7])]));
@@ -175,6 +193,9 @@ try {
         fixture($file, $valid);
         rejects(fn() => smash_survey_import($pdo, smash_survey_parse_file($file), true), 'hash_conflict', 2);
         verify((int)$pdo->query("SELECT clarity FROM survey_responses WHERE import_hash = '" . $rows[0]['import_hash'] . "'")->fetchColumn() === 2, "$engine conflict not overwritten");
+        $changed = smash_survey_compare($pdo, $rows);
+        verify($changed['valueMismatches'] === 1 && $changed['matched'] === 2 && $changed['fileFullyStored'] === false,
+            "$engine compare detects a stored value that differs from its line");
         echo "Survey import, repetition and rollback passed on $engine.\n";
     };
 

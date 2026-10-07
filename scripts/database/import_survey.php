@@ -199,19 +199,53 @@ function smash_survey_import(PDO $pdo, array $rows, bool $apply): array
     }
 }
 
+// Read-only, row-by-row evidence that the table holds every line of the file with equal values.
+// Reports counts only. Rows that exist in SQL but not in the file are answers received by the
+// SQL-backed form (or lines of another file); they are reported, never judged by content.
+function smash_survey_compare(PDO $pdo, array $rows): array
+{
+    try {
+        $stored = $pdo->query('SELECT ' . implode(', ', SMASH_SURVEY_COLUMNS) . ' FROM survey_responses')->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $error) {
+        throw new SmashSurveyImportError('database_read_failed');
+    }
+    $byHash = [];
+    foreach ($stored as $row) {
+        if ($row['import_hash'] !== null) $byHash[(string)$row['import_hash']] = $row;
+    }
+    $result = ['fileRows' => count($rows), 'matched' => 0, 'missingInDatabase' => 0, 'valueMismatches' => 0,
+        'fileTestRows' => count(array_filter($rows, static fn($row) => $row['is_test'] === 1)),
+        'databaseRows' => count($stored),
+        'databaseTestRows' => count(array_filter($stored, static fn($row) => (int)$row['is_test'] === 1))];
+    $fileHashes = [];
+    foreach ($rows as $row) {
+        $fileHashes[$row['import_hash']] = true;
+        if (!isset($byHash[$row['import_hash']])) $result['missingInDatabase']++;
+        elseif (!smash_survey_same($row, $byHash[$row['import_hash']])) $result['valueMismatches']++;
+        else $result['matched']++;
+    }
+    $result['databaseRowsNotInFile'] = count(array_filter($stored,
+        static fn($row) => $row['import_hash'] === null || !isset($fileHashes[(string)$row['import_hash']])));
+    $result['fileFullyStored'] = $result['missingInDatabase'] === 0 && $result['valueMismatches'] === 0;
+    return $result;
+}
+
+const SMASH_SURVEY_USAGE = "Uso: php import_survey.php --file RUTA [--site-root CARPETA_DEL_SITIO] [--apply | --compare [--no-extra]]\n";
+
 function smash_survey_cli(array $argv): int
 {
-    $options = ['file' => null, 'site-root' => null, 'apply' => false];
+    $options = ['file' => null, 'site-root' => null, 'apply' => false, 'compare' => false, 'no-extra' => false];
     for ($i = 1; $i < count($argv); $i++) {
-        if ($argv[$i] === '--apply') $options['apply'] = true;
+        if (in_array($argv[$i], ['--apply', '--compare', '--no-extra'], true)) $options[substr($argv[$i], 2)] = true;
         elseif (in_array($argv[$i], ['--file', '--site-root'], true) && isset($argv[$i + 1])) $options[substr($argv[$i], 2)] = $argv[++$i];
         else {
-            fwrite(STDERR, "Uso: php import_survey.php --file RUTA [--site-root CARPETA_DEL_SITIO] [--apply]\n");
+            fwrite(STDERR, SMASH_SURVEY_USAGE);
             return 2;
         }
     }
-    if ($options['file'] === null || ($options['apply'] && $options['site-root'] === null)) {
-        fwrite(STDERR, "Uso: php import_survey.php --file RUTA [--site-root CARPETA_DEL_SITIO] [--apply]\n");
+    if ($options['file'] === null || (($options['apply'] || $options['compare']) && $options['site-root'] === null)
+        || ($options['apply'] && $options['compare']) || ($options['no-extra'] && !$options['compare'])) {
+        fwrite(STDERR, SMASH_SURVEY_USAGE);
         return 2;
     }
     try {
@@ -221,6 +255,13 @@ function smash_survey_cli(array $argv): int
         if ($options['site-root'] !== null) {
             require_once $options['site-root'] . '/database.php';
             $pdo = smash_database_connect(smash_database_config($options['site-root']));
+            if ($options['compare']) {
+                $summary = smash_survey_compare($pdo, $rows);
+                // --no-extra is the check before reopening submissions: nothing but the file's lines may exist yet.
+                $ok = $summary['fileFullyStored'] && (!$options['no-extra'] || $summary['databaseRowsNotInFile'] === 0);
+                echo json_encode(['ok' => $ok] + $summary, JSON_PRETTY_PRINT) . "\n";
+                return $ok ? 0 : 1;
+            }
             $summary = smash_survey_import($pdo, $rows, $options['apply']);
         }
         echo json_encode(['ok' => true] + $summary, JSON_PRETTY_PRINT) . "\n";

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 ini_set('display_errors', '0');
 require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/survey.php';
 
 ini_set('session.use_strict_mode', '1');
 session_name('SMASHGT_ADMIN');
@@ -116,24 +117,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $rows = [];
 $readError = false;
 if ($authenticated) {
-    $dataFile = __DIR__ . '/feedback-data/respuestas-2026.php';
-    if (is_file($dataFile)) {
-        $handle = @fopen($dataFile, 'rb');
-        if (!$handle || !flock($handle, LOCK_SH)) {
-            $readError = true;
-        } else {
-            fgets($handle); // Guardia PHP, no es una respuesta.
-            while (($line = fgets($handle)) !== false) {
-                $entry = json_decode($line, true);
-                if (!is_array($entry) || !isset($entry['submittedAt'])) continue;
-                if (strpos((string)($entry['comment'] ?? ''), 'PRUEBA TÉCNICA INTERNA') === 0) continue;
-                $rows[] = $entry;
-            }
-            flock($handle, LOCK_UN);
-        }
-        if ($handle) fclose($handle);
+    // Answers are read only for a valid administrator session, straight from the private
+    // database. A failure is shown as a failure, never as a survey without answers.
+    try {
+        $rows = smash_survey_rows(smash_survey_connect(__DIR__));
+    } catch (Throwable $failure) {
+        $rows = [];
+        $readError = true;
     }
-    usort($rows, static fn($a, $b) => strcmp((string)$b['submittedAt'], (string)$a['submittedAt']));
 }
 $total = count($rows);
 $ratingAverages = [];
@@ -155,6 +146,7 @@ $groups = [
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="theme-color" content="#0c101c">
+  <meta name="smash-survey-storage" content="sql">
   <title>Opiniones privadas — Smash GT</title>
   <link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./arena.css"><link rel="stylesheet" href="./opiniones.css">
 </head>
@@ -169,7 +161,7 @@ $groups = [
       </section>
     <?php else: ?>
       <div class="dashboard-heading"><div><p class="eyebrow"><span class="tiny-line"></span> CONSULTA PRIVADA / 2026</p><h1>LA COMUNIDAD<br><em>TIENE LA PALABRA.</em></h1><p>Estas opiniones ayudan a revisar las reglas; los puestos del top se calculan con resultados.</p><p><a href="./opiniones.php?diagnostico=base">Comprobar conexión a la base de datos ↗</a></p></div><form method="post" action="./opiniones.php"><input type="hidden" name="action" value="logout"><input type="hidden" name="nonce" value="<?= h($_SESSION['smash_admin_nonce']) ?>"><button class="logout" type="submit">Cerrar sesión</button></form></div>
-      <?php if ($readError): ?><p class="login-error" role="alert">No se pudo leer el archivo de respuestas. Intenta de nuevo.</p><?php endif; ?>
+      <?php if ($readError): ?><p class="login-error" role="alert">No se pudieron leer las respuestas. Intenta de nuevo; si continúa, comprueba la conexión a la base de datos.</p><?php else: ?>
       <div class="total-card"><strong><?= $total ?></strong><span>respuestas reales recibidas</span><small>La respuesta de prueba técnica no se cuenta.</small></div>
       <?php if ($total === 0): ?><div class="no-responses"><h2>Aún no hay respuestas de la comunidad.</h2><p>Comparte el cuestionario y vuelve a esta página para verlas.</p></div><?php endif; ?>
       <div class="rating-grid"><div><strong><?= h($ratingAverages['clarity']) ?> / 5</strong><span>Claridad de la explicación</span></div><div><strong><?= h($ratingAverages['confidence']) ?> / 5</strong><span>Confianza en el piloto</span></div></div>
@@ -189,6 +181,7 @@ $groups = [
           </article>
         <?php endforeach; ?>
       </section>
+      <?php endif; ?>
     <?php endif; ?>
   </main>
   <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS ↗</a><p>Panel privado de Smash GT.</p><span>SMASH GT</span></footer>

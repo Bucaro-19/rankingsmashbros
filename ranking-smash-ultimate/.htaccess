@@ -12,3 +12,6 @@ Options -Indexes
 <Files "database.php">
   Require all denied
 </Files>
+<Files "survey.php">
+  Require all denied
+</Files>

@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+// The page now talks to the private database: never print PHP or driver errors to visitors.
+ini_set('display_errors', '0');
+require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/survey.php';
+
 ini_set('session.use_strict_mode', '1');
 ini_set('session.cookie_httponly', '1');
 ini_set('session.cookie_secure', !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? '1' : '0');
@@ -47,27 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (time() - (int)($_SESSION['smash_survey_last'] ?? 0) < 300) {
             $error = 'Ya recibimos una respuesta reciente de esta sesión. Gracias.';
         } else {
-            $entry = [
-                'submittedAt' => gmdate('c'), 'seasonYear' => 2026,
-                'role' => $role, 'eligibility' => $eligibility, 'minimum' => $minimum,
-                'international' => $international, 'clarity' => (int)$clarity,
-                'confidence' => (int)$confidence, 'source' => $source, 'comment' => $comment,
-            ];
-            $line = json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) . "\n";
-            $path = __DIR__ . '/feedback-data/respuestas-2026.php';
-            $handle = @fopen($path, 'c+b');
-            if ($handle && flock($handle, LOCK_EX)) {
-                fseek($handle, 0, SEEK_END);
-                $guardReady = true;
-                if (ftell($handle) === 0) {
-                    $guard = "<?php http_response_code(404); exit; ?>\n";
-                    $guardReady = fwrite($handle, $guard) === strlen($guard);
-                }
-                $saved = $guardReady && fwrite($handle, $line) === strlen($line);
-                fflush($handle);
-                flock($handle, LOCK_UN);
+            // Single storage: the private database. A failure is reported to the visitor and can be
+            // retried with the same form; nothing is written anywhere else and no success is claimed.
+            try {
+                $outcome = smash_survey_store(smash_survey_connect(__DIR__), [
+                    'role' => $role, 'eligibility' => $eligibility, 'minimum' => $minimum,
+                    'international' => $international, 'clarity' => (int)$clarity,
+                    'confidence' => (int)$confidence, 'source' => $source, 'comment' => $comment,
+                ], smash_survey_submission_key($_SESSION['smash_survey_nonce']), time());
+                // 'already_saved': an earlier attempt of this same form was stored and its answer
+                // to the browser was lost. The form token stores one answer at most.
+                $saved = $outcome === 'inserted' || $outcome === 'already_saved';
+            } catch (Throwable $failure) {
+                $saved = false;
             }
-            if ($handle) fclose($handle);
             if ($saved) {
                 $_SESSION['smash_survey_last'] = time();
                 $_SESSION['smash_survey_nonce'] = bin2hex(random_bytes(24));
@@ -85,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0c101c">
   <meta name="description" content="Opina sobre las reglas del ranking de Super Smash Bros. Ultimate de Guatemala, sin crear una cuenta.">
+  <meta name="smash-survey-storage" content="sql">
   <title>Cuestionario de la comunidad — Smash GT</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./arena.css">
@@ -131,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="survey-pair"><fieldset><legend>05 / ¿Qué tan clara es la <a href="./metodologia.html">explicación del cálculo</a>?</legend><select name="clarity" required><option value="">Selecciona de 1 a 5</option><option value="1">1 · Nada clara</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Muy clara</option></select></fieldset><fieldset><legend>06 / ¿Qué tanta confianza te da el piloto actual?</legend><select name="confidence" required><option value="">Selecciona de 1 a 5</option><option value="1">1 · Ninguna</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Mucha</option></select></fieldset></div>
         <div class="survey-text"><label for="source">Enlace de start.gg que debamos revisar (opcional)</label><input id="source" name="source" type="url" maxlength="250" placeholder="https://www.start.gg/..."></div>
         <div class="survey-text"><label for="comment">¿Qué mejorarías? Puedes mencionar jugadores, torneos o reglas.</label><textarea id="comment" name="comment" rows="5" maxlength="2000" placeholder="Cuéntanos qué cambiarías y por qué…"></textarea></div>
-        <p class="privacy-note">No pedimos nombre, correo ni cuenta, y no guardamos tu IP en las respuestas. Evita incluir datos personales en el comentario. Las respuestas se guardan de forma privada en ingporras.com para revisar las reglas; publicaremos las decisiones y su justificación, no respuestas individuales.</p>
+        <p class="privacy-note">No pedimos nombre, correo ni cuenta, y no guardamos tu IP en las respuestas. Evita incluir datos personales en el comentario. Las respuestas se guardan de forma privada en rankingsmashbros.com para revisar las reglas; publicaremos las decisiones y su justificación, no respuestas individuales.</p>
         <button class="survey-submit" type="submit">ENVIAR OPINIÓN <span aria-hidden="true">↗</span></button>
       </form>
     <?php endif; ?>
