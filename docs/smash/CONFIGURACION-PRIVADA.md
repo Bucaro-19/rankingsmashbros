@@ -1,6 +1,6 @@
 # Ingresar el usuario MySQL desde cPanel
 
-El dueño confirmó que creó el usuario MySQL. El agente observó el archivo en `/home/ivcjgjlk/private-smash/config.local.php` desde la lista de cPanel, sin abrir su contenido. Conector PDO y diagnóstico publicados en PR #4 (`a29355e`), despliegue `37577617156`; falta comprobar la conexión con la sesión administrativa renovada. Comprobar EN-CURSO.md para el estado vigente. Base confirmada: `ivcjgjlk_smash`.
+El dueño confirmó que creó el usuario MySQL. El agente observó el archivo en `/home/ivcjgjlk/private-smash/config.local.php` desde la lista de cPanel, sin abrir su contenido. Conector PDO y diagnóstico publicados (PR #4–#6; último despliegue `37578387425`). El dueño ya renovó la sesión, pero Chrome de la herramienta bloqueó el diagnóstico; falta recibir su resumen manual para verificar la conexión. Comprobar EN-CURSO.md para el estado vigente. Base confirmada: `ivcjgjlk_smash`.
 
 ## Archivo que debe completar el dueño
 
@@ -43,7 +43,7 @@ Referencias: [PDO y credenciales](https://www.php.net/manual/en/pdo.construct.ph
 ## Comprobación y alcance
 
 1. Iniciar sesión normalmente en opiniones.php (o reutilizar la sesión del dueño).
-2. Abrir `https://rankingsmashbros.com/opiniones.php?diagnostico=base`. Devuelve únicamente versión del motor, tablas presentes/faltantes, versión instalada y conteos. Nunca host/usuario/contraseña/ruta ni excepciones PDO.
+2. Pulsar «Comprobar conexión a la base de datos» en el panel, o abrir `https://rankingsmashbros.com/opiniones.php?diagnostico=base`. Devuelve únicamente versión del motor, tablas presentes/faltantes, versión instalada y conteos. Nunca host/usuario/contraseña/ruta ni excepciones PDO. En navegador se sirve como texto; el cuerpo sigue siendo JSON. El dueño puede compartir ese resumen sin incluir su archivo privado.
 3. `ok=true` confirma conexión; `schemaReady=true` confirma motor compatible, tablas esperadas, versión 001 y catálogo de al menos 87. Los conteos iniciales de jugadores/cortes/encuesta pueden ser cero: aún falta importación.
 4. Los códigos de error indican qué corregir en el servidor sin revelar valores privados. No reenviar la contraseña al agente.
 
