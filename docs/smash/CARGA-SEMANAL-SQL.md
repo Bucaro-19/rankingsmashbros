@@ -6,6 +6,10 @@ Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`, «preparación del transporte priva
 
 El dueño autorizó automatizar en **BanaHosting, independiente de la Mac**. Codex preparó `ranking-sync.php`, `ranking-sync-lib.php`, `ranking-import.php`, `ranking-worker.php` y el envío HTTPS `publish_sql.py`. Se reutilizan las tablas existentes; no reinstalar ni abrir MySQL a Actions. **Preparado, todavía pendiente de configurar el archivo privado, el cron y verificar el circuito real.**
 
+### Estado de publicación comprobado
+
+PR #21/main `5963fbe`, CI `37661548814`/`37661557318` y despliegue `37661808161` correctos. Receptor publicado; POST devuelve `sync_not_configured`. Clave generada en archivo local ignorado/600 y guardada como secreto GitHub, pero falta copiarla al hosting. Variable `SMASH_SQL_SYNC_ENABLED=false`; SQL sin cambios (cuts=1, ranking_import_jobs=0). Cron y circuito real aún pendientes. Leer la lista de activación abajo; no volver a generar la clave por rutina.
+
 ### Circuito implementado
 
 1. Actions calcula el mismo ranking, prepara/valida el paquete y comprueba el contrato del transporte **antes de publicar**. Se eliminó `continue-on-error` del paquete: un paquete inválido detiene la publicación.

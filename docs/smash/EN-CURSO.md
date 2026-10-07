@@ -45,6 +45,15 @@ El cierre documental anterior estaba en `docs/accounts-activation`, commit `5cd9
 
 El dueño eligió BanaHosting para funcionar con la Mac apagada. Implementado receptor HTTPS autenticado + cola privada + importador PHP/worker CLI + paso Actions; sin migración ni cambio de cálculo. Detalles, límites y activación: CARGA-SEMANAL-SQL.md, bloque vigente. Paridad Python/PHP tabla por tabla, 11 casos locales y paquete real Oct4 verificados en base desechable. Preparado; configuración/cron y prueba del circuito de producción aún pendientes. No afirmar que ya está programado ni activar variable antes de validar servidor.
 
+## Cierre de entrega SQL en hosting — publicado, activación pendiente
+
+- PR #21 fusionada en `5963fbe`. CI `37661548814` y `37661557318` completas/correctas: contrato/JS/lint PHP y ambos motores MySQL 8.0/MariaDB 10.11; incluyen las 11 pruebas nuevas. Sin cambios de esquema.
+- Despliegue `37661808161`, desde main y `assets_only=true`, correcto. HTTP real posterior: receptor GET 405, bibliotecas/worker 403; cuenta API con `oauthReady=true`; encuesta/opiniones 200. JSON íntegro sin cambios, SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`.
+- Recepción POST en producción devuelve 503 `sync_not_configured`, coherente con archivo privado todavía ausente. Lectura SQL directa: cuts=1, users=1, ranking_import_jobs=0. No se cargó un corte ni se crearon trabajos de prueba en producción.
+- Generada clave aleatoria en `docs/smash/config/sync.local.php`, ignorado/permisos 600; preservada fuera del índice. Se guardó el mismo valor por stdin como secreto GitHub `SMASH_SQL_SYNC_KEY`, sin mostrarlo. Variable `SMASH_SQL_SYNC_ENABLED=false`, comprobación/activación pendientes. No imprimir archivo ni secreto.
+- **Siguiente acción del dueño:** copiar archivo privado a `/home/ivcjgjlk/private-smash/sync.local.php`, comprobar PHP CLI/worker y crear cron cada cinco minutos según CARGA-SEMANAL-SQL.md. La cuenta FTP del despliegue solo ve el sitio, no la carpeta privada ni crontab; no se supone que esto ya está hecho.
+- Después Codex puede ejecutar diagnóstico autenticado, reenvío idempotente del paquete original Oct4, lectura de paridad/job y activar la variable si el circuito funciona. Primer nuevo corte/disparo semanal del 11/oct sigue pendiente de ocurrir; no crear recaptura con hash diferente ni dar por verificado el cron.
+
 ## Estado vigente
 
 - El dueño compartió el resultado real del diagnóstico privado: connection=connected, MariaDB 11.4.13, schemaVersion=001_accounts_competition, tableCount=31, missingTables=[], engineCompatible=true y schemaReady=true. Base de la instalación: `ivcjgjlk_smash`. Evidencia recibida del dueño el 6/oct/2026 (Guatemala), no lectura directa del agente mediante navegador.
