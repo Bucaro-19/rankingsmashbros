@@ -5,7 +5,7 @@
 - El dueño compartió el resultado real del diagnóstico privado: connection=connected, MariaDB 11.4.13, schemaVersion=001_accounts_competition, tableCount=31, missingTables=[], engineCompatible=true y schemaReady=true. Base de la instalación: `ivcjgjlk_smash`. Evidencia recibida del dueño el 6/oct/2026 (Guatemala), no lectura directa del agente mediante navegador.
 - PR #1 del repo nuevo fusionada en `main`, commit `cb89570`. Preparó v1 `001_accounts_competition`: 31 tablas/87 selecciones esperadas. CI correcto: 46 Python + 12 Node y 8 pruebas por motor (MySQL 8.0/MariaDB 10.11), run `37574948355`.
 - No reinstalar tablas. Archivo observado sin abrir contenido: /home/ivcjgjlk/private-smash/config.local.php. Conector y diagnóstico publicados: PR #4 `a29355e`, PR #5 `e8e7d55`, PR #6 `8d509c2`; último despliegue `37578387425`, correcto. Conexión y esquema confirmados por el diagnóstico compartido; no pedir contraseñas por chat.
-- Conteos iniciales del diagnóstico (antes de importar): characters=87 y demás tablas consultadas=0. Primera carga real completada por Codex el 7/oct/2026: cutId=1, status=published, 188 rankings combined + 188 guatemala, 3435 jugadores de contexto, 43 torneos, 47 eventos, 4498 entrants, 8985 sets y 17970 slots. Usuarios y survey_responses siguen en cero; no se crearon cuentas ni se migró la encuesta.
+- Conteos iniciales del diagnóstico (antes de importar): characters=87 y demás tablas consultadas=0. Primera carga real completada por Codex el 7/oct/2026: cutId=1, status=published, 188 rankings combined + 188 guatemala, 3435 jugadores de contexto, 43 torneos, 47 eventos, 4498 entrants, 8985 sets y 17970 slots. Usuarios siguen en cero. Posteriormente el dueño ejecutó el importador de Claude: 13 respuestas SQL, incluida 1 prueba interna; conteos/hashes únicos verificados directamente por Codex.
 - La web aún lee JSON y la encuesta aún usa `feedback-data/respuestas-2026.php`. El corte/historial ya están en SQL; las 12 respuestas de la comunidad siguen en su archivo protegido.
 - Dominios/repos: sitio activo https://rankingsmashbros.com/, repo Bucaro-19/rankingsmashbros. Graduación es legado.
 
@@ -33,7 +33,14 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 - CI 37581615922 y 37581612335 correcta: 46 pruebas Python del ranking, 12 Node, 4 contratos del paquete y 6 casos SQL reales por motor (MySQL 8.0/MariaDB 10.11), además de las pruebas de esquema/conector existentes.
 - La encuesta queda asignada a Claude para preparar código/tests, sin activar escritura SQL todavía. SQL semanal automático aún pendiente: Actions prepara artefacto privado; no tiene acceso remoto a MySQL. No abrir ese acceso a las IP variables de Actions.
 
-Siguiente: integrar/revisar el PR de Claude para migrar encuesta con respaldo y conteos, y preparar transporte privado/autenticado para automatizar la carga SQL semanal. Mantener JSON público y método/calendario actuales. Después OAuth y perfil según handoff de Design. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
+### Encuesta — revisión de PR #10
+
+- Claude entregó importador CLI repetible, pruebas inventadas y MIGRACION-ENCUESTA.md. El dueño ya ejecutó una primera copia en cPanel; el archivo sigue siendo la fuente de encuesta/opiniones.
+- Codex verificó directamente solo agregados de producción: 13 filas, 13 hashes distintos, 1 is_test. Sin leer comentarios ni ejecutar escrituras.
+- Revisión completada: protección de la transacción del llamador y regresión; integración en CI MySQL 8.0/MariaDB 10.11 con extensiones SQLite/mbstring explícitas. Sintaxis y suite SQLite locales correctas. CI `37582761629` correcta sobre `b7d842a`; ejecución de la suite nueva confirmada en logs sobre MySQL 8.0.46 y MariaDB 10.11.19. El dueño autorizó fusionar PR #10 una vez revisada; consultar su estado en GitHub antes de retomar.
+- Pendientes: repetición real con versión revisada, hash/tamaño del respaldo y comparación de valores. Después, transición controlada del archivo a SQL con pausa de envíos y verificación final; no activar doble escritura ni asumir que el despliegue FTP es atómico.
+
+Siguiente: completar la transición de encuesta y preparar transporte privado/autenticado para automatizar la carga SQL semanal. Mantener JSON público y método/calendario actuales. Después OAuth y perfil según handoff de Design. OAuth no garantiza cuota independiente por usuario; consultar datos compartidos desde base/caché.
 
 Este relevo documenta instalación, conector y primera importación/repetición de ranking completadas. Encuesta y automatización SQL pendientes. Consultar Git/Actions antes de retomar.
 
