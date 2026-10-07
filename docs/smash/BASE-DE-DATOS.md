@@ -6,7 +6,7 @@ Versión inicial `001_accounts_competition`, preparada el 7 de octubre de 2026. 
 
 - PR #1 fusionada en `main`, commit `cb89570`; SQL instalado reportado por el dueño. No reinstalar ni recrear tablas como siguiente paso.
 - Esquema esperado: 31 tablas, 87 selecciones y versión `001_accounts_competition`. Verificar estos valores al configurar la conexión; no presentarlos como conteos ya consultados en el servidor.
-- Usuario MySQL, asociación/permisos, host y versión del motor: aún no confirmados. Contraseña/configuración privada: no compartida ni solicitada en chat.
+- Dueño confirmó que creó el usuario MySQL; asociación/permisos, host y versión del motor pendientes de prueba. Contraseña/configuración privada: no compartida ni solicitada en chat. Completar la plantilla siguiendo CONFIGURACION-PRIVADA.md.
 - Web y encuesta siguen funcionando con JSON/archivo; todavía no se importaron cortes ni respuestas a la base.
 - Siguiente entrega: `SIGUIENTE-FASE.md`. Toda pantalla nueva requiere handoff de Claude Design, por instrucción del dueño.
 
