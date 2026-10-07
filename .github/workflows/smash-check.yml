@@ -1,9 +1,9 @@
 name: Verificar Smash GT
 on:
   push:
-    paths: ['ranking-smash-ultimate/**', 'scripts/smash/**', '.github/workflows/smash-*.yml']
+    paths: ['ranking-smash-ultimate/**', 'scripts/smash/**', '.github/workflows/smash-*.yml', 'docs/smash/**', 'scripts/database/**']
   pull_request:
-    paths: ['ranking-smash-ultimate/**', 'scripts/smash/**', '.github/workflows/smash-*.yml']
+    paths: ['ranking-smash-ultimate/**', 'scripts/smash/**', '.github/workflows/smash-*.yml', 'docs/smash/**', 'scripts/database/**']
 permissions:
   contents: read
 jobs:
@@ -23,3 +23,38 @@ jobs:
           node --check ranking-smash-ultimate/metodologia.js
           node --check ranking-smash-ultimate/analisis-top20.js
           node --test scripts/smash/test_app.cjs
+
+  database:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ['mariadb:10.11', 'mysql:8.0']
+    services:
+      database:
+        image: ${{ matrix.image }}
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-test-only
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_DATABASE: smash_schema_test
+        ports:
+          - 33306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install PyMySQL==1.1.2 cryptography==46.0.2
+      - name: Verify catalog seed matches UI
+        run: node scripts/database/build_character_seed.cjs --check
+      - name: Install schema twice and test competition workflows
+        env:
+          SMASH_SCHEMA_TEST_DB: smash_schema_test
+          SMASH_SCHEMA_TEST_PORT: '33306'
+          SMASH_SCHEMA_TEST_PASSWORD: disposable-test-only
+        run: python scripts/database/test_schema.py

@@ -1,3 +1,15 @@
+# Base de datos — fase actual (7 de octubre de 2026)
+
+El dueño confirmó que NO existen tablas y autorizó preparar la base para cuentas, historial, roles simultáneos, próximo rival, estadísticas, reportes revisados y notificaciones. Trabajar en el repo nuevo desde main, no en la carpeta obsoleta de graduación.
+
+- Rama: `feat/database-foundation`. Esquema v1, 31 tablas, `docs/smash/install.sql` único (incluye catálogo de 87 selecciones). Ver `BASE-DE-DATOS.md` para instrucciones y contratos; `REVISION-CUENTAS.md` conserva el análisis previo.
+- El dueño instalará mediante phpMyAdmin. Todavía NO se ha instalado en BanaHosting ni configurado conexión PHP. No pedir contraseñas en chat. Primero confirmar importación y versión.
+- Pruebas de instalación/relaciones en MySQL 8.0 y MariaDB 10.11 mediante CI; revisar el estado de la PR antes de repetir trabajo.
+- OAuth no garantiza una cuota independiente ilimitada. Datos compartidos en DB/caché; credenciales de usuarios para identidad/operaciones autorizadas. Tokens persistentes solo cifrados; el esquema no cifra automáticamente.
+- Siguiente fase autorizada: conexión privada/importador y migración de encuesta cuando exista la base, después cuentas y torneo activo. Ranking/método y actualización semanal siguen intactos.
+
+---
+
 # Rediseño y mains automáticos — 6 de octubre de 2026
 
 ## Pedido actual

@@ -9,6 +9,10 @@
 - Top 100 principal; búsqueda y puesto básico de todos gratuitos. Donaciones/premium, OAuth, agenda y top 15 por organizador siguen pendientes.
 - Constancia: estudio publicado, sin bono aprobado. Calendario de meses, torneos y sets en la ficha. Consulta gratuita sin cuenta.
 
+## Base de datos (fase actual)
+- Dueño confirmó que aún no hay tablas. Preparación autorizada de v1: 31 tablas y catálogo en `docs/smash/install.sql`; guía `BASE-DE-DATOS.md`. Cuentas/lectura en vivo/reportes/avisos se implementan después de instalar.
+- OAuth para identidad y acceso autorizado; no garantiza multiplicar cuota. Tokens persistentes cifrados en servidor, llave fuera de la base/Git. La web actual sigue con JSON.
+
 ## Arquitectura
 - `discover.py` captura GT; `discover_abroad.py` descubre y revisa eventos extranjeros; `combine.py` reúne capturas; `rank.py` calcula; `publish_ranking.py` exporta; `deploy.py` valida y publica por FTP.
 - `public.json` contiene ranking combinado en raíz y `localRanking` calculado independientemente con solo GT. Mismo corte/método. Flechas: `previousRank` solo si existe `previousCutAt` de misma vista, temporada y método.
