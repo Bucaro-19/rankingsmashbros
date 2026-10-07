@@ -11,3 +11,6 @@ design_handoff_smash_gt_ranking/
 # Private server configuration (provisioned outside the public document root)
 config.local.php
 *.private.php
+
+# OAuth credentials: real files stay local; examples contain placeholders only
+oauth.local.php

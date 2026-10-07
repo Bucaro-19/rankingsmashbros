@@ -4,8 +4,33 @@
 
 - Revisadas entregas de Claude Code: encuesta en SQL y cierre de migración, cargador semanal operado desde la Mac, sin reinstalar tablas. Base de trabajo `main` en `99d65c3`.
 - Handoff de Claude Design leído e implementado: ingreso, elección de intereses, perfil y editor de mains. Backend OAuth/sesiones y preferencias sobre las tablas existentes; sin cambios al cálculo ni JSON. Detalles/activación: [CUENTAS-OAUTH.md](CUENTAS-OAUTH.md).
-- El dueño confirmó **OAuth Application aún no registrada**. El botón queda desactivado hasta configurar el archivo privado. Tokens descartados después de verificar identidad; reportes/agenda y sincronización personal quedan para otra fase.
-- Pruebas locales con base desechable: vinculación por IDs, roles sin permisos administrativos, guardado/rollback, revocación y paridad de ambas vistas. No se creó ningún usuario real ni se usaron tokens de producción. Pendientes de cierre: CI, publicación y prueba real de OAuth tras registro.
+- El dueño ya registró **OAuth Application** y configuró el archivo privado. API real con `oauthReady=true`; vinculación real del propietario comprobada en Chrome. Tokens descartados después de verificar identidad; reportes/agenda y sincronización personal quedan para otra fase.
+- Pruebas locales con base desechable: vinculación por IDs, roles sin permisos administrativos, guardado/rollback, revocación y paridad de ambas vistas. No se creó ningún usuario real ni se usaron tokens de producción. CI y publicación cerradas; pendiente la prueba real de OAuth tras el registro de la aplicación.
+
+## Cierre de cuentas — publicado y comprobado
+
+- PR #18 fusionada el 7/oct: `4229d26`. CI `37654934247` (push) y `37654969407` (PR), correctas en los tres jobs; incluyen MySQL 8.0, MariaDB 10.11 y lint PHP 7.4/8.1.
+- Despliegue `37655240917`, correcto, `assets_only=true`, desde `main`. Sitio: https://rankingsmashbros.com/cuenta.html. Ingreso desactivado: API real devuelve `ok=true`, `authenticated=false`, `oauthReady=false` y `no-store, private`.
+- Verificado directamente por HTTP y navegador: pantalla de ingreso 200, biblioteca `accounts.php` 403, escritura sin CSRF 403, encuesta y opiniones 200. JSON íntegro conservado, SHA-256 `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`.
+- Lectura SQL real de conteos (sin escritura): `users=0`, `survey_responses=16`. No se crearon cuentas sintéticas en producción. Perfil/editor/guardado, filtros y sets revisados en base local desechable; también versión móvil a 390 px sin desbordamiento.
+- Configuración registrada por el dueño: **OAuth Application**, retorno exacto `https://rankingsmashbros.com/oauth.php`, alcance `user.identity`, credenciales en `private-smash/oauth.local.php`. Pasos completos y ejemplo seguro: CUENTAS-OAUTH.md. No pedir secrets por chat ni configurar tokens de usuarios desde mensajes antiguos.
+- Próxima acción técnica, después de configurar: probar autorización/cancelación reales, vinculación del jugador, guardado, cierre y desvinculación. No afirmar que el proveedor fue probado por pasar tests simulados.
+
+## Activación OAuth y protección local — actualización del dueño
+
+El dueño confirmó que registró la aplicación, subió `oauth.local.php` al archivo privado del servidor y puso `enabled=true`. Codex comprobó directamente que `account-api.php` devuelve `ok=true`, `authenticated=false` y **`oauthReady=true`**. La configuración pasó la validación del backend y posteriormente se completó la autorización real en Chrome.
+
+El dueño había colocado su client secret en el ejemplo local versionado. Se preservó el contenido en `docs/smash/config/oauth.local.php` (permisos 600, ignorado por Git) y se restauró `oauth.local.php.example` con placeholders. No se imprimió el secreto. La comparación de su valor contra el índice, archivos versionados y objetos del historial local disponible no encontró coincidencias; no se declara una auditoría de clones o fuentes externas.
+
+El cierre documental anterior estaba en `docs/accounts-activation`, commit `5cd9afe`, sin PR por errores de GitHub. Esta entrega incorpora ese cierre y la protección de credenciales a una rama nueva; no duplicar la entrega de código ni desplegar otra vez por cambios de documentación/.gitignore. La vinculación real del propietario fue comprobada; ver evidencia siguiente.
+
+## Vinculación real comprobada — Bucaro19
+
+- En Chrome, el proveedor reconoció la aplicación registrada por el dueño, `rankingsmashbross`, con enlace a `https://rankingsmashbros.com/` y permiso exclusivo de información básica. Se completó Approve y el callback regresó a la cuenta autenticada.
+- Perfil real observado: Bucaro19 y enlace `https://www.start.gg/user/7a6063d8`, coincidente con el perfil que el dueño compartió al iniciar el proyecto. Foto, país GT de perfil, intereses jugador/organizador, ranking combinado #177 (1276 puntos), cuatro eventos disponibles y mains detectados Lucas/Hero/Incineroar. El puesto pertenece al corte Oct4; no es una recalculación nueva ni nacionalidad verificada.
+- Lectura directa posterior confirmó un usuario y una vinculación activa con **ambas columnas de tokens NULL**. No se imprimieron credenciales, códigos, state ni tokens. Cuenta real del propietario; no se agregó una cuenta sintética de pruebas.
+- La consulta GraphQL de identidad y el intercambio de código funcionan con el proveedor real. Guardado, cancelación, revocación y rollback tienen pruebas desechables previas; no se hicieron cambios arbitrarios a mains ni cierre/desvinculación de la sesión real del dueño.
+- Pestaña del perfil conservada en Chrome para el dueño. Continúan pendientes agenda/torneo en curso, verificación de organizadores, reportes y notificaciones; nuevas pantallas requieren handoff de Claude Design.
 
 ## Estado vigente
 
@@ -39,7 +64,7 @@ Toda pantalla nueva debe solicitarse primero a **Claude Design** y seguir su han
 - **Migración cerrada el 7/oct:** dominio anterior redirigido (`rsvp-graduacion#26`), su archivo congelado e importado, y la prueba del dueño marcada `is_test=1`. Estado final: 16 filas, 13 de comunidad y 3 de prueba. Evidencia en MIGRACION-ENCUESTA.md, «Cierre».
 - No revertir el PR ni desplegar ramas anteriores: `deploy.py` rechaza páginas de encuesta que no sean las de SQL y los despliegues solo corren desde `main`.
 - Hallazgo para el dueño: el repositorio es público, así que los artefactos de Actions los puede descargar cualquier usuario con sesión en GitHub.
-- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación en esta entrega; activación real pendiente de que el dueño registre la app OAuth en start.gg.
+- Handoff de Claude Design para cuentas ya entregado por el dueño: carpeta local `SmashRankingGT/design_handoff_smash_gt_cuentas/` (fuera de este repo, sin versionar). Su README nombra el repo `rsvp-graduacion`; el correcto es este. Implementación en esta entrega; configuración habilitada y autorización real comprobada con el propietario.
 
 ### Carga semanal del ranking a SQL — preparada, sin activar (Claude Code)
 
