@@ -1,8 +1,9 @@
 -- Smash GT: esquema propuesto para MySQL/MariaDB (BanaHosting, phpMyAdmin).
 -- Propuesta del 6 de octubre de 2026. Ver BASE-DE-DATOS.md antes de cambiarlo.
+-- Se puede ejecutar completo más de una vez: usa CREATE TABLE IF NOT EXISTS y no borra nada.
 -- Los id de players, events, sets, characters y upcoming_tournaments son los de start.gg.
 
-CREATE TABLE players (
+CREATE TABLE IF NOT EXISTS players (
   id BIGINT UNSIGNED PRIMARY KEY,
   tag VARCHAR(100) NOT NULL,
   known_as VARCHAR(100) NULL,
@@ -13,7 +14,7 @@ CREATE TABLE players (
   KEY idx_players_tag (tag)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
   id BIGINT UNSIGNED PRIMARY KEY,
   tournament_name VARCHAR(255) NOT NULL,
   event_name VARCHAR(255) NOT NULL,
@@ -26,7 +27,7 @@ CREATE TABLE events (
   KEY idx_events_country (country_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE sets (
+CREATE TABLE IF NOT EXISTS sets (
   id BIGINT UNSIGNED PRIMARY KEY,
   event_id BIGINT UNSIGNED NOT NULL,
   winner_id BIGINT UNSIGNED NOT NULL,
@@ -41,7 +42,7 @@ CREATE TABLE sets (
   CONSTRAINT fk_sets_loser FOREIGN KEY (loser_id) REFERENCES players(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE cuts (
+CREATE TABLE IF NOT EXISTS cuts (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   generated_at DATETIME NOT NULL,            -- UTC, igual que generatedAt del JSON
   season_year SMALLINT UNSIGNED NOT NULL,
@@ -52,7 +53,7 @@ CREATE TABLE cuts (
   UNIQUE KEY uq_cuts_generated (generated_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE rankings (
+CREATE TABLE IF NOT EXISTS rankings (
   cut_id INT UNSIGNED NOT NULL,
   scope ENUM('combined','guatemala') NOT NULL,
   player_id BIGINT UNSIGNED NOT NULL,
@@ -69,14 +70,14 @@ CREATE TABLE rankings (
   CONSTRAINT fk_rankings_player FOREIGN KEY (player_id) REFERENCES players(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE characters (
+CREATE TABLE IF NOT EXISTS characters (
   id INT UNSIGNED PRIMARY KEY,
   name VARCHAR(60) NOT NULL,
   slug VARCHAR(60) NOT NULL,
   UNIQUE KEY uq_characters_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE player_characters (
+CREATE TABLE IF NOT EXISTS player_characters (
   cut_id INT UNSIGNED NOT NULL,
   scope ENUM('combined','guatemala') NOT NULL,
   player_id BIGINT UNSIGNED NOT NULL,
@@ -89,7 +90,7 @@ CREATE TABLE player_characters (
   CONSTRAINT fk_pc_character FOREIGN KEY (character_id) REFERENCES characters(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   startgg_user_id BIGINT UNSIGNED NOT NULL,  -- identidad que devuelve el login de start.gg
   player_id BIGINT UNSIGNED NULL,            -- jugador del ranking al que corresponde
@@ -104,7 +105,7 @@ CREATE TABLE users (
   CONSTRAINT fk_users_main FOREIGN KEY (chosen_main_id) REFERENCES characters(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE upcoming_tournaments (
+CREATE TABLE IF NOT EXISTS upcoming_tournaments (
   id BIGINT UNSIGNED PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   starts_at DATETIME NOT NULL,
@@ -116,4 +117,24 @@ CREATE TABLE upcoming_tournaments (
   fetched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_upcoming_starts (starts_at),
   CONSTRAINT fk_upcoming_organizer FOREIGN KEY (organizer_user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Respuestas de la encuesta anónima (hoy en feedback-data/respuestas-2026.php).
+-- Sin nombre, correo, IP ni cuenta: mantener ese compromiso de la página.
+CREATE TABLE IF NOT EXISTS survey_responses (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  submitted_at DATETIME NOT NULL,            -- UTC, igual que submittedAt del archivo
+  season_year SMALLINT UNSIGNED NOT NULL,
+  role VARCHAR(30) NOT NULL,                 -- jugador | organizador | espectador | otro
+  eligibility VARCHAR(40) NOT NULL,          -- nacionalidad-local | nacionalidad | otra
+  minimum_activity VARCHAR(40) NOT NULL,     -- campo "minimum": 2-eventos-4-sets | 3-eventos-6-sets | otro
+  international VARCHAR(40) NOT NULL,        -- todos-validos | solo-grandes | ninguno
+  clarity TINYINT UNSIGNED NOT NULL,         -- 1 a 5
+  confidence TINYINT UNSIGNED NOT NULL,      -- 1 a 5
+  source_url VARCHAR(250) NULL,              -- enlace opcional de start.gg
+  comment TEXT NULL,                         -- hasta 2000 caracteres
+  is_test TINYINT(1) NOT NULL DEFAULT 0,     -- envío de prueba interna que el panel omite
+  import_hash CHAR(64) NULL,                 -- sha256 de la línea original; evita duplicar al migrar
+  UNIQUE KEY uq_survey_import (import_hash),
+  KEY idx_survey_season (season_year, submitted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
