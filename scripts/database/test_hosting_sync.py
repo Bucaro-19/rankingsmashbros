@@ -15,14 +15,14 @@ import unittest
 from unittest import mock
 
 from ranking_package import build_package, canonical, digest
-from test_import_ranking import fixture, ROOT
+from test_import_ranking import fixture, ROOT, legacy_package, corrected_games
 from import_ranking import sql, import_package
 from test_weekly_ranking_load import linked, FIRST, SECOND
 import publish_sql as sender
 
 PHP = shutil.which('php')
 BRIDGE = ROOT / 'scripts/database/php_ranking_bridge.php'
-TABLES = ('player_characters', 'rankings', 'cut_set_results', 'cut_events', 'cuts', 'set_slots', 'sets', 'entrant_players', 'entrants', 'events', 'tournaments', 'players')
+TABLES = ('player_characters', 'rankings', 'cut_set_results', 'cut_events', 'cuts', 'game_selections', 'games', 'set_slots', 'sets', 'entrant_players', 'entrants', 'events', 'tournaments', 'players')
 
 
 def bridge(mode, path, *args):
@@ -71,9 +71,31 @@ class ContractTests(unittest.TestCase):
             else: p['sha256'] = '0' * 64
             with self.subTest(kind=kind): self.assertFalse(self.check(p)['ok'])
 
+
+    def test_game_relations_catalog_and_published_mains_reject_in_both_languages(self):
+        from ranking_package import validate_package
+        for kind in ('set','winner','entrant','character','number','duplicate','ambiguous','coverage','time','missing_selection'):
+            p = copy.deepcopy(self.package); c = p['content']; t = c['entities']; g = t['games'][0]; r = t['game_selections'][0]
+            if kind == 'set': g['set_id'] = 999
+            if kind == 'winner': g['winner_entrant_id'] = 1011
+            if kind == 'entrant': r['entrant_id'] = 1011
+            if kind == 'character': r['character_id'] = 999999
+            if kind == 'number': g['game_number'] = 0
+            if kind == 'duplicate': t['games'].append(copy.deepcopy(g))
+            if kind == 'ambiguous': t['game_selections'].append(dict(r, character_id=1302))
+            if kind == 'coverage': c['gameContextSetIds'].append(999)
+            if kind == 'time': g['synced_at'] = '2026-10-01 00:00:00.000000'
+            if kind == 'missing_selection': t['game_selections'].pop()
+            p['sha256'] = digest(c)
+            with self.subTest(kind=kind):
+                with self.assertRaises((ValueError,KeyError)): validate_package(p)
+                self.assertFalse(self.check(p)['ok'])
+        self.assertTrue(self.check(legacy_package(self.package))['ok'])
+        random = build_package(*fixture(mutate=lambda raw: raw['sets']['500']['games'][0]['selections'][0]['character'].update(id=1746,name='Random Character')))
+        self.assertTrue(self.check(random)['ok'])
     def test_noncanonical_duplicate_keys_and_float_hashes_stop(self):
         self.assertFalse(self.check(raw=json.dumps(self.package))['ok'])
-        self.assertFalse(self.check(raw=canonical(self.package).replace('"packageVersion":1', '"packageVersion":1,"packageVersion":1'))['ok'])
+        self.assertFalse(self.check(raw=canonical(self.package).replace('"packageVersion":2', '"packageVersion":2,"packageVersion":2'))['ok'])
         p = copy.deepcopy(self.package); p['content']['extra'] = 1.0; p['sha256'] = digest(p['content'])
         self.assertFalse(self.check(p)['ok'])
         with self.assertRaises(sender.SyncStopped): sender.transport(p)
@@ -158,6 +180,108 @@ class HostingSQLTests(unittest.TestCase):
         changed = copy.deepcopy(first); changed['content']['public']['players'][0]['rating'] += 1; changed['sha256'] = digest(changed['content'])
         self.assertEqual(self.run_package(changed)['reason'], 'cut_conflict'); self.assertEqual(before, self.snapshot())
 
+
+    def test_corrections_replace_context_keep_snapshots_and_replay_cannot_revert(self):
+        first = build_package(*fixture()); second = build_package(*fixture(SECOND, mutate=corrected_games))
+        comparisons = []
+        for importer in ('python','php'):
+            with self.subTest(importer=importer):
+                self.clear()
+                def apply(p):
+                    if importer == 'python': return import_package(self.db,p,apply=True)
+                    result = self.run_package(p); self.assertTrue(result['ok'],result); return result['result']
+                initial = apply(first)
+                old_snapshot = sql(self.db,'SELECT public_snapshot,source_hash FROM cuts WHERE id=%s',(initial['cutId'],))
+                self.assertEqual(apply(second)['status'],'imported')
+                self.assertEqual(sql(self.db,'SELECT id,winner_entrant_id FROM games ORDER BY id'),((9000,1002),(9001,1001)))
+                self.assertEqual(sql(self.db,'SELECT game_id,entrant_id,character_id FROM game_selections ORDER BY game_id,entrant_id'),
+                    ((9000,1001,1302),(9000,1002,1319),(9001,1002,1319)))
+                self.assertEqual(old_snapshot,sql(self.db,'SELECT public_snapshot,source_hash FROM cuts WHERE id=%s',(initial['cutId'],)))
+                before = self.snapshot()
+                for p in (first,second): self.assertEqual(apply(p)['status'],'already_imported')
+                self.assertEqual(before,self.snapshot())
+                comparisons.append(self.snapshot(compare_importers=True))
+        self.assertEqual(*comparisons)
+
+    def test_empty_and_invalidated_sets_clear_old_games_in_both_importers(self):
+        for change in ('empty','dq'):
+            def mutate(raw):
+                if change == 'empty': raw['sets']['500']['games'] = []
+                else: raw['sets']['500']['displayScore'] = 'DQ'; raw['sets']['500']['winnerId'] = None
+            second = build_package(*fixture(SECOND, mutate=mutate))
+            for importer in ('python','php'):
+                with self.subTest(change=change, importer=importer):
+                    self.clear(); first=build_package(*fixture()); import_package(self.db,first,apply=True)
+                    if importer == 'python': import_package(self.db,second,apply=True)
+                    else: self.assertTrue(self.run_package(second)['ok'])
+                    for t in ('games','game_selections'): self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM '+t)[0][0],0)
+                    self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM player_characters WHERE cut_id=1')[0][0],4)
+                    self.assertEqual(sql(self.db,'SELECT source_hash FROM cuts WHERE id=1')[0][0],first['sha256'])
+
+    def test_uncaptured_competitive_set_keeps_prior_context(self):
+        def abroad(raw):
+            raw['sets']['504']['games'] = [dict(id=9500,winnerId=1022,selections=[
+                dict(entrant=dict(id=1021),character=dict(id=1302,name='Mario')),
+                dict(entrant=dict(id=1022),character=dict(id=1319,name='Pikachu'))])]
+        first = build_package(*fixture(mutate=abroad))
+        raw, public = fixture(SECOND)
+        local = copy.deepcopy(public['localRanking'])
+        public = dict(local, status='international_pilot',rankingScope='combined',localRanking=local)
+        second = build_package(raw,public)
+        self.assertNotIn(504,second['content']['gameContextSetIds'])
+        for importer in ('python','php'):
+            self.clear(); import_package(self.db,first,apply=True)
+            if importer == 'python': import_package(self.db,second,apply=True)
+            else: self.assertTrue(self.run_package(second)['ok'])
+            self.assertEqual(sql(self.db,'SELECT id FROM games WHERE set_id=504'),((9500,),))
+
+    def test_game_collision_changed_slots_and_failed_cut_rollback_existing_context(self):
+        for kind in ('collision','slots','failure','older'):
+            for importer in ('python','php'):
+                with self.subTest(kind=kind, importer=importer):
+                    self.clear(); first = build_package(*fixture()); import_package(self.db,first,apply=True)
+                    def mutate(raw):
+                        if kind == 'collision': raw['sets']['501']['games'] = raw['sets']['500']['games']; raw['sets']['500']['games'] = []
+                        else: corrected_games(raw)
+                        if kind == 'slots':
+                            for m in raw['sets'].values():
+                                if m['event']['id'] != 100: continue
+                                m['slots'][0]['entrant']['id'] = 1003
+                                if m['winnerId'] == 1001: m['winnerId'] = 1003
+                                for g in m['games']:
+                                    if g['winnerId'] == 1001: g['winnerId'] = 1003
+                                    for r in g['selections']:
+                                        if r['entrant']['id'] == 1001: r['entrant']['id'] = 1003
+                    second = build_package(*fixture(SECOND if kind != 'older' else '2026-10-01T06:00:00Z', mutate=mutate))
+                    before = self.snapshot()
+                    if kind == 'failure': sql(self.db, "CREATE TRIGGER reject_hosting_test BEFORE INSERT ON rankings FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='test-only'")
+                    if importer == 'python':
+                        with self.assertRaises(Exception): import_package(self.db,second,apply=True)
+                    else: self.assertFalse(self.run_package(second)['ok'])
+                    self.assertEqual(before,self.snapshot())
+
+    def test_legacy_v1_new_v2_repeat_preserves_context_and_catalog_checked_in_sql(self):
+        first = legacy_package(build_package(*fixture())); second = build_package(*fixture(SECOND))
+        for importer in ('python','php'):
+            self.clear()
+            def apply(p):
+                if importer == 'python': return import_package(self.db,p,apply=True)
+                result = self.run_package(p); self.assertTrue(result['ok'],result); return result['result']
+            apply(first); self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM games')[0][0],0)
+            apply(second); before = self.snapshot()
+            self.assertEqual(apply(first)['status'],'already_imported'); self.assertEqual(before,self.snapshot())
+        self.clear(); sql(self.db,'DELETE FROM characters WHERE id=1746')
+        try:
+            random = build_package(*fixture(mutate=lambda raw: raw['sets']['500']['games'][0]['selections'][0]['character'].update(id=1746,name='Random Character')))
+            with self.assertRaises(ValueError): import_package(self.db,random,apply=True)
+            self.assertEqual(self.run_package(random)['reason'],'character_missing')
+            self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM cuts')[0][0],0)
+        finally:
+            with self.db.cursor() as cursor:
+                cursor.execute((ROOT/'docs/smash/seed-characters.sql').read_text())
+                while cursor.nextset(): pass
+            self.db.commit()
+
     def queue(self, p):
         body = sender.transport(p); hash_ = __import__('hashlib').sha256(body).hexdigest()
         inbox = self.folder / 'ranking-inbox'; inbox.mkdir(exist_ok=True); (inbox / (hash_ + '.json.gz')).write_bytes(body)
@@ -165,6 +289,22 @@ class HostingSQLTests(unittest.TestCase):
         return hash_
 
     def worker(self): return bridge('worker', self.folder, self.folder)
+
+    def test_worker_with_5000_games_stays_within_transport_and_memory_limits(self):
+        def large(raw):
+            m = raw['sets']['500']; template = m['games'][0]
+            m['games'] = [dict(template, id=10000+i) for i in range(5000)]
+        package = build_package(*fixture(mutate=large))
+        body = sender.transport(package)
+        self.assertLess(len(body), sender.COMPRESSED_MAX)
+        self.assertLess(len(canonical(package).encode()), sender.MAX_BYTES)
+        self.queue(package); data = self.folder/'data'; data.mkdir()
+        (data/'public.json').write_text(canonical(package['content']['public']))
+        report = self.worker()
+        self.assertTrue(report['ok'], report); self.assertEqual(report['result']['status'], 'imported')
+        self.assertLess(report['result']['peakMemoryBytes'], 512*1024*1024)
+        self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM games')[0][0],5000)
+        self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM game_selections')[0][0],10000)
 
     def test_worker_requires_live_cut_recovers_interruption_and_cleans_success(self):
         first = build_package(*fixture()); hash_ = self.queue(first)
@@ -189,7 +329,7 @@ class HostingSQLTests(unittest.TestCase):
     def test_real_http_authentication_queue_deduplication_and_worker(self):
         site, private = self.folder / 'site', self.folder / 'private-smash'
         site.mkdir(); private.mkdir(); (site / 'data').mkdir()
-        for filename in ('database.php', 'ranking-import.php', 'ranking-sync-lib.php', 'ranking-sync.php'):
+        for filename in ('database.php', 'ranking-import.php', 'ranking-sync-lib.php', 'ranking-sync.php', 'characters.js'):
             shutil.copy(ROOT / 'ranking-smash-ultimate' / filename, site)
         key = '1' * 64
         (private / 'sync.local.php').write_text("<?php return ['enabled'=>true,'key'=>'" + key + "'];")

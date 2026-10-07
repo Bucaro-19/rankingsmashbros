@@ -99,6 +99,51 @@ function sr_view(array $v, bool $local): void {
         sr_require($sum === $coverage['gamesWithSelections']);
     }
 }
+function sr_character_ids(): array {
+    // Same catalog as the installed seed; no API calls, including real Random ID.
+    preg_match_all('/"characterId":\s*"([0-9]+)"/', file_get_contents(__DIR__ . '/characters.js'), $matches);
+    return array_fill_keys(array_merge(array_map('intval', $matches[1]), [1746]), true);
+}
+function sr_context_set_ids(array $p, array $tables): array {
+    $admitted = array_fill_keys(array_map('sr_id', array_column($p['events'], 'id')), true);
+    $ranked = []; foreach (sr_scopes($p) as $v) foreach ($v['players'] as $r) $ranked[sr_id($r['id'])] = true;
+    $entrants = []; foreach ($tables['entrant_players'] as $r) if (isset($ranked[$r['player_id']])) $entrants[$r['entrant_id']] = true;
+    $relevant = []; foreach ($tables['set_slots'] as $r) if (isset($entrants[$r['entrant_id']])) $relevant[$r['set_id']] = true;
+    $out = []; foreach ($tables['sets'] as $r) if ($r['outcome_type'] !== 'competitive' || (isset($admitted[$r['event_id']], $relevant[$r['id']]))) $out[] = $r['id'];
+    sort($out, SORT_NUMERIC); return $out;
+}
+function sr_game_context(array $c, array $ids, array $slots): void {
+    $t = $c['entities']; $covered = $c['gameContextSetIds'] ?? null;
+    sr_require($covered === sr_context_set_ids($c['public'], $t));
+    $games = sr_index($t['games']); $numbers = []; $seen = []; $known = sr_character_ids();
+    foreach ($t['games'] as $g) {
+        $keys = array_keys($g); sort($keys); sr_require($keys === ['game_number','id','set_id','stage_id','synced_at','winner_entrant_id']);
+        $sid = sr_id($g['set_id']); $winner = sr_id($g['winner_entrant_id']);
+        sr_require(in_array($sid, $covered, true) && ($ids['sets'][$sid]['outcome_type'] ?? null) === 'competitive');
+        sr_require(in_array($winner, [$slots["$sid:0"]['entrant_id'], $slots["$sid:1"]['entrant_id']], true));
+        $number = sr_int($g['game_number'], 1, 65535); $key = "$sid:$number"; sr_require(!isset($numbers[$key])); $numbers[$key] = true;
+        sr_require($g['stage_id'] === null && $g['synced_at'] === sr_at($c['public']['characterCapturedAt']));
+    }
+    foreach ($t['game_selections'] as $r) {
+        $keys = array_keys($r); sort($keys); sr_require($keys === ['character_id','entrant_id','game_id','set_id']);
+        $gid = sr_id($r['game_id']); $sid = sr_id($r['set_id']); $en = sr_id($r['entrant_id']); $cid = sr_id($r['character_id']);
+        sr_require(isset($games[$gid]) && $games[$gid]['set_id'] === $sid && isset($known[$cid]));
+        sr_require(in_array($en, [$slots["$sid:0"]['entrant_id'], $slots["$sid:1"]['entrant_id']], true));
+        $key = "$gid:$en"; sr_require(!isset($seen[$key])); $seen[$key] = true;
+    }
+    $players = []; foreach ($t['entrant_players'] as $r) $players[$r['entrant_id']] = $r['player_id'];
+    foreach (sr_scopes($c['public']) as $v) {
+        $events = array_fill_keys(array_map('sr_id', array_column($v['events'], 'id')), true); $counts = [];
+        foreach ($t['game_selections'] as $r) if (isset($events[$ids['sets'][$r['set_id']]['event_id']])) {
+            $pid = $players[$r['entrant_id']]; $cid = $r['character_id']; $counts[$pid][$cid] = ($counts[$pid][$cid] ?? 0) + 1;
+        }
+        foreach ($v['players'] as $r) {
+            $wanted = []; foreach ($r['mains'] as $m) $wanted[sr_id($m['characterId'])] = $m['games'];
+            $actual = $counts[sr_id($r['id'])] ?? []; ksort($actual); ksort($wanted); sr_require($actual === $wanted);
+        }
+    }
+}
+
 function sr_package(string $raw): array {
     sr_require(strlen($raw) <= 32 * 1024 * 1024);
     $obj = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
@@ -106,13 +151,15 @@ function sr_package(string $raw): array {
     sr_require(array_keys(get_object_vars($obj)) === ['content', 'sha256'] && is_string($obj->sha256)
         && hash_equals(hash('sha256', sr_json($obj->content)), $obj->sha256));
     $p = json_decode($raw, true, 512, JSON_THROW_ON_ERROR); $c = $p['content']; $v = $c['public']; $tables = $c['entities'];
-    sr_require($c['packageVersion'] === 1 && $c['capturedAt'] === $v['generatedAt']);
+    sr_require(in_array($c['packageVersion'], [1, 2], true) && $c['capturedAt'] === $v['generatedAt']);
     sr_view($v, false); sr_view($v['localRanking'], true);
     foreach (['generatedAt', 'seasonYear', 'seasonLabel', 'methodVersion', 'eligibilityRules'] as $key)
         sr_require(($v[$key] ?? null) === ($v['localRanking'][$key] ?? null));
     $gt = array_values(array_filter($v['events'], static function ($e) { return $e['country'] === 'GT'; }));
     $gtIds = array_keys(sr_index($gt)); $localIds = array_keys(sr_index($v['localRanking']['events'])); sort($gtIds); sort($localIds); sr_require($gtIds === $localIds);
-    $names = array_keys($tables); sort($names); sr_require($names === ['entrant_players', 'entrants', 'events', 'players', 'set_slots', 'sets', 'tournaments']);
+    $wantedNames = ['entrant_players', 'entrants', 'events', 'players', 'set_slots', 'sets', 'tournaments'];
+    if ($c['packageVersion'] === 2) { $wantedNames[] = 'games'; $wantedNames[] = 'game_selections'; }
+    $names = array_keys($tables); sort($names); sort($wantedNames); sr_require($names === $wantedNames);
     $ids = []; foreach (['players', 'tournaments', 'events', 'entrants', 'sets'] as $table) $ids[$table] = sr_index($tables[$table]);
     foreach ($tables['players'] as $r) { sr_text($r['tag'], 100); sr_text($r['known_as'] ?? null, 100, true); sr_text($r['country_basis'] ?? null, 255, true); }
     $links = []; $slots = [];
@@ -146,6 +193,7 @@ function sr_package(string $raw): array {
             sr_require(isset($links[$winner . ':' . sr_id($r['playerIds'][0])], $links[$loser . ':' . sr_id($r['playerIds'][1])]));
         }
     }
+    if ($c['packageVersion'] === 2) sr_game_context($c, $ids, $slots);
     $p['_public_json'] = sr_json($obj->content->public);
     return $p;
 }
@@ -187,6 +235,36 @@ function sr_parity(PDO $db, array $public, int $cut, string $publicJson): void {
         sr_equal_rows(sr_query($db, 'SELECT set_id,event_id,winner_id,loser_id,winner_tag,loser_tag,display_score,winner_score,loser_score FROM cut_set_results WHERE cut_id=? AND scope=?', [$cut, $scope]), $results);
     }
 }
+function sr_context_rows(PDO $db, string $table, string $columns, array $ids, string $idColumn = "set_id"): array {
+    $out = [];
+    foreach (array_chunk($ids, 500) as $batch) $out = array_merge($out, sr_query($db,
+        'SELECT `' . implode('`,`', explode(' ', $columns)) . '` FROM `' . $table . '` WHERE `' . $idColumn . '` IN (' . implode(',', array_fill(0, count($batch), '?')) . ')', $batch));
+    return $out;
+}
+function sr_replace_game_context(PDO $db, array $c): void {
+    if ($c['packageVersion'] === 1) return;
+    $t = $c['entities']; $covered = $c['gameContextSetIds'];
+    $owners = array_column(sr_context_rows($db, 'games', 'id set_id', array_column($t['games'], 'id'), 'id'), 1, 0);
+    foreach ($t['games'] as $r) sr_require(!isset($owners[$r['id']]) || (int)$owners[$r['id']] === $r['set_id'], 'game_identity_conflict');
+    $wanted = []; foreach ($t['set_slots'] as $r) $wanted[$r['set_id']][] = $r['entrant_id'];
+    $actual = []; foreach (sr_context_rows($db, 'set_slots', 'set_id entrant_id', $covered) as $r) $actual[$r[0]][] = $r[1] === null ? null : (int)$r[1];
+    $sets = sr_index($t['sets']);
+    foreach ($covered as $sid) if ($sets[$sid]['outcome_type'] === 'competitive') {
+        $a = $actual[$sid] ?? []; $b = $wanted[$sid]; sort($a); sort($b); sr_require($a === $b, 'set_slots_changed');
+    }
+    foreach (array_chunk($covered, 500) as $batch) {
+        $placeholders = implode(',', array_fill(0, count($batch), '?'));
+        sr_query($db, 'DELETE FROM game_selections WHERE set_id IN (' . $placeholders . ')', $batch);
+        sr_query($db, 'DELETE FROM games WHERE set_id IN (' . $placeholders . ')', $batch);
+    }
+    foreach (['games' => 'id set_id game_number winner_entrant_id stage_id synced_at',
+              'game_selections' => 'game_id set_id entrant_id character_id'] as $table => $cols) {
+        sr_insert($db, $table, $cols, $t[$table]);
+        $expected = []; foreach ($t[$table] as $r) $expected[] = array_map(static function ($k) use ($r) { return $r[$k]; }, explode(' ', $cols));
+        sr_equal_rows(sr_context_rows($db, $table, $cols, $covered), $expected);
+    }
+}
+
 function sr_import(PDO $db, array $package, bool $apply = false): array {
     sr_require(!$db->inTransaction(), 'transaction_already_active');
     $c = $package['content']; $p = $c['public']; $identity = [sr_at($p['generatedAt']), $p['seasonYear'], $p['methodVersion']];
@@ -202,7 +280,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
             'sets' => 'id event_id source_state status outcome_type winner_entrant_id display_score completed_at source_updated_at synced_at source_hash',
             'set_slots' => 'set_id slot_index event_id entrant_id score is_dq'];
         $engines = array_column(sr_query($db, 'SELECT TABLE_NAME,ENGINE FROM information_schema.tables WHERE table_schema=DATABASE()'), 1, 0);
-        foreach (array_merge(array_keys($columns), ['cuts', 'cut_events', 'cut_set_results', 'rankings', 'player_characters', 'characters']) as $t)
+        foreach (array_merge(array_keys($columns), ['cuts', 'cut_events', 'cut_set_results', 'rankings', 'player_characters', 'characters', 'games', 'game_selections']) as $t)
             sr_require(($engines[$t] ?? null) === 'InnoDB', 'schema_invalid');
         $db->exec("SET time_zone='+00:00'"); $db->exec("SET SESSION sql_mode=CONCAT(@@sql_mode,',STRICT_TRANS_TABLES')");
         $existing = sr_query($db, 'SELECT id,source_hash,status FROM cuts WHERE generated_at=? AND season_year=? AND method_version=?', $identity);
@@ -218,6 +296,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         $known = array_flip(array_column(sr_query($db, 'SELECT id FROM characters'), 0));
         foreach (sr_scopes($p) as $view) foreach ($view['players'] as $r) foreach ($r['mains'] as $m)
             sr_require(isset($known[sr_id($m['characterId'])]), 'character_missing');
+        foreach ($c['entities']['game_selections'] ?? [] as $r) sr_require(isset($known[sr_id($r['character_id'])]), 'character_missing');
         if (!$apply) return ['status' => 'validated_no_writes'];
         $db->beginTransaction();
         $s = $db->prepare('INSERT INTO cuts(generated_at,season_year,method_version,season_label,schema_version,character_captured_at,public_snapshot,source_hash) VALUES (?,?,?,?,?,?,?,?)');
@@ -235,6 +314,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
             }
             sr_insert($db, $table, $cols, $c['entities'][$table], true);
         }
+        sr_replace_game_context($db, $c);
         $events = []; $results = []; $rankings = []; $mains = []; $hashes = array_column($c['entities']['sets'], 'source_hash', 'id');
         foreach (sr_scopes($p) as $scope => $v) {
             foreach ($v['events'] as $e) $events[] = ['cut_id' => $cut, 'scope' => $scope, 'event_id' => sr_id($e['id']), 'tournament_name' => $e['name'], 'event_name' => $e['eventName'], 'event_date' => $e['date'], 'country_code' => $e['country'], 'active_players' => $e['activePlayers'], 'url' => $e['url']];

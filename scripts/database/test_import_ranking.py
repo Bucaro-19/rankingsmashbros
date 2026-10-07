@@ -12,7 +12,7 @@ from import_ranking import import_package, sql, verify_parity
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def fixture(at='2026-10-04T11:43:18.348499+00:00'):
+def fixture(at='2026-10-04T11:43:18.348499+00:00', mutate=None):
     players = {str(i):dict(id=i,gamerTag=f'Jugador Á{i}',user=dict(slug=f'user/test{i}',location=dict(country='Guatemala' if i==1 else 'Mexico'))) for i in (1,2)}
     events,sets = [],{}
     for offset in range(3):
@@ -27,17 +27,22 @@ def fixture(at='2026-10-04T11:43:18.348499+00:00'):
             winner=1 if offset<2 and j==0 else 2
             sets[str(sid)]=dict(id=sid,state=3,winnerId=eid*10+winner,displayScore=f'Jugador Á{winner} 2 - Otro 0',
                 completedAt=e['startAt']+3600,updatedAt=e['startAt']+3600,event=e,tournament=e['tournament'],
-                slots=[dict(entrant=dict(id=eid*10+i,participants=[dict(player=players[str(i)])])) for i in (1,2)])
+                slots=[dict(entrant=dict(id=eid*10+i,participants=[dict(player=players[str(i)])])) for i in (1,2)],
+                games=[dict(id=9000,winnerId=eid*10+1,selections=[dict(entrant=dict(id=eid*10+i),character=dict(id=1319,name='Mario')) for i in (1,2)])] if sid == 500 else [])
     raw=dict(kind='national_discovery',catalogComplete=True,eventsComplete=True,internationalComplete=True,
-        generatedAt=at,events=events,players=players,sets=sets)
+        generatedAt=at,events=events,players=players,sets=sets,characterDataComplete=True,characterCapturedAt=at,
+        characterPlayerIds=['1','2'],characterEventIds=[str(e['id']) for e in events])
+    if mutate: mutate(raw)
+    from characters import player_mains
+    from rank import competitive_set
     def scope(local):
         selected=events[:2] if local else events
         included={e['id'] for e in selected}
-        matches=[m for m in sets.values() if m['event']['id'] in included]
-        ledger=[dict(id=str(m['id']),eventId=str(m['event']['id']),playerIds=[str(m['winnerId']%10),str(3-m['winnerId']%10)],
-            playerTags=[players[str(m['winnerId']%10)]['gamerTag'],players[str(3-m['winnerId']%10)]['gamerTag']],score=m['displayScore'],country=m['tournament']['countryCode']) for m in matches]
+        matches=[m for m in sets.values() if m['event']['id'] in included and competitive_set(m)]
+        ledger=[dict(id=str(m['id']),eventId=str(m['event']['id']),playerIds=list(competitive_set(m)),
+            playerTags=[players[pid]['gamerTag'] for pid in competitive_set(m)],score=m['displayScore'],country=m['tournament']['countryCode']) for m in matches]
         public_events=[dict(id=str(e['id']),name=e['tournament']['name'],eventName=e['name'],country=e['tournament']['countryCode'],
-            date=datetime.fromtimestamp(e['startAt'],timezone.utc).date().isoformat(),validSets=e['setsFetched'],activePlayers=2,
+            date=datetime.fromtimestamp(e['startAt'],timezone.utc).date().isoformat(),validSets=sum(m['event']['id']==e['id'] for m in matches),activePlayers=2,
             url='https://www.start.gg/'+e['slug']) for e in selected]
         ranked=[]
         for rank,pid in enumerate((1,2) if local else (2,1),1):
@@ -52,12 +57,30 @@ def fixture(at='2026-10-04T11:43:18.348499+00:00'):
                 countryBasis='perfil start.gg',activity=dict(months=['2026-01'],events=activity),
                 mains=[dict(characterId='1319',name='Mario',games=1)],
                 mainCoverage=dict(setsQueried=wins+losses,setsWithSelections=1,gamesWithSelections=1,ambiguousGames=0)))
+        mains = player_mains(raw, {str(e['id']) for e in selected}, {'1','2'})
+        for p in ranked: p.update(mains[p['id']])
         return dict(schemaVersion=3,status='local_pilot' if local else 'international_pilot',rankingComputed=True,
             generatedAt=at,seasonYear=2026,seasonLabel='2026',methodVersion='BT-PILOTO-3',rankingScope='guatemala' if local else 'combined',
             rankingCoverage='all_eligible',characterCapturedAt=at,previousCutAt=None,players=ranked,results=ledger,events=public_events,
             counts=dict(players=2,eligiblePlayers=2,top100=2,events=len(selected),sets=len(matches)))
     public=scope(False);public['localRanking']=scope(True)
     return raw,public
+
+
+def legacy_package(package):
+    p = copy.deepcopy(package); c = p['content']; c['packageVersion'] = 1
+    del c['gameContextSetIds']; del c['entities']['games']; del c['entities']['game_selections']
+    p['sha256'] = digest(c)
+    return p
+
+
+def corrected_games(raw):
+    m = raw['sets']['500']; m['winnerId'] = 1002; m['displayScore'] = 'Jugador Á2 2 - Otro 0'
+    m['games'][0]['winnerId'] = 1002
+    m['games'][0]['selections'][0]['character'] = dict(id=1302,name='Mario')
+    game = copy.deepcopy(m['games'][0]); game['id'] = 9001; game['winnerId'] = 1001
+    game['selections'].append(dict(entrant=dict(id=1001),character=dict(id=1319,name='Pikachu')))
+    m['games'].append(game)  # ambiguous for entrant 1001, valid for foreign opponent 1002
 
 
 class PackageTests(unittest.TestCase):
@@ -90,6 +113,38 @@ class PackageTests(unittest.TestCase):
         raw,public=fixture();public['players'][0]['previousRank']=1
         with self.assertRaises(ValueError):build_package(raw,public)
 
+    def test_filtering_matches_mains_duplicates_ambiguity_and_real_random(self):
+        def mutate(raw):
+            corrected_games(raw); games = raw['sets']['500']['games']
+            games[0]['selections'][0]['character'] = dict(id=1746,name='Random Character')
+            games[0]['selections'].append(copy.deepcopy(games[0]['selections'][0]))
+            games.extend([copy.deepcopy(games[0]),dict(id=9002,winnerId=None),dict(id=None,winnerId=1001)])
+            games[0]['selections'].append(dict(entrant=dict(id=999),character=dict(id=999,name='Outside')))
+        p = build_package(*fixture(mutate=mutate)); validate_package(p); t = p['content']['entities']
+        self.assertEqual([g['id'] for g in t['games']], [9000,9001])
+        self.assertEqual([(r['game_id'],r['entrant_id'],r['character_id']) for r in t['game_selections']],
+                         [(9000,1001,1746),(9000,1002,1319),(9001,1002,1319)])
+        self.assertEqual(p['content']['public']['players'][1]['mainCoverage']['ambiguousGames'],1)
+
+    def test_missing_private_games_or_mismatched_mains_stops_before_publication(self):
+        for kind in ('coverage','missing','time','mains'):
+            raw, public = fixture()
+            if kind == 'coverage': raw['characterDataComplete'] = False
+            if kind == 'missing': del raw['sets']['500']['games']
+            if kind == 'time': raw['characterCapturedAt'] = '2026-10-05T00:00:00Z'
+            if kind == 'mains': raw['sets']['500']['games'][0]['selections'][0]['character']['id'] = 1302
+            with self.subTest(kind=kind), self.assertRaises(ValueError): build_package(raw,public)
+
+    def test_game_id_collision_and_unknown_character_stop(self):
+        def collide(raw): raw['sets']['501']['games'] = copy.deepcopy(raw['sets']['500']['games'])
+        with self.assertRaises(ValueError): build_package(*fixture(mutate=collide))
+        def unknown(raw): raw['sets']['500']['games'][0]['selections'][0]['character']['id'] = 999999
+        with self.assertRaises(ValueError): validate_package(build_package(*fixture(mutate=unknown)))
+
+    def test_version_one_stays_readable_with_original_hash(self):
+        p = legacy_package(build_package(*fixture())); before = canonical(p)
+        validate_package(p); self.assertEqual(before, canonical(p))
+
 
 @unittest.skipUnless(os.environ.get('SMASH_SCHEMA_TEST_DB'),'Requires disposable SQL service')
 class ImportTests(unittest.TestCase):
@@ -117,7 +172,7 @@ class ImportTests(unittest.TestCase):
         self.db.rollback()
         sql(self.db,'DROP TRIGGER IF EXISTS reject_ranking_test')
         sql(self.db,'UPDATE rankings SET previous_cut_id=NULL')
-        for table in ('player_characters','rankings','cut_set_results','cut_events','cuts','set_slots','sets','entrant_players','entrants','events','tournaments','players'):
+        for table in ('player_characters','rankings','cut_set_results','cut_events','cuts','game_selections','games','set_slots','sets','entrant_players','entrants','events','tournaments','players'):
             sql(self.db,'DELETE FROM `'+table+'`')
         self.db.commit()
 

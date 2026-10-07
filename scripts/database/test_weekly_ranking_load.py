@@ -246,7 +246,7 @@ class LoadTests(unittest.TestCase):
     def clean(self):
         self.db.rollback()
         sql(self.db, 'UPDATE rankings SET previous_cut_id=NULL')
-        for table in ('player_characters', 'rankings', 'cut_set_results', 'cut_events', 'cuts', 'set_slots', 'sets',
+        for table in ('player_characters', 'rankings', 'cut_set_results', 'cut_events', 'cuts', 'game_selections', 'games', 'set_slots', 'sets',
                       'entrant_players', 'entrants', 'events', 'tournaments', 'players'):
             sql(self.db, 'DELETE FROM `' + table + '`')
         self.db.commit()

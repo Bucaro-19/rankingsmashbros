@@ -15,6 +15,8 @@ COLUMNS = {
  'entrant_players': 'entrant_id player_id registered_tag',
  'sets': 'id event_id source_state status outcome_type winner_entrant_id display_score completed_at source_updated_at synced_at source_hash',
  'set_slots': 'set_id slot_index event_id entrant_id score is_dq',
+ 'games': 'id set_id game_number winner_entrant_id stage_id synced_at',
+ 'game_selections': 'game_id set_id entrant_id character_id',
 }
 LOCK = 'smash-ranking-import-v1'
 
@@ -102,6 +104,39 @@ def verify_parity(db, content, cut_id):
         require(set(found)==wanted_results and len(found)==len(wanted_results), 'Resultados SQL distintos del público.')
 
 
+def context_rows(db, table, columns, set_ids, *, id_column="set_id"):
+    rows = []
+    for offset in range(0, len(set_ids), 500):
+        batch = set_ids[offset:offset+500]
+        rows.extend(sql(db, 'SELECT ' + ','.join('`'+c+'`' for c in columns.split()) +
+            ' FROM `' + table + '` WHERE `' + id_column + '` IN (' + ','.join(['%s']*len(batch)) + ')', batch))
+    return rows
+
+
+def replace_game_context(db, content):
+    if content['packageVersion'] == 1:
+        return
+    tables = content['entities']; covered = content['gameContextSetIds']
+    # Reject a known game ID assigned to another set, even if both sets are replaced.
+    owners = dict(context_rows(db,'games','id set_id',[r['id'] for r in tables['games']],id_column='id'))
+    require(all(r['id'] not in owners or owners[r['id']] == r['set_id'] for r in tables['games']), 'Game movido a otro set.')
+    expected_slots = defaultdict_set((r['set_id'],r['entrant_id']) for r in tables['set_slots'])
+    actual_slots = defaultdict_set(context_rows(db,'set_slots','set_id entrant_id',covered))
+    competitive = {s['id'] for s in tables['sets'] if s['outcome_type'] == 'competitive'}
+    require(all(actual_slots.get(sid) == expected_slots[sid] for sid in covered if sid in competitive),
+            'Los slots guardados cambiaron; requiere conciliación manual.')
+    for offset in range(0,len(covered),500):
+        batch = covered[offset:offset+500]; placeholders = ','.join(['%s']*len(batch))
+        sql(db, 'DELETE FROM game_selections WHERE set_id IN ('+placeholders+')', batch)
+        sql(db, 'DELETE FROM games WHERE set_id IN ('+placeholders+')', batch)
+    for table in ('games','game_selections'):
+        insert_rows(db,table,COLUMNS[table],tables[table])
+        found = context_rows(db,table,COLUMNS[table],covered)
+        normalized = {tuple(instant(v.isoformat()+'+00:00') if hasattr(v,'isoformat') else v for v in r) for r in found}
+        wanted = {tuple(r[col] for col in COLUMNS[table].split()) for r in tables[table]}
+        require(normalized == wanted and len(found) == len(wanted), 'Paridad de games/selecciones falló.')
+
+
 def import_package(db, package, *, apply=False):
     content = validate_package(package)
     p = content['public']; identity = (instant(p['generatedAt']),p['seasonYear'],p['methodVersion'])
@@ -118,7 +153,11 @@ def import_package(db, package, *, apply=False):
             verify_parity(db,content,cut_id)
             db.rollback()
             return dict(plan,status='already_imported',cutId=cut_id)
+        cuts = sql(db, 'SELECT generated_at,status FROM cuts')
+        require(all(row[1] == 'published' for row in cuts), 'Existe un corte incompleto.')
+        require(not cuts or identity[0] > max(instant(row[0].isoformat()+'+00:00') for row in cuts), 'Corte anterior al último guardado.')
         character_ids = {identifier(m['characterId']) for _,v in scope_rows(content) for r in v['players'] for m in r['mains']}
+        character_ids.update(r['character_id'] for r in content['entities'].get('game_selections', []))
         known = {r[0] for r in sql(db,'SELECT id FROM characters')}
         require(character_ids <= known, 'Personaje no instalado; actualizar catálogo antes de importar.')
         if not apply:
@@ -139,6 +178,7 @@ def import_package(db, package, *, apply=False):
                 present = defaultdict_set(sql(db,'SELECT entrant_id,player_id FROM entrant_players'))
                 require(all(not present.get(r['entrant_id']) or present[r['entrant_id']]=={r['player_id']} for r in content['entities'][table]), 'Entrant vinculado a otro jugador.')
             insert_rows(db, table, COLUMNS[table], content['entities'][table], keep_existing=True)
+        replace_game_context(db,content)
         events, results = [], []
         set_hashes = {s['id']:s['source_hash'] for s in content['entities']['sets']}
         for scope,view in scope_rows(content):

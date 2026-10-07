@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'smash'))
 from deploy import validate_public_data
 from rank import competitive_set
+from characters import player_mains
 
 
 def require(ok, message):
@@ -66,6 +67,100 @@ def country(value):
     return {'Guatemala': 'GT', 'Mexico': 'MX', 'México': 'MX', 'United States': 'US',
             'El Salvador': 'SV', 'Honduras': 'HN', 'Costa Rica': 'CR', 'Panama': 'PA',
             'Panamá': 'PA', 'Nicaragua': 'NI', 'Canada': 'CA', 'Japan': 'JP'}.get(value)
+
+
+def character_ids():
+    """Same versioned catalog installed by seed-characters.sql; Random is a real API ID."""
+    catalog = Path(__file__).resolve().parents[2] / 'ranking-smash-ultimate/characters.js'
+    return {int(v) for v in re.findall(r'"characterId":\s*"([0-9]+)"', catalog.read_text())} | {1746}
+
+
+def context_set_ids(public, tables):
+    """Captured competitive ledger plus invalidated sets, which must lose old game context."""
+    admitted = {identifier(e['id']) for e in public['events']}
+    ranked = {identifier(p['id']) for v in (public, public['localRanking']) for p in v['players']}
+    entrants = {r['entrant_id'] for r in tables['entrant_players'] if r['player_id'] in ranked}
+    relevant = {r['set_id'] for r in tables['set_slots'] if r['entrant_id'] in entrants}
+    return sorted(s['id'] for s in tables['sets'] if s['outcome_type'] != 'competitive'
+        or (s['event_id'] in admitted and s['id'] in relevant))
+
+
+def game_context(raw, public, tables):
+    require(raw.get('characterDataComplete') is True and raw.get('characterCapturedAt') == public['characterCapturedAt'],
+            'Falta la captura privada de personajes del corte.')
+    for view in (public, public['localRanking']):
+        players = {p['id'] for p in view['players']}; events = {e['id'] for e in view['events']}
+        require(players <= set(raw.get('characterPlayerIds', [])) and events <= set(raw.get('characterEventIds', [])),
+                'Cobertura privada de personajes incompleta.')
+        expected = player_mains(raw, events, players)
+        require(all(p['mains'] == expected[p['id']]['mains'] and p['mainCoverage'] == expected[p['id']]['mainCoverage']
+                    for p in view['players']), 'Los games no reproducen los mains publicados.')
+    covered = context_set_ids(public, tables)
+    competitive = {s['id'] for s in tables['sets'] if s['outcome_type'] == 'competitive'}
+    games, selections = {}, []
+    for sid in covered:
+        if sid not in competitive:
+            continue  # DQ/invalidated sets clear prior context without querying characters.
+        match = raw['sets'][str(sid)]
+        require(isinstance(match.get('games'), list), 'Set admitido sin captura de games.')
+        entrants = {str(slot['entrant']['id']) for slot in match['slots']}
+        seen = set()
+        for number, game in enumerate(match['games'], 1):
+            gid = game.get('id')
+            if gid is None or str(gid) in seen or str(game.get('winnerId')) not in entrants:
+                continue
+            seen.add(str(gid))
+            gid = identifier(gid)
+            require(gid not in games, 'ID de game repetido entre sets.')
+            games[gid] = dict(id=gid, set_id=sid, game_number=integer(number, minimum=1, maximum=65535),
+                winner_entrant_id=identifier(game['winnerId']), stage_id=None, synced_at=instant(raw['characterCapturedAt']))
+            picks = defaultdict(set)
+            for selection in game.get('selections') or []:
+                en = str((selection.get('entrant') or {}).get('id'))
+                char = selection.get('character') or {}; name = char.get('name'); cid = char.get('id')
+                if en in entrants and cid is not None and isinstance(name, str) and name.strip():
+                    picks[identifier(en)].add(str(cid))
+            for en, chars in picks.items():
+                if len(chars) == 1:
+                    selections.append(dict(game_id=gid, set_id=sid, entrant_id=en, character_id=identifier(next(iter(chars)))))
+    tables['games'] = [games[k] for k in sorted(games)]
+    tables['game_selections'] = sorted(selections, key=lambda r: (r['game_id'], r['entrant_id'], r['character_id']))
+    return covered
+
+
+def validate_game_context(c, ids, smap, links):
+    tables = c['entities']; known = character_ids()
+    covered = c.get('gameContextSetIds')
+    require(covered == context_set_ids(c['public'], tables), 'Cobertura de games inválida.')
+    game_ids = {identifier(r['id']): r for r in tables['games']}
+    require(len(game_ids) == len(tables['games']), 'Game duplicado.')
+    covered = set(covered)
+    numbers = set()
+    for g in tables['games']:
+        require(set(g) == {'id','set_id','game_number','winner_entrant_id','stage_id','synced_at'}, 'Campos de game inválidos.')
+        sid = identifier(g['set_id']); winner = identifier(g['winner_entrant_id'])
+        require(sid in covered and ids['sets'][sid]['outcome_type'] == 'competitive', 'Game fuera de sets admitidos.')
+        require(winner in [smap[(sid,i)]['entrant_id'] for i in range(2)], 'Ganador del game ajeno al set.')
+        number = integer(g['game_number'], minimum=1, maximum=65535)
+        require((sid,number) not in numbers, 'Número de game duplicado.'); numbers.add((sid,number))
+        require(g['stage_id'] is None and g['synced_at'] == instant(c['public']['characterCapturedAt']), 'Metadatos del game inválidos.')
+    seen = set()
+    for r in tables['game_selections']:
+        require(set(r) == {'game_id','set_id','entrant_id','character_id'}, 'Campos de selección inválidos.')
+        gid,sid,en,cid = (identifier(r[k]) for k in ('game_id','set_id','entrant_id','character_id'))
+        require(gid in game_ids and game_ids[gid]['set_id'] == sid, 'Selección de otro game/set.')
+        require(en in [smap[(sid,i)]['entrant_id'] for i in range(2)] and cid in known, 'Selección ajena al set/catálogo.')
+        require((gid,en) not in seen, 'Selección duplicada o ambigua.'); seen.add((gid,en))
+    for view in (c['public'], c['public']['localRanking']):
+        event_ids = {identifier(e['id']) for e in view['events']}; counts = Counter()
+        players_by_entrant = {en:pid for en,pid in links}
+        for r in tables['game_selections']:
+            if ids['sets'][r['set_id']]['event_id'] in event_ids:
+                counts[(players_by_entrant[r['entrant_id']], r['character_id'])] += 1
+        for p in view['players']:
+            pid = identifier(p['id'])
+            require({cid:n for (player,cid),n in counts.items() if player == pid}
+                    == {identifier(m['characterId']):m['games'] for m in p['mains']}, 'Games y mains publicados difieren.')
 
 
 def build_package(raw, public):
@@ -203,10 +298,13 @@ def build_package(raw, public):
     data = {k: [rows[key] for key in sorted(rows)] for k, rows in entities.items()}
     data['entrant_players'] = [ep[k] for k in sorted(ep)]
     data['set_slots'] = [slots[k] for k in sorted(slots)]
-    content = dict(packageVersion=1, capturedAt=raw['generatedAt'], public=public, entities=data,
+    covered = game_context(raw, public, data)
+    content = dict(packageVersion=2, capturedAt=raw['generatedAt'], public=public, entities=data, gameContextSetIds=covered,
         limitations=['Entrants observed in set slots; not a complete registration roster.',
                      'Numeric scores are NULL: source stored displayScore without typed scores.',
-                     'No individual games/selections imported; mains preserve the published capture.'])
+                     'Games cover admitted ranked-player sets and both entrants; missing/ambiguous picks are omitted.',
+                     'game_number is capture array position, not an API order field; stage_id is NULL.',
+                     'Invalidated sets clear prior game context; published cut snapshots remain immutable.'])
     return dict(content=content, sha256=digest(content))
 
 
@@ -214,11 +312,13 @@ def validate_package(package):
     """Validate normalized identities and published relationships before SQL writes."""
     require(set(package) == {'content', 'sha256'} and package['sha256'] == digest(package['content']), 'Hash de paquete inválido.')
     c = package['content']; public = c['public']; tables = c['entities']
-    require(c['packageVersion'] == 1 and c['capturedAt'] == public['generatedAt'], 'Versión/captura del paquete inválida.')
+    require(type(c['packageVersion']) is int and c['packageVersion'] in (1,2) and c['capturedAt'] == public['generatedAt'], 'Versión/captura del paquete inválida.')
     instant(c['capturedAt'])
     validate_public_data(public)
     require(public['schemaVersion'] == 3 and 'localRanking' in public, 'Se requieren mains y ambas vistas.')
-    require(set(tables) == {'players','tournaments','events','entrants','sets','entrant_players','set_slots'}, 'Tablas de paquete inválidas.')
+    expected_tables = {'players','tournaments','events','entrants','sets','entrant_players','set_slots'}
+    if c['packageVersion'] == 2: expected_tables |= {'games','game_selections'}
+    require(set(tables) == expected_tables, 'Tablas de paquete inválidas.')
     ids = {}
     for table in ('players','tournaments','events','entrants','sets'):
         ids[table] = {identifier(r['id']): r for r in tables[table]}
@@ -260,6 +360,7 @@ def validate_package(package):
             loser = next(v['entrant_id'] for v in ws if v['entrant_id'] != winner)
             require((winner, identifier(r['playerIds'][0])) in links and
                     (loser, identifier(r['playerIds'][1])) in links, 'Ganador/perdedor no coinciden con participantes.')
+    if c['packageVersion'] == 2: validate_game_context(c, ids, smap, links)
     return c
 
 

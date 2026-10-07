@@ -86,7 +86,7 @@ jobs:
       - name: Consultar personajes registrados sin cambiar el ranking
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/characters.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json --output-public ranking-smash-ultimate/data/public.json
+        run: python scripts/smash/characters.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json --output-public ranking-smash-ultimate/data/public.json --output-snapshot scripts/smash/data/combined.json
       - uses: actions/cache/save@v4
         if: always()
         with:
