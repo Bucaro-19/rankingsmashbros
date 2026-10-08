@@ -66,6 +66,19 @@ class SurveyHttpTests(unittest.TestCase):
             folder.mkdir(parents=True)
         for filename in ('database.php', 'survey.php', 'encuesta.php', 'opiniones.php'):
             (cls.site / filename).write_bytes((SITE / filename).read_bytes())
+        # Count PDO connection attempts of THIS temporary app, not the server-global
+        # Connections counter (container health checks and other clients race with it).
+        # Instrument only the disposable copy, immediately before the actual constructor;
+        # original production database.php is untouched. Record no URL, SQL or visitor data.
+        cls.connection_counter = home / 'app-connections.test'
+        cls.connection_counter.write_text('')
+        library = cls.site / 'database.php'
+        source = library.read_text()
+        needle = '$pdo = new PDO('
+        if source.count(needle) != 1:
+            raise RuntimeError('Test connection probe requires one PDO constructor')
+        probe = 'file_put_contents(' + json.dumps(str(cls.connection_counter)) + ', "connect\\n", FILE_APPEND | LOCK_EX);\n        '
+        library.write_text(source.replace(needle, probe + needle))
         (cls.site / 'feedback-data/admin-auth.php').write_text("<?php return '" + '$2y$12$' + 'A' * 53 + "';")
         # The frozen legacy file stays on the server after the migration: it must never be read or written.
         cls.legacy = cls.site / 'feedback-data/respuestas-2026.php'
@@ -139,7 +152,7 @@ class SurveyHttpTests(unittest.TestCase):
         return self.execute('SELECT COUNT(*) FROM survey_responses')[0][0]
 
     def connections(self):
-        return int(self.execute("SHOW GLOBAL STATUS LIKE 'Connections'")[0][1])
+        return len(self.connection_counter.read_text().splitlines())
 
     def visitor(self):
         return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
@@ -203,8 +216,47 @@ class SurveyHttpTests(unittest.TestCase):
         self.assertIn('no-store', headers['Cache-Control'])
         self.assertRegex(body, r'name="nonce" value="[0-9a-f]{48}"')
         self.assertIn('<meta name="smash-survey-storage" content="sql">', body)
-        self.assertIn('class="survey-submit"', body)
+        self.assertIn('class="survey-submit cta blue"', body)
+        self.assertIn('class="smash-redesign page-read"', body)
+        self.assertIn('href="./encuesta.php" aria-current="page"', body)
+        self.assertNotIn('<select', body)
+        self.assertNotIn('visita.js', body)
+        for field in ('clarity', 'confidence'):
+            self.assertEqual(re.findall(r'name="' + field + r'" value="([1-5])"', body), list('12345'))
         self.assert_no_leak(body)
+
+    def test_presentation_repaints_choices_and_escaped_text_without_javascript(self):
+        person = self.visitor()
+        nonce = self.form(person)
+        comment = '<script>alert("inventado")</script> & texto'
+        source = 'https://www.start.gg/tournament/inventado?a=1&b=2'
+        _, _, body = self.submit(person, nonce, confidence='', comment=comment, source=source)
+        self.assertIn(REVIEW, body)
+        self.assertIn('Faltan 1 respuestas', body)
+        self.assertIn('Respondiste 5 de 6', body)
+        for field, value in VALID.items():
+            if field in ('role', 'eligibility', 'minimum', 'international', 'clarity'):
+                self.assertRegex(body, r'name="' + field + '" value="' + value + r'"[^>]* checked')
+        self.assertIn('id="q6-error"', body)
+        self.assertIn('aria-describedby="q6-error"', body)
+        self.assertNotIn(comment, body)
+        self.assertIn('&lt;script&gt;alert(&quot;inventado&quot;)&lt;/script&gt; &amp; texto', body)
+        self.assertIn('value="https://www.start.gg/tournament/inventado?a=1&amp;b=2"', body)
+        self.assertIn(f'value="{nonce}"', body)
+        self.assertEqual(self.count(), 0)
+
+    def test_connection_probe_ignores_an_unrelated_health_check(self):
+        import pymysql
+        before = self.connections()
+        with pymysql.connect(host='127.0.0.1', port=self.port_db, user='root', password=self.password,
+                             database=DATABASE) as health:
+            with health.cursor() as cursor:
+                cursor.execute('SELECT 1')
+        self.assertEqual(self.connections(), before)
+        person = self.visitor()
+        _, _, body = self.submit(person, self.form(person))
+        self.assertIn(SAVED, body)
+        self.assertEqual(self.connections(), before + 1)
 
     def test_valid_answer_is_stored_once_anonymously_and_session_limit_applies(self):
         person = self.visitor()
@@ -299,6 +351,9 @@ class SurveyHttpTests(unittest.TestCase):
                 self.assertNotIn('SECRET-MARKER', body)
                 self.assert_no_leak(body)
                 self.assertIn(f'value="{nonce}"', body)  # form token kept: the visitor can retry at once
+                self.assertIn('Tus respuestas siguen marcadas abajo', body)
+                self.assertIn('>' + PRIVATE + '</textarea>', body)
+                self.assertRegex(body, r'name="confidence" value="5"[^>]* checked')
         self.write_config()
         self.assertEqual(self.count(), 0)
         log = self.log.read_text()
