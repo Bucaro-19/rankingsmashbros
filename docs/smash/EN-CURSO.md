@@ -1,5 +1,12 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+
+## SEO de Codex publicado y borrador de la guía de matchups (8/oct, tarde)
+
+- **#58 (SEO técnico, Codex) fusionado y desplegado por orden del dueño:** main `8c21d8d`, despliegue `37838434273` correcto. Comprobado en producción: `robots.txt` y `sitemap.xml` 200 con las cuatro páginas públicas y fecha real del corte; canonical y Open Graph en la portada; HTTP y `www` redirigen con 308 al dominio canónico sin bucles; cuenta, encuesta, análisis, APIs y `/top/` responden igual que antes; el webhook de Recurrente sigue rechazando firmas falsas (401); el receptor de la carga semanal responde al diagnóstico autenticado; `public.json` sin cambios. Pendiente del dueño: Search Console (pasos en SEO-TECNICO.md), decidir si la encuesta entra al sitemap y la imagen para compartir de 1200 × 630.
+- **Guía de matchups, borrador:** el dueño aprobó que Claude Code redacte y él revise antes de publicar. Primera tanda en [guia/MATCHUPS-BORRADOR.md](guia/MATCHUPS-BORRADOR.md): 35 fichas (los personajes más jugados en Guatemala y sus ecos), cada una con qué le cuesta y hasta tres counters con su razón. Fuente de verdad `guia/matchups-borrador.json`; `scripts/smash/guia_matchups.py` valida contra el catálogo y genera el Markdown. **No está en la lista de publicación** y una prueba lo impide. Es conocimiento general sin fuente verificable: el borrador repite mucho a los mismos counters (Pikachu en 26 fichas, R.O.B., Mr. Game & Watch, Min Min, Fox), señal de que le falta el criterio de jugadores de la escena. Faltan 51 personajes.
+- El dueño también quiere datos de frames (movimiento más rápido, opciones fuera del escudo, castigos). Falta elegir una fuente con permiso de uso y crédito.
+
 ## Codex — SEO técnico preparado, 8/oct (PR #58; sin publicar)
 
 [PR #58](https://github.com/Bucaro-19/rankingsmashbros/pull/58), rama `feat/technical-seo`, desde `origin/main` `a6cec03` (#56). Auditoría previa: árbol limpio, mismo origin `Bucaro-19/rankingsmashbros`, CI main `37828965177` correcta. Los cambios posteriores de Claude #57 (`01babf6`, caché y tolerancia de la portada) se conservaron al actualizar la rama sobre `01babf6` (CI main `37830748351` correcta). Detalle/relevo: [SEO-TECNICO.md](SEO-TECNICO.md).
