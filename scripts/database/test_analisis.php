@@ -15,7 +15,7 @@ smash_analisis_rate($session,160);
 analysis_check(smash_analisis_normalize('JUGADOR ÁÑ')==='jugador an','Search accents');
 $catalog=['1302'=>['slug'=>'mario'],'1296'=>['slug'=>'link'],'1746'=>['slug'=>'random']];
 function analysis_game(string $id,string $winner,string $a='1302',string $b='1296'): array {
-    return ['id'=>$id,'setId'=>'500','winner'=>$winner,'picks'=>['1001'=>['players'=>['1'=>true],'characters'=>[$a=>true]],'1002'=>['players'=>['2'=>true],'characters'=>[$b=>true]]]];
+    return ['id'=>$id,'number'=>(int)$id,'setId'=>'500','winner'=>$winner,'picks'=>['1001'=>['players'=>['1'=>true],'characters'=>[$a=>true]],'1002'=>['players'=>['2'=>true],'characters'=>[$b=>true]]]];
 }
 $games=[analysis_game('1','1001'),analysis_game('2','1002'),analysis_game('3','1001','1302','1302'),analysis_game('4','1001','1746')];
 $ambiguous=analysis_game('5','1001'); $ambiguous['picks']['1001']['characters']['1296']=true; $games[]=$ambiguous;
@@ -26,6 +26,8 @@ $set=['id'=>'500','playerIds'=>['1','2'],'score'=>'Persona 2 - Otro 0'];
 $clean=[analysis_game('1','1001'),analysis_game('2','1001')];
 analysis_check(smash_analisis_set_characters($clean,[$set],$catalog)===[500=>[1=>'mario',2=>'link']],'Uniform full set characters');
 analysis_check(smash_analisis_set_characters([$clean[0]],[$set],$catalog)===[],'A partial 2-0 is not a whole set');
+$gap=$clean; $gap[1]['number']=3;
+analysis_check(smash_analisis_set_characters($gap,[$set],$catalog)===[],'A numbering gap does not prove complete games');
 $unknown=$set; $unknown['score']='Sin marcador';
 analysis_check(smash_analisis_set_characters($clean,[$unknown],$catalog)===[],'Unknown score cannot prove full set coverage');
 $mixed=$clean; $mixed[1]['picks']['1001']['characters']=['1296'=>true];

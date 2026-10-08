@@ -56,7 +56,7 @@ El índice comprende jugadores clasificados de ambas vistas **y sus rivales del 
 
 ## Campos adicionales premium/admin
 
-Todos los récords son **conteos G–P**, no porcentajes. Los pares `[w,l]` se interpretan desde la persona o personaje indicado. No hay `share` en los detectados: se entrega `games` y `totalGames` para respetar la instrucción de conteos; Claude debe adaptar el diseño a estos nombres.
+Todos los récords son **conteos G–P**, no porcentajes. `setDataScope: "published_ledger"` indica que los sets proceden únicamente del ledger público: no son el historial completo de start.gg. Para rivales no clasificados, especialmente extranjeros, ese ledger puede omitir sus sets contra otras personas no clasificadas; rotular la forma y los récords como datos conocidos **en este corte**, sin prometer actividad completa. Los pares `[w,l]` se interpretan desde la persona o personaje indicado. No hay `share` en los detectados: se entrega `games` y `totalGames` para respetar la instrucción de conteos; Claude debe adaptar el diseño a estos nombres.
 
 | Campo | Contrato y origen |
 |---|---|
@@ -75,7 +75,7 @@ Todos los récords son **conteos G–P**, no porcentajes. Los pares `[w,l]` se i
 
 ### Qué es un personaje verificable por set/game
 
-Para atribuir un personaje al **set completo**: ambos participantes deben coincidir con el resultado publicado, cada entrant tiene un solo jugador, todas las partidas de ese jugador tienen una sola selección conocida, ninguna Random, el personaje es el mismo en todas y el total de games coincide con la suma del marcador numérico publicado. Si cambia de personaje, faltan selecciones/games, el marcador no es legible o la relación de jugadores cambió, se deja null para esa atribución. No usar el main como sustituto. El otro participante puede tener un personaje verificable aunque el primero cambie o no tenga selección.
+Para atribuir un personaje al **set completo**: ambos participantes deben coincidir con el resultado publicado, cada entrant tiene un solo jugador, todas las partidas de ese jugador tienen una sola selección conocida, ninguna Random, el personaje es el mismo en todas y el total de games coincide con la suma del marcador numérico publicado y su numeración va de 1 a ese total sin huecos. Si cambia de personaje, faltan selecciones/games, el marcador no es legible o la relación de jugadores cambió, se deja null para esa atribución. No usar el main como sustituto. El otro participante puede tener un personaje verificable aunque el primero cambie o no tenga selección.
 
 Para contar un **game** en la matriz: dos entrants con un jugador distinto cada uno, un personaje conocido y no Random por lado y ganador que pertenece al set. Selecciones múltiples/ambiguas, desconocidas, Random y ganadores ausentes no se cuentan. Un game sigue contando aunque el set completo no pueda atribuirse a un solo personaje.
 

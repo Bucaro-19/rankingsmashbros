@@ -24,7 +24,7 @@ from import_ranking import import_package
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT/'ranking-smash-ultimate'
 DATABASE = os.environ.get('SMASH_SCHEMA_TEST_DB', '')
-PAID = {'h2h', 'streak', 'rivalForm', 'rivalTiers', 'meVsChar', 'himVsChar', 'gameMatrix', 'recommendations', 'probability', 'gameDataStatus'}
+PAID = {'h2h', 'streak', 'rivalForm', 'rivalTiers', 'meVsChar', 'himVsChar', 'gameMatrix', 'recommendations', 'probability', 'gameDataStatus', 'setDataScope'}
 
 
 class AnalysisStaticTests(unittest.TestCase):

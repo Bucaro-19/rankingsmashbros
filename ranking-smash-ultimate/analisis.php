@@ -116,20 +116,21 @@ function smash_analisis_games(PDO $db, array $public): array {
     while ($r=$q->fetch(PDO::FETCH_ASSOC)) {
         if (++$rows>SMASH_ANALISIS_GAME_ROWS) throw new SmashAnalisisError('game_limit_exceeded');
         $gid=(string)$r['id']; $en=(string)$r['entrant_id'];
-        if (!isset($games[$gid])) $games[$gid]=['id'=>$gid,'setId'=>(string)$r['set_id'],'eventId'=>(string)$r['event_id'],'winner'=>(string)$r['winner_entrant_id'],'picks'=>[]];
+        if (!isset($games[$gid])) $games[$gid]=['id'=>$gid,'number'=>(int)$r['game_number'],'setId'=>(string)$r['set_id'],'eventId'=>(string)$r['event_id'],'winner'=>(string)$r['winner_entrant_id'],'picks'=>[]];
         $games[$gid]['picks'][$en]['players'][(string)$r['player_id']]=true;
         if ($r['character_id']!==null) $games[$gid]['picks'][$en]['characters'][(string)$r['character_id']]=true;
     }
     return ['status'=>$games ? 'available' : 'empty','games'=>$games,'completed'=>$completed];
 }
 function smash_analisis_set_characters(array $games, array $results, array $catalog): array {
-    $sets=[]; $invalid=[]; $ledger=[];
+    $sets=[]; $invalid=[]; $ledger=[]; $numbers=[];
     foreach ($results as $r) $ledger[(string)$r['id']]=$r['playerIds'];
     foreach ($games as $g) {
         $sid=$g['setId']; $ids=[];
         foreach ($g['picks'] as $pick) if (count($pick['players'])===1) $ids[]=(string)array_key_first($pick['players']);
         $expected=$ledger[$sid] ?? []; sort($ids); sort($expected);
         if (count($g['picks'])!==2 || count($ids)!==2 || $ids!==$expected || !isset($g['picks'][$g['winner']])) { $invalid[$sid]=true; continue; }
+        $numbers[$sid][]=$g['number'];
         foreach ($g['picks'] as $pick) {
         if (count($pick['players'])!==1) continue; $pid=(string)array_key_first($pick['players']);
         $sets[$g['setId']][$pid]['total']=($sets[$g['setId']][$pid]['total'] ?? 0)+1;
@@ -146,6 +147,8 @@ function smash_analisis_set_characters(array $games, array $results, array $cata
         if (isset($invalid[(string)$r['id']]) || !$data || ($data['valid'] ?? 0)!==$data['total'] || count($data['chars'] ?? [])!==1) continue;
         [$a,$b]=smash_analisis_score($r,$pid);
         if ($a===null || $data['total']!==$a+$b) continue; // Only attribute a whole set when all its games can be verified.
+        $sequence=$numbers[(string)$r['id']] ?? []; sort($sequence);
+        if ($sequence!==range(1,$a+$b)) continue;
         $out[(string)$r['id']][$pid]=$catalog[(string)array_key_first($data['chars'])]['slug'];
     }
     return $out;
@@ -257,7 +260,7 @@ function smash_analisis_full(PDO $db, array $public, array $base, array $user, s
     // Character records deliberately use the combined cut in BOTH views, as requested by design.
     $allH2h=array_values(array_filter($public['results'] ?? [],static fn($r)=>in_array($me,$r['playerIds'],true) && in_array($rival,$r['playerIds'],true)));
     $base+=['h2h'=>$history,'h2hTruncated'=>count($h2h)>200,'streak'=>$streak,'rivalForm'=>array_slice($form,0,5),'rivalFormTotal'=>count($form),
-        'rivalTiers'=>$tiers,'meVsChar'=>(object)$meVs,'himVsChar'=>(object)$himVs,'gameMatrix'=>(object)$matrix,'gameDataStatus'=>$data['status'],
+        'rivalTiers'=>$tiers,'meVsChar'=>(object)$meVs,'himVsChar'=>(object)$himVs,'gameMatrix'=>(object)$matrix,'gameDataStatus'=>$data['status'],'setDataScope'=>'published_ledger',
         'recommendations'=>smash_analisis_recommendations($chosen,$his,$allH2h,$chars,$matrix,$me),
         'probability'=>['p'=>smash_analisis_probability($base['me']['points'][$scope],$base['rival']['points'][$scope],$public['methodVersion']),'scale'=>400,'methodVersion'=>$public['methodVersion']]];
     return $base;
