@@ -54,13 +54,13 @@ Pedir también que confirme el tiempo máximo del worker cada cinco minutos. El 
 | Peticiones por escenario/ejecución | Máximo 2,000, compartido por todos los hilos y escalones |
 | Escrituras del contador | Solo local; máximo 10 peticiones, máximo 2 visitantes |
 | Lote local | Cada uno de los 6 escenarios una sola vez; techo 12,000 peticiones por lote |
-| Tiempo por petición | 4 s, sin reintentos |
-| Tiempo de una ejecución | 30 min, incluida espera de ventana/cron; no ampliar por argumento |
+| Timeout de E/S por petición | 4 s, sin reintentos |
+| Admisión de escalones | Hasta 30 min, incluida espera de ventana/cron; se termina lo ya en vuelo |
 | Respuesta recibida / JSON descomprimido | 8 MiB / 32 MiB |
 
 Un bloqueo local impide dos ejecuciones del medidor a la vez en esta máquina. No repartir la prueba entre varias máquinas/IP para multiplicar esos topes. No ejecutar simultáneamente el cliente de producción y otras herramientas de carga.
 
-**Freno:** tras cada respuesta, detiene nuevas peticiones y no sube de escalón si errores >1 % o p95 >3 s. También frena si el p95 de un endpoint supera 3 s: muchos estáticos rápidos no pueden ocultar un PHP lento. Se termina lo que ya estaba en vuelo (máximo 40, timeout 4 s), se guarda lo medido y se termina la escalera. El lote local también se detiene; no sigue con otros escenarios tras un freno. Timeout, 5xx/508, 429, redirecciones y respuestas inesperadas cuentan como errores. Un 401 esperado del caso PHP sin SQL no cuenta como error. El freno se evalúa desde la primera respuesta, por prudencia; un fallo temprano puede detener un escalón aunque su porcentaje final baje cuando terminen las peticiones ya en vuelo. `Ctrl+C` guarda el informe parcial. CLI termina con código 3 si no completa la escalera.
+**Freno:** tras cada respuesta, detiene nuevas peticiones y no sube de escalón si errores >1 % o p95 >3 s. También frena si el p95 de un endpoint supera 3 s: muchos estáticos rápidos no pueden ocultar un PHP lento. Se termina lo que ya estaba en vuelo (máximo 40, timeout 4 s), se guarda lo medido y se termina la escalera. El lote local también se detiene; no sigue con otros escenarios tras un freno. Timeout, 5xx/508, 429, redirecciones y respuestas inesperadas cuentan como errores. TLS/DNS/conexión/JSON inválido se distinguen con códigos sin imprimir el texto de la excepción: un freno por configuración no demuestra falta de capacidad del hosting. El timeout es de E/S del socket; no es una garantía de reloj absoluto para DNS ni para un cuerpo que llega por fragmentos. Un 401 esperado del caso PHP sin SQL no cuenta como error. El freno se evalúa desde la primera respuesta, por prudencia; un fallo temprano puede detener un escalón aunque su porcentaje final baje cuando terminen las peticiones ya en vuelo. `Ctrl+C` guarda el informe parcial. CLI termina con código 3 si no completa la escalera.
 
 Solo se permite `https://rankingsmashbros.com` en producción y `http://127.0.0.1:PUERTO` en local. Sin URLs con credenciales, rutas arbitrarias o query libre, sin redirects ni desactivar TLS. `User-Agent: SmashGT-LoadTest`. No encuesta, creación de cuentas reales, pagos, premium API, OAuth, start.gg, Recurrente, webhook ni ranking-sync/worker. No se descargan fonts de Google, GitHub o imágenes externas.
 

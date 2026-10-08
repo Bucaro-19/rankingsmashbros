@@ -32,6 +32,28 @@ class SafetyTests(unittest.TestCase):
             with self.assertRaises(ValueError): load.origin(text)
         self.assertEqual(load.origin('http://127.0.0.1:1234'),'http://127.0.0.1:1234')
 
+    def test_error_diagnostics_never_log_exception_text_or_secrets(self):
+        import ssl,socket
+        self.assertEqual(load.error_kind(ssl.SSLCertVerificationError('synthetic-secret')),'tls_validation')
+        self.assertEqual(load.error_kind(socket.gaierror('synthetic-secret')),'dns_error')
+        self.assertEqual(load.error_kind(TimeoutError('synthetic-secret')),'timeout')
+        self.assertEqual(load.error_kind(ConnectionRefusedError('synthetic-secret')),'connection_refused')
+        self.assertEqual(load.error_kind(ValueError('synthetic-secret')),'invalid_content')
+        client=load.Transport('http://127.0.0.1:1234')
+        with patch.object(client.connection,'request',side_effect=ssl.SSLCertVerificationError('synthetic-secret')):
+            result=client.request('/')
+        self.assertEqual(result['error'],'tls_validation');self.assertNotIn('synthetic-secret',json.dumps(result))
+        client.close()
+
+    def test_all_json_bodies_support_gzip_and_have_decoded_limits(self):
+        value=dict(ok=True,authenticated=False)
+        self.assertEqual(load.json_body(gzip.compress(json.dumps(value).encode()),'gzip'),value)
+        for value in (b'[]',b'null',b'"secret"'):
+            with self.assertRaises(ValueError): load.json_body(value)
+        with patch.object(load,'MAX_DECODED',10),self.assertRaises(ValueError):
+            load.json_body(gzip.compress(b' '*20),'gzip')
+        with self.assertRaises(ValueError): load.json_body(b'{}','br')
+
     def test_cli_plans_only_without_execute_and_cannot_override_hard_limits(self):
         with tempfile.TemporaryDirectory() as temp:
             command=[sys.executable,str(Path(load.__file__)),'--origin','https://rankingsmashbros.com',
@@ -153,6 +175,9 @@ class HttpTests(unittest.TestCase):
                 if self.path=='/':
                     self.send_response(302);self.send_header('Location','https://start.gg/');self.end_headers();return
                 if self.path=='/account-api.php':
+                    if self.headers.get('Cookie')=='PHPSESSID=gzip-fixture':
+                        self.send_response(200);self.send_header('Content-Encoding','gzip');self.end_headers()
+                        self.wfile.write(gzip.compress(b'{"ok":true,"authenticated":false}'));return
                     self.send_response(503);self.end_headers();self.wfile.write(b'{"ok":false}');return
                 if self.path=='/data/public.json':
                     if self.headers.get('If-None-Match')=='"test-cut"':
@@ -169,6 +194,13 @@ class HttpTests(unittest.TestCase):
         cls.server.shutdown();cls.server.server_close();cls.thread.join()
 
     def setUp(self): self.calls.clear()
+
+    def test_compressed_php_json_is_not_mistaken_for_an_error(self):
+        client=load.Transport(self.base,'PHPSESSID=gzip-fixture')
+        try:
+            result=client.request('/account-api.php')
+            self.assertEqual((result['status'],result['error']),(200,None))
+        finally: client.close()
 
     def test_live_503_brakes_the_real_ladder_and_does_not_retry(self):
         with tempfile.TemporaryDirectory() as temp,patch.object(load.tempfile,'gettempdir',return_value=temp):

@@ -17,6 +17,7 @@ import math
 from pathlib import Path
 import re
 import ssl
+import socket
 import tempfile
 import threading
 import time
@@ -71,6 +72,29 @@ def safe_cron_slot(now, seconds=STEP_SECONDS):
     # Owner must confirm that the worker actually finishes inside the excluded window.
     phase = (now.minute % 5) * 60 + now.second + now.microsecond / 1e6
     return 90 <= phase and phase + seconds + TIMEOUT_SECONDS + 10 < 210
+
+
+def error_kind(error):
+    # Enumerated diagnostics only, never exception text that could include private data.
+    if isinstance(error,TimeoutError): return 'timeout'
+    if isinstance(error,ssl.SSLCertVerificationError): return 'tls_validation'
+    if isinstance(error,socket.gaierror): return 'dns_error'
+    if isinstance(error,ConnectionRefusedError): return 'connection_refused'
+    if isinstance(error,http.client.IncompleteRead): return 'incomplete_body'
+    if isinstance(error,(ValueError,TypeError)): return 'invalid_content'
+    return 'transport_error'
+
+
+
+def json_body(content, encoding=None):
+    if encoding and encoding != 'identity':
+        if encoding != 'gzip': raise ValueError('Unsupported encoding')
+        with gzip.GzipFile(fileobj=io.BytesIO(content)) as compressed:
+            content=compressed.read(MAX_DECODED+1)
+    if len(content)>MAX_DECODED: raise ValueError('Decoded body limit')
+    data=json.loads(content)
+    if not isinstance(data,dict): raise ValueError('Expected object')
+    return data
 
 
 def percentile(values, percent):
@@ -175,28 +199,21 @@ class Transport:
                     self.validator = ('If-None-Match', tag) if tag else ('If-Modified-Since', modified) if modified else None
                     if not self.validator:
                         result['error'] = 'validator_missing'
-                    decoded = content
-                    if response.getheader('Content-Encoding') == 'gzip':
-                        with gzip.GzipFile(fileobj=io.BytesIO(content)) as compressed:
-                            decoded = compressed.read(MAX_DECODED + 1)
-                    if len(decoded) > MAX_DECODED:
-                        result['error'] = 'decoded_body_too_large'
-                    else:
-                        data = json.loads(decoded)
-                        if data.get('rankingComputed') is not True or not data.get('players'):
-                            result['error'] = 'invalid_public_json'
+                    data = json_body(content,response.getheader('Content-Encoding'))
+                    if data.get('rankingComputed') is not True or not data.get('players'):
+                        result['error'] = 'invalid_public_json'
                 elif not conditional or content:
                     result['error'] = 'unexpected_304'
             elif path == '/account-api.php':
-                data = json.loads(content)
+                data = json_body(content,response.getheader('Content-Encoding'))
                 if data.get('ok') is not True or data.get('authenticated') is not False:
                     result['error'] = 'not_anonymous'
             elif path == '/analisis-api.php' and self.authenticated:
-                data = json.loads(content)
+                data = json_body(content,response.getheader('Content-Encoding'))
                 if data.get('ok') is not True or data.get('state') != 'listo':
                     result['error'] = 'analysis_not_ready'
         except (OSError, http.client.HTTPException, ValueError, TypeError) as error:
-            result['error'] = 'timeout' if isinstance(error, TimeoutError) else 'transport_or_content'
+            result['error'] = error_kind(error)
             self.close()
         result['seconds'] = result['seconds'] or time.monotonic() - started
         return result

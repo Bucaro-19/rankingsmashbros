@@ -88,9 +88,16 @@ def local_site(port, package=None):
         file_put_contents($argv[3],json_encode($cookies)); chmod($argv[3],0600);
         ''')
         cookies_file=private/'local-sessions.json'
-        subprocess.run(['php','-d',f'session.save_path={sessions}',str(login),str(site),public['players'][0]['id'],str(cookies_file)],check=True,stdout=subprocess.DEVNULL)
-        cookies=json.loads(cookies_file.read_text())
-        if len(set(cookies))!=MAX_USERS: raise ValueError('Sesiones locales deben ser independientes.')
+        cookies=[]
+        def refresh_sessions():
+            # Earlier profiles take >24 min: PHP's normal file-session GC may remove
+            # unused seed sessions. Renew only this disposable fixture immediately
+            # before analysis, preserving normal server session settings.
+            subprocess.run(['php','-d',f'session.save_path={sessions}',str(login),str(site),public['players'][0]['id'],str(cookies_file)],
+                           check=True,stdout=subprocess.DEVNULL)
+            cookies[:]=json.loads(cookies_file.read_text())
+            if len(set(cookies))!=MAX_USERS: raise ValueError('Sesiones locales deben ser independientes.')
+        refresh_sessions()
         php_port=free_port()
         env={**os.environ, 'PHP_CLI_SERVER_WORKERS':'4'}
         process=subprocess.Popen(['php','-d','memory_limit=512M','-d','display_errors=0','-d',f'session.save_path={sessions}',
@@ -161,7 +168,7 @@ def local_site(port, package=None):
             with db.cursor() as q:
                 q.execute('SELECT COALESCE(SUM(views),0) FROM site_visit_days'); return int(q.fetchone()[0])
         yield dict(origin=f'http://127.0.0.1:{front_port}',cookies=cookies,rival=public['players'][1]['id'],
-                   rows=counts,dbVersion=version,phpWorkers=4,peaks=peaks,visit_count=visit_count,
+                   rows=counts,dbVersion=version,phpWorkers=4,peaks=peaks,visit_count=visit_count,refresh_sessions=refresh_sessions,
                    compressedPublicBytes=len(static['/data/public.json'][1]),publicBytes=len(static['/data/public.json'][0]))
     finally:
         stopped.set()
@@ -188,6 +195,7 @@ def main():
     summary=[]
     with local_site(args.db_port,args.package) as fixture:
         for scenario in args.scenarios:
+            if scenario=='analysis-local': fixture['refresh_sessions']()
             print('START '+scenario,flush=True); before=fixture['visit_count']()
             fixture['peaks'].update(phpRssKiB=0,dbThreadsRunning=0,phpProcesses=0)
             report=run(fixture['origin'],scenario,args.output_dir/(scenario+'.json'),
