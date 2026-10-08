@@ -1,5 +1,17 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Pantalla del análisis de rival — publicada (Claude Code, 7/oct)
+
+Implementa el handoff `design_handoff_smash_gt_analisis/` sobre la API de Codex (ANALISIS-RIVAL.md). Dirección: `analisis.html?rival=<playerId>&scope=gt|intl`; sin `rival` abre el buscador.
+
+- Archivos: `analisis.html`, `analisis.css`, `analisis.js` y `analisis-model.js` (reglas de presentación puras, 5 pruebas en `test_analisis.cjs`). Reutiliza `paginas.css` y `cabecera.js`.
+- Entradas: botón «Analizar rival →» en el panel de rival del perfil (conserva rival y vista) y enlaces desde la pestaña Premium, donde el análisis ya no dice «Próximamente».
+- Estados: buscador con sugerencias de rivales ya enfrentados, carga, error con código, sin sesión, sin jugador vinculado, bloqueado y vencido (solo datos gratis y la tarjeta premium, sin cifras falsas), y completo: tarjeta VS, probabilidad estimada (entre 10% y 90%, con su aviso), recomendación con confianza y muestra, matchup (uso, récord contra sus personajes y de él contra los míos, cruce por game con selector), historial con racha y forma reciente con tramos.
+- Reglas del diseño aplicadas en el navegador: récords siempre en conteo; porcentaje y barra solo con 10 o más; «Muestra pequeña» por debajo; «Sin sets/games registrados» con cero. El aviso de recomendación usa 150 games, como fijó la API.
+- **Diferencias con el diseño:** no hay puesto final ni inscritos por torneo del rival (la API los envía `null`); el uso de personajes del rival se muestra con games y porcentaje calculado de `games/totalGames`; la tarjeta premium enlaza a la pestaña Premium en lugar de repetir el selector de planes; se añadió el tramo «101 o más» que entrega la API.
+- Revisado en navegador a 375 px contra la API real en base local (cuenta dueña y cuenta gratis, ambas vistas, buscador) y contra una respuesta inventada completa para ejercitar recomendaciones, barras y cruce por game. La disposición de dos columnas de escritorio no se pudo ver: el panel del navegador no ensanchó la ventana.
+- En producción los cruces por game dirán «Sin games registrados» hasta que se cargue el corte del 4/oct (encargo de Codex) o llegue el corte del domingo 11.
+
 ## Reparto vigente — 7/oct, madrugada
 
 - **Codex:** carga inicial de games del 4/oct (herramienta y simulación; escritura solo con orden del dueño) y rediseño de «Tu opinión». Encargo: [ENCARGO-CODEX-OPINION-Y-CARGA-INICIAL.md](ENCARGO-CODEX-OPINION-Y-CARGA-INICIAL.md). Sus PR #36 (games por corte) y #40 (API del análisis) están fusionadas y publicadas por orden del dueño (`656b7af`, `47a9181`; despliegues `37706467920` y `37707771272`).
