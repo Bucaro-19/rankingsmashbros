@@ -1,5 +1,18 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — carga inicial de contexto, 7/oct (sin escritura de producción)
+
+Rama `feat/initial-game-context`, desde main `8f2e53a`, árbol limpio al iniciar; remoto `Bucaro-19/rankingsmashbros`. CI y despliegue de #40 comprobados correctos (`37707601298`, `37707771272`); #41 es el encargo actual. Claude trabaja aparte en `feat/rival-analysis-screen`; no se tocaron sus archivos.
+
+- CLI `game_context.py`: paquete solo games/selecciones + prueba original independiente; simulación SQL READ ONLY por defecto, `--apply` explícito, bloqueo común, anclaje/paridad y rechazo de contexto posterior. Solo inserta ambas tablas vacías; repetición exacta `already_imported`; rollback completo. Sin start.gg, migración ni cambio público/cálculo/mains.
+- Recuperados artefactos ya existentes; hashes original V1/V2 exactamente reproducidos. Contexto esperado **4,787 games / 9,530 selecciones**, 3,837 sets; JSON 1,471,290 / gzip 92,604 bytes. En base local desechable: simular 1.479 s, aplicar 1.941 s, repetir 1.606 s; pico máximo CLI 257,785,856 bytes (<512 MiB). Nueve pruebas locales correctas; matriz CI pendiente de este commit.
+- **Producción pendiente de simulación:** conexión rechazada por IP del router actual; el dueño contestó que no puede entrar a cPanel ahora. No se insistió ni se cambió el acceso. Nunca se escribieron datos de producción ni se leyeron comentarios. Conteos/tiempos anteriores son LOCALES, no una simulación remota exitosa.
+- Comandos exactos y recuperación de fuentes en [IMPORTACION-RANKING.md](IMPORTACION-RANKING.md). Revisar simulación antes de pedir la orden de aplicación. No fusionar ni desplegar esta entrega sin la orden del dueño. Si llega el 11/oct antes, no forzar el contexto viejo.
+- Siguiente tarea independiente: rediseño de Tu opinión según handoff, en otra rama/PR desde main.
+
+
+
+
 ## Top 15 por organizador — decisiones del dueño y brief (7/oct, madrugada)
 
 - El dueño decidió: lo usa quien tiene el **rol de organizador** (y premium), y el top cuenta **solo a quienes participaron en los torneos de ese organizador**. Brief para Claude Design: [BRIEF-CLAUDE-DESIGN-TOP15-ORGANIZADOR.md](BRIEF-CLAUDE-DESIGN-TOP15-ORGANIZADOR.md), entregado al dueño.
