@@ -277,17 +277,23 @@ function setScope(international) {
   includeInternational=international;snapshot=chooseSnapshot(published,international);
   if($('#player-dialog').open)$('#player-dialog').close();render();
 }
-async function refresh() {
+// Background checks stay quiet while a complete cut is on screen: one slow answer on a weak
+// connection is not worth an alarm. The notice appears when the visitor asked, when nothing could
+// be loaded, or after three checks in a row failed.
+let failedChecks=0;
+async function refresh(asked=false) {
   if(loading)return;loading=true;$('#refresh').disabled=true;
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
   try {
-    const response=await fetch('./data/public.json',{cache:'no-store',signal:controller.signal});
+    const response=await fetch('./data/public.json',{cache:'no-cache',signal:controller.signal});
     if(!response.ok)throw new Error('Sin datos');
     const next=validate(await response.json()),chosen=chooseSnapshot(next,includeInternational);
     const changed=snapshot&&(snapshot.generatedAt!==chosen.generatedAt||snapshot.rankingScope!==chosen.rankingScope);
     published=next;snapshot=chosen;if(changed&&$('#player-dialog').open)$('#player-dialog').close();
-    render();$('#load-error').hidden=true;
+    render();$('#load-error').hidden=true;failedChecks=0;
   } catch {
+    failedChecks++;
+    if(snapshot&&asked!==true&&failedChecks<3)return;
     $('#load-error').textContent=snapshot?'No pudimos actualizar. Conservamos el último corte completo que cargaste.':'No pudimos cargar un corte válido. Intenta actualizar en un momento.';$('#load-error').hidden=false;
   } finally { clearTimeout(timer);loading=false;$('#refresh').disabled=false; }
 }
@@ -302,7 +308,7 @@ const tabs = [];
 $('#search').addEventListener('input',renderPlayers);
 $('#view-all').onclick=()=>{rankingView=rankingView==='all'?'top':'all';renderPlayers();};
 $('#scope-local').onclick=()=>setScope(false);$('#scope-combined').onclick=()=>setScope(true);
-$('#refresh').onclick=refresh;$('#player-close').onclick=()=>$('#player-dialog').close();
+$('#refresh').onclick=()=>refresh(true);$('#player-close').onclick=()=>$('#player-dialog').close();
 $('#player-dialog').addEventListener('click',event=>{const rect=$('#player-dialog').getBoundingClientRect();if(event.target===$('#player-dialog')&&(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom))$('#player-dialog').close();});
 $('#player-all-results').onclick=()=>showPlayerMatches();$('#player-more').onclick=()=>{visibleMatches+=20;renderPlayerMatches();};
 $('#ticker-pause').onclick=()=>{const paused=$('#ticker-track').classList.toggle('is-paused');$('#ticker-pause').setAttribute('aria-pressed',String(paused));$('#ticker-pause').setAttribute('aria-label',paused?'Reanudar barra de resultados':'Pausar barra de resultados');$('#ticker-pause').textContent=paused?'▶':'Ⅱ';};
