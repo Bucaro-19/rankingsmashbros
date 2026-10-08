@@ -20,5 +20,6 @@ try {
             else $report = sr_import($db, $package, $mode === 'apply');
         }
     }
+    $report['peakMemoryBytes'] = memory_get_peak_usage(true);
     echo json_encode(['ok' => true, 'result' => $report], JSON_THROW_ON_ERROR) . "\n";
 } catch (Throwable $e) { echo json_encode(['ok' => false, 'reason' => $e instanceof SmashRankingError ? $e->reason : 'test_failed']) . "\n"; exit(1); }

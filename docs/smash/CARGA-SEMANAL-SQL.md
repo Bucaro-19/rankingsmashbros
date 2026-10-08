@@ -4,6 +4,20 @@ Encargo: `RELEVO-CLAUDE-CODE-2026-10-07.md`, «preparación del transporte priva
 
 **Guía práctica para el dueño, cuando vuelva a su computadora:** [PENDIENTES-DUENO-BANAHOSTING.md](PENDIENTES-DUENO-BANAHOSTING.md). Contiene los pasos de File Manager/Terminal/Cron y lo que ejecutará el agente después, sin incluir claves.
 
+## Extensión V2 por game — preparada por Codex, pendiente de aprobación
+
+Rama `feat/game-selections-sql`, PR [#36](https://github.com/Bucaro-19/rankingsmashbros/pull/36) (7/oct). No fusionada ni desplegada; no se modificaron variables, cron, secretos ni SQL de producción. **La carga automática existente continúa activa con V1 mientras esta entrega no se publique.**
+
+- El semanal guarda el snapshot enriquecido producido por la misma captura de personajes; ninguna consulta adicional. El paquete privado sube a versión 2 y agrega games, selecciones y cobertura explícita de sets. JSON público/mains/calculador permanecen iguales.
+- Python/PHP aceptan V1 y V2. El worker usa la misma transacción, bloqueo y cola actuales. Games se reemplazan por set cubierto, se verifica paridad antes de commit y el replay da `already_imported` sin revertir contexto posterior.
+- Relaciones, catálogo de personajes (incluido Random) y coincidencia de mains se comprueban **antes del FTP** en `ranking_package.py` + `publish_sql.py check`; catálogo SQL y slots guardados se comprueban antes/dentro de la transacción. Un conflicto conserva SQL completo. FTP y SQL siguen sin ser una transacción conjunta.
+- Medición real Oct4 offline/local: 4,787 games / 9,530 selecciones; 10,429,237 bytes JSON / 1,159,150 bytes gzip; worker 150,945,792 bytes (144 MiB) y ~2.42 s con límite 512M. Dentro de 32/4 MiB. No representa el rendimiento de BanaHosting (PHP 8.1); medir el primer worker V2 real tras autorización. Script reproducible: `scripts/database/measure_ranking_package.py`.
+- CI incluye prueba de worker de 5,000 games / 10,000 selecciones bajo 512M en las bases desechables MySQL 8.0 y MariaDB 10.11. CI comprobada en [run 37703150785](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37703150785); revisar los checks de la PR tras actualizar su base. Evidencia en EN-CURSO.md.
+
+**Orden de publicación, cuando el dueño lo autorice:** CI en verde → fusionar PR → despliegue `assets_only=true` para instalar el importador compatible con V2 preservando public.json → observar corte normal nuevo y reporte SQL/peakMemoryBytes. El workflow también publica esos assets antes de enviar SQL. No lanzar una recaptura/manual de ranking para probar esta entrega, no reenviar el V2 de Oct4 como corte nuevo y no desactivar la automatización por rutina.
+
+El corte Oct4 ya existe con hash V1 inmutable. Su replay seguirá sin añadir games: la propuesta de backfill solo de contexto está en [IMPORTACION-RANKING.md](IMPORTACION-RANKING.md), requiere herramienta/paso manual y orden expresa del dueño. Si no se aprueba/publica antes del domingo 11/oct, ese semanal corre como hoy; los games se incorporan después desde la captura guardada. No cambiar ni reparar hashes de cuts, rankings o instantáneas. **No se ha hecho ninguna carga extraordinaria ni migración.**
+
 ## Actualización vigente — elección del dueño, 7/oct
 
 El dueño autorizó automatizar en **BanaHosting, independiente de la Mac**. Codex preparó `ranking-sync.php`, `ranking-sync-lib.php`, `ranking-import.php`, `ranking-worker.php` y el envío HTTPS `publish_sql.py`. Se reutilizan las tablas existentes; no reinstalar ni abrir MySQL a Actions. **Preparado, todavía pendiente de configurar el archivo privado, el cron y verificar el circuito real.**
