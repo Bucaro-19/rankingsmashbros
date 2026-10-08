@@ -1,5 +1,19 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+
+## Claude Code — top por organizador programado; falta el dato en producción (7/oct, noche)
+
+Detalle y contrato en [TOP-ORGANIZADOR.md](TOP-ORGANIZADOR.md).
+
+- **Fusionados por orden del dueño:** #43 (carga inicial de games) y #46 (Tu opinión) de Codex. En #46 se resolvió el cruce de este archivo conservando ambos bloques. **Ninguno se ha desplegado**; la escritura de producción de #43 sigue sin orden.
+- **#48:** la captura semanal guarda quién creó cada torneo (`tournamentCatalog`). Consulta aparte y opcional: si falla, el corte sigue igual. Comprobada contra start.gg (run `37716893894`): 63 torneos, 63 con creador, 62 con ciudad, 17 creadores, 2 consultas.
+- **#49:** migración `005_organizer_tops` (5 tablas, repetible) y [encargo para Codex](ENCARGO-CODEX-CATALOGO-ORGANIZADORES.md) de llevar el catálogo a SQL. **No aplicada en producción**: el dueño no tiene acceso a cPanel ni a su red.
+- **Esta entrega:** biblioteca, API, pestaña «Mis torneos», página pública `/top/{slug}`, coorganizadores por invitación, tamaño 5/10/15 y revisiones. La pestaña solo aparece cuando `tournament_catalog` tiene filas, así que publicar esto no cambia nada visible todavía.
+- Decisiones nuevas del dueño: coorganizadores (varios), top 5/10/15, guardar el creador. Decisiones mías, revisables, en la tabla de TOP-ORGANIZADOR.md; la principal: por ahora cuentan solo los torneos que también entran al ranking nacional.
+- Coorganizadores, selector de tamaño, invitación recibida y revisiones del dueño usan componentes existentes sin diseño propio: [adenda para Claude Design](BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md).
+- Incidente sin efecto: al probar la migración en la base desechable, el cliente `mariadb` leyó la configuración por defecto del Mac e intentó conectarse al servidor real con el usuario de pruebas; el servidor lo rechazó. No hubo lectura ni escritura. Desde entonces el cliente local se usa con `--no-defaults`.
+- Próximo paso: PR de Codex con el catálogo; después, migración 005 con orden del dueño, verificación en producción con el top del propio dueño y activar la mención en la pestaña Premium.
+
 ## Codex — Tu opinión, rediseño independiente (7/oct)
 
 [PR #46](https://github.com/Bucaro-19/rankingsmashbros/pull/46). Rama `feat/opinion-redesign` desde main `66f3004` actualizado (pantalla de Claude #42 ya incorporada); rebase sobre `31f7b96` para conservar también las notas de organizadores #44/#45, sin editar sus módulos. Antes de editar: árbol limpio, mismo origin `Bucaro-19/rankingsmashbros`, CI/despliegue de main correctos (`37713334860`, `37713467256`). Sin tocar los archivos de análisis, cuentas, panel, premium, metodología ni las bases compartidas de estilo/cabecera.

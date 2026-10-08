@@ -28,11 +28,13 @@
     if(!force&&screen==='characters'&&next!==screen&&dirty()&&!confirm('Tienes cambios sin guardar. ¿Quieres salir y descartarlos?'))return false;
     if(screen==='characters'&&next!=='characters'){chosen=[...saved];message('character-message','');}
     screen=next;
-    for(const name of ['login','profile','characters','premium'])$(`${name}-screen`).hidden=name!==next;
+    for(const name of ['login','profile','characters','premium','organizer'])$(`${name}-screen`).hidden=name!==next;
     $('onboarding').hidden=next!=='onboarding';$('account-error').hidden=next!=='error';$('loading').hidden=true;
     $('account-tabs').hidden=!data?.authenticated||['error','onboarding'].includes(next);
-    ['profile','characters','premium'].forEach(name=>{$(`tab-${name}`).setAttribute('aria-selected',String(name===next));$(`tab-${name}`).tabIndex=name===next?0:-1;});
-    if(next==='profile')renderProfile();if(next==='characters')renderCharacters();if(next==='premium')SmashPremium.show();
+    ['profile','characters','premium','organizer'].forEach(name=>{$(`tab-${name}`).setAttribute('aria-selected',String(name===next));$(`tab-${name}`).tabIndex=name===next?0:-1;});
+    if(next==='profile')renderProfile();if(next==='characters')renderCharacters();if(next==='premium')SmashPremium.show();if(next==='organizer')SmashOrganizador.show();
+    // Four tabs do not fit a narrow screen: keep the active one in view.
+    if(!$('account-tabs').hidden)$(`tab-${next}`)?.scrollIntoView({block:'nearest',inline:'nearest'});
     return true;
   }
   function renderLogin() {
@@ -51,15 +53,22 @@
       try{if(data.authenticated)localStorage.setItem('smashgt.cuenta',data.user.tag);else localStorage.removeItem('smashgt.cuenta');}catch{}
       // A visitor arriving at the Premium address sees the plans first; paying needs an account.
       if(!data.authenticated&&location.hash.startsWith('#premium')){SmashPremium.setContext({csrf:data.csrf,authenticated:false});setScreen('premium',true);return;}
+      // The organizer tab explains itself before signing in, and an invitation says who invites.
+      const wantsOrganizer=data.organizerReady===true&&(location.hash==='#torneos'||new URLSearchParams(location.search).has('invita'));
+      $('tab-organizer').hidden=data.organizerReady!==true;
+      if(!data.authenticated&&wantsOrganizer){SmashOrganizador.setContext({csrf:data.csrf,authenticated:false});setScreen('organizer',true);return;}
       if(!data.authenticated){renderLogin();return;}
       // Signed in again from the private panel: go back there. Only this fixed destination exists.
       try{if(sessionStorage.getItem('smashgt.volver')==='panel'){sessionStorage.removeItem('smashgt.volver');location.replace('./panel.php');return;}}catch{}
       // Signed in from the Premium plans: continue there.
       try{if(sessionStorage.getItem('smashgt.volver')==='premium'){sessionStorage.removeItem('smashgt.volver');history.replaceState(null,'','./cuenta.html#premium');}}catch{}
+      let backToOrganizer=wantsOrganizer;
+      try{if(sessionStorage.getItem('smashgt.volver')==='torneos'){sessionStorage.removeItem('smashgt.volver');backToOrganizer=true;}}catch{}
+      SmashOrganizador.setContext({csrf:data.csrf,authenticated:true,goTo:name=>{if(setScreen(name))$(`tab-${name}`).focus();}});
       saved=[...data.user.chosen];chosen=[...saved];roles=data.user.roles.length?[...data.user.roles]:['player'];
       $('header-account').textContent=data.user.tag;$('header-account').href='./cuenta.html';$('tab-panel').hidden=data.panel!==true;
       SmashPremium.setContext({csrf:data.csrf,authenticated:true,onStatus:markPremium});
-      if(!data.user.roles.length){renderOnboarding();setScreen('onboarding',true);}else if(location.hash.startsWith('#premium'))setScreen('premium',true);else{setScreen('profile',true);SmashPremium.peek();}
+      if(!data.user.roles.length){renderOnboarding();setScreen('onboarding',true);}else if(location.hash.startsWith('#premium'))setScreen('premium',true);else if(backToOrganizer){setScreen('organizer',true);SmashPremium.peek();}else{setScreen('profile',true);SmashPremium.peek();}
       if(location.hash==='#vinculada')history.replaceState(null,'','./cuenta.html');
     }catch(error){
       if(error.status===401){try{data=await request();renderLogin();}catch{setScreen('error',true);}}else setScreen('error',true);
@@ -182,10 +191,10 @@
   }
   $('oauth-form').addEventListener('submit',()=>{$('oauth-button').disabled=true;$('oauth-button').querySelector('span').textContent='Conectando con start.gg…';});
   $('retry-account').addEventListener('click',load);
-  $('tab-profile').addEventListener('click',()=>setScreen('profile'));$('tab-characters').addEventListener('click',()=>setScreen('characters'));$('tab-premium').addEventListener('click',()=>setScreen('premium'));
+  $('tab-profile').addEventListener('click',()=>setScreen('profile'));$('tab-characters').addEventListener('click',()=>setScreen('characters'));$('tab-premium').addEventListener('click',()=>setScreen('premium'));$('tab-organizer').addEventListener('click',()=>setScreen('organizer'));
   // Badge beside the alias and ring on the avatar while a paid period is running.
   function markPremium(active){document.body.classList.toggle('is-premium',active===true);document.querySelector('.premium-badge').hidden=active!==true;}
-  all('[role=tab]').forEach(tab=>tab.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const order=['profile','characters','premium'],at=order.indexOf(tab.id.slice(4));const next=event.key==='Home'?order[0]:event.key==='End'?order[2]:order[(at+(event.key==='ArrowRight'?1:2))%3];if(setScreen(next))$(`tab-${next}`).focus();}}));
+  all('[role=tab]').forEach(tab=>tab.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const order=['profile','characters','premium','organizer'].filter(name=>!$(`tab-${name}`).hidden),at=order.indexOf(tab.id.slice(4));const next=event.key==='Home'?order[0]:event.key==='End'?order[order.length-1]:order[(at+(event.key==='ArrowRight'?1:order.length-1))%order.length];if(setScreen(next))$(`tab-${next}`).focus();}}));
   $('edit-characters').addEventListener('click',()=>setScreen('characters'));
   all('[data-scope]').forEach(button=>button.addEventListener('click',()=>changeScope(button.dataset.scope)));
   all('[data-role]').forEach(button=>button.addEventListener('click',()=>{const role=button.dataset.role;roles=roles.includes(role)?roles.filter(r=>r!==role):[...roles,role].sort((a,b)=>a==='player'?-1:b==='player'?1:0);message('role-error','');renderOnboarding();}));
