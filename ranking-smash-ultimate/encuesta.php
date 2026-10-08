@@ -171,17 +171,17 @@ function survey_text(string $name): string {
   <title>Cuestionario de la comunidad — Smash GT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./arena.css?v=20261006-design2">
+  <link rel="stylesheet" href="./arena.css?v=20261009-1">
   <link rel="stylesheet" href="./paginas.css?v=20261008-1">
-  <link rel="stylesheet" href="./encuesta.css?v=20261008-1">
-  <script src="./cabecera.js?v=20261008-1" defer></script>
+  <link rel="stylesheet" href="./encuesta.css?v=20261009-1">
+  <script src="./cabecera.js?v=20261009-1" defer></script>
   <script src="./encuesta.js?v=20261008-1" defer></script>
 </head>
 <body class="smash-redesign page-read">
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="gt-header">
     <a class="gt-brand" href="./" aria-label="Smash GT, inicio"><span class="gt-mark">GT</span><span>SMASH GT<small>por ingporras</small></span></a>
-    <nav aria-label="Principal"><a href="./#ranking">Ranking</a><a href="./metodologia.html">Método</a><a href="./encuesta.php" aria-current="page">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Tu cuenta · Beta</a></nav>
+    <nav aria-label="Principal"><a href="./#ranking">Ranking</a><a href="./metodologia.html">Método</a><a href="./encuesta.php" aria-current="page">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Iniciar sesión</a></nav>
   </header>
   <main id="contenido" class="survey-page">
     <div class="survey-hero">

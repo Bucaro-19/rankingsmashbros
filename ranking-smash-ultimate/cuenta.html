@@ -8,7 +8,7 @@
   <title>Tu cuenta — Smash GT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./cuenta.css?v=20261008-2"><link rel="stylesheet" href="./organizador.css?v=20261008-2">
+  <link rel="stylesheet" href="./cuenta.css?v=20261009-1"><link rel="stylesheet" href="./organizador.css?v=20261008-2">
   <script src="./characters.js?v=20261006-design2" defer></script>
   <script src="./account-model.js?v=20261007-v2" defer></script><script src="./premium.js?v=20261008-2" defer></script><script src="./organizador.js?v=20261008-2" defer></script><script src="./cuenta.js?v=20261008-3" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
 </head>
@@ -28,7 +28,7 @@
     <p id="loading" class="account-loading" role="status">Cargando tu cuenta…</p>
     <section id="login-screen" class="login-layout" aria-labelledby="login-title" hidden>
       <div class="login-art" aria-hidden="true"><span>GT</span><img src="./assets/characters/joker-portrait.png" alt=""><b>Tu carta te espera</b></div>
-      <div class="login-copy"><p class="kicker">Cuentas · Beta</p><h1 id="login-title">Entra a<br><span>la arena.</span></h1>
+      <div class="login-copy"><p class="kicker">Tu cuenta</p><h1 id="login-title">Entra a<br><span>la arena.</span></h1>
         <p class="lead">Vincula tu cuenta de start.gg para ver tu perfil, elegir tus mains y seguir tu temporada.</p>
         <div id="login-notice" class="notice" role="status" hidden></div>
         <form id="oauth-form" action="./oauth.php" method="post"><input id="oauth-csrf" name="csrf" type="hidden"><button id="oauth-button" class="primary" type="submit"><span>Continuar con start.gg ↗</span></button></form>
@@ -38,7 +38,7 @@
       </div>
     </section>
     <section id="account-error" class="account-container error-screen" role="alert" hidden><h1>Fuera de<br><span>la arena.</span></h1><p>No pudimos cargar tu cuenta. Tus personajes guardados no se modificaron.</p><button id="retry-account" class="primary"><span>Reintentar</span></button><a class="outline" href="./#ranking">Ver ranking público</a></section>
-    <section id="onboarding" class="account-container onboarding" aria-labelledby="onboarding-title" hidden><p class="kicker">Cuentas · Beta</p><h1 id="onboarding-title">Ya estás<br><span>dentro.</span></h1>
+    <section id="onboarding" class="account-container onboarding" aria-labelledby="onboarding-title" hidden><p class="kicker">Tu cuenta</p><h1 id="onboarding-title">Ya estás<br><span>dentro.</span></h1>
       <div id="linked-card" class="linked-card" role="status"></div>
       <button id="other-account" class="link-button" type="button">¿No eres tú? Usar otra cuenta de start.gg</button>
       <fieldset><legend>¿Qué te interesa?</legend><p class="note">Elige uno o ambos. Puedes cambiarlo después.</p><div class="role-options">
