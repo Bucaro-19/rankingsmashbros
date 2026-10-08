@@ -7,6 +7,14 @@
 
 
 
+
+## Agenda publicada y activada (8/oct, 17:50 Guatemala)
+
+- Orden del dueño: «activa la publicación cuando ya hayas hecho el sitio». Pantalla desplegada con main `5c39ffc` (run `37861086569`).
+- **Primera publicación manual de `agenda.json`:** run `37861261459`, correcto (captura, validación y subida por renombrado). En producción `data/agenda.json` responde 200 con 1 torneo (GAMELAND 2, 11/oct, San Pedro Sacatepéquez); `torneos.html` y el enlace «Torneos» responden; `public.json` sin cambios.
+- **Publicación diaria encendida:** variable `SMASH_AGENDA_ENABLED=true`. Corre a las 07:17 de Guatemala. Primer disparo programado: viernes 9/oct; falta comprobarlo.
+- Pendiente de comprobar: que un despliegue `assets_only` posterior no borre `agenda.json` (no está en la lista del despliegue general, a propósito).
+
 ## Pantalla «Próximos torneos» (8/oct, noche)
 
 - Handoff `design_handoff_smash_gt_torneos` implementado sobre `data/agenda.json` de Codex: `torneos.html`, `torneos.js`, `torneos.css` y las reglas puras en `torneos-model.js` (10 pruebas en `scripts/smash/test_torneos.cjs`). Enlace «Torneos» en el encabezado de todas las páginas y bloque «Próximo torneo» en la portada (`proximo.js`), que se oculta solo si la agenda no se puede leer o tiene más de 48 horas.
