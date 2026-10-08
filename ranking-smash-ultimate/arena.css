@@ -391,4 +391,24 @@ dialog > a { color: #ffe364; }
   .smash-redesign .gt-header nav { flex:1; min-width:0; flex-wrap:nowrap; justify-content:flex-end; gap:2px; overflow-x:auto; scrollbar-width:none; }
   .smash-redesign .gt-header nav::-webkit-scrollbar { display:none; }
   .smash-redesign .gt-header nav a { flex:none; padding:10px 8px; font-size:12px; white-space:nowrap; }
+  /* Con cinco enlaces la fila se desliza; el acceso a la cuenta se queda siempre a la vista, a la derecha. */
+  .smash-redesign .gt-header nav { justify-content:flex-start; }
+  .smash-redesign .gt-header nav .account-link { position:sticky; right:0; z-index:1; margin-left:auto; box-shadow:-10px 0 10px #0B0F1A; }
 }
+/* Portada: bloque «Próximo torneo» (agenda de start.gg). */
+.next-tournament { max-width:1280px; margin:0 auto 32px; padding:18px; background:#121829; border-top:4px solid #49A6E9; display:flex; flex-direction:column; gap:14px; color:#F4F1EA; }
+.smash-redesign main > .next-tournament { margin-left:clamp(16px,4vw,48px); margin-right:clamp(16px,4vw,48px); }
+.nt-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.nt-head h2 { margin:0; font:800 12px 'Archivo',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:#49A6E9; }
+.smash-redesign .next-tournament .nt-head a { display:flex; align-items:center; min-height:44px; color:#F4F1EA; font-size:14px; font-weight:700; }
+.nt-body { display:flex; gap:14px; align-items:stretch; }
+.nt-date { flex:none; width:88px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:10px 14px 10px 4px; background:#49A6E9; color:#0B0F1A; clip-path:polygon(0 0,100% 0,86% 100%,0 100%); font-size:11px; font-weight:800; letter-spacing:.08em; }
+.nt-date b { font:900 48px/.9 'Big Shoulders Display',sans-serif; }
+.nt-copy { display:flex; flex-direction:column; gap:6px; min-width:0; }
+.nt-copy p { margin:0; font-size:13px; line-height:1.45; color:#C9CED8; }
+.nt-copy h3 { margin:0; font:900 28px/1 'Big Shoulders Display',sans-serif; text-transform:uppercase; overflow-wrap:anywhere; }
+.nt-copy .nt-count { font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#FFD23F; }
+.nt-reg { font-weight:700; } .nt-reg.open { color:#5BE38A !important; } .nt-reg.closing { color:#FFD23F !important; }
+.smash-redesign .next-tournament .nt-cta { align-self:flex-start; display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:0 22px; background:#49A6E9; color:#0B0F1A; transform:skewX(-10deg); font:800 14px 'Archivo',sans-serif; text-transform:uppercase; letter-spacing:.04em; text-decoration:none; }
+.nt-cta span { display:inline-block; transform:skewX(10deg); } .smash-redesign .next-tournament .nt-cta:hover { background:#F4F1EA; color:#0B0F1A; text-decoration:none; }
+.nt-note, .nt-none { margin:0; font-size:13px; line-height:1.5; color:#9AA3B5; }

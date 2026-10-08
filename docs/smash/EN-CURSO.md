@@ -6,6 +6,15 @@
 
 
 
+
+## Pantalla «Próximos torneos» (8/oct, noche)
+
+- Handoff `design_handoff_smash_gt_torneos` implementado sobre `data/agenda.json` de Codex: `torneos.html`, `torneos.js`, `torneos.css` y las reglas puras en `torneos-model.js` (10 pruebas en `scripts/smash/test_torneos.cjs`). Enlace «Torneos» en el encabezado de todas las páginas y bloque «Próximo torneo» en la portada (`proximo.js`), que se oculta solo si la agenda no se puede leer o tiene más de 48 horas.
+- Lista por «Esta semana / Este mes / Más adelante» en calendario de Guatemala, cuenta regresiva, estado de inscripción, filtros por zona, modalidad y «pueden contar para el ranking», detalle (fijo a la derecha en escritorio; reemplaza la lista en móvil) y «Cerca de mí». **La ubicación se usa solo en el navegador**: no hay ninguna petición con coordenadas. Lo que start.gg no informa se muestra como no informado, nunca como cero ni como abierto o cerrado. Se descarta al mostrar cualquier torneo ya empezado o con una dirección que no sea de start.gg.
+- Diferencias con el diseño: la ruta es `torneos.html#{slug}` en vez de `/torneos/{slug}`; el texto dice que la agenda se revisa «todos los días» (la captura es diaria, no varias veces al día); se añadió «Presencial y online» y «Modalidad no informada» porque los datos reales los traen. El encabezado en móvil ahora tiene cinco enlaces: la fila se desliza y «Iniciar sesión» queda siempre visible a la derecha.
+- No está en el sitemap ni en el contador de visitas todavía (ambos tienen listas fijas de páginas). Pendiente.
+- Revisado en navegador con cinco torneos inventados (solo en la copia de pruebas): 375 px y escritorio, filtros, estados vacíos, detalle y bloque de la portada; sin desbordes. «Cerca de mí» no se pudo probar con un permiso real de ubicación en el navegador de pruebas; su orden y su distancia están cubiertos por las pruebas del modelo.
+
 ## El análisis de rival no se encontraba: entradas visibles (8/oct, noche)
 
 - **Queja del dueño, con razón:** con acceso premium no veía el análisis de rival. Solo se llegaba tocando a un rival en el historial, o desde un enlace de la pestaña Premium que se mostraba únicamente con suscripción (su cuenta entra como administradora, sin suscripción). Un suscriptor nuevo tampoco lo habría encontrado fácilmente.

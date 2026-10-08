@@ -34,12 +34,15 @@ jobs:
           node --check ranking-smash-ultimate/analisis-model.js
           node --check ranking-smash-ultimate/analisis.js
           node --check ranking-smash-ultimate/preparar.js
+          node --check ranking-smash-ultimate/torneos-model.js
+          node --check ranking-smash-ultimate/torneos.js
+          node --check ranking-smash-ultimate/proximo.js
           node --check ranking-smash-ultimate/visita.js
           node --check ranking-smash-ultimate/encuesta.js
           node --check ranking-smash-ultimate/cabecera.js
           node --check ranking-smash-ultimate/panel-model.js
           node --check ranking-smash-ultimate/panel.js
-          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs
+          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_torneos.cjs
       - name: Verificar PHP en la versión del hosting y en la mínima admitida
         run: |
           # El servidor usa PHP 8.1; el código publicado debe seguir siendo válido desde 7.4.

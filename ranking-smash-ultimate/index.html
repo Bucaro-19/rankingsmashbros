@@ -21,8 +21,8 @@
   <meta name="twitter:image" content="https://rankingsmashbros.com/assets/smash-gt-social.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./arena.css?v=20261009-1">
-  <script src="./characters.js?v=20261006-design2" defer></script><script src="./app.js?v=20261008-2" defer></script><script src="./cabecera.js?v=20261009-1" defer></script><script src="./visita.js?v=20261007" data-page="inicio" defer></script>
+  <link rel="stylesheet" href="./arena.css?v=20261009-2">
+  <script src="./characters.js?v=20261006-design2" defer></script><script src="./app.js?v=20261008-2" defer></script><script src="./cabecera.js?v=20261009-1" defer></script><script src="./torneos-model.js?v=20261009-1" defer></script><script src="./proximo.js?v=20261009-1" defer></script><script src="./visita.js?v=20261007" data-page="inicio" defer></script>
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -53,7 +53,7 @@
   <a class="skip-link" href="#ranking">Saltar al ranking</a>
   <header class="gt-header">
     <a class="gt-brand" href="./" aria-label="Smash GT, inicio"><span class="gt-mark">GT</span><span>SMASH GT<small>por ingporras</small></span></a>
-    <nav aria-label="Principal"><a href="#ranking">Ranking</a><a href="./metodologia.html">Método</a><a href="./encuesta.php">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Iniciar sesión</a></nav>
+    <nav aria-label="Principal"><a href="#ranking">Ranking</a><a href="./torneos.html">Torneos</a><a href="./metodologia.html">Método</a><a href="./encuesta.php">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Iniciar sesión</a></nav>
   </header>
   <div class="gt-ticker"><div class="ticker-window"><div id="ticker-track" class="ticker-track"><span>SMASH GT · TEMPORADA 2026 · RANKING PILOTO</span></div></div><button id="ticker-pause" type="button" aria-pressed="false" aria-label="Pausar barra de resultados">Ⅱ</button></div>
   <main id="contenido">
@@ -63,6 +63,7 @@
       </div>
       <button id="hero-player" class="hero-player" type="button" disabled aria-label="Ver al líder del ranking"><span class="hero-rank" aria-hidden="true">1</span><span id="hero-art" class="hero-art"></span><span class="hero-caption"><span class="hero-tag"><small>Líder de esta vista · piloto</small><strong id="hero-tag">Cargando…</strong></span><span class="hero-points"><b id="hero-points">—</b> PTS</span></span></button>
     </section>
+    <section id="proximo-torneo" class="next-tournament" aria-labelledby="next-title" hidden></section>
     <section id="ranking" class="gt-ranking" aria-labelledby="scene-title">
       <div class="ranking-heading"><h2 id="scene-title">Player<span>select.</span></h2><div class="ranking-controls"><div class="scope-buttons" role="group" aria-label="Alcance del ranking"><button id="scope-local" type="button" aria-pressed="false" disabled>Solo Guatemala</button><button id="scope-combined" type="button" aria-pressed="true" disabled>+ Internacional</button></div><label class="gt-search"><span class="sr-only">Buscar jugador en toda la clasificación</span><input id="search" type="search" placeholder="Busca tu tag…" autocomplete="off"></label></div></div>
       <div class="cut-status"><div><strong id="data-status">Cargando ranking…</strong><p id="updated">Consultando el último corte disponible.</p></div><button id="refresh" type="button">Actualizar ↻</button></div>
