@@ -5,6 +5,15 @@
 
 
 
+
+## El análisis de rival no se encontraba: entradas visibles (8/oct, noche)
+
+- **Queja del dueño, con razón:** con acceso premium no veía el análisis de rival. Solo se llegaba tocando a un rival en el historial, o desde un enlace de la pestaña Premium que se mostraba únicamente con suscripción (su cuenta entra como administradora, sin suscripción). Un suscriptor nuevo tampoco lo habría encontrado fácilmente.
+- **Arreglo:** enlace «Análisis de rival →» junto a las pestañas de la cuenta, para toda cuenta con sesión; bloque «Analiza a tu rival» con botón en el perfil, encima del historial; los enlaces de «Qué incluye» / «Lo que tienes» de la pestaña Premium se muestran a toda cuenta con sesión (la página decide qué es gratis); y la cuenta administradora ve un aviso de que ya tiene todo lo de premium sin suscripción.
+- **Error mío corregido de paso:** desde #68, en móvil, los enlaces del dueño dejaban la fila de pestañas con ancho cero para la cuenta administradora. Ahora las pestañas ocupan su propia fila y los enlaces otra, y al cambiar de pestaña ya no se desplaza la página.
+- Pendientes del dueño (prompts de Claude Design, cPanel, revisiones) guardados en [PENDIENTES-DUENO.md](PENDIENTES-DUENO.md): está trabajando en remoto y solo puede pasar encargos a Codex.
+- Orden del dueño: activar la publicación de la agenda cuando la pantalla de «Próximos torneos» esté hecha. Handoff recibido: `design_handoff_smash_gt_torneos/`.
+
 ## Agenda de Codex fusionada y atajo del dueño a las opiniones (8/oct, noche)
 
 - **#66 (captura de la agenda de torneos, Codex) fusionado por orden del dueño** como `2282684`, tras resolver el cruce de este archivo conservando ambos bloques; CI en verde. **La publicación diaria sigue apagada** (`SMASH_AGENDA_ENABLED` sin activar): encenderla es otra orden del dueño. Contrato en AGENDA-TORNEOS.md. La captura real encontró 1 torneo futuro.

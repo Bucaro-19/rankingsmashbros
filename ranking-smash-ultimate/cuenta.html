@@ -8,9 +8,9 @@
   <title>Tu cuenta — Smash GT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./cuenta.css?v=20261009-2"><link rel="stylesheet" href="./organizador.css?v=20261008-2">
+  <link rel="stylesheet" href="./cuenta.css?v=20261009-3"><link rel="stylesheet" href="./organizador.css?v=20261008-2">
   <script src="./characters.js?v=20261006-design2" defer></script>
-  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./premium.js?v=20261008-2" defer></script><script src="./organizador.js?v=20261008-2" defer></script><script src="./cuenta.js?v=20261009-1" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
+  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./premium.js?v=20261009-1" defer></script><script src="./organizador.js?v=20261008-2" defer></script><script src="./cuenta.js?v=20261009-2" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#account-content">Saltar al contenido</a>
@@ -23,7 +23,7 @@
     <button id="tab-characters" role="tab" aria-selected="false" aria-controls="characters-screen" tabindex="-1">Mis personajes</button>
     <button id="tab-premium" role="tab" aria-selected="false" aria-controls="premium-screen" tabindex="-1">Premium</button>
     <button id="tab-organizer" role="tab" aria-selected="false" aria-controls="organizer-screen" tabindex="-1" hidden>Mis torneos</button>
-  </div><span class="tab-links"><a id="tab-opinions" class="tab-link" href="./opiniones.php" hidden>Opiniones ↗</a><a id="tab-panel" class="tab-link" href="./panel.php" hidden>Panel privado ↗</a></span></div>
+  </div><span class="tab-links"><a id="tab-analysis" class="tab-link" href="./analisis.html">Análisis de rival →</a><a id="tab-opinions" class="tab-link" href="./opiniones.php" hidden>Opiniones ↗</a><a id="tab-panel" class="tab-link" href="./panel.php" hidden>Panel privado ↗</a></span></div>
   <main id="account-content" tabindex="-1">
     <p id="loading" class="account-loading" role="status">Cargando tu cuenta…</p>
     <section id="login-screen" class="login-layout" aria-labelledby="login-title" hidden>
@@ -61,6 +61,7 @@
             <div class="scope-line"><div class="scope-control" role="group" aria-label="Ranking a mostrar"><button type="button" data-scope="guatemala" aria-pressed="false">Solo Guatemala</button><button type="button" data-scope="combined" aria-pressed="true">+ Internacional</button></div><p id="scope-status" class="note" role="status"></p></div>
             <section id="account-ranking" class="rank-panel" aria-label="Puesto nacional"></section>
             <div><div id="account-stats" class="stat-grid"></div><p id="stats-note" class="note stats-note"></p></div>
+            <section class="analyze-entry" aria-labelledby="analyze-title"><div><h2 id="analyze-title">Analiza a tu rival</h2><p class="note">Elige a cualquier jugador del ranking. Gratis: su puesto y el récord entre ustedes. Con premium: probabilidad, counters, cómo juega el set y más.</p></div><a class="analyze-cta" href="./analisis.html"><span>Buscar rival →</span></a></section>
             <section aria-labelledby="history-title"><div class="history-heading"><h2 id="history-title">Historial de torneos</h2><div id="history-filters" class="history-filters" role="group" aria-label="Filtrar torneos"></div></div><p id="history-legend" class="note"></p><p id="history-coverage" class="note"></p><div id="account-history" class="history-list"></div></section>
           </div>
           <section id="no-player" class="rank-panel" aria-label="Sin jugador vinculado" hidden><p class="kicker yellow">Sin jugador vinculado</p><h2>Aún no te vemos<br>en la arena</h2><p class="lead">Tu cuenta de start.gg no tiene un perfil de jugador con sets en los torneos que seguimos. No buscamos jugadores por alias ni se puede reclamar otro perfil con un enlace.</p>
