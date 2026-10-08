@@ -1,6 +1,16 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
 
+
+## «Prepara el set»: análisis ampliado del rival (8/oct, noche)
+
+- Handoff `design_handoff_smash_gt_analisis_ampliado` implementado en `preparar.html` / `preparar.js` / `preparar.css`, enlazado desde el análisis de rival. La API añade el campo de pago `deep` (contrato en [ANALISIS-RIVAL.md](ANALISIS-RIVAL.md)).
+- **Con datos medidos:** le cuesta / le va bien contra, counters para ti y mejor evita (mis sets, sus games, la escena), cómo juega el set, rivales en común y contra qué nivel rinde. Versión gratis: las siete secciones bloqueadas, sin cifras.
+- **Sin contenido todavía, con su estado vacío:** «Por qué funciona» (la guía de matchups está en borrador sin revisar) y «Tus herramientas contra él» (frames: falta permiso de la fuente; el dueño enviará el correo a Ultimate Frame Data). El pie que cita la fuente de frames no se muestra hasta tener el permiso.
+- Umbral de confianza por escena bajado a 20 games frente a los 100–150 del diseño, porque el corte real no los alcanza.
+- Revisado en navegador con una respuesta inventada (solo en la copia de pruebas): 375 px, estados completo, bloqueado y sin datos; sin desbordes ni errores de consola. Falta la revisión del dueño con su sesión real y a 1440 px.
+- El PR #61 de Codex (prueba de carga) sigue abierto: el dueño aclaró que Codex no ha terminado.
+
 ## SEO de Codex publicado y borrador de la guía de matchups (8/oct, tarde)
 
 - **#58 (SEO técnico, Codex) fusionado y desplegado por orden del dueño:** main `8c21d8d`, despliegue `37838434273` correcto. Comprobado en producción: `robots.txt` y `sitemap.xml` 200 con las cuatro páginas públicas y fecha real del corte; canonical y Open Graph en la portada; HTTP y `www` redirigen con 308 al dominio canónico sin bucles; cuenta, encuesta, análisis, APIs y `/top/` responden igual que antes; el webhook de Recurrente sigue rechazando firmas falsas (401); el receptor de la carga semanal responde al diagnóstico autenticado; `public.json` sin cambios. Pendiente del dueño: Search Console (pasos en SEO-TECNICO.md), decidir si la encuesta entra al sitemap y la imagen para compartir de 1200 × 630.

@@ -38,6 +38,8 @@
     const rank=person.rank?.[scope], points=person.points?.[scope];
     return `<div class="a-half ${mine?'me':'him'}">${c?`<img src="${escape(c.portrait)}" alt="">`:`<span class="a-initials" aria-hidden="true">${escape(M.initials(person.tag))}</span>`}<div><strong>${escape(person.tag)}</strong><span>${rank!=null?`#${rank} · ${M.number(points)} pts`:'Sin puesto en esta vista'}</span></div></div>`;
   }
+  // The deeper screen: counters, how he plays a set, common opponents. Same rival and view.
+  const deepLink=()=>`<a class="a-deep" href="./preparar.html?rival=${encodeURIComponent(rivalId)}${scope==='gt'?'&scope=gt':''}"><span><strong>Prepara el set contra ${escape(data.rival.tag)}</strong><small>Counters, cómo juega el set, rivales en común y más${data.access?.full?'':' · ★ Premium'}</small></span><span aria-hidden="true">→</span></a>`;
   function vsCard() {
     return `<section class="a-vs" aria-label="Tú contra ${escape(data.rival.tag)}"><div class="a-vs-head"><h1>Análisis de rival</h1><button type="button" id="a-change" class="outline">Cambiar rival</button></div><div class="a-vs-body">${half(data.me,true)}${half(data.rival,false)}<span class="a-vs-badge" aria-hidden="true">VS</span></div></section>`;
   }
@@ -47,7 +49,7 @@
   }
   function renderLocked() {
     const expired=data.state==='vencido'&&data.premium?.expiredAt;
-    root.innerHTML=vsCard()+(data.rival.rank?.[scope]==null?`<p class="a-warn">Sin puesto en esta vista no significa rival débil: puede jugar fuera del país o tener poca actividad en este corte.</p>`:'')+recordBox()
+    root.innerHTML=vsCard()+deepLink()+(data.rival.rank?.[scope]==null?`<p class="a-warn">Sin puesto en esta vista no significa rival débil: puede jugar fuera del país o tener poca actividad en este corte.</p>`:'')+recordBox()
       +`<section class="a-premium"><p class="kicker yellow">${expired?`Tu premium venció el ${M.date(data.premium.expiredAt)}`:'Premium · Apoya el sitio'}</p><h2>El análisis completo es premium</h2>
         <ul><li>Probabilidad estimada del set con los puntos de ambos.</li><li>Con qué personaje te conviene jugar, con su muestra y confianza.</li><li>Cómo te va contra sus personajes y a él contra los tuyos.</li><li>Su forma reciente y contra qué nivel de rivales gana y pierde.</li></ul>
         <p class="a-plans">3 USD al mes · 24 USD al año <span>(ahorras 12 USD)</span></p>
@@ -102,7 +104,7 @@
       <p class="a-note">Sets conocidos en este corte; no es el historial completo de start.gg.</p></section>`;
   }
   function renderFull() {
-    root.innerHTML=`<div class="a-columns"><div class="a-left">${vsCard()}${probabilityBox()}${recommendationBox()}</div><div class="a-right">${matchupBox()}${historyBox()}${formBox()}</div></div>`;
+    root.innerHTML=`<div class="a-columns"><div class="a-left">${vsCard()}${deepLink()}${probabilityBox()}${recommendationBox()}</div><div class="a-right">${matchupBox()}${historyBox()}${formBox()}</div></div>`;
     root.querySelectorAll('[data-mine]').forEach(button=>button.addEventListener('click',()=>{pair=`${button.dataset.mine}|${pair.split('|')[1]}`;renderFull();root.querySelector(`[data-mine="${CSS.escape(button.dataset.mine)}"]`)?.focus();}));
     root.querySelectorAll('[data-his]').forEach(button=>button.addEventListener('click',()=>{pair=`${pair.split('|')[0]}|${button.dataset.his}`;renderFull();root.querySelector(`[data-his="${CSS.escape(button.dataset.his)}"]`)?.focus();}));
     wireCommon();

@@ -33,6 +33,7 @@ jobs:
           node --check ranking-smash-ultimate/organizador.js
           node --check ranking-smash-ultimate/analisis-model.js
           node --check ranking-smash-ultimate/analisis.js
+          node --check ranking-smash-ultimate/preparar.js
           node --check ranking-smash-ultimate/visita.js
           node --check ranking-smash-ultimate/encuesta.js
           node --check ranking-smash-ultimate/cabecera.js
