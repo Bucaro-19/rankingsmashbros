@@ -1,0 +1,16 @@
+User-agent: *
+Disallow: /panel.php
+Disallow: /opiniones.php
+Disallow: /cuenta.html
+Disallow: /analisis.html
+Disallow: /top/
+Disallow: /top.php
+Disallow: /*-api.php
+Disallow: /oauth.php
+Disallow: /visita.php
+Disallow: /recurrente-webhook.php
+Disallow: /ranking-sync.php
+Disallow: /ranking-worker.php
+Disallow: /feedback-data/
+
+Sitemap: https://rankingsmashbros.com/sitemap.xml

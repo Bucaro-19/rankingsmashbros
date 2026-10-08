@@ -8,6 +8,7 @@ import re
 import uuid
 from pathlib import Path
 from collections import Counter, defaultdict
+from seo import build_sitemap
 
 FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "cuenta.css", "panel.css", "paginas.css", "analisis.css", "metodologia.css", "encuesta.css", "opiniones.css", "organizador.css", "top.css", "analisis-torneos.css",
          "characters.js", "account-model.js", "premium.js", "organizador.js", "analisis-model.js", "analisis.js", "cuenta.js", "app.js", "cabecera.js", "encuesta.js", "visita.js", "panel-model.js", "panel.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "database.php", "survey.php", "accounts.php", "visits.php", "stats.php", "premium.php", "organizador.php", "analisis.php", "ranking-import.php", "ranking-sync-lib.php", "ranking-sync.php", "ranking-worker.php", "account-api.php", "oauth.php", "visita.php", "panel-api.php", "panel.php", "premium-api.php", "organizador-api.php", "top.php", "analisis-api.php", "recurrente-webhook.php", "encuesta.php", "opiniones.php", "cuenta.html", "analisis.html", "index.html", "metodologia.html",
@@ -17,7 +18,7 @@ FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "cuenta.css", "pan
 ASSET_ROOT = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate/assets/characters"
 CHARACTER_FILES = tuple("assets/characters/" + path.name for path in sorted(ASSET_ROOT.glob("*.png"))
                         if re.fullmatch(r"[a-z0-9_]+-(icon|portrait)\.png", path.name))
-FILES = FILES[:-1] + CHARACTER_FILES + FILES[-1:]
+FILES = FILES[:-1] + CHARACTER_FILES + ('robots.txt', 'sitemap.xml') + FILES[-1:]
 HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 
@@ -179,6 +180,18 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
                 raise
             ftp.mkd(remote)
             ftp.cwd(remote)
+    # Assets-only must never date the live pages using the older JSON in Git.
+    if assets_only:
+        body = io.BytesIO()
+        def receive(chunk):
+            if body.tell() + len(chunk) > 32 * 1024 * 1024:
+                raise ValueError('SEO: el corte remoto supera 32 MiB.')
+            body.write(chunk)
+        ftp.retrbinary('RETR data/public.json', receive)
+        data = json.loads(body.getvalue())
+    else:
+        data = json.loads((source / 'data/public.json').read_text(encoding='utf-8'))
+    sitemap = build_sitemap(source, data)  # Fail before any upload if dates cannot be proved.
     try:
         ftp.cwd("data")
     except ftplib.error_perm as error:
@@ -214,6 +227,8 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
             if not str(error).startswith("550"):
                 raise
     for name in FILES[:-1] if assets_only else FILES:
+        if name == 'sitemap.xml':
+            continue  # Publish metadata only after the public cut has landed successfully.
         temporary = name + "." + uuid.uuid4().hex + ".tmp"
         try:
             with (source / name).open("rb") as file:
@@ -225,6 +240,16 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
             except ftplib.all_errors:
                 pass
             raise
+    temporary = 'sitemap.xml.' + uuid.uuid4().hex + '.tmp'
+    try:
+        ftp.storbinary('STOR ' + temporary, io.BytesIO(sitemap))
+        ftp.rename(temporary, 'sitemap.xml')
+    except Exception:
+        try:
+            ftp.delete(temporary)
+        except ftplib.all_errors:
+            pass
+        raise  # Do not silently report success with a stale sitemap.
 
 
 def main():

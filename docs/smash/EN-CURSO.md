@@ -1,6 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — SEO técnico preparado, 8/oct (PR pendiente; sin publicar)
 
+Rama `feat/technical-seo`, desde `origin/main` `a6cec03` (#56). Auditoría previa: árbol limpio, mismo origin `Bucaro-19/rankingsmashbros`, CI main `37828965177` correcta. Los cambios posteriores de Claude #57 (`01babf6`, caché y tolerancia de la portada) se conservarán al actualizar la rama. Detalle/relevo: [SEO-TECNICO.md](SEO-TECNICO.md).
+
+- Robots + sitemap para cuatro páginas públicas; canonical/social propios y JSON-LD WebSite/Organization en portada. Cuenta: solo noindex; análisis ya lo tenía. Imagen OG preparada **comentada** (falta imagen aprobada de Claude Design); encuesta fuera del sitemap hasta decisión del dueño en PR, sin tocarla. Sin cambios en diseño, cálculo, JSON, premium, visitas ni módulos de organizadores.
+- Sitemap generado por deploy.py; fechas reales de corte/estudios, no reloj del deploy. En assets-only lee solo el JSON público vigente por FTP; si no puede comprobar fechas falla antes de subir. Metadata se renombra al final, después del corte; fallos se reportan, no quedan silenciosos. FILES/test_publish y prueba SEO incluidos. Mismo grupo de concurrencia preservado.
+- www y HTTP respondían 200 sin redirigir en comprobación HEAD de producción (8/oct). Se prepara redirección 308 al HTTPS sin www, sin bucles en prueba TLS local, preservando ruta/query/método y excluyendo validación de certificados. No se cambió el servidor real.
+- 59 pruebas de pipeline/SEO y 12 JS correctas; XML, JSON-LD y contratos validados. Chrome: 6 páginas × escritorio 1440 y móvil 375, texto/estructura visual iguales a main, sin overflow; 24 capturas y comparación en `/tmp/smash-seo-review/`. Apache local: redirecciones HTTP/TLS, POST, hosts locales, ACME y MIME correctos. CI final pendiente del push.
+- Propuesta sin JS: ampliar el noscript existente con resumen top 10 generado del corte y escapado; **no implementada**, porque el encargo pide propuesta y la presentación sin JS requiere aprobación/handoff si cambia. Search Console: pasos exactos DNS TXT o HTML + envío de sitemap en la guía y la PR, **no registrado por el agente**.
+- Pendiente: aprobar imagen y decidir promoción de encuesta, revisar PR y dar orden de fusión/despliegue. Nunca se escribió SQL ni se desplegó esta entrega.
 
 
 ## Carga inicial de games aplicada y portada más tolerante a la red (8/oct)
