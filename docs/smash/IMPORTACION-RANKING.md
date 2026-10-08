@@ -1,5 +1,55 @@
 # Importador de ranking e historial — 7 de octubre de 2026
 
+## Carga inicial de contexto — implementada, pendiente de producción (7/oct)
+
+Entrega en `feat/initial-game-context`, desde main `8f2e53a`. `scripts/database/game_context.py` es una herramienta CLI, no un endpoint ni una migración. Construye un paquete **solo games/selecciones** con hash propio y exige aparte el paquete original como prueba; no reenvía V2 al importador semanal. Nunca modifica `cuts`, `rankings`, instantáneas ni el hash original. No realiza consultas a start.gg.
+
+`build ORIGINAL CAPTURADO_V2 SALIDA --cut-id 1` comprueba entidades/public idénticos y las mismas reglas de cobertura, relaciones, catálogo y mains de V2. Rechaza archivos mayores de 32 MiB y salida gzip mayor de 4 MiB. Crea salida privada (600), sin sobrescribir archivos. `load CONTEXTO --original ORIGINAL --database BASE` simula por defecto con transacción SQL **READ ONLY**; solo `--apply` permite insertar las dos tablas, en una transacción serializable. Ambas variantes usan el bloqueo del importador semanal.
+
+Protecciones: exactamente un corte publicado y coincidente con el anclaje; paridad original antes/después; comparación completa de los sets, slots y vínculos entrant/jugador cubiertos. Games/selecciones deben estar **ambos vacíos**, o coincidir completamente con el paquete (incluida fecha de captura), en cuyo caso devuelve `already_imported`. Datos parciales, corregidos, posteriores, catálogo faltante o fuentes distintas detienen todo; no se borran ni sobrescriben filas. Si ya existe otro corte, incluso con games vacíos, rechaza `later_or_other_cut`: no resucita capturas históricas que una corrección pudo retirar. El fallo intermedio revierte todas las inserciones. Una transacción ajena se rechaza sin revertirla.
+
+### Fuente recuperada sin recaptura
+
+Las copias temporales anteriores desaparecieron al reiniciar la Mac. Se recuperaron los artefactos privados existentes de `Bucaro-19/rsvp-graduacion`: `smash-gt-capturas`, run **37198767448**, y `smash-mains`, run **37540350390**. Solo se leyó el JSON público actual por HTTP; nunca respuestas de la encuesta. Desde `combined-mains.json` y ese public se reconstruyó V2; para la prueba V1 se retiraron games/cobertura y se restauraron literalmente las tres limitaciones del exportador de `e685fb2`. Ambos hashes coinciden con los documentados anteriormente:
+
+- Original V1: `ecb1d4a5cd44f87250537a85d0d166fa6f9824ff3408f0b55c98ac6102fd9e45`.
+- Captura V2: `a9e43b90421e56a4eaf5912ee294608b459ffbebd42e934de1f571c4bb068def`.
+- Contexto: `853b8788e264ad8e302c8dc62657f4e4506503b8d98e2be9656048ebf466f109`.
+
+Fuentes/capturas recuperadas en `/tmp/smash-initial-context/` (700). Los tres paquetes necesarios (`ranking-original.json`, `ranking-v2.json`, `context-oct4.json`) se conservaron además en `~/.smash-gt-context-oct4-20261007/`, fuera de Git y /tmp, carpeta 700 / archivos 600; copia verificada byte a byte. Esa copia sobrevive a un reinicio y no depende de la retención del artefacto. No subir el paquete de prueba ni las capturas al sitio público. No sustituir public por `public-mains.json` antiguo: le faltan algunos playerTags.
+
+### Medición comprobada SOLO en la base desechable de la Mac
+
+MariaDB local 13.0.2, PyMySQL 1.1.2, Python 3.9. Fuente Oct4, personajes capturados Oct6. Contexto: **3,837 sets, 4,787 games, 9,530 selecciones**. JSON **1,471,290 bytes**, gzip determinista **92,604 bytes**: bajo 32/4 MiB.
+
+| Operación local | Tiempo | Pico RSS del proceso |
+|---|---:|---:|
+| Construir y validar contexto | 1.218 s | 250,773,504 bytes |
+| Simular lectura (tablas vacías) | 1.479 s | 244,531,200 bytes |
+| Aplicar en base desechable | 1.941 s | 257,785,856 bytes |
+| Repetir aplicación desechable | 1.606 s | 248,922,112 bytes |
+
+El máximo (~246 MiB) está bajo 512 MiB; corresponde a este CLI Python, **no al worker PHP de BanaHosting**. No se cambió el worker. Las nueve pruebas del contexto verifican anclaje, relaciones/mains, rollback, repetición, inmutabilidad de doce tablas y protección de contexto posterior; se añadieron al CI MySQL 8.0/MariaDB 10.11. Matriz y contratos correctos tras rebase en `37715308425`/`37715303307` sobre `fa9f38c`, y anteriormente en run `37713902599` sobre `93391f8`; el primer intento tuvo el fallo intermitente preexistente de encuesta, no de contexto. Detalle y reintento en EN-CURSO. [PR #43](https://github.com/Bucaro-19/rankingsmashbros/pull/43), sin fusionar.
+
+### Pendiente: simulación de producción y orden de escritura
+
+**No se escribió producción. Tampoco se pudo completar la simulación de producción:** el servidor rechazó la conexión desde el router actual. El dueño no puede acceder ahora a cPanel; no se cambió Remote MySQL ni se solicitó una contraseña. Cuando la Mac vuelva a una IP autorizada (o el dueño autorice la nueva IP específica), desde la rama de esta entrega:
+
+```sh
+# Si desapareció el runtime temporal, recrearlo (sin tocar credenciales):
+python3 -m venv /tmp/smash-db-runtime
+/tmp/smash-db-runtime/bin/pip install PyMySQL==1.1.2
+# Construcción offline YA ejecutada. No repetir sobre la misma salida existente.
+/tmp/smash-db-runtime/bin/python scripts/database/game_context.py build /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-original.json /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-v2.json /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/context-oct4.json --cut-id 1
+# Primero SOLO lectura: usa el ~/.my.cnf privado del dueño, sin imprimirlo.
+/tmp/smash-db-runtime/bin/python scripts/database/game_context.py load /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/context-oct4.json --original /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-original.json --database ivcjgjlk_smash
+# NO ejecutar sin revisar la simulación y recibir orden expresa del dueño:
+/tmp/smash-db-runtime/bin/python scripts/database/game_context.py load /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/context-oct4.json --original /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-original.json --database ivcjgjlk_smash --apply
+```
+
+La simulación pendiente imprimirá solo conteos, hashes, tiempo y memoria; no contenido privado ni errores del driver. Si ya corrió el corte del 11/oct, **no forzar esta carga**: el circuito semanal V2 ya trae games. Comparar contra la captura vigente y preparar un nuevo encargo para cualquier contexto histórico faltante. No renombrar hashes ni vaciar tablas para saltar la protección.
+
+
 ## Selecciones por game — entrega de Codex, 7/oct/2026
 
 Rama `feat/game-selections-sql`, desde `main` `4e5bb2d`. **Sin fusionar, desplegar ni escribir producción.** La automatización actual sigue activa. No necesita migración: usa `games` y `game_selections` de 001. No cambia cálculo, elegibilidad, `public.json`, esquema público 3 ni mains; la única versión nueva es **`packageVersion=2` del paquete privado**. Ambos importadores siguen admitiendo v1 con su hash original.
