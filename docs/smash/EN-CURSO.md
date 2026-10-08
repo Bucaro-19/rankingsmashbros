@@ -2,6 +2,15 @@
 
 
 
+
+## Medición de carga en producción programada (orden del dueño, 8/oct 16:00)
+
+- **#61 (prueba de carga, Codex) fusionado por orden del dueño** como `6a5d5f0`, tras resolver el cruce de este archivo conservando ambos bloques; CI de la PR y de main en verde. Nada que desplegar.
+- **Orden del dueño:** «mide en producción hoy a las 2 de la mañana» → viernes **9/oct/2026, 02:00–02:30 Guatemala**. Programada como tarea de una sola vez en la app de Claude del dueño (01:58), con el comando exacto de PRUEBA-DE-CARGA.md, escenario `visitor`, sin reintentos ni otros escenarios, y con negativa a ejecutar fuera de esa ventana.
+- Preparado en `~/smash-load-private/` (fuera de Git, permisos 600): copia de `smash_load.py` de `6a5d5f0`, `limits.json` con los límites de la captura de cPanel (CPU 300 %, 6144 MiB, 35 procesos de entrada, 10240 KiB/s, 1024 IOPS, 100 procesos) y la captura como `uso-recursos.png`. `workerWindowConfirmed: true`: el único trabajo de la cola tardó 2 s y no hay ninguno pendiente (no hay corte hasta el domingo). El plan se validó sin `--execute` (cero HTTP): 6 escalones, máximo 2,000 peticiones, visitas excluidas.
+- Condiciones conocidas: sale desde la red de casa del dueño, que el 8/oct tenía ~550 ms de latencia, así que los tiempos incluirán su conexión y el freno de p95 > 3 s podría saltar por la red y no por el servidor. Nadie vigilará cPanel a esa hora; se confía en los frenos del guion. La tarea solo corre si la Mac está encendida y la app abierta.
+- Resultado esperado en `~/smash-load-private/produccion-visitante.json` y `resultado-resumen.md`. **Pendiente:** pasar el resultado y los límites a PRUEBA-DE-CARGA.md.
+
 ## Codex — carga controlada, 8/oct (PR #61; producción pendiente)
 
 [PR #61](https://github.com/Bucaro-19/rankingsmashbros/pull/61), rama `feat/controlled-load-test`: iniciada desde `origin/main` `0a99525` (#59), actualizada sobre `54d7d45` (#62) y `75e36da` (#63) preservando las notas/cambios de Claude. Auditoría inicial: árbol limpio, origin `Bucaro-19/rankingsmashbros`, CI main [37837761788](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37837761788) correcta; main actualizado también tiene CI [37843876447](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37843876447) correcta. La carpeta local ajena `social/` apareció después y no se tocó ni versionó.
