@@ -216,6 +216,8 @@ def main():
             if report['stopReason']!='completed_capped_ladder': break
     from smash_load import save
     save(args.output_dir/'local-summary.json',summary)
+    if summary and summary[-1]['stopReason']!='completed_capped_ladder':
+        parser.exit(3,'Laboratorio detenido; revisar el informe antes de repetir.\n')
 
 
 if __name__=='__main__': main()

@@ -4,11 +4,11 @@ Encargo del 8/oct/2026. **Producción no medida.** Esta entrega prepara un guion
 
 ## La respuesta que podemos dar
 
-El caso principal **completó los seis escalones hasta 40 visitantes virtuales**: 1,482 peticiones, 0 errores, p95 a 40 = **42 ms**, 78 descargas iniciales y 468 respuestas 304 del JSON. Los otros perfiles siguen en medición; se añadirán al terminar. [Resultado principal local](loadtest-local/visitor-20261008.json). No se sustituye una medición de BanaHosting por la de una Mac. «N visitantes» significa **N visitantes virtuales activos durante un escalón**, no el máximo de personas que pueden tener una pestaña abierta, ni un número prometido para premium.
+El caso principal **completó los seis escalones hasta 40 visitantes virtuales**: 1,482 peticiones, 0 errores, p95 a 40 = **42 ms**, 78 descargas iniciales y 468 respuestas 304 del JSON. Los perfiles estático/PHP anónimo y el análisis con sesión también completaron 40 sin errores. En análisis, p95 a 40 fue **563 ms**. La escritura quedó limitada a 2 visitantes y produjo **9 visitas falsas solo locales**. [Resumen por escalón](loadtest-local/summary-20261008.csv). [Resultado principal local](loadtest-local/visitor-20261008.json). No se sustituye una medición de BanaHosting por la de una Mac. «N visitantes» significa **N visitantes virtuales activos durante un escalón**, no el máximo de personas que pueden tener una pestaña abierta, ni un número prometido para premium.
 
 En producción aún no sabemos **N** (aguanta sin degradarse), **M** (se pone lento) ni **K** (falla). También está pendiente qué recurso del plan se agota primero. Si la escalera llega a 40 sin degradarse, la conclusión será «al menos 40 bajo este recorrido y en ese horario», **no** «el máximo es 40». Nunca se sube el tope para buscar una caída.
 
-## Laboratorio — caso principal comprobado
+## Laboratorio — mediciones comprobadas
 
 Mac Apple M4 Pro, 12 CPU lógicas, 24 GiB RAM, macOS 26.6.2, PHP 8.5.3, MariaDB 13.0.2 y Python 3.9. Hosting real: versiones/límites diferentes; no extrapolar. Base independiente: 3,435 jugadores, 47 eventos, 8,985 sets, 4,787 games, 9,530 selecciones y 376 posiciones. JSON del repo igual al del paquete: **3,067,344 bytes**; gzip precalculado **189,182 bytes**. Sin TLS/red de internet, ni JS/imágenes/fuentes completos.
 
@@ -22,6 +22,27 @@ Mac Apple M4 Pro, 12 CPU lógicas, 24 GiB RAM, macOS 26.6.2, PHP 8.5.3, MariaDB 
 | 40 | 760 | 42.1 ms | 0 | 40 / 240 |
 
 Todos esos escalones duraron 60 s y se completaron; máximo 12.7 peticiones/s a 40. RSS PHP agregado observado: 62,896 KiB (~61.4 MiB, suma de cinco procesos con posible doble conteo de páginas compartidas). `Threads_running` observado: 1 incluyendo el monitor; el muestreo de 1 s puede perder los picos de consultas rápidas. CPU del proceso cliente/frente/monitor en el escalón de 40: 1.429 s en 60 s; no sugiere saturación del generador en este caso. **No se agotó un recurso observado, no encontramos M ni K antes del tope.** No está demostrado que el hosting soporte 40; tampoco que el laboratorio falle a 41.
+
+### Perfiles separados
+
+Cada escalón duró 60 s. Los perfiles de lectura también completaron 1/2/5/10/20/40; la escritura se limitó a 1/2. Los JSON adjuntos guardan p50/p95/p99, bytes, códigos y recursos de cada escalón.
+
+| Perfil | Mayor escalón completo | Peticiones totales | p95 en ese escalón | Errores | Visitas falsas locales |
+| --- | --- | --- | --- | --- | --- |
+| [Visitante](loadtest-local/visitor-20261008.json) | 40 | 1,482 | 42.1 ms | 0 | 0 |
+| [Estático](loadtest-local/static-20261008.json) | 40 | 1,482 | 32.1 ms | 0 | 0 |
+| [PHP sin SQL](loadtest-local/php-no-db-20261008.json) | 40 | 468 | 31.8 ms | 0 (401 esperado) | 0 |
+| [PHP con lectura](loadtest-local/php-read-20261008.json) | 40 | 468 | 29.5 ms | 0 | 0 |
+| [PHP con escritura](loadtest-local/php-write-20261008.json) | **2** | **9** | 7.1 ms | 0 | **9** |
+| [Análisis autenticado local](loadtest-local/analysis-local-20261008.json) | 40 | 468 | 562.8 ms | 0 | 0 |
+
+El contador aumentó exactamente **9** en SQL desechable: 3 + 6 POST, sin tocar el techo de 10. No permite concluir cómo se comporta con 40 escrituras simultáneas: ese caso está prohibido por el guion. **Producción: cero visitas falsas.** Las bases temporales se eliminan al acabar; no se borra ni corrige una fila del hosting.
+
+Los seis perfiles sanos suman **4,377 peticiones**. Los cinco perfiles de lectura completaron hasta 40; no se alcanzó M (lentitud >3 s) ni K (errores >1 %) en el laboratorio bajo estos recorridos. El análisis fue el caso más lento, pero eso **no prueba** qué recurso se agotaría primero: no se alcanzó un límite. En su repetición se observaron 281,120 KiB de RSS PHP agregado (~274.5 MiB), 5 procesos PHP y `Threads_running` máximo 5 incluido el monitor. Son observaciones con muestreo de 1 s, no límites del hosting ni perfiles completos de CPU/E/S SQL.
+
+**Incidente del laboratorio, separado del resultado de capacidad:** el primer intento autenticado recibió un único 401 y el freno terminó al instante, en el escalón de 1. Las sesiones se habían creado antes de los otros cinco perfiles; PHP local tiene `session.gc_maxlifetime=1440` (24 min) y la batería anterior tomó unos 30 min. Ese fixture no aseguraba una sesión viva al llegar al análisis. Ahora renueva las 40 sesiones independientes por CLI inmediatamente antes de ese perfil, sin cambiar los parámetros de sesión del servidor ni las cuentas de producción. La repetición completa con otra instancia MariaDB desechable creada por `local_run.py` terminó con 468 respuestas 200, cero errores y los seis escalones completos. Ese comando automático también limpió correctamente su servidor, base y sesiones locales. El 401 no demuestra «falla con un usuario» ni se mezcla con los errores de los perfiles sanos.
+
+**Base medida y reproducibilidad:** los cinco primeros perfiles copiaron el sitio de `0a99525` (#59); el análisis corregido también inició antes de rebasar la rama. La rama de entrega se actualizó después sobre main `54d7d45` (#62), CI [37843876447](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37843876447) correcta: los cambios posteriores son SEO, imagen compartida y documentación; las APIs/PHP y `public.json` medidos permanecen iguales. Esos pequeños cambios de cabecera HTML no están medidos en los primeros perfiles. No prometer tiempos idénticos tras cualquier cambio de producto.
 
 ## Límites del plan — pendiente del dueño
 
@@ -60,7 +81,7 @@ Pedir también que confirme el tiempo máximo del worker cada cinco minutos. El 
 
 Un bloqueo local impide dos ejecuciones del medidor a la vez en esta máquina. No repartir la prueba entre varias máquinas/IP para multiplicar esos topes. No ejecutar simultáneamente el cliente de producción y otras herramientas de carga.
 
-**Freno:** tras cada respuesta, detiene nuevas peticiones y no sube de escalón si errores >1 % o p95 >3 s. También frena si el p95 de un endpoint supera 3 s: muchos estáticos rápidos no pueden ocultar un PHP lento. Se termina lo que ya estaba en vuelo (máximo 40, timeout 4 s), se guarda lo medido y se termina la escalera. El lote local también se detiene; no sigue con otros escenarios tras un freno. Timeout, 5xx/508, 429, redirecciones y respuestas inesperadas cuentan como errores. TLS/DNS/conexión/JSON inválido se distinguen con códigos sin imprimir el texto de la excepción: un freno por configuración no demuestra falta de capacidad del hosting. El timeout es de E/S del socket; no es una garantía de reloj absoluto para DNS ni para un cuerpo que llega por fragmentos. Un 401 esperado del caso PHP sin SQL no cuenta como error. El freno se evalúa desde la primera respuesta, por prudencia; un fallo temprano puede detener un escalón aunque su porcentaje final baje cuando terminen las peticiones ya en vuelo. `Ctrl+C` guarda el informe parcial. CLI termina con código 3 si no completa la escalera.
+**Freno:** tras cada respuesta, detiene nuevas peticiones y no sube de escalón si errores >1 % o p95 >3 s. También frena si el p95 de un endpoint supera 3 s: muchos estáticos rápidos no pueden ocultar un PHP lento. Se termina lo que ya estaba en vuelo (máximo 40, timeout 4 s), se guarda lo medido y se termina la escalera. El lote local también se detiene; no sigue con otros escenarios tras un freno. Timeout, 5xx/508, 429, redirecciones y respuestas inesperadas cuentan como errores. TLS/DNS/conexión/JSON inválido se distinguen con códigos sin imprimir el texto de la excepción: un freno por configuración no demuestra falta de capacidad del hosting. El timeout es de E/S del socket; no es una garantía de reloj absoluto para DNS ni para un cuerpo que llega por fragmentos. Un 401 esperado del caso PHP sin SQL no cuenta como error. El freno se evalúa desde la primera respuesta, por prudencia; un fallo temprano puede detener un escalón aunque su porcentaje final baje cuando terminen las peticiones ya en vuelo. `Ctrl+C` guarda el informe parcial. El cliente y el laboratorio terminan con código 3 si no completan la escalera.
 
 Solo se permite `https://rankingsmashbros.com` en producción y `http://127.0.0.1:PUERTO` en local. Sin URLs con credenciales, rutas arbitrarias o query libre, sin redirects ni desactivar TLS. `User-Agent: SmashGT-LoadTest`. No encuesta, creación de cuentas reales, pagos, premium API, OAuth, start.gg, Recurrente, webhook ni ranking-sync/worker. No se descargan fonts de Google, GitHub o imágenes externas.
 
@@ -78,7 +99,7 @@ Casos separados:
 | --- | --- | --- |
 | `static` | Portada + JSON 200/304 + arena.css | Transferencia/validadores; sin ejecutar JS ni cargar todo el arte/fonts. |
 | `php-no-db` | analisis-api.php anónimo (401 esperado) | PHP, sesión de archivos y rechazo previo a SQL; no análisis premium. |
-| `php-read` | account-api.php anónimo | Consulta `tournament_catalog`; actualmente sí abre SQL aunque el visitante no esté vinculado. |
+| `php-read` | account-api.php anónimo | Consulta `tournament_catalog`; actualmente sí abre SQL aunque el visitante no esté vinculado. En este paquete V2 el catálogo está vacío: no mide un catálogo futuro grande. |
 | `php-write` | POST visita.php | Transacción real del contador, solo en SQL desechable. 204 no garantiza escritura: verificar incremento de `SUM(views)` antes/después. |
 | `analysis-local` | analisis-api.php, yo/rival del corte, sesiones locales independientes | Lectura completa de JSON/SQL, matrices y acceso admin local; jamás se habilita por argumento para producción. |
 
@@ -98,7 +119,7 @@ Desde la raíz del repositorio, con PHP y MariaDB ya disponibles, usando el Pyth
 
 Ese paquete es una **copia local ya guardada**, no una descarga ni una lectura de SQL de producción; no publicarlo en Git. Si no se conserva, omitir `--package` usa el fixture sintético pequeño de los tests: sirve para probar el circuito, **no** para comparar capacidad con el corte completo. `--scenarios visitor` permite repetir solo un caso; no permite elevar concurrencia/duración/topes ni repetir el mismo caso dentro del lote. Si el Python indicado no existe, usar un entorno local con la dependencia de SQL ya utilizada (`PyMySQL==1.1.2`); no son credenciales ni un servicio de pago.
 
-Los resultados quedan en el directorio elegido, uno por caso y un resumen. El servidor, esquema y sesiones temporales se limpian; las mediciones se conservan. Las calibraciones interrumpidas para ajustar el cliente no forman parte del resultado definitivo. No bajar duraciones o umbrales para producir un informe de capacidad.
+Los resultados quedan en el directorio elegido, uno por caso y un resumen. El servidor, esquema y sesiones temporales se limpian; las mediciones se conservan. Las calibraciones interrumpidas para ajustar el cliente no forman parte del resultado definitivo. No bajar duraciones o umbrales para producir un informe de capacidad. Los seis casos definitivos conservaron sus 60 s por escalón; el freno solo apareció en pruebas sintéticas y en el intento con sesión inválida. Los escenarios autenticados renuevan primero sus sesiones locales para que la espera de los demás perfiles no invalide el fixture.
 
 Pruebas rápidas de seguridad (los tests usan fixtures/tiempos simulados, no son la medición):
 
@@ -106,7 +127,7 @@ Pruebas rápidas de seguridad (los tests usan fixtures/tiempos simulados, no son
 python3 -m unittest discover -s scripts/loadtest -v
 ```
 
-CI propia `smash-load-test.yml`: únicamente esas pruebas contra loopback, sin secreto ni ejecución de carga en producción. Los scripts no están en FILES del FTP ni se publican en el servidor.
+17 pruebas de topes/frenos/contratos, incluida compresión PHP y renovación de sesiones; 62 regresiones del pipeline también correctas. CI propia `smash-load-test.yml`: únicamente esas pruebas contra loopback, sin secreto ni ejecución de carga en producción. Los scripts no están en FILES del FTP ni se publican en el servidor.
 
 ## Producción: comando preparado, aún no ejecutar
 

@@ -145,6 +145,36 @@ class SafetyTests(unittest.TestCase):
         reply=subprocess.run(command,capture_output=True,text=True)
         self.assertNotEqual(reply.returncode,0);self.assertIn('una sola vez',reply.stderr)
 
+    def test_local_analysis_renews_fixture_sessions_immediately_before_measurement(self):
+        import local_site
+        from unittest.mock import Mock
+        calls=[]
+        fixture=dict(origin='http://127.0.0.1:1234',cookies=['synthetic']*40,rival='2',
+                     rows={},dbVersion='test-only',phpWorkers=4,compressedPublicBytes=1,publicBytes=1,
+                     peaks={},visit_count=lambda:0,refresh_sessions=lambda:calls.append('renew'))
+        manager=Mock();manager.__enter__=Mock(return_value=fixture);manager.__exit__=Mock(return_value=False)
+        def measure(*args,**kwargs):
+            calls.append('measure');return dict(stopReason='completed_capped_ladder',steps=[],writeRequestsAttempted=0)
+        with tempfile.TemporaryDirectory() as temp,patch.object(local_site,'local_site',return_value=manager), \
+                patch.object(local_site,'run',side_effect=measure),patch.object(local_site.signal,'signal'), \
+                patch.object(sys,'argv',['local_site.py','--db-port','33318','--output-dir',temp,'--scenarios','analysis-local']):
+            local_site.main()
+        self.assertEqual(calls,['renew','measure'])
+
+    def test_local_batch_exits_unsuccessfully_and_skips_remaining_profiles_after_brake(self):
+        import local_site
+        from unittest.mock import MagicMock
+        fixture=dict(origin='http://127.0.0.1:1234',rows={},dbVersion='test-only',phpWorkers=4,
+                     compressedPublicBytes=1,publicBytes=1,peaks={},visit_count=lambda:0)
+        manager=MagicMock();manager.__enter__.return_value=fixture
+        with tempfile.TemporaryDirectory() as temp,patch.object(local_site,'local_site',return_value=manager), \
+                patch.object(local_site,'run',return_value=dict(stopReason='errors_over_1_percent',steps=[])) as measure, \
+                patch.object(local_site.signal,'signal'),patch.object(sys,'argv',['local_site.py','--db-port','33318',
+                    '--output-dir',temp,'--scenarios','visitor','static']),self.assertRaises(SystemExit) as failure:
+            local_site.main()
+        self.assertEqual(failure.exception.code,3);self.assertEqual(measure.call_count,1)
+        manager.__exit__.assert_called_once()
+
     def test_stage_never_exceeds_users_or_budget_and_rejects_a_higher_step(self):
         for value in (0,3,41,80):
             with self.assertRaises(ValueError): load.stage('http://127.0.0.1:1234','static',value,load.Budget())

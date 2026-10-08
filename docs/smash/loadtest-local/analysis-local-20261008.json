@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "origin": "http://127.0.0.1:59944",
+  "scenario": "analysis-local",
+  "userAgent": "SmashGT-LoadTest",
+  "production": false,
+  "startedAt": "2026-10-08T21:08:54.742942+00:00",
+  "hardLimits": {
+    "users": 40,
+    "requests": 2000,
+    "writeRequests": 10,
+    "stepSeconds": 60,
+    "timeoutSeconds": 4,
+    "wallSeconds": 1800
+  },
+  "counter": "excluded",
+  "responseBodiesStored": false,
+  "resources": null,
+  "steps": [
+    {
+      "users": 1,
+      "elapsedSeconds": 60.002,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 6,
+        "requestsPerSecond": 0.1,
+        "p50": 0.077555,
+        "p95": 0.084354,
+        "p99": 0.084354,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 6
+        },
+        "errorKinds": {},
+        "bodyBytes": 64530
+      },
+      "endpoints": {
+        "/analisis-api.php": {
+          "requests": 6,
+          "requestsPerSecond": 0.1,
+          "p50": 0.077555,
+          "p95": 0.084354,
+          "p99": 0.084354,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 6
+          },
+          "errorKinds": {},
+          "bodyBytes": 64530
+        }
+      },
+      "driverProcessCpuSeconds": 0.311
+    },
+    {
+      "users": 2,
+      "elapsedSeconds": 60.006,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 12,
+        "requestsPerSecond": 0.2,
+        "p50": 0.072756,
+        "p95": 0.083854,
+        "p99": 0.083854,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 12
+        },
+        "errorKinds": {},
+        "bodyBytes": 129060
+      },
+      "endpoints": {
+        "/analisis-api.php": {
+          "requests": 12,
+          "requestsPerSecond": 0.2,
+          "p50": 0.072756,
+          "p95": 0.083854,
+          "p99": 0.083854,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 12
+          },
+          "errorKinds": {},
+          "bodyBytes": 129060
+        }
+      },
+      "driverProcessCpuSeconds": 0.296
+    },
+    {
+      "users": 5,
+      "elapsedSeconds": 60.006,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 30,
+        "requestsPerSecond": 0.5,
+        "p50": 0.084372,
+        "p95": 0.147486,
+        "p99": 0.148014,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 30
+        },
+        "errorKinds": {},
+        "bodyBytes": 322650
+      },
+      "endpoints": {
+        "/analisis-api.php": {
+          "requests": 30,
+          "requestsPerSecond": 0.5,
+          "p50": 0.084372,
+          "p95": 0.147486,
+          "p99": 0.148014,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 30
+          },
+          "errorKinds": {},
+          "bodyBytes": 322650
+        }
+      },
+      "driverProcessCpuSeconds": 0.323
+    },
+    {
+      "users": 10,
+      "elapsedSeconds": 60.004,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 60,
+        "requestsPerSecond": 1.0,
+        "p50": 0.134528,
+        "p95": 0.238758,
+        "p99": 0.349757,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 60
+        },
+        "errorKinds": {},
+        "bodyBytes": 645300
+      },
+      "endpoints": {
+        "/analisis-api.php": {
+          "requests": 60,
+          "requestsPerSecond": 1.0,
+          "p50": 0.134528,
+          "p95": 0.238758,
+          "p99": 0.349757,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 60
+          },
+          "errorKinds": {},
+          "bodyBytes": 645300
+        }
+      },
+      "driverProcessCpuSeconds": 0.299
+    },
+    {
+      "users": 20,
+      "elapsedSeconds": 60.005,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 120,
+        "requestsPerSecond": 2.0,
+        "p50": 0.165943,
+        "p95": 0.338996,
+        "p99": 0.393178,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 120
+        },
+        "errorKinds": {},
+        "bodyBytes": 1290600
+      },
+      "endpoints": {
+        "/analisis-api.php": {
+          "requests": 120,
+          "requestsPerSecond": 2.0,
+          "p50": 0.165943,
+          "p95": 0.338996,
+          "p99": 0.393178,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 120
+          },
+          "errorKinds": {},
+          "bodyBytes": 1290600
+        }
+      },
+      "driverProcessCpuSeconds": 0.349
+    },
+    {
+      "users": 40,
+      "elapsedSeconds": 60.012,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 240,
+        "requestsPerSecond": 3.999,
+        "p50": 0.292924,
+        "p95": 0.56283,
+        "p99": 0.720183,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 240
+        },
+        "errorKinds": {},
+        "bodyBytes": 2581200
+      },
+      "endpoints": {
+        "/analisis-api.php": {
+          "requests": 240,
+          "requestsPerSecond": 3.999,
+          "p50": 0.292924,
+          "p95": 0.56283,
+          "p99": 0.720183,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 240
+          },
+          "errorKinds": {},
+          "bodyBytes": 2581200
+        }
+      },
+      "driverProcessCpuSeconds": 0.524
+    }
+  ],
+  "stopReason": "completed_capped_ladder",
+  "requestsAttempted": 468,
+  "writeRequestsAttempted": 0,
+  "finishedAt": "2026-10-08T21:15:54.830748+00:00",
+  "wallSeconds": 420.073,
+  "fixture": {
+    "rows": {
+      "players": 3435,
+      "events": 47,
+      "sets": 8985,
+      "games": 4787,
+      "game_selections": 9530,
+      "rankings": 376
+    },
+    "dbVersion": "13.0.2-MariaDB",
+    "phpWorkers": 4,
+    "compressedPublicBytes": 189182,
+    "publicBytes": 3067344,
+    "resourcePeaksCumulative": {
+      "phpRssKiB": 281120,
+      "dbThreadsRunning": 5,
+      "phpProcesses": 5
+    }
+  },
+  "falsePageViewsRecorded": 0,
+  "falsePageViewsInProduction": 0,
+  "writeVerified": true
+}
