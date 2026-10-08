@@ -27,6 +27,14 @@ TOURNAMENTS = """query($page:Int!,$after:Timestamp!,$before:Timestamp!){
   nodes{id name slug startAt endAt countryCode isOnline
    events(limit:30){id name slug numEntrants isOnline state startAt type videogame{id name}}}
  }}"""
+# Separate from TOURNAMENTS on purpose: who created a tournament is optional context for the
+# organizer tops, so a rejected or failed owner query must never block the weekly capture.
+OWNERS = """query($page:Int!,$after:Timestamp!,$before:Timestamp!){
+ tournaments(query:{page:$page,perPage:50,sortBy:"startAt desc",
+  filter:{countryCode:"GT",afterDate:$after,beforeDate:$before,videogameIds:[1386]}}){
+  pageInfo{total totalPages}
+  nodes{id city owner{id}}
+ }}"""
 ENTRANTS = """query($id:ID!,$page:Int!){event(id:$id){id
  entrants(query:{page:$page,perPage:100}){pageInfo{total totalPages}
   nodes{id name participants{player{PLAYER}}}}
@@ -105,6 +113,47 @@ def fetch_event(client, event):
     return record, players, matches
 
 
+def tournament_owners(client, start, end):
+    """Creator and city per tournament id, or None when start.gg does not answer the query."""
+    found = {}
+    try:
+        for page in range(1, 101):
+            data = client.query(OWNERS, {"page": page, "after": start, "before": end})["tournaments"]
+            total_pages = (data.get("pageInfo") or {}).get("totalPages")
+            if not isinstance(total_pages, int) or total_pages < 0 or total_pages > 100:
+                return None
+            for node in data.get("nodes") or []:
+                owner = (node.get("owner") or {}).get("id")
+                city = node.get("city")
+                found[str(node["id"])] = {"ownerId": str(owner) if owner is not None else None,
+                                          "city": city.strip() if isinstance(city, str) and city.strip() else None}
+            if page >= total_pages:
+                return found
+    except (APIError, KeyError, TypeError, AttributeError):
+        pass
+    return None
+
+
+def tournament_catalog(tournaments, reasons, owners):
+    """Every Ultimate tournament of the catalog with its creator, including the ones the ranking excludes."""
+    if owners is None:
+        return None
+    catalog = []
+    for tournament in tournaments:
+        events = [{"id": str(event.get("id")), "name": event.get("name"), "type": event.get("type"),
+                   "numEntrants": event.get("numEntrants"), "startAt": event.get("startAt"),
+                   "reason": reasons.get(str(event.get("id")))}
+                  for event in tournament.get("events") or []
+                  if str((event.get("videogame") or {}).get("id")) == str(GAME_ID)]
+        if not events:
+            continue
+        extra = owners.get(str(tournament.get("id"))) or {}
+        catalog.append({"id": str(tournament.get("id")), "name": tournament.get("name"), "slug": tournament.get("slug"),
+                        "startAt": tournament.get("startAt"), "city": extra.get("city"),
+                        "ownerId": extra.get("ownerId"), "events": events})
+    return sorted(catalog, key=lambda row: row["id"])
+
+
 def discover(client, start, end, *, max_events=None, include_small=False):
     tournaments = []
     for page in range(1, 101):
@@ -121,6 +170,7 @@ def discover(client, start, end, *, max_events=None, include_small=False):
 
     eligible = []
     excluded = []
+    reasons = {}
     for tournament in tournaments:
         for event in tournament.get("events") or []:
             if str((event.get("videogame") or {}).get("id")) != str(GAME_ID):
@@ -136,6 +186,7 @@ def discover(client, start, end, *, max_events=None, include_small=False):
                 reason = f"under_{LOCAL_MINIMUM_ACTIVE}_entrants"
             elif not isinstance(event.get("startAt"), int) or not start <= event["startAt"] < end:
                 reason = "outside_window"
+            reasons[str(event.get("id"))] = reason
             if reason:
                 excluded.append({"id": str(event.get("id")), "reason": reason})
             else:
@@ -153,6 +204,8 @@ def discover(client, start, end, *, max_events=None, include_small=False):
         matches.update(event_matches)
         event_records.append(record)
         print(f"{index}/{len(eligible)} {event['name']}: {record['entrantCountFetched']} participantes, {record['setsFetched']} sets", flush=True)
+    # After the event captures: the ranking data is already complete if this optional query fails.
+    catalog = tournament_catalog(tournaments, reasons, tournament_owners(client, start, end))
     countries = Counter((((p.get("user") or {}).get("location") or {}).get("country") or "unknown") for p in players.values())
     return {"kind": "national_discovery", "generatedAt": datetime.now(timezone.utc).isoformat(),
             "season": {"startInclusive": start, "endExclusive": end},
@@ -160,6 +213,7 @@ def discover(client, start, end, *, max_events=None, include_small=False):
             "tournamentsFound": len(tournaments), "candidateEventsFound": len([e for t in tournaments for e in t.get("events") or [] if str((e.get("videogame") or {}).get("id")) == str(GAME_ID)]),
             "excludedEvents": excluded, "events": event_records, "players": players, "sets": matches,
             "countryCounts": dict(countries), "requests": client.calls,
+            "tournamentCatalog": catalog,
             "selectionNote": ("Estudio: todos los eventos presenciales singles con inscritos conocidos; aún requieren evaluación de DQ, puntos y exclusiones editoriales."
                               if include_small else "Provisional: eventos presenciales singles con al menos 20 inscritos; solo se admiten al cálculo los que tengan 20 jugadores activos; faltan DQ, excepciones por valor de jugadores y exclusiones editoriales de UltRank.")}
 
