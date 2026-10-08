@@ -12,6 +12,14 @@ Options -Indexes
 # Stable public address of an organizer's top: /top/{slug}.
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # Keep certificate-validation files reachable on their original HTTP hostname.
+  RewriteRule ^\.well-known/(acme-challenge|pki-validation)/ - [L]
+  # One canonical origin; 308 preserves methods/bodies and leaves other hosts untouched.
+  RewriteCond %{HTTP_HOST} ^www\.rankingsmashbros\.com(?::[0-9]+)?$ [NC]
+  RewriteRule ^ https://rankingsmashbros.com%{REQUEST_URI} [R=308,L,NE]
+  RewriteCond %{HTTP_HOST} ^rankingsmashbros\.com(?::[0-9]+)?$ [NC]
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://rankingsmashbros.com%{REQUEST_URI} [R=308,L,NE]
   RewriteRule ^top/([a-z0-9-]{1,60})/?$ top.php?o=$1 [L]
 </IfModule>
 

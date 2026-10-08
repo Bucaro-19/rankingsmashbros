@@ -1,5 +1,6 @@
 import copy
 import ftplib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -24,6 +25,15 @@ def snapshot():
 
 
 class ExportTests(unittest.TestCase):
+    def test_seo_artifacts_in_publication_allowlist_and_shared_publication_lock(self):
+        for name in ('robots.txt', 'sitemap.xml'):
+            self.assertIn(name, FILES)
+        root = Path(__file__).resolve().parents[2]
+        for name in ('smash-publish.yml', 'smash-deploy-snapshot.yml', 'smash-characters.yml'):
+            workflow = (root / '.github/workflows' / name).read_text()
+            self.assertIn('group: smash-gt-publication', workflow)
+            self.assertIn('cancel-in-progress: false', workflow)
+
     def test_foreign_opponents_are_context_not_national_roster(self):
         result = export(snapshot())
         self.assertEqual([p["id"] for p in result["players"]], ["1"])
@@ -60,6 +70,10 @@ class ExportTests(unittest.TestCase):
             for name in FILES:
                 (source / name).parent.mkdir(parents=True, exist_ok=True)
                 (source / name).write_text("test")
+            public = {'generatedAt': '2026-10-04T11:43:18.348499+00:00'}
+            for name, data in [('public', public), ('analisis-top20', {'cut': '2026-10-02T22:33:45Z'}),
+                               ('analisis-torneos', {'snapshotAt': '2026-09-29T16:05:57Z'})]:
+                (source / ('data/' + name + '.json')).write_text(json.dumps(data))
             with patch.dict("os.environ", {"SMASH_FTP_DIR": ""}):
                 deploy(ftp, source)
             self.assertEqual(ftp.cwd.call_args_list[0].args, ("ranking-smash-ultimate",))
@@ -69,12 +83,15 @@ class ExportTests(unittest.TestCase):
             self.assertEqual(root_ftp.cwd.call_args_list[0].args, ("data",))
             with patch.dict("os.environ", {"SMASH_FTP_DIR": "../otro"}), self.assertRaises(ValueError):
                 deploy(Mock(), source)
-            self.assertEqual(ftp.rename.call_args_list[-1].args[1], "data/public.json")
+            self.assertEqual(ftp.rename.call_args_list[-2].args[1], "data/public.json")
+            self.assertEqual(ftp.rename.call_args_list[-1].args[1], "sitemap.xml")
             ftp.delete.assert_not_called()
             assets_ftp = Mock()
+            assets_ftp.retrbinary.side_effect = lambda command, callback: callback(json.dumps(public).encode())
             deploy(assets_ftp, source, assets_only=True)
             self.assertNotIn("data/public.json", [call.args[1] for call in assets_ftp.rename.call_args_list])
             secured_ftp = Mock()
+            secured_ftp.retrbinary.side_effect = lambda command, callback: callback(json.dumps(public).encode())
             admin_hash = "$2y$12$" + "A" * 53
             deploy(secured_ftp, source, assets_only=True, admin_hash=admin_hash)
             self.assertIn("admin-auth.php", [call.args[1] for call in secured_ftp.rename.call_args_list])
