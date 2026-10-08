@@ -29,7 +29,7 @@ MariaDB local 13.0.2, PyMySQL 1.1.2, Python 3.9. Fuente Oct4, personajes captura
 | Aplicar en base desechable | 1.941 s | 257,785,856 bytes |
 | Repetir aplicación desechable | 1.606 s | 248,922,112 bytes |
 
-El máximo (~246 MiB) está bajo 512 MiB; corresponde a este CLI Python, **no al worker PHP de BanaHosting**. No se cambió el worker. Las nueve pruebas del contexto verifican anclaje, relaciones/mains, rollback, repetición, inmutabilidad de doce tablas y protección de contexto posterior; se añadieron al CI MySQL 8.0/MariaDB 10.11. Estado de la CI en EN-CURSO.
+El máximo (~246 MiB) está bajo 512 MiB; corresponde a este CLI Python, **no al worker PHP de BanaHosting**. No se cambió el worker. Las nueve pruebas del contexto verifican anclaje, relaciones/mains, rollback, repetición, inmutabilidad de doce tablas y protección de contexto posterior; se añadieron al CI MySQL 8.0/MariaDB 10.11. Matriz y contratos correctos en run `37713902599` sobre `93391f8`; el primer intento tuvo el fallo intermitente preexistente de encuesta, no de contexto. Detalle y reintento en EN-CURSO. [PR #43](https://github.com/Bucaro-19/rankingsmashbros/pull/43), sin fusionar.
 
 ### Pendiente: simulación de producción y orden de escritura
 
