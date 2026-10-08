@@ -2,6 +2,18 @@
 
 
 
+## Codex — carga controlada, 8/oct (PR #61; producción pendiente)
+
+[PR #61](https://github.com/Bucaro-19/rankingsmashbros/pull/61), rama `feat/controlled-load-test`: iniciada desde `origin/main` `0a99525` (#59), actualizada sobre `54d7d45` (#62) y `75e36da` (#63) preservando las notas/cambios de Claude. Auditoría inicial: árbol limpio, origin `Bucaro-19/rankingsmashbros`, CI main [37837761788](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37837761788) correcta; main actualizado también tiene CI [37843876447](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37843876447) correcta. La carpeta local ajena `social/` apareció después y no se tocó ni versionó.
+
+- Guion Python estándar: plan sin HTTP por defecto, escalera 1/2/5/10/20/40 × 60 s, techo 40 y 2,000 peticiones compartidas; freno inmediato >1 % de errores o p95 >3 s (también por endpoint), sin reintentos/redirects/orígenes arbitrarios. UA `SmashGT-LoadTest`, bloqueo de ejecuciones paralelas, informes sin bodies/credenciales. Producción exige orden/ventana/captura/límites, bloquea fines de semana y espera entre escalones para excluir el cron. **Nunca se ejecutó contra producción.**
+- Laboratorio aislado: esquema completo, paquete Oct4 ya guardado (sin red/start.gg), 3,435 jugadores / 8,985 sets / 4,787 games. Principal hasta 40: **1,482 peticiones, cero errores, p95 42 ms**; 78 JSON 200 / 468 JSON 304. Estático, PHP sin SQL y PHP con lectura completaron también 40 sin errores. Escritura separada solo local: 1/2 visitantes, **9 POST y 9 visitas verificadas en SQL**; techo 10. **Cero visitas falsas en producción.** No recurso observado agotado; hosting y punto de degradación todavía desconocidos.
+- Análisis con sesión **completo hasta 40**, 468 respuestas 200, cero errores, p95 **569 ms** a 40 (main #63, incluye `deep`). Primer intento inválido: 401 con sesiones sembradas >24 min antes, superando la retención por defecto de PHP; el fixture no garantizaba una sesión viva. Se renuevan por CLI justo antes de medir, sin modificar sesiones del producto. Repetición con `local_run.py` comprobada de punta a punta: crea y limpia su MariaDB/base/sesiones. No interpretar el 401 como capacidad K=1. Seis perfiles sanos: **4,377 peticiones**; resultados agregados/CSV en `docs/smash/loadtest-local/`. Solo escritura se limitó a 2; ningún recurso observado se agotó, M/K locales no alcanzados.
+- Cambio posterior de Claude #63: `analisis.php` amplió el trabajo con `deep`. Se conserva al rebasar, CI main [37844861903](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37844861903) correcta, y se repitió solo el análisis con el main nuevo: completo hasta 40, 468 respuestas 200, p95 569 ms, cero errores. Los 563 ms se conservan en `analysis-before-deep-20261008.json` como referencia anterior; no se mezclan con la suma principal. No tocar sus pantallas/lógica.
+- **17 pruebas de seguridad/HTTP y 62 regresiones del pipeline** locales; CI inicial propia y matriz **MySQL 8.0/MariaDB 10.11** correctas ([37841853323](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37841853323), [37841853447](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37841853447)); verificar los checks finales de la PR tras este rebase/documentación; sobre `c1ad309` también pasaron [matriz y contratos](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37845659907) y [17 controles del medidor](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37845659797). Scripts fuera de FILES/FTP. Ningún archivo del sitio, cálculo, JSON, cuentas, premium o encuesta cambiado. Reproducción y comando de producción en [PRUEBA-DE-CARGA.md](PRUEBA-DE-CARGA.md).
+- Falta captura cPanel Uso de recursos (solicitada), límites/uso/fallos del plan y duración del worker. Producción espera **orden expresa y horario** elegido por el dueño de madrugada lunes–viernes. Sin fusión, despliegue, cambios de cron ni escrituras en producción.
+
+
 
 ## Guía de matchups con fuentes, límites del hosting y fase de agenda (9/oct)
 
@@ -42,6 +54,8 @@
 - 59 pruebas de pipeline/SEO y 12 JS correctas; XML, JSON-LD y contratos validados. Chrome: 6 páginas × escritorio 1440 y móvil 375, texto/estructura visual iguales a main, sin overflow; 24 capturas y comparación en `/tmp/smash-seo-review/`; portada repetida sobre main #57 en ambos tamaños (4 capturas más), también idéntica. Apache local: redirecciones HTTP/TLS, POST, hosts locales, ACME y MIME correctos. CI de la implementación `6b96631` completa en verde (check + MySQL 8.0 + MariaDB 10.11): [37832700934](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37832700934). Ver además los checks actuales de la PR tras este commit de documentación.
 - Propuesta sin JS: ampliar el noscript existente con resumen top 10 generado del corte y escapado; **no implementada**, porque el encargo pide propuesta y la presentación sin JS requiere aprobación/handoff si cambia. Search Console: pasos exactos DNS TXT o HTML + envío de sitemap en la guía y la PR, **no registrado por el agente**.
 - Pendiente: aprobar imagen y decidir promoción de encuesta, revisar PR y dar orden de fusión/despliegue. Nunca se escribió SQL ni se desplegó esta entrega.
+
+
 
 
 

@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "origin": "http://127.0.0.1:54045",
+  "scenario": "php-write",
+  "userAgent": "SmashGT-LoadTest",
+  "production": false,
+  "startedAt": "2026-10-08T21:02:10.374721+00:00",
+  "hardLimits": {
+    "users": 40,
+    "requests": 2000,
+    "writeRequests": 10,
+    "stepSeconds": 60,
+    "timeoutSeconds": 4,
+    "wallSeconds": 1800
+  },
+  "counter": "local_only_verify_sql_delta",
+  "responseBodiesStored": false,
+  "resources": null,
+  "steps": [
+    {
+      "users": 1,
+      "elapsedSeconds": 60.004,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 3,
+        "requestsPerSecond": 0.05,
+        "p50": 0.005216,
+        "p95": 0.008943,
+        "p99": 0.008943,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "204": 3
+        },
+        "errorKinds": {},
+        "bodyBytes": 0
+      },
+      "endpoints": {
+        "/visita.php": {
+          "requests": 3,
+          "requestsPerSecond": 0.05,
+          "p50": 0.005216,
+          "p95": 0.008943,
+          "p99": 0.008943,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "204": 3
+          },
+          "errorKinds": {},
+          "bodyBytes": 0
+        }
+      },
+      "driverProcessCpuSeconds": 0.254
+    },
+    {
+      "users": 2,
+      "elapsedSeconds": 60.005,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 6,
+        "requestsPerSecond": 0.1,
+        "p50": 0.006081,
+        "p95": 0.007125,
+        "p99": 0.007125,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "204": 6
+        },
+        "errorKinds": {},
+        "bodyBytes": 0
+      },
+      "endpoints": {
+        "/visita.php": {
+          "requests": 6,
+          "requestsPerSecond": 0.1,
+          "p50": 0.006081,
+          "p95": 0.007125,
+          "p99": 0.007125,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "204": 6
+          },
+          "errorKinds": {},
+          "bodyBytes": 0
+        }
+      },
+      "driverProcessCpuSeconds": 0.261
+    }
+  ],
+  "stopReason": "completed_capped_ladder",
+  "requestsAttempted": 9,
+  "writeRequestsAttempted": 9,
+  "finishedAt": "2026-10-08T21:04:30.400264+00:00",
+  "wallSeconds": 140.024,
+  "fixture": {
+    "rows": {
+      "players": 3435,
+      "events": 47,
+      "sets": 8985,
+      "games": 4787,
+      "game_selections": 9530,
+      "rankings": 376
+    },
+    "dbVersion": "13.0.2-MariaDB",
+    "phpWorkers": 4,
+    "compressedPublicBytes": 189182,
+    "publicBytes": 3067344,
+    "resourcePeaksCumulative": {
+      "phpRssKiB": 49984,
+      "dbThreadsRunning": 1,
+      "phpProcesses": 5
+    }
+  },
+  "falsePageViewsRecorded": 9,
+  "falsePageViewsInProduction": 0
+}

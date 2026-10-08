@@ -1,0 +1,449 @@
+{
+  "schemaVersion": 1,
+  "origin": "http://127.0.0.1:54045",
+  "scenario": "static",
+  "userAgent": "SmashGT-LoadTest",
+  "production": false,
+  "startedAt": "2026-10-08T20:41:10.141597+00:00",
+  "hardLimits": {
+    "users": 40,
+    "requests": 2000,
+    "writeRequests": 10,
+    "stepSeconds": 60,
+    "timeoutSeconds": 4,
+    "wallSeconds": 1800
+  },
+  "counter": "excluded",
+  "responseBodiesStored": false,
+  "resources": null,
+  "steps": [
+    {
+      "users": 1,
+      "elapsedSeconds": 60.006,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 19,
+        "requestsPerSecond": 0.317,
+        "p50": 0.000582,
+        "p95": 0.004249,
+        "p99": 0.004249,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 13,
+          "304": 6
+        },
+        "errorKinds": {},
+        "bodyBytes": 256928
+      },
+      "endpoints": {
+        "/": {
+          "requests": 6,
+          "requestsPerSecond": 0.1,
+          "p50": 0.001958,
+          "p95": 0.004249,
+          "p99": 0.004249,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 6
+          },
+          "errorKinds": {},
+          "bodyBytes": 18354
+        },
+        "/arena.css": {
+          "requests": 6,
+          "requestsPerSecond": 0.1,
+          "p50": 0.000422,
+          "p95": 0.000493,
+          "p99": 0.000493,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 6
+          },
+          "errorKinds": {},
+          "bodyBytes": 49392
+        },
+        "/data/public.json": {
+          "requests": 7,
+          "requestsPerSecond": 0.117,
+          "p50": 0.000582,
+          "p95": 0.000877,
+          "p99": 0.000877,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 1,
+            "304": 6
+          },
+          "errorKinds": {},
+          "bodyBytes": 189182
+        }
+      },
+      "driverProcessCpuSeconds": 0.319
+    },
+    {
+      "users": 2,
+      "elapsedSeconds": 60.006,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 38,
+        "requestsPerSecond": 0.633,
+        "p50": 0.001125,
+        "p95": 0.005135,
+        "p99": 0.020719,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 26,
+          "304": 12
+        },
+        "errorKinds": {},
+        "bodyBytes": 513856
+      },
+      "endpoints": {
+        "/": {
+          "requests": 12,
+          "requestsPerSecond": 0.2,
+          "p50": 0.00327,
+          "p95": 0.005135,
+          "p99": 0.005135,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 12
+          },
+          "errorKinds": {},
+          "bodyBytes": 36708
+        },
+        "/arena.css": {
+          "requests": 12,
+          "requestsPerSecond": 0.2,
+          "p50": 0.0008,
+          "p95": 0.020719,
+          "p99": 0.020719,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 12
+          },
+          "errorKinds": {},
+          "bodyBytes": 98784
+        },
+        "/data/public.json": {
+          "requests": 14,
+          "requestsPerSecond": 0.233,
+          "p50": 0.000779,
+          "p95": 0.001198,
+          "p99": 0.001198,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 2,
+            "304": 12
+          },
+          "errorKinds": {},
+          "bodyBytes": 378364
+        }
+      },
+      "driverProcessCpuSeconds": 0.369
+    },
+    {
+      "users": 5,
+      "elapsedSeconds": 60.005,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 95,
+        "requestsPerSecond": 1.583,
+        "p50": 0.002417,
+        "p95": 0.010337,
+        "p99": 0.020725,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 65,
+          "304": 30
+        },
+        "errorKinds": {},
+        "bodyBytes": 1284640
+      },
+      "endpoints": {
+        "/": {
+          "requests": 30,
+          "requestsPerSecond": 0.5,
+          "p50": 0.004753,
+          "p95": 0.009364,
+          "p99": 0.010894,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 30
+          },
+          "errorKinds": {},
+          "bodyBytes": 91770
+        },
+        "/arena.css": {
+          "requests": 30,
+          "requestsPerSecond": 0.5,
+          "p50": 0.001231,
+          "p95": 0.010337,
+          "p99": 0.010508,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 30
+          },
+          "errorKinds": {},
+          "bodyBytes": 246960
+        },
+        "/data/public.json": {
+          "requests": 35,
+          "requestsPerSecond": 0.583,
+          "p50": 0.001745,
+          "p95": 0.010606,
+          "p99": 0.020725,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 5,
+            "304": 30
+          },
+          "errorKinds": {},
+          "bodyBytes": 945910
+        }
+      },
+      "driverProcessCpuSeconds": 0.429
+    },
+    {
+      "users": 10,
+      "elapsedSeconds": 60.005,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 190,
+        "requestsPerSecond": 3.166,
+        "p50": 0.003429,
+        "p95": 0.019279,
+        "p99": 0.067739,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 130,
+          "304": 60
+        },
+        "errorKinds": {},
+        "bodyBytes": 2569280
+      },
+      "endpoints": {
+        "/": {
+          "requests": 60,
+          "requestsPerSecond": 1.0,
+          "p50": 0.007951,
+          "p95": 0.012481,
+          "p99": 0.097016,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 60
+          },
+          "errorKinds": {},
+          "bodyBytes": 183540
+        },
+        "/arena.css": {
+          "requests": 60,
+          "requestsPerSecond": 1.0,
+          "p50": 0.001253,
+          "p95": 0.019958,
+          "p99": 0.040251,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 60
+          },
+          "errorKinds": {},
+          "bodyBytes": 493920
+        },
+        "/data/public.json": {
+          "requests": 70,
+          "requestsPerSecond": 1.167,
+          "p50": 0.00258,
+          "p95": 0.012188,
+          "p99": 0.030483,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 10,
+            "304": 60
+          },
+          "errorKinds": {},
+          "bodyBytes": 1891820
+        }
+      },
+      "driverProcessCpuSeconds": 0.548
+    },
+    {
+      "users": 20,
+      "elapsedSeconds": 60.006,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 380,
+        "requestsPerSecond": 6.333,
+        "p50": 0.005657,
+        "p95": 0.016425,
+        "p99": 0.039985,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 260,
+          "304": 120
+        },
+        "errorKinds": {},
+        "bodyBytes": 5138560
+      },
+      "endpoints": {
+        "/": {
+          "requests": 120,
+          "requestsPerSecond": 2.0,
+          "p50": 0.011089,
+          "p95": 0.018691,
+          "p99": 0.05251,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 120
+          },
+          "errorKinds": {},
+          "bodyBytes": 367080
+        },
+        "/arena.css": {
+          "requests": 120,
+          "requestsPerSecond": 2.0,
+          "p50": 0.003489,
+          "p95": 0.012009,
+          "p99": 0.039985,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 120
+          },
+          "errorKinds": {},
+          "bodyBytes": 987840
+        },
+        "/data/public.json": {
+          "requests": 140,
+          "requestsPerSecond": 2.333,
+          "p50": 0.004304,
+          "p95": 0.011525,
+          "p99": 0.020198,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 20,
+            "304": 120
+          },
+          "errorKinds": {},
+          "bodyBytes": 3783640
+        }
+      },
+      "driverProcessCpuSeconds": 0.774
+    },
+    {
+      "users": 40,
+      "elapsedSeconds": 60.006,
+      "complete": true,
+      "stopReason": null,
+      "metrics": {
+        "requests": 760,
+        "requestsPerSecond": 12.665,
+        "p50": 0.011299,
+        "p95": 0.032103,
+        "p99": 0.043395,
+        "errors": 0,
+        "errorRate": 0.0,
+        "statusCounts": {
+          "200": 520,
+          "304": 240
+        },
+        "errorKinds": {},
+        "bodyBytes": 10277120
+      },
+      "endpoints": {
+        "/": {
+          "requests": 240,
+          "requestsPerSecond": 4.0,
+          "p50": 0.015143,
+          "p95": 0.034614,
+          "p99": 0.040583,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 240
+          },
+          "errorKinds": {},
+          "bodyBytes": 734160
+        },
+        "/arena.css": {
+          "requests": 240,
+          "requestsPerSecond": 4.0,
+          "p50": 0.010761,
+          "p95": 0.028979,
+          "p99": 0.051105,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 240
+          },
+          "errorKinds": {},
+          "bodyBytes": 1975680
+        },
+        "/data/public.json": {
+          "requests": 280,
+          "requestsPerSecond": 4.666,
+          "p50": 0.009575,
+          "p95": 0.026674,
+          "p99": 0.040685,
+          "errors": 0,
+          "errorRate": 0.0,
+          "statusCounts": {
+            "200": 40,
+            "304": 240
+          },
+          "errorKinds": {},
+          "bodyBytes": 7567280
+        }
+      },
+      "driverProcessCpuSeconds": 1.314
+    }
+  ],
+  "stopReason": "completed_capped_ladder",
+  "requestsAttempted": 1482,
+  "writeRequestsAttempted": 0,
+  "finishedAt": "2026-10-08T20:48:10.212928+00:00",
+  "wallSeconds": 420.068,
+  "fixture": {
+    "rows": {
+      "players": 3435,
+      "events": 47,
+      "sets": 8985,
+      "games": 4787,
+      "game_selections": 9530,
+      "rankings": 376
+    },
+    "dbVersion": "13.0.2-MariaDB",
+    "phpWorkers": 4,
+    "compressedPublicBytes": 189182,
+    "publicBytes": 3067344,
+    "resourcePeaksCumulative": {
+      "phpRssKiB": 49936,
+      "dbThreadsRunning": 1,
+      "phpProcesses": 5
+    }
+  },
+  "falsePageViewsRecorded": 0,
+  "falsePageViewsInProduction": 0
+}
