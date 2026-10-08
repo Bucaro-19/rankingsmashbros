@@ -1,0 +1,20 @@
+name: Comprobar dueños de torneos en start.gg
+# Consulta de un solo uso, solo lectura. Imprime conteos agregados, sin identificadores.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Consultar el dueño de cada torneo del corte
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        run: python scripts/smash/probe_owners.py
