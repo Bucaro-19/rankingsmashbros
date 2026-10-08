@@ -2,7 +2,7 @@
 
 ## Codex — SEO técnico preparado, 8/oct (PR pendiente; sin publicar)
 
-Rama `feat/technical-seo`, desde `origin/main` `a6cec03` (#56). Auditoría previa: árbol limpio, mismo origin `Bucaro-19/rankingsmashbros`, CI main `37828965177` correcta. Los cambios posteriores de Claude #57 (`01babf6`, caché y tolerancia de la portada) se conservarán al actualizar la rama. Detalle/relevo: [SEO-TECNICO.md](SEO-TECNICO.md).
+Rama `feat/technical-seo`, desde `origin/main` `a6cec03` (#56). Auditoría previa: árbol limpio, mismo origin `Bucaro-19/rankingsmashbros`, CI main `37828965177` correcta. Los cambios posteriores de Claude #57 (`01babf6`, caché y tolerancia de la portada) se conservaron al actualizar la rama sobre `01babf6` (CI main `37830748351` correcta). Detalle/relevo: [SEO-TECNICO.md](SEO-TECNICO.md).
 
 - Robots + sitemap para cuatro páginas públicas; canonical/social propios y JSON-LD WebSite/Organization en portada. Cuenta: solo noindex; análisis ya lo tenía. Imagen OG preparada **comentada** (falta imagen aprobada de Claude Design); encuesta fuera del sitemap hasta decisión del dueño en PR, sin tocarla. Sin cambios en diseño, cálculo, JSON, premium, visitas ni módulos de organizadores.
 - Sitemap generado por deploy.py; fechas reales de corte/estudios, no reloj del deploy. En assets-only lee solo el JSON público vigente por FTP; si no puede comprobar fechas falla antes de subir. Metadata se renombra al final, después del corte; fallos se reportan, no quedan silenciosos. FILES/test_publish y prueba SEO incluidos. Mismo grupo de concurrencia preservado.
