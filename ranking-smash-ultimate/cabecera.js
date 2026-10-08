@@ -4,7 +4,7 @@
   const link=document.getElementById('account-link');
   if(!link)return;
   const show=tag=>{
-    if(typeof tag!=='string'||!tag.trim()){link.textContent='Tu cuenta · Beta';link.removeAttribute('aria-label');return;}
+    if(typeof tag!=='string'||!tag.trim()){link.textContent='Iniciar sesión';link.removeAttribute('aria-label');return;}
     const name=tag.trim();
     link.textContent=name.length>18?`${name.slice(0,17)}…`:name;link.setAttribute('aria-label',`Tu cuenta: ${name}`);
   };

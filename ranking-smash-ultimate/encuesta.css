@@ -68,3 +68,5 @@
 .page-read .error .message-mark{background:var(--red)}
 @keyframes survey-spin{to{transform:rotate(360deg)}}
 @media(max-width:700px){.page-read .survey-page{padding:32px 16px 64px}.page-read .survey-question,.page-read .survey-optional{padding:16px}.page-read .survey-question legend{font-size:28px}.page-read .survey-hero h1{font-size:clamp(54px,14.7vw,78px)}.page-read .choices label{padding:12px;gap:12px}.page-read .scale-choices label{padding:8px 4px}}
+/* En móvil el encabezado queda fijo arriba: la barra de avance se acomoda debajo. */
+@media(max-width:700px){.page-read .survey-progress{top:56px}}

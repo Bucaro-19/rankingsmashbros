@@ -16,6 +16,16 @@
 - **19 pruebas nuevas y 81 de pipeline Python** correctas; ver checks finales de la PR. No cambios en discover, cálculo, public.json, SQL, páginas/cuentas/premium/encuesta. La pantalla la hace Claude Code con Claude Design. Pendiente orden de fusión/despliegue y activar el diario tras comprobar el primer envío. **No se fusionó, publicó ni activó el scheduler.**
 
 
+## Cuentas ya no dicen «próximamente» ni «beta»; encabezado fijo en móvil (8/oct, tarde)
+
+Pedido por el dueño, que ya va a compartir el sitio.
+
+- Portada: el bloque de la carta de jugador deja de decir «Próximamente · Cuentas» y «así podría verse»; ahora invita a entrar con start.gg con el botón «Continuar con start.gg →».
+- Encabezado: el enlace «Tu cuenta · Beta» pasa a «Iniciar sesión» (con sesión sigue mostrando el alias). En la pantalla de entrada y la de bienvenida, «Cuentas · Beta» pasa a «Tu cuenta».
+- Móvil (≤ 700 px): el encabezado queda fijo arriba en una sola fila (marca GT y enlaces), para llegar a la cuenta sin volver al inicio de la página. En la cuenta, lo mismo hasta 859 px. En «Tu opinión» la barra de avance se acomoda debajo.
+- Sin diseño de Claude Design: son cambios de texto y de posición sobre componentes existentes. Revisado en navegador a 375 px (portada, método, cuenta), sin desbordes ni errores. Pruebas de publicación, scripts y encuesta en verde.
+- El dueño quiere ser premium con su propia cuenta: se le recomendó suscribirse él mismo, que además es la prueba pendiente de un pago real de punta a punta.
+
 ## Medición de carga en producción programada (orden del dueño, 8/oct 16:00)
 
 - **#61 (prueba de carga, Codex) fusionado por orden del dueño** como `6a5d5f0`, tras resolver el cruce de este archivo conservando ambos bloques; CI de la PR y de main en verde. Nada que desplegar.

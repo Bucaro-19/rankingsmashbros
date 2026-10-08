@@ -378,3 +378,17 @@ dialog > a { color: #ffe364; }
 .podium-card>img.is-tight { height:100%; bottom:0; right:0; }
 #drawer-art img.is-tight { height:100%; bottom:0; right:0; }
 @media(max-width:620px) { #main-chips { flex-wrap:nowrap; overflow-x:auto; padding:4px 0 10px; max-width:100%; scrollbar-width:thin; }.main-chip { flex:none; }.main-filter { flex-direction:column; align-items:stretch; }.drawer-stats strong { font-size:24px; }.drawer-stats>div { padding:12px 10px; } }
+
+/* Entrada a la cuenta desde el bloque de la carta de jugador. */
+.preview-cta { display:inline-flex; align-items:center; justify-content:center; min-height:56px; margin-top:18px; padding:0 24px; background:#0B0F1A; color:#F4F1EA; transform:skewX(-10deg); font:800 15px 'Archivo',sans-serif; text-transform:uppercase; letter-spacing:.04em; text-decoration:none; }
+.preview-cta span { display:inline-block; transform:skewX(10deg); }
+.preview-cta:hover { background:#49A6E9; color:#0B0F1A; text-decoration:none; }
+/* Móvil: el encabezado acompaña al desplazarse, en una sola fila, para llegar a la cuenta sin volver arriba. */
+@media(max-width:700px) {
+  .smash-redesign .gt-header { position:sticky; top:0; z-index:30; background:#0B0F1A; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:8px; padding:6px 12px; }
+  .smash-redesign.page-read .gt-header { flex-direction:row; align-items:center; gap:8px; padding-bottom:6px; }
+  .smash-redesign .gt-brand > span:last-child { display:none; }
+  .smash-redesign .gt-header nav { flex:1; min-width:0; flex-wrap:nowrap; justify-content:flex-end; gap:2px; overflow-x:auto; scrollbar-width:none; }
+  .smash-redesign .gt-header nav::-webkit-scrollbar { display:none; }
+  .smash-redesign .gt-header nav a { flex:none; padding:10px 8px; font-size:12px; white-space:nowrap; }
+}
