@@ -16,7 +16,7 @@ Las copias temporales anteriores desaparecieron al reiniciar la Mac. Se recupera
 - Captura V2: `a9e43b90421e56a4eaf5912ee294608b459ffbebd42e934de1f571c4bb068def`.
 - Contexto: `853b8788e264ad8e302c8dc62657f4e4506503b8d98e2be9656048ebf466f109`.
 
-Archivos privados en `/tmp/smash-initial-context/` (carpeta 700, paquetes 600). Son temporales; conservarlos fuera de Git antes de reiniciar o expirar los artefactos. No subir el paquete de prueba ni las capturas al sitio público. No sustituir public por `public-mains.json` antiguo: le faltan algunos playerTags.
+Fuentes/capturas recuperadas en `/tmp/smash-initial-context/` (700). Los tres paquetes necesarios (`ranking-original.json`, `ranking-v2.json`, `context-oct4.json`) se conservaron además en `~/.smash-gt-context-oct4-20261007/`, fuera de Git y /tmp, carpeta 700 / archivos 600; copia verificada byte a byte. Esa copia sobrevive a un reinicio y no depende de la retención del artefacto. No subir el paquete de prueba ni las capturas al sitio público. No sustituir public por `public-mains.json` antiguo: le faltan algunos playerTags.
 
 ### Medición comprobada SOLO en la base desechable de la Mac
 
@@ -36,12 +36,15 @@ El máximo (~246 MiB) está bajo 512 MiB; corresponde a este CLI Python, **no al
 **No se escribió producción. Tampoco se pudo completar la simulación de producción:** el servidor rechazó la conexión desde el router actual. El dueño no puede acceder ahora a cPanel; no se cambió Remote MySQL ni se solicitó una contraseña. Cuando la Mac vuelva a una IP autorizada (o el dueño autorice la nueva IP específica), desde la rama de esta entrega:
 
 ```sh
-# Construcción offline ya ejecutada; una nueva salida debe tener otro nombre si existe.
-/tmp/smash-db-runtime/bin/python scripts/database/game_context.py build /tmp/smash-initial-context/ranking-original.json /tmp/smash-initial-context/ranking-v2.json /tmp/smash-initial-context/context-oct4.json --cut-id 1
+# Si desapareció el runtime temporal, recrearlo (sin tocar credenciales):
+python3 -m venv /tmp/smash-db-runtime
+/tmp/smash-db-runtime/bin/pip install PyMySQL==1.1.2
+# Construcción offline YA ejecutada. No repetir sobre la misma salida existente.
+/tmp/smash-db-runtime/bin/python scripts/database/game_context.py build /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-original.json /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-v2.json /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/context-oct4.json --cut-id 1
 # Primero SOLO lectura: usa el ~/.my.cnf privado del dueño, sin imprimirlo.
-/tmp/smash-db-runtime/bin/python scripts/database/game_context.py load /tmp/smash-initial-context/context-oct4.json --original /tmp/smash-initial-context/ranking-original.json --database ivcjgjlk_smash
+/tmp/smash-db-runtime/bin/python scripts/database/game_context.py load /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/context-oct4.json --original /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-original.json --database ivcjgjlk_smash
 # NO ejecutar sin revisar la simulación y recibir orden expresa del dueño:
-/tmp/smash-db-runtime/bin/python scripts/database/game_context.py load /tmp/smash-initial-context/context-oct4.json --original /tmp/smash-initial-context/ranking-original.json --database ivcjgjlk_smash --apply
+/tmp/smash-db-runtime/bin/python scripts/database/game_context.py load /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/context-oct4.json --original /Users/joseaurelioporras/.smash-gt-context-oct4-20261007/ranking-original.json --database ivcjgjlk_smash --apply
 ```
 
 La simulación pendiente imprimirá solo conteos, hashes, tiempo y memoria; no contenido privado ni errores del driver. Si ya corrió el corte del 11/oct, **no forzar esta carga**: el circuito semanal V2 ya trae games. Comparar contra la captura vigente y preparar un nuevo encargo para cualquier contexto histórico faltante. No renombrar hashes ni vaciar tablas para saltar la protección.
