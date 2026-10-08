@@ -30,9 +30,27 @@ const AT = 1790000000; // 2026-09-21 14:13:20 UTC
 // Contract shared with the form handler and the importer.
 verify(SMASH_SURVEY_OPTIONS === SMASH_SURVEY_CHOICES, 'web form and importer accept the same options');
 verify(SMASH_SURVEY_INTERNAL_TEST_PREFIX === SMASH_SURVEY_TEST_PREFIX, 'one rule marks internal test entries');
-$form = file_get_contents(dirname(__DIR__, 2) . '/ranking-smash-ultimate/encuesta.php');
+$formPath = dirname(__DIR__, 2) . '/ranking-smash-ultimate/encuesta.php';
+$form = file_get_contents($formPath);
+// Assert the options visitors actually receive, now rendered from presentation metadata.
+// GET opens no SQL connection; isolate its generated session in a disposable folder.
+$formSessions = sys_get_temp_dir() . '/smash-survey-form-' . bin2hex(random_bytes(8));
+mkdir($formSessions, 0700);
+try {
+    $process = proc_open([PHP_BINARY, '-d', 'session.save_path=' . $formSessions, '-r',
+        '$_SERVER["REQUEST_METHOD"]="GET";require $argv[1];', $formPath],
+        [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+    verify(is_resource($process), 'form GET renderer starts');
+    fclose($pipes[0]);
+    $formMarkup = stream_get_contents($pipes[1]); fclose($pipes[1]);
+    $formErrors = stream_get_contents($pipes[2]); fclose($pipes[2]);
+    verify(proc_close($process) === 0 && $formErrors === '', 'form GET renders without errors');
+} finally {
+    foreach (glob($formSessions . '/*') as $file) unlink($file);
+    rmdir($formSessions);
+}
 foreach (SMASH_SURVEY_OPTIONS as $field => $allowed) {
-    foreach ($allowed as $value) verify(strpos($form, "name=\"$field\" value=\"$value\"") !== false, "form offers $field=$value");
+    foreach ($allowed as $value) verify(strpos($formMarkup, "name=\"$field\" value=\"$value\"") !== false, "form offers $field=$value");
     verify(strpos($form, "choice('$field', ['" . implode("', '", $allowed) . "'])") !== false, "form validates $field with the library list");
 }
 

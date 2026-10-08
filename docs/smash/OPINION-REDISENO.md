@@ -2,7 +2,7 @@
 
 ## Alcance para Claude Code
 
-Segunda tarea de ENCARGO-CODEX-OPINION-Y-CARGA-INICIAL.md. Rama `feat/opinion-redesign`, desde `main` `66f3004`, independiente de la carga de games (#43). No se fusiona ni despliega sin orden del dueño. No necesita migración.
+Segunda tarea de ENCARGO-CODEX-OPINION-Y-CARGA-INICIAL.md. Rama `feat/opinion-redesign`, desde `main` `66f3004`, actualizada sobre `31f7b96`, independiente de la carga de games (#43). No se fusiona ni despliega sin orden del dueño. No necesita migración.
 
 `encuesta.php`/`encuesta.css` implementan Página 2 del handoff local del dueño. Encabezado y pie de Método copiados exactamente, con aria-current movido a Tu opinión. Se reutilizan paginas.css/cabecera.js sin editar esas bases. No se porta support.js ni datos de ejemplo. No se rediseña opiniones.php ni se tocan los módulos de Claude.
 
@@ -22,7 +22,7 @@ Método POST a ./encuesta.php, nonce privado y honeypot website sin cambios. Blo
 
 ## Pruebas y revisión
 
-Local: MariaDB desechable 13.0.2, PHP 8.5.3, PyMySQL 1.1.2. `test_survey_http.py`: **14 pruebas correctas**, doce HTTP y dos estáticas. Se conservan todas las aserciones existentes de seguridad, almacenamiento, reintento y privacidad; solo cambian las de presentación del botón/escalas y se añaden checks de repintado/escape. 48 pruebas de scripts/smash, PHP/JS y diff correctos. MySQL 8.0/MariaDB 10.11 ejecutan estas pruebas en CI; resultado final en EN-CURSO y PR.
+Local: MariaDB desechable 13.0.2, PHP 8.5.3, PyMySQL 1.1.2. `test_survey_http.py`: **14 pruebas correctas**, doce HTTP y dos estáticas. Se conservan todas las aserciones existentes de seguridad, almacenamiento, reintento y privacidad; solo cambian las de presentación del botón/escalas y se añaden checks de repintado/escape. 48 pruebas de scripts/smash, PHP/JS y diff correctos. MySQL 8.0/MariaDB 10.11 ejecutan estas pruebas en CI; resultado final en EN-CURSO y PR. La aserción de presentación de test_survey_storage.php pasa a comprobar el GET renderizado en un proceso PHP con sesión temporal, en vez de buscar strings literales en el template; todas las aserciones de contratos, validación y almacenamiento de ese archivo permanecen intactas.
 
 El contador Connections del servidor global era intermitente: un health check del contenedor podía incrementar el contador entre dos lecturas. El test ahora instrumenta **únicamente database.php copiado al directorio temporal**, justo antes del constructor PDO real. Registra solo una línea literal por intento en un fichero temporal externo al sitio, no SQL ni visitante. Exige exactamente los mismos cero/una conexión, sin usar >=, sleeps o ignorar el fallo. Una prueba nueva abre otra conexión SQL deliberadamente y comprueba que no contamina la cuenta de la app. database.php productivo permanece intacto; las demás aserciones de privacidad siguen activas.
 

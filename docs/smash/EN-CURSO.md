@@ -2,21 +2,18 @@
 
 ## Codex — Tu opinión, rediseño independiente (7/oct)
 
-Rama `feat/opinion-redesign` desde main `66f3004` actualizado (pantalla de Claude #42 ya incorporada). Antes de editar: árbol limpio, mismo origin `Bucaro-19/rankingsmashbros`, CI/despliegue de main correctos (`37713334860`, `37713467256`). Sin tocar los archivos de análisis, cuentas, panel, premium, metodología ni las bases compartidas de estilo/cabecera.
+[PR #46](https://github.com/Bucaro-19/rankingsmashbros/pull/46). Rama `feat/opinion-redesign` desde main `66f3004` actualizado (pantalla de Claude #42 ya incorporada); rebase sobre `31f7b96` para conservar también las notas de organizadores #44/#45, sin editar sus módulos. Antes de editar: árbol limpio, mismo origin `Bucaro-19/rankingsmashbros`, CI/despliegue de main correctos (`37713334860`, `37713467256`). Sin tocar los archivos de análisis, cuentas, panel, premium, metodología ni las bases compartidas de estilo/cabecera.
 
 - Handoff local `design_handoff_smash_gt_metodo_opinion/`, Página 2 / Encuesta.dc.html. Encabezado/pie copiados de Método; usa `arena.css`, `paginas.css`, `cabecera.js`. Paneles con más aire, ayudas Q3 en cuatro details cerrados, escalas Q5/Q6 con radios 1–5, progreso sticky, privacidad antes de CTA y estados del servidor. JS nuevo opcional: progreso/contador/enviando; sin requests, almacenamiento ni visitas. Incluido en allowlist de publicación; no se publicó.
 - Preguntas, opciones, ayudas y name/value preservados desde el formulario anterior. **Bloque de validación/nonce/límites/SQL/session rate limit idéntico byte a byte**, SHA-256 `dd3196bae5090d89c3a465312320de9ec1f56f5e30f09065aa99f10913940f82`. Solo se añaden datos/helpers de presentación: selección válida escapada y textos repintados después de errores. Marcador SQL y require survey conservados; `opiniones.php` y `survey.php` intactos. No se leyeron comentarios de producción.
 - Pruebas locales: 14 de encuesta (12 HTTP + 2 estáticas), 48 de pipeline/publicación, PHP/JS y diff correctos. Las aserciones existentes de seguridad, almacenamiento, privacidad y reintento se conservan. El contador global se reemplazó por un probe del constructor PDO **solo en la copia temporal del test**: exige los mismos cero/una conexión de la app, ignora conexiones de salud externas; no se cambia database.php productivo.
-- Revisión en Chrome local, fuente y sesiones inventadas, base desechable: escritorio 1440 y móvil 375, inicio/parcial, ayudas abiertas/cerradas, escalas, validación, enlace inválido, enviando, guardado, fallo/reintento, ya respondiste, y JS desactivado (inicio/fallo/guardado). Sin overflow horizontal ni errores JS. Capturas temporales `/tmp/smash-initial-context/review/`; documentación reproducible en [OPINION-REDISENO.md](OPINION-REDISENO.md). Matriz CI MySQL 8.0/MariaDB 10.11 pendiente del commit de esta entrega.
+- Revisión en Chrome local, fuente y sesiones inventadas, base desechable: escritorio 1440 y móvil 375, inicio/parcial, ayudas abiertas/cerradas, escalas, validación, enlace inválido, enviando, guardado, fallo/reintento, ya respondiste, y JS desactivado (inicio/fallo/guardado). Sin overflow horizontal ni errores JS. Capturas temporales `/tmp/smash-initial-context/review/`; documentación reproducible en [OPINION-REDISENO.md](OPINION-REDISENO.md). Matriz CI MySQL 8.0/MariaDB 10.11 pendiente del commit final. Primer intento detectó otra comprobación de presentación en test_survey_storage.php que buscaba opciones literales en el template; ahora comprueba el HTML GET realmente renderizado, conservando intactos todos los contratos de almacenamiento y validación.
 
 ### Primera tarea: carga inicial — PR #43
 
 [PR #43](https://github.com/Bucaro-19/rankingsmashbros/pull/43), rama separada `feat/initial-game-context`, sin fusionar/desplegar. CLI de contexto con simulación SQL READ ONLY por defecto y orden expresa para --apply. Hash original preservado; fuente recuperada sin start.gg; **4,787 games / 9,530 selecciones**, JSON 1,471,290 / gzip 92,604 bytes, pico CLI local 257,785,856 bytes. Nueve pruebas del contexto correctas en ambos motores; CI completa correcta `37713902599` tras reintentar el fallo preexistente del contador global de encuesta. Simulación de producción **pendiente**: IP del router rechazada, el dueño no puede abrir cPanel ahora. No se escribió producción. Comandos y medidas en IMPORTACION-RANKING.md de esa PR (no incorporada aún a main). Si llega un corte posterior, no forzar el Oct4.
 
 Ambas entregas requieren revisión y orden del dueño para fusionar/desplegar. La carga inicial también requiere primero acceso de lectura, simulación remota exitosa y una orden expresa de escritura.
-
-
-
 
 ## Top 15 por organizador — decisiones del dueño y brief (7/oct, madrugada)
 
