@@ -44,6 +44,10 @@ La llave de prueba del dueño está en su Mac, en `docs/smash/config/recurrente.
 - `python scripts/database/test_premium_http.py`: planes públicos, escrituras solo con cuenta y CSRF, webhook con firma inválida, repetido, mal formado, demasiado grande y con premium apagado.
 - Cliente HTTP real comprobado contra el **sandbox** de Recurrente desde la Mac del dueño: listar suscripciones, crear y leer un checkout mensual de 3 USD y uno anual de 24 USD (ambos sin pagar), y 404 de una suscripción inexistente.
 
+## Pantalla
+
+Pestaña «Premium» de `cuenta.html` (`premium.js`), tercera junto a Mi perfil y Mis personajes; también se abre con `cuenta.html#premium`, y sin sesión muestra los planes con el botón de entrar. Detalle y diferencias con el diseño en EN-CURSO.md.
+
 ## Pendiente
 
 - Registrar el webhook del sandbox y subir el archivo privado al servidor (pasos del dueño).

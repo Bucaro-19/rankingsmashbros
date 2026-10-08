@@ -90,17 +90,18 @@ function smash_premium_connect(string $siteRoot): PDO
 function smash_premium_status(PDO $pdo, string $userId, bool $live, int $now): array
 {
     try {
-        $q = $pdo->prepare("SELECT plan, status, current_period_end, cancel_requested_at FROM premium_subscriptions
+        $q = $pdo->prepare("SELECT plan, status, current_period_end, cancel_requested_at, created_at FROM premium_subscriptions
             WHERE user_id = ? AND live_mode = ? AND status <> 'pending' ORDER BY (current_period_end IS NULL), current_period_end DESC, id DESC LIMIT 1");
         $q->execute([$userId, $live ? 1 : 0]); $row = $q->fetch(PDO::FETCH_ASSOC);
         $q = $pdo->prepare("SELECT COUNT(*) FROM premium_subscriptions WHERE user_id = ? AND live_mode = ? AND status = 'pending' AND created_at > ?");
         $q->execute([$userId, $live ? 1 : 0, gmdate('Y-m-d H:i:s', $now - SMASH_PREMIUM_PENDING_AGE)]); $pending = (int)$q->fetchColumn() > 0;
     } catch (PDOException $error) { throw new SmashPremiumError('premium_read_failed'); }
-    if (!$row) return ['premium' => false, 'plan' => null, 'status' => 'none', 'currentPeriodEnd' => null, 'cancelRequested' => false, 'pending' => $pending];
+    if (!$row) return ['premium' => false, 'plan' => null, 'status' => 'none', 'currentPeriodEnd' => null, 'startedAt' => null, 'cancelRequested' => false, 'pending' => $pending];
     $end = $row['current_period_end'] === null ? null : substr((string)$row['current_period_end'], 0, 19);
     $running = $end !== null && strcmp($end, gmdate('Y-m-d H:i:s', $now)) > 0 && in_array($row['status'], ['active', 'past_due', 'canceled'], true);
     return ['premium' => $running, 'plan' => $row['plan'], 'status' => $running ? $row['status'] : 'ended',
         'currentPeriodEnd' => $end === null ? null : str_replace(' ', 'T', $end) . '+00:00',
+        'startedAt' => str_replace(' ', 'T', substr((string)$row['created_at'], 0, 19)) . '+00:00',
         'cancelRequested' => $row['cancel_requested_at'] !== null || $row['status'] === 'canceled', 'pending' => $pending];
 }
 

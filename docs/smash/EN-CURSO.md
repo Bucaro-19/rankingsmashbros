@@ -1,5 +1,28 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Pestaña Premium y primer pago real de prueba — publicado (Claude Code, 7/oct)
+
+- **Circuito de pago comprobado en el sandbox con el dueño:** pagó un checkout mensual de 3 USD con la tarjeta de prueba de Recurrente. El webhook `subscription.create` llegó a producción, pasó la verificación de firma y dejó su cuenta `active` con `current_period_end` 2026-11-07 (lectura directa de la base: una fila en `premium_subscriptions`, dos avisos en `premium_events`, uno sincronizado y uno ignorado). Los campos de una suscripción pagada coincidieron con lo supuesto de la documentación.
+- **Pestaña Premium** según el handoff `design_handoff_smash_gt_premium/`: planes (anual marcado por defecto), condiciones antes de pagar, regreso del pago con «Confirmando…» (consulta cada 3 s, máximo 30 s), éxito, «todavía no lo vemos», pago cancelado, administrar, confirmación de cancelación en línea, cancelada, pago vencido y terminado. Distintivo «Premium» junto al alias y aro amarillo en el avatar. Archivo nuevo `premium.js`; `premium-api.php` añade `startedAt`.
+- **Diferencias con el diseño, a propósito:** (1) no hay estado «rechazado» al volver, porque Recurrente no devuelve al sitio un pago rechazado; (2) en pago vencido no hay botón «Actualizar forma de pago»: falta comprobar cómo expone Recurrente ese cambio de tarjeta; (3) «Análisis del rival» aparece como «Próximamente» hasta que exista la pantalla; (4) aviso «Modo de prueba» mientras el servidor use la llave de prueba; (5) el texto introductorio bajo el título es propio, el diseño no lo fijaba.
+- Sigue en **modo prueba**: nadie puede pagar dinero real hasta cambiar a la llave `sk_live_` y registrar el webhook de producción.
+- Revisado en navegador local con suscripciones inventadas: sin premium, activa, confirmación y Esc, cancelada, vencida y terminada.
+
+## Rediseño de Método — publicado (Claude Code, 7/oct)
+
+Primera mitad del handoff `design_handoff_smash_gt_metodo_opinion/` (carpeta local del dueño). «Tu opinión» (`encuesta.php`) va en la siguiente entrega y reutiliza `paginas.css` y `cabecera.js`.
+
+- `metodologia.html` reescrita con el encabezado y pie del inicio, índice (barra plegable en móvil, columna lateral en escritorio, sección actual marcada), franja de cifras, pasos numerados, cuadro de cuatro casos como tabla real con forma de tarjetas, comparación con TrueSkill que se apila en móvil, y lista de torneos agrupada por mes con búsqueda, «Ver los N torneos» e insignias por vista.
+- **El contenido no cambió:** una comprobación automática al generar la página confirmó que todos los párrafos del texto anterior siguen presentes; lo único sustituido es el pie viejo por el pie común del sitio. Se conservan los anclajes `#torneos`, `#puntos-en-claro` y `#trueskill`, y el selector de vista sigue siendo un enlace `?scope=guatemala`.
+- Archivos nuevos: `paginas.css` (base común de las páginas de lectura) y `cabecera.js` (el aviso de sesión del encabezado, que antes vivía dentro de `app.js`; ahora lo comparten inicio y Método). `metodologia.css` y `metodologia.js` reescritos. Sin cambios en datos ni en el cálculo.
+- Revisado en navegador contra copia local: escritorio y 375 px, ambas vistas, búsqueda, «ver todos», índice, sin desbordamiento horizontal ni errores propios en consola.
+
+## Reparto vigente — 7/oct, cierre de la noche
+
+- **Codex:** datos del análisis de rival, solo servidor. Encargo y prompt: [ENCARGO-CODEX-API-ANALISIS-RIVAL.md](ENCARGO-CODEX-API-ANALISIS-RIVAL.md). Su PR #36 (personajes por game) está abierta con CI en verde y espera la orden del dueño para fusionar y publicar.
+- **Claude Code:** rediseño de Método y Tu opinión (handoff `design_handoff_smash_gt_metodo_opinion/`, en curso en la rama `feat/metodo-opinion-redesign`), después la pantalla del análisis de rival (handoff `design_handoff_smash_gt_analisis/`) y la pestaña Premium cuando llegue su diseño.
+- **Premium en modo prueba, encendido en producción:** el dueño subió `private-smash/recurrente.local.php` con la llave de prueba y el secreto del webhook del sandbox, registrado por Claude Code con su orden. Comprobado por HTTP: `premium-api.php` responde `available: true` y el webhook exige firma (401 sin ella). Falta el pago de prueba del dueño.
+
 ## Codex: games y selecciones SQL — preparada, sin fusionar ni publicar (7/oct)
 
 Encargo [ENCARGO-CODEX-SELECCIONES-POR-GAME.md](ENCARGO-CODEX-SELECCIONES-POR-GAME.md). Rama **`feat/game-selections-sql`**, iniciada desde main `4e5bb2d` / PR #34 y actualizada sobre `e9d308d` (premium de Claude, PR #35). **PR de esta entrega: [#36](https://github.com/Bucaro-19/rankingsmashbros/pull/36).** Al empezar: árbol limpio, origin `Bucaro-19/rankingsmashbros`, main actualizado, CI `37701181158` y despliegue `37700879178` correctos; `SMASH_SQL_SYNC_ENABLED=true` verificado. Este encargo exige orden del dueño antes de fusionar/desplegar; no usar la autorización de Claude para sus propias entregas.

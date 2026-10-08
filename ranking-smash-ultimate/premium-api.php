@@ -31,7 +31,7 @@ try {
     if ($config === null) {
         if ($post) premium_response(503, ['ok' => false, 'reason' => 'premium_unavailable']);
         premium_response(200, ['ok' => true, 'authenticated' => true, 'available' => false, 'plans' => $plans, 'csrf' => $_SESSION['smash_account_csrf'],
-            'premium' => ['premium' => false, 'plan' => null, 'status' => 'none', 'currentPeriodEnd' => null, 'cancelRequested' => false, 'pending' => false]]);
+            'premium' => ['premium' => false, 'plan' => null, 'status' => 'none', 'currentPeriodEnd' => null, 'startedAt' => null, 'cancelRequested' => false, 'pending' => false]]);
     }
     if ($post) {
         if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 512) premium_response(413, ['ok' => false, 'reason' => 'body_too_large']);
