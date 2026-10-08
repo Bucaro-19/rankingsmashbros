@@ -84,7 +84,7 @@ try {
     $pdo->exec('INSERT INTO users (startgg_user_id) VALUES (8999601), (8999602)');
     $one = (string)$pdo->query('SELECT id FROM users WHERE startgg_user_id=8999601')->fetchColumn(); $two = (string)$pdo->query('SELECT id FROM users WHERE startgg_user_id=8999602')->fetchColumn();
     $now = gmmktime(12, 0, 0, 10, 8, 2026);
-    $none = ['premium' => false, 'plan' => null, 'status' => 'none', 'currentPeriodEnd' => null, 'cancelRequested' => false, 'pending' => false];
+    $none = ['premium' => false, 'plan' => null, 'status' => 'none', 'currentPeriodEnd' => null, 'startedAt' => null, 'cancelRequested' => false, 'pending' => false];
     check_premium(smash_premium_status($pdo, $one, false, $now) === $none, 'An account without a subscription is not premium');
     premium_rejects(static fn() => smash_premium_start($pdo, $config, $one, 'lifetime', $now, $provider), 'invalid_plan');
     premium_rejects(static fn() => smash_premium_start($pdo, $config, $one, ['annual'], $now, $provider), 'invalid_plan');
@@ -101,7 +101,7 @@ try {
     $pay('ch_fixture1', 'su_fixture1', '2027-10-08T12:00:00Z');
     smash_premium_refresh($pdo, $config, $one, $now + 30, $provider);
     $status = smash_premium_status($pdo, $one, false, $now + 30);
-    check_premium($status === ['premium' => true, 'plan' => 'annual', 'status' => 'active', 'currentPeriodEnd' => '2027-10-08T12:00:00+00:00', 'cancelRequested' => false, 'pending' => false], 'A paid checkout becomes premium on return, without a webhook');
+    check_premium($status === ['premium' => true, 'plan' => 'annual', 'status' => 'active', 'currentPeriodEnd' => '2027-10-08T12:00:00+00:00', 'startedAt' => '2026-10-08T12:00:00+00:00', 'cancelRequested' => false, 'pending' => false], 'A paid checkout becomes premium on return, without a webhook');
     $stored = json_encode($pdo->query("SELECT * FROM premium_subscriptions WHERE user_id=$one")->fetchAll(PDO::FETCH_ASSOC));
     foreach (['Persona', 'privada@', '+502', 'NIT-PRIVADO', '4242', 'visa'] as $private) check_premium(strpos($stored, $private) === false, 'No payer name, e-mail, phone, tax id or card is stored');
     check_premium(smash_premium_status($pdo, $one, true, $now + 30) === $none && smash_premium_status($pdo, $two, false, $now + 30) === $none, 'A test subscription is not premium in live mode, nor for another account');

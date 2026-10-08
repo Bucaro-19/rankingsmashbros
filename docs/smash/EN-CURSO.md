@@ -1,5 +1,13 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Pestaña Premium y primer pago real de prueba — publicado (Claude Code, 7/oct)
+
+- **Circuito de pago comprobado en el sandbox con el dueño:** pagó un checkout mensual de 3 USD con la tarjeta de prueba de Recurrente. El webhook `subscription.create` llegó a producción, pasó la verificación de firma y dejó su cuenta `active` con `current_period_end` 2026-11-07 (lectura directa de la base: una fila en `premium_subscriptions`, dos avisos en `premium_events`, uno sincronizado y uno ignorado). Los campos de una suscripción pagada coincidieron con lo supuesto de la documentación.
+- **Pestaña Premium** según el handoff `design_handoff_smash_gt_premium/`: planes (anual marcado por defecto), condiciones antes de pagar, regreso del pago con «Confirmando…» (consulta cada 3 s, máximo 30 s), éxito, «todavía no lo vemos», pago cancelado, administrar, confirmación de cancelación en línea, cancelada, pago vencido y terminado. Distintivo «Premium» junto al alias y aro amarillo en el avatar. Archivo nuevo `premium.js`; `premium-api.php` añade `startedAt`.
+- **Diferencias con el diseño, a propósito:** (1) no hay estado «rechazado» al volver, porque Recurrente no devuelve al sitio un pago rechazado; (2) en pago vencido no hay botón «Actualizar forma de pago»: falta comprobar cómo expone Recurrente ese cambio de tarjeta; (3) «Análisis del rival» aparece como «Próximamente» hasta que exista la pantalla; (4) aviso «Modo de prueba» mientras el servidor use la llave de prueba; (5) el texto introductorio bajo el título es propio, el diseño no lo fijaba.
+- Sigue en **modo prueba**: nadie puede pagar dinero real hasta cambiar a la llave `sk_live_` y registrar el webhook de producción.
+- Revisado en navegador local con suscripciones inventadas: sin premium, activa, confirmación y Esc, cancelada, vencida y terminada.
+
 ## Rediseño de Método — publicado (Claude Code, 7/oct)
 
 Primera mitad del handoff `design_handoff_smash_gt_metodo_opinion/` (carpeta local del dueño). «Tu opinión» (`encuesta.php`) va en la siguiente entrega y reutiliza `paginas.css` y `cabecera.js`.
