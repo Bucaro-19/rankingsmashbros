@@ -1,137 +1,1814 @@
 {
-  "status": "borrador_sin_revisar",
-  "note": "Conocimiento general del juego redactado por Claude Code. Sin fuente verificable ni datos del ranking. No publicar sin la revisión del dueño o de jugadores de la escena.",
-  "characters": {
-    "terry": {"weakness": "Recuperación lineal y fácil de interceptar; sufre contra quien no lo deja acercarse y contra quien lo saca del escenario temprano.",
-      "counters": [["pikachu", "Cuerpo pequeño que esquiva sus confirmaciones, y un juego fuera del escenario que castiga su regreso predecible."],
-        ["minmin", "Lo mantiene a distancia con los brazos y lo obliga a acercarse sin sus herramientas de presión."],
-        ["rob", "Proyectiles y giroscopio le cortan la aproximación, y sus agarres lo sacan lejos, donde su recuperación sufre."]]},
-    "joker": {"weakness": "Sin Arsene pega poco y es ligero; pierde la ventaja cuando se le niega cargar la barra o se le hace gastar Arsene sin sacarle provecho.",
-      "counters": [["pikachu", "Presión constante y difícil de golpear; lo castiga fuera del escenario antes de que Arsene importe."],
-        ["mr_game_and_watch", "Sus opciones fuera del escudo castigan la presión aérea de Joker y lo mata temprano por ser ligero."],
-        ["rob", "Aguanta bien a Arsene por su peso y controla el ritmo con proyectiles."]]},
-    "kazuya": {"weakness": "Movilidad pobre y recuperación explotable; depende de acertar un golpe de cerca y le cuesta alcanzar a quien se mantiene lejos.",
-      "counters": [["minmin", "Lo golpea desde donde no puede responder y lo deja fuera del escenario, su peor posición."],
-        ["samus", "Proyectiles cargados y control del espacio que lo obligan a caminar hacia el daño."],
-        ["sonic", "Entra y sale sin dejarle una apertura clara, y gana tiempo sin arriesgar el combo que Kazuya necesita."]]},
-    "snake": {"weakness": "Recuperación lenta y vulnerable; sufre cuando lo sacan del escenario y contra quien invade su zona de explosivos sin miedo.",
-      "counters": [["pikachu", "Lo castiga durante todo el regreso con el Cypher y es difícil de atrapar con granadas."],
-        ["zero_suit_samus", "Movilidad para rodear sus trampas y castigos muy fuertes cuando lo alcanza."],
-        ["palutena", "Aéreos seguros que le ganan en el intercambio y buenas herramientas para cubrir su regreso."]]},
-    "zelda": {"weakness": "Movilidad lenta y marco grande; sufre bajo presión rápida de cerca y cuando no tiene espacio para preparar el Fantasma.",
-      "counters": [["fox", "Velocidad para estar siempre encima y no dejarla preparar nada."],
-        ["pikachu", "Entra por debajo de sus herramientas y la castiga fuera del escenario."],
-        ["joker", "Movilidad y presión segura que le quitan el tiempo que necesita para controlar el espacio."]]},
-    "cloud": {"weakness": "Recuperación corta y predecible, sobre todo sin Límite; pierde mucho cuando lo sacan del escenario.",
-      "counters": [["pikachu", "Uno de los mejores castigando regresos como el de Cloud."],
-        ["mr_game_and_watch", "Castiga fuera del escudo sus aéreos y lo intercepta con facilidad fuera del escenario."],
-        ["rob", "Controla la distancia y lo deja lejos, obligándolo a regresar una y otra vez."]]},
-    "steve": {"weakness": "Necesita tiempo para minar; sufre contra quien lo presiona sin pausa y contra quien controla el escenario desde lejos.",
-      "counters": [["minmin", "Lo golpea por encima de los bloques y no le deja minar tranquilo."],
-        ["rob", "Proyectiles que interrumpen la recolección y buen control de las plataformas."],
-        ["pikachu", "Presión constante de cerca que no le da respiro para armar recursos."]]},
-    "incineroar": {"weakness": "El más lento del juego en el suelo y con una recuperación muy limitada; sufre contra proyectiles y contra quien no se acerca.",
-      "counters": [["samus", "Lo mantiene lejos con proyectiles y lo castiga cuando salta para acercarse."],
-        ["minmin", "Rango enorme contra un personaje que no puede cerrar la distancia."],
-        ["pikachu", "Rápido, pequeño y letal contra una recuperación tan corta."]]},
-    "samus": {"weakness": "Sufre cuando le reflejan o absorben los proyectiles y bajo presión rápida de cerca, donde sus opciones son más lentas.",
-      "counters": [["fox", "Reflector y velocidad para no dejarla cargar ni disparar con calma."],
-        ["pikachu", "Se cuela entre los proyectiles y la presiona de cerca."],
-        ["palutena", "Reflector y movilidad aérea para anular su juego a distancia."]]},
-    "dark_samus": {"sameAs": "samus"},
-    "link": {"weakness": "Marco grande y opciones lentas de cerca; sufre contra personajes veloces que entran por debajo de sus proyectiles.",
-      "counters": [["fox", "Velocidad y reflector para castigar cada proyectil mal puesto."],
-        ["pikachu", "Entra con facilidad y lo castiga fuera del escenario."],
-        ["palutena", "Reflector y aéreos seguros que le ganan en la media distancia."]]},
-    "pikachu": {"weakness": "Muy ligero y con poco alcance; muere temprano si lo alcanza un golpe fuerte y le cuesta contra espadas con buen rango.",
-      "counters": [["mr_game_and_watch", "Opciones fuera del escudo que cortan su presión y remates que lo matan temprano."],
-        ["lucina", "Rango de espada que lo mantiene fuera y castigos consistentes."],
-        ["rob", "Peso para aguantar sus combos y herramientas para controlarle el acercamiento."]]},
-    "mr_game_and_watch": {"weakness": "El más ligero entre los de su nivel y con poco alcance; sufre contra rango largo y muere muy temprano.",
-      "counters": [["lucina", "Lo mantiene en la punta de la espada, donde no puede usar sus opciones fuera del escudo."],
-        ["cloud", "Aéreos con rango que le ganan el intercambio y remates tempranos."],
-        ["minmin", "Fuera de su alcance todo el tiempo."]]},
-    "sora": {"weakness": "Flotante y ligero; fácil de rematar por arriba y con poca fuerza para cerrar vidas en el suelo.",
-      "counters": [["rob", "Lo castiga en el aire y lo remata temprano por los lados."],
-        ["pikachu", "Presión que no lo deja flotar con calma."],
-        ["cloud", "Rango y remates verticales que aprovechan su poco peso."]]},
-    "pyra": {"weakness": "Recuperación corta y explotable en las dos formas; pierde vidas enteras fuera del escenario.",
-      "counters": [["pikachu", "Castiga su regreso mejor que casi nadie."],
-        ["mr_game_and_watch", "Intercepta fuera del escenario y castiga la presión de Mythra desde el escudo."],
-        ["rob", "La saca lejos con agarres y proyectiles y cubre su regreso."]]},
-    "ken": {"weakness": "Recuperación limitada y dificultad para alcanzar a quien se mantiene lejos; necesita estar pegado para hacer daño.",
-      "counters": [["minmin", "Rango que anula su juego de cerca."],
-        ["samus", "Proyectiles que lo obligan a acercarse recibiendo daño."],
-        ["pikachu", "Castiga su regreso y es difícil de confirmar por su tamaño."]]},
-    "ryu": {"sameAs": "ken"},
-    "minmin": {"weakness": "Muy vulnerable cuando el rival ya está encima o debajo de ella, y con una recuperación fácil de cubrir.",
-      "counters": [["fox", "Cierra la distancia rápido y la deja sin respuesta de cerca."],
-        ["pikachu", "Pasa por debajo de los brazos y la castiga fuera del escenario."],
-        ["zero_suit_samus", "Movilidad para rodear los brazos y castigos fuertes cuando entra."]]},
-    "mii_brawler": {"weakness": "Poco alcance y recuperación que depende de los especiales elegidos; sufre contra rango y contra proyectiles.",
-      "counters": [["lucina", "Rango de espada que no lo deja entrar."],
-        ["minmin", "Lo mantiene lejos de donde hace daño."],
-        ["rob", "Proyectiles y control de escenario contra un personaje que necesita estar cerca."]]},
-    "diddy_kong": {"weakness": "Depende de la banana; pierde mucho cuando el rival se la quita o lo castiga al sacarla, y su recuperación es interceptable.",
-      "counters": [["pikachu", "Castiga su recuperación y le disputa la banana con velocidad."],
-        ["palutena", "Aéreos seguros y buen control del espacio que le quitan su ritmo."],
-        ["rob", "Control de objetos propio con el giroscopio y peso para aguantar sus combos."]]},
-    "mario": {"weakness": "Poco alcance; sufre contra espadas y personajes con rango que lo mantienen fuera.",
-      "counters": [["lucina", "Lo deja en la punta de la espada, lejos de sus combos."],
-        ["cloud", "Rango y velocidad aérea que le ganan la media distancia."],
-        ["minmin", "No lo deja acercarse."]]},
-    "rob": {"weakness": "Marco grande y fácil de combear; sufre contra presión rápida y contra quien le quita o devuelve el giroscopio.",
-      "counters": [["pikachu", "Combos largos sobre un cuerpo grande y pesado."],
-        ["fox", "Presión veloz y reflector contra sus proyectiles."],
-        ["zero_suit_samus", "Castigos largos que su tamaño hace fáciles de conectar."]]},
-    "captain_falcon": {"weakness": "Recuperación predecible y sin buenas opciones para salir de la desventaja.",
-      "counters": [["pikachu", "Lo castiga fuera del escenario con mucha facilidad."],
-        ["rob", "Proyectiles que cortan su carrera y agarres que lo dejan lejos."],
-        ["mr_game_and_watch", "Opciones fuera del escudo contra su presión y cobertura de su regreso."]]},
-    "king_k_rool": {"weakness": "Lento y muy grande; sufre contra combos largos y contra quien ignora o devuelve sus proyectiles.",
-      "counters": [["pikachu", "Combos muy largos sobre un cuerpo enorme."],
-        ["fox", "Reflector y velocidad contra un personaje lento."],
-        ["zero_suit_samus", "Castigos consistentes por su tamaño y movilidad para evitar sus trampas."]]},
-    "wolf": {"weakness": "Recuperación corta y lineal; pierde vidas cuando lo sacan del escenario.",
-      "counters": [["pikachu", "Castiga su regreso sin mucho riesgo."],
-        ["mr_game_and_watch", "Lo intercepta fuera del escenario y castiga sus aéreos en el escudo."],
-        ["rob", "Lo saca lejos y cubre las pocas rutas que tiene para volver."]]},
-    "sonic": {"weakness": "Poco alcance y dificultad para rematar; depende de la paciencia y de que el rival se desespere.",
-      "counters": [["pikachu", "Velocidad parecida y mejor castigo cuando lo atrapa."],
-        ["rob", "Controla el escenario y aguanta su daño goteado."],
-        ["mr_game_and_watch", "Opciones fuera del escudo que castigan sus entradas."]]},
-    "luigi": {"weakness": "Movilidad aérea muy pobre y recuperación lenta; no puede alcanzar a quien se mantiene lejos.",
-      "counters": [["minmin", "Fuera de su alcance, donde su agarre no importa."],
-        ["samus", "Proyectiles contra un personaje que no puede acercarse rápido."],
-        ["rob", "Control a distancia y cobertura de un regreso muy lento."]]},
-    "zero_suit_samus": {"weakness": "Ligera y con pocas opciones defensivas de cerca; un error le cuesta la vida temprano.",
-      "counters": [["pikachu", "Presión de cerca donde ella tiene menos respuestas."],
-        ["mr_game_and_watch", "La remata temprano y castiga desde el escudo."],
-        ["fox", "Velocidad para no dejarla jugar a media distancia."]]},
-    "roy": {"weakness": "Recuperación corta y necesidad de estar muy cerca para pegar fuerte.",
-      "counters": [["pikachu", "Castiga su regreso y evita la zona fuerte de la espada."],
-        ["minmin", "Lo mantiene lejos, donde su espada pega con la punta débil."],
-        ["rob", "Proyectiles y agarres que lo dejan fuera del escenario."]]},
-    "chrom": {"sameAs": "roy"},
-    "yoshi": {"weakness": "Pocas opciones fuera del escudo y sin agarre rápido; sufre contra presión bien espaciada.",
-      "counters": [["lucina", "Presión de espada segura sobre un escudo con pocas respuestas."],
-        ["cloud", "Aéreos con rango que le ganan en el aire."],
-        ["minmin", "Lo mantiene fuera de su rango aéreo."]]},
-    "banjo_and_kazooie": {"weakness": "Lento para cerrar vidas y con recuperación limitada cuando se le acaban las plumas.",
-      "counters": [["pikachu", "Presión y castigo fuera del escenario."],
-        ["palutena", "Reflector contra los huevos y mejor movilidad."],
-        ["fox", "Velocidad y reflector contra su juego de proyectiles."]]},
-    "mewtwo": {"weakness": "Marco enorme para lo ligero que es; se come combos largos y muere temprano.",
-      "counters": [["pikachu", "Combos largos sobre un cuerpo grande y ligero."],
-        ["fox", "Presión veloz y reflector para la Bola Sombra."],
-        ["zero_suit_samus", "Castigos consistentes por su tamaño."]]},
-    "palutena": {"weakness": "Pocas opciones rápidas en el suelo y remates que dependen de lecturas; sufre contra presión de cerca.",
-      "counters": [["pikachu", "Entra por debajo de sus aéreos y la presiona en el suelo."],
-        ["fox", "Velocidad en el suelo, justo donde ella es más débil."],
-        ["mr_game_and_watch", "Castiga sus aéreos desde el escudo."]]},
-    "corrin": {"weakness": "Movilidad lenta y recuperación interceptable; le cuesta contra personajes rápidos que no respetan su rango.",
-      "counters": [["pikachu", "Velocidad y castigo fuera del escenario."],
-        ["fox", "Entra antes de que pueda usar su alcance."],
-        ["palutena", "Movilidad aérea superior y aéreos que le ganan el intercambio."]]}
+ "status": "borrador_sin_revisar",
+ "note": "Debilidades parafraseadas de SmashWiki (CC BY-SA), con enlace por personaje. Los cruces de la escena son games reales del corte del 4/oct/2026 con 8 games o más. No publicar sin la revisión del dueño.",
+ "license": "Texto derivado de SmashWiki, CC BY-SA 4.0 (contribuciones anteriores al 27/feb/2026: CC BY-SA 3.0). Requiere atribución y compartir bajo la misma licencia.",
+ "sceneCut": "2026-10-04",
+ "sceneMinimumGames": 8,
+ "characters": {
+  "terry": {
+   "weaknesses": [
+    "Depende de que el rival se acerque: le cuesta contra quien pelea a distancia.",
+    "Mala desventaja: le cuesta aterrizar y, por alto y de caída rápida, es fácil de combear en el aire.",
+    "Recuperación débil y predecible, con poca velocidad aérea: vulnerable fuera del escenario."
+   ],
+   "source": "https://www.ssbwiki.com/Terry_(SSBU)"
+  },
+  "joker": {
+   "weaknesses": [
+    "Sin Arsène le cuesta cerrar vidas a porcentaje alto; depende de interceptar fuera del escenario o de un remate directo.",
+    "Opciones fuera del escudo más débiles que las de la mayoría del elenco.",
+    "Con Arsène, recibir golpes vacía la barra más rápido, y su recuperación deja de proteger al terminar la invencibilidad."
+   ],
+   "source": "https://www.ssbwiki.com/Joker_(SSBU)"
+  },
+  "kazuya": {
+   "weaknesses": [
+    "Mala desventaja: sin opciones aéreas para cortar combos y con una recuperación explotable.",
+    "Ataques lentos e inseguros: muchos salen del frame 12 en adelante y son castigables en escudo.",
+    "Movilidad pobre en suelo y aire, con el inicio de salto más lento del juego."
+   ],
+   "source": "https://www.ssbwiki.com/Kazuya_(SSBU)"
+  },
+  "snake": {
+   "weaknesses": [
+    "Recuperación predecible y fácil de interceptar; el Cypher se puede destruir.",
+    "Mala desventaja: vulnerable a combos y con problemas para aterrizar.",
+    "Sus remates principales son bastante previsibles."
+   ],
+   "source": "https://www.ssbwiki.com/Snake_(SSBU)"
+  },
+  "zelda": {
+   "weaknesses": [
+    "Movimiento lento: le cuesta espaciar sus ataques y entrar con seguridad.",
+    "Sus mejores remates exigen precisión; si falla el punto dulce queda castigable.",
+    "Alta, flotante y ligera, con pocas formas seguras de aterrizar: mala desventaja y poco aguante."
+   ],
+   "source": "https://www.ssbwiki.com/Zelda_(SSBU)"
+  },
+  "cloud": {
+   "weaknesses": [
+    "Recuperación corta: fácil de interceptar o rematar fuera del escenario.",
+    "Pocas formas seguras de salir de la presión; sus opciones son castigables en escudo.",
+    "Agarre corto y lanzamientos con poco provecho."
+   ],
+   "source": "https://www.ssbwiki.com/Cloud_(SSBU)"
+  },
+  "steve": {
+   "weaknesses": [
+    "Movilidad pobre en suelo y aire: le cuesta acercarse.",
+    "Depende de sus materiales; quedarse sin ellos le quita herramientas clave.",
+    "Ataques de poco alcance y sin proyectil convencional: sufre contra rango y espadas."
+   ],
+   "source": "https://www.ssbwiki.com/Steve_(SSBU)"
+  },
+  "incineroar": {
+   "weaknesses": [
+    "El caminar y la carrera más lentos del juego, poco alcance y sin proyectil: sufre contra quien lo mantiene lejos.",
+    "Remates inconsistentes que dependen mucho de agarres, lo que lo hace previsible.",
+    "Recuperación limitada y muy vulnerable a que lo intercepten sin su doble salto."
+   ],
+   "source": "https://www.ssbwiki.com/Incineroar_(SSBU)"
+  },
+  "samus": {
+   "weaknesses": [
+    "Movilidad lenta y proyectiles con retraso que la dejan castigable.",
+    "Juego de cerca poco fiable cuando el rival ya entró.",
+    "Flotante: fácil de mantener en el aire, con una recuperación lenta y lineal."
+   ],
+   "source": "https://www.ssbwiki.com/Samus_(SSBU)"
+  },
+  "link": {
+   "weaknesses": [
+    "Movimiento lento: le cuesta contra personajes veloces que esquivan sus proyectiles.",
+    "Golpes de espada lentos que ataques más rápidos pueden superar.",
+    "Por su peso es fácil de combear y de mantener en desventaja."
+   ],
+   "source": "https://www.ssbwiki.com/Link_(SSBU)"
+  },
+  "pikachu": {
+   "weaknesses": [
+    "Muy ligero: fácil de rematar para quien tiene golpes fuertes.",
+    "Le cuesta cerrar vidas: sus remates funcionan a porcentaje alto o tienen inconvenientes.",
+    "Poco alcance y sin golpes desligados del cuerpo: depende mucho del proyectil para acercarse."
+   ],
+   "source": "https://www.ssbwiki.com/Pikachu_(SSBU)"
+  },
+  "mr_game_and_watch": {
+   "weaknesses": [
+    "De los más ligeros: muere temprano.",
+    "Defensa débil: aéreos lentos y esquivas de poco recorrido.",
+    "Poco alcance y sin buen juego a distancia: sufre contra espadas y personajes con mejor rango."
+   ],
+   "source": "https://www.ssbwiki.com/Mr._Game_%26_Watch_(SSBU)"
+  },
+  "sora": {
+   "weaknesses": [
+    "Menos alcance que la mayoría de espadachines y agarres cortos.",
+    "Ligero y de caída lenta: fácil de rematar por arriba y le cuesta salir de combos.",
+    "Varios especiales tienen limitaciones que lo dejan expuesto."
+   ],
+   "source": "https://www.ssbwiki.com/Sora_(SSBU)"
+  },
+  "pyra": {
+   "weaknesses": [
+    "Movimiento lento en el suelo: le cuesta acercarse.",
+    "Mala desventaja: fácil de combear y con pocas formas seguras de cortar el combo.",
+    "Recuperación por debajo del promedio, corta en horizontal y fácil de disputar."
+   ],
+   "source": "https://www.ssbwiki.com/Pyra_(SSBU)"
+  },
+  "ken": {
+   "weaknesses": [
+    "Fácil de combear y con una recuperación lineal que se puede leer e interceptar.",
+    "Algunos de sus golpes clave se pueden escapar moviendo el control, lo que permite castigarlo.",
+    "Pocas formas de acercarse: en muchos cruces tiene que caminar hacia el rival."
+   ],
+   "source": "https://www.ssbwiki.com/Ken_(SSBU)"
+  },
+  "minmin": {
+   "weaknesses": [
+    "Sobrevive mal fuera del escenario: poca velocidad aérea y recuperación corta en horizontal.",
+    "Pocas salidas de la desventaja; por su caída lenta es fácil de mantener en el aire.",
+    "Ataques comprometidos que se castigan si fallan; le cuesta contra personajes rápidos."
+   ],
+   "source": "https://www.ssbwiki.com/Min_Min_(SSBU)"
+  },
+  "mii_brawler": {
+   "weaknesses": [
+    "Muy poco alcance.",
+    "Sus combos pierden fuerza a porcentaje alto: le faltan remates confirmados.",
+    "Caída rápida que invita a combos y poco peso: aguanta poco."
+   ],
+   "source": "https://www.ssbwiki.com/Mii_Brawler_(SSBU)"
+  },
+  "diddy_kong": {
+   "weaknesses": [
+    "La banana se puede usar en su contra: el rival puede agarrarla y lanzársela.",
+    "Le cuesta cerrar vidas a porcentaje alto.",
+    "Recuperación explotable: si lo golpean durante los barriles suele perder la vida."
+   ],
+   "source": "https://www.ssbwiki.com/Diddy_Kong_(SSBU)"
+  },
+  "mario": {
+   "weaknesses": [
+    "Poco alcance: le cuesta acercarse contra personajes de rango largo o con espada.",
+    "Pocos remates fiables.",
+    "Recuperación lineal: fácil de interceptar cuando no tiene el doble salto."
+   ],
+   "source": "https://www.ssbwiki.com/Mario_(SSBU)"
+  },
+  "rob": {
+   "weaknesses": [
+    "Cuerpo grande, pesado y de caída rápida: fácil de combear y sin opciones para cortar el combo.",
+    "Recuperación con combustible limitado y sin golpe: se puede interceptar si no vuelve por arriba.",
+    "Aéreos lentos y agarre corto para su tamaño."
+   ],
+   "source": "https://www.ssbwiki.com/R.O.B._(SSBU)"
   }
+ },
+ "echoes": {
+  "dark_samus": "samus"
+ },
+ "scene": {
+  "banjo_and_kazooie": [
+   [
+    "zelda",
+    6,
+    4
+   ]
+  ],
+  "bayonetta": [
+   [
+    "joker",
+    6,
+    3
+   ]
+  ],
+  "bowser": [
+   [
+    "link",
+    6,
+    2
+   ]
+  ],
+  "byleth": [
+   [
+    "palutena",
+    12,
+    3
+   ]
+  ],
+  "captain_falcon": [
+   [
+    "terry",
+    10,
+    0
+   ],
+   [
+    "kazuya",
+    9,
+    2
+   ],
+   [
+    "snake",
+    7,
+    2
+   ],
+   [
+    "zelda",
+    9,
+    4
+   ],
+   [
+    "samus",
+    1,
+    7
+   ]
+  ],
+  "cloud": [
+   [
+    "palutena",
+    8,
+    0
+   ],
+   [
+    "diddy_kong",
+    9,
+    2
+   ],
+   [
+    "samus",
+    15,
+    4
+   ],
+   [
+    "king_dedede",
+    6,
+    2
+   ],
+   [
+    "toon_link",
+    6,
+    2
+   ],
+   [
+    "steve",
+    11,
+    6
+   ],
+   [
+    "joker",
+    7,
+    4
+   ],
+   [
+    "mii_brawler",
+    5,
+    4
+   ],
+   [
+    "mario",
+    6,
+    5
+   ],
+   [
+    "kazuya",
+    7,
+    6
+   ],
+   [
+    "link",
+    6,
+    6
+   ],
+   [
+    "king_k_rool",
+    5,
+    5
+   ],
+   [
+    "pikachu",
+    4,
+    4
+   ],
+   [
+    "terry",
+    21,
+    27
+   ],
+   [
+    "snake",
+    6,
+    8
+   ],
+   [
+    "zelda",
+    6,
+    9
+   ]
+  ],
+  "corrin": [
+   [
+    "mii_brawler",
+    5,
+    3
+   ],
+   [
+    "pyra",
+    4,
+    4
+   ]
+  ],
+  "dark_samus": [
+   [
+    "joker",
+    9,
+    3
+   ],
+   [
+    "steve",
+    7,
+    3
+   ],
+   [
+    "sora",
+    8,
+    4
+   ],
+   [
+    "terry",
+    4,
+    5
+   ]
+  ],
+  "diddy_kong": [
+   [
+    "pikachu",
+    8,
+    0
+   ],
+   [
+    "steve",
+    21,
+    10
+   ],
+   [
+    "zelda",
+    5,
+    4
+   ],
+   [
+    "terry",
+    5,
+    8
+   ],
+   [
+    "pyra",
+    5,
+    9
+   ],
+   [
+    "joker",
+    3,
+    7
+   ],
+   [
+    "incineroar",
+    3,
+    13
+   ],
+   [
+    "cloud",
+    2,
+    9
+   ],
+   [
+    "rob",
+    1,
+    7
+   ]
+  ],
+  "fox": [
+   [
+    "link",
+    6,
+    2
+   ]
+  ],
+  "incineroar": [
+   [
+    "diddy_kong",
+    13,
+    3
+   ],
+   [
+    "sora",
+    7,
+    2
+   ],
+   [
+    "kazuya",
+    11,
+    4
+   ],
+   [
+    "sonic",
+    8,
+    3
+   ],
+   [
+    "mii_brawler",
+    8,
+    4
+   ],
+   [
+    "snake",
+    6,
+    3
+   ],
+   [
+    "terry",
+    14,
+    9
+   ],
+   [
+    "joker",
+    13,
+    13
+   ],
+   [
+    "mr_game_and_watch",
+    6,
+    6
+   ],
+   [
+    "samus",
+    7,
+    10
+   ],
+   [
+    "roy",
+    4,
+    7
+   ],
+   [
+    "link",
+    5,
+    9
+   ],
+   [
+    "zelda",
+    4,
+    8
+   ],
+   [
+    "mewtwo",
+    3,
+    6
+   ],
+   [
+    "pyra",
+    3,
+    6
+   ]
+  ],
+  "joker": [
+   [
+    "kazuya",
+    14,
+    4
+   ],
+   [
+    "mii_brawler",
+    8,
+    3
+   ],
+   [
+    "diddy_kong",
+    7,
+    3
+   ],
+   [
+    "zelda",
+    10,
+    7
+   ],
+   [
+    "minmin",
+    5,
+    4
+   ],
+   [
+    "wolf",
+    7,
+    6
+   ],
+   [
+    "incineroar",
+    13,
+    13
+   ],
+   [
+    "samus",
+    9,
+    9
+   ],
+   [
+    "king_k_rool",
+    4,
+    4
+   ],
+   [
+    "terry",
+    12,
+    15
+   ],
+   [
+    "rob",
+    4,
+    5
+   ],
+   [
+    "link",
+    7,
+    9
+   ],
+   [
+    "cloud",
+    4,
+    7
+   ],
+   [
+    "bayonetta",
+    3,
+    6
+   ],
+   [
+    "dark_samus",
+    3,
+    9
+   ],
+   [
+    "pyra",
+    2,
+    6
+   ]
+  ],
+  "kazuya": [
+   [
+    "steve",
+    14,
+    1
+   ],
+   [
+    "ken",
+    11,
+    2
+   ],
+   [
+    "mr_game_and_watch",
+    19,
+    4
+   ],
+   [
+    "sora",
+    15,
+    4
+   ],
+   [
+    "snake",
+    16,
+    5
+   ],
+   [
+    "zelda",
+    10,
+    7
+   ],
+   [
+    "pikachu",
+    5,
+    5
+   ],
+   [
+    "richter",
+    4,
+    4
+   ],
+   [
+    "wolf",
+    4,
+    4
+   ],
+   [
+    "cloud",
+    6,
+    7
+   ],
+   [
+    "terry",
+    8,
+    13
+   ],
+   [
+    "samus",
+    8,
+    14
+   ],
+   [
+    "sonic",
+    3,
+    7
+   ],
+   [
+    "incineroar",
+    4,
+    11
+   ],
+   [
+    "pyra",
+    2,
+    6
+   ],
+   [
+    "joker",
+    4,
+    14
+   ],
+   [
+    "captain_falcon",
+    2,
+    9
+   ]
+  ],
+  "ken": [
+   [
+    "steve",
+    20,
+    2
+   ],
+   [
+    "snake",
+    17,
+    22
+   ],
+   [
+    "terry",
+    9,
+    15
+   ],
+   [
+    "mii_brawler",
+    2,
+    8
+   ],
+   [
+    "kazuya",
+    2,
+    11
+   ],
+   [
+    "pyra",
+    1,
+    10
+   ],
+   [
+    "sora",
+    0,
+    10
+   ]
+  ],
+  "king_dedede": [
+   [
+    "terry",
+    7,
+    1
+   ],
+   [
+    "zero_suit_samus",
+    3,
+    6
+   ],
+   [
+    "cloud",
+    2,
+    6
+   ]
+  ],
+  "king_k_rool": [
+   [
+    "terry",
+    10,
+    3
+   ],
+   [
+    "cloud",
+    5,
+    5
+   ],
+   [
+    "joker",
+    4,
+    4
+   ]
+  ],
+  "kirby": [
+   [
+    "terry",
+    9,
+    1
+   ],
+   [
+    "luigi",
+    7,
+    1
+   ]
+  ],
+  "link": [
+   [
+    "mario",
+    13,
+    3
+   ],
+   [
+    "minmin",
+    7,
+    2
+   ],
+   [
+    "terry",
+    16,
+    8
+   ],
+   [
+    "incineroar",
+    9,
+    5
+   ],
+   [
+    "zelda",
+    19,
+    11
+   ],
+   [
+    "joker",
+    9,
+    7
+   ],
+   [
+    "cloud",
+    6,
+    6
+   ],
+   [
+    "yoshi",
+    4,
+    6
+   ],
+   [
+    "bowser",
+    2,
+    6
+   ],
+   [
+    "fox",
+    2,
+    6
+   ]
+  ],
+  "luigi": [
+   [
+    "terry",
+    8,
+    6
+   ],
+   [
+    "sora",
+    3,
+    6
+   ],
+   [
+    "kirby",
+    1,
+    7
+   ]
+  ],
+  "mario": [
+   [
+    "snake",
+    6,
+    2
+   ],
+   [
+    "mii_brawler",
+    6,
+    4
+   ],
+   [
+    "terry",
+    9,
+    7
+   ],
+   [
+    "pikachu",
+    5,
+    4
+   ],
+   [
+    "cloud",
+    5,
+    6
+   ],
+   [
+    "link",
+    3,
+    13
+   ]
+  ],
+  "mewtwo": [
+   [
+    "incineroar",
+    6,
+    3
+   ],
+   [
+    "terry",
+    5,
+    4
+   ]
+  ],
+  "mii_brawler": [
+   [
+    "ken",
+    8,
+    2
+   ],
+   [
+    "steve",
+    7,
+    2
+   ],
+   [
+    "mr_game_and_watch",
+    12,
+    5
+   ],
+   [
+    "snake",
+    7,
+    4
+   ],
+   [
+    "cloud",
+    4,
+    5
+   ],
+   [
+    "terry",
+    8,
+    11
+   ],
+   [
+    "sora",
+    5,
+    7
+   ],
+   [
+    "mario",
+    4,
+    6
+   ],
+   [
+    "minmin",
+    4,
+    6
+   ],
+   [
+    "corrin",
+    3,
+    5
+   ],
+   [
+    "incineroar",
+    4,
+    8
+   ],
+   [
+    "joker",
+    3,
+    8
+   ]
+  ],
+  "mii_swordfighter": [
+   [
+    "terry",
+    5,
+    12
+   ]
+  ],
+  "minmin": [
+   [
+    "palutena",
+    7,
+    3
+   ],
+   [
+    "mii_brawler",
+    6,
+    4
+   ],
+   [
+    "terry",
+    7,
+    5
+   ],
+   [
+    "wolf",
+    7,
+    7
+   ],
+   [
+    "joker",
+    4,
+    5
+   ],
+   [
+    "zelda",
+    8,
+    15
+   ],
+   [
+    "link",
+    2,
+    7
+   ]
+  ],
+  "mr_game_and_watch": [
+   [
+    "steve",
+    16,
+    3
+   ],
+   [
+    "sora",
+    12,
+    5
+   ],
+   [
+    "incineroar",
+    6,
+    6
+   ],
+   [
+    "snake",
+    14,
+    27
+   ],
+   [
+    "terry",
+    7,
+    15
+   ],
+   [
+    "ryu",
+    5,
+    11
+   ],
+   [
+    "mii_brawler",
+    5,
+    12
+   ],
+   [
+    "kazuya",
+    4,
+    19
+   ]
+  ],
+  "ness": [
+   [
+    "zelda",
+    7,
+    3
+   ]
+  ],
+  "palutena": [
+   [
+    "terry",
+    4,
+    5
+   ],
+   [
+    "minmin",
+    3,
+    7
+   ],
+   [
+    "byleth",
+    3,
+    12
+   ],
+   [
+    "cloud",
+    0,
+    8
+   ]
+  ],
+  "pikachu": [
+   [
+    "kazuya",
+    5,
+    5
+   ],
+   [
+    "cloud",
+    4,
+    4
+   ],
+   [
+    "mario",
+    4,
+    5
+   ],
+   [
+    "steve",
+    35,
+    51
+   ],
+   [
+    "wolf",
+    4,
+    7
+   ],
+   [
+    "samus",
+    4,
+    10
+   ],
+   [
+    "snake",
+    7,
+    32
+   ],
+   [
+    "ryu",
+    1,
+    17
+   ],
+   [
+    "diddy_kong",
+    0,
+    8
+   ]
+  ],
+  "pokemon_trainer": [
+   [
+    "roy",
+    4,
+    4
+   ],
+   [
+    "terry",
+    3,
+    6
+   ]
+  ],
+  "pyra": [
+   [
+    "ken",
+    10,
+    1
+   ],
+   [
+    "joker",
+    6,
+    2
+   ],
+   [
+    "kazuya",
+    6,
+    2
+   ],
+   [
+    "incineroar",
+    6,
+    3
+   ],
+   [
+    "diddy_kong",
+    9,
+    5
+   ],
+   [
+    "ryu",
+    5,
+    3
+   ],
+   [
+    "snake",
+    5,
+    3
+   ],
+   [
+    "sora",
+    5,
+    3
+   ],
+   [
+    "terry",
+    5,
+    5
+   ],
+   [
+    "corrin",
+    4,
+    4
+   ],
+   [
+    "wolf",
+    3,
+    5
+   ],
+   [
+    "zelda",
+    4,
+    7
+   ]
+  ],
+  "richter": [
+   [
+    "kazuya",
+    4,
+    4
+   ]
+  ],
+  "rob": [
+   [
+    "diddy_kong",
+    7,
+    1
+   ],
+   [
+    "terry",
+    10,
+    5
+   ],
+   [
+    "joker",
+    5,
+    4
+   ],
+   [
+    "samus",
+    4,
+    7
+   ]
+  ],
+  "roy": [
+   [
+    "incineroar",
+    7,
+    4
+   ],
+   [
+    "pokemon_trainer",
+    4,
+    4
+   ],
+   [
+    "terry",
+    7,
+    8
+   ]
+  ],
+  "ryu": [
+   [
+    "pikachu",
+    17,
+    1
+   ],
+   [
+    "mr_game_and_watch",
+    11,
+    5
+   ],
+   [
+    "snake",
+    8,
+    8
+   ],
+   [
+    "pyra",
+    3,
+    5
+   ]
+  ],
+  "samus": [
+   [
+    "captain_falcon",
+    7,
+    1
+   ],
+   [
+    "pikachu",
+    10,
+    4
+   ],
+   [
+    "kazuya",
+    14,
+    8
+   ],
+   [
+    "rob",
+    7,
+    4
+   ],
+   [
+    "wolf",
+    5,
+    3
+   ],
+   [
+    "incineroar",
+    10,
+    7
+   ],
+   [
+    "sora",
+    7,
+    6
+   ],
+   [
+    "terry",
+    10,
+    10
+   ],
+   [
+    "joker",
+    9,
+    9
+   ],
+   [
+    "zelda",
+    5,
+    7
+   ],
+   [
+    "cloud",
+    4,
+    15
+   ]
+  ],
+  "snake": [
+   [
+    "pikachu",
+    32,
+    7
+   ],
+   [
+    "steve",
+    9,
+    3
+   ],
+   [
+    "mr_game_and_watch",
+    27,
+    14
+   ],
+   [
+    "cloud",
+    8,
+    6
+   ],
+   [
+    "ken",
+    22,
+    17
+   ],
+   [
+    "ryu",
+    8,
+    8
+   ],
+   [
+    "sonic",
+    5,
+    5
+   ],
+   [
+    "zelda",
+    4,
+    5
+   ],
+   [
+    "pyra",
+    3,
+    5
+   ],
+   [
+    "mii_brawler",
+    4,
+    7
+   ],
+   [
+    "incineroar",
+    3,
+    6
+   ],
+   [
+    "terry",
+    6,
+    13
+   ],
+   [
+    "sora",
+    6,
+    15
+   ],
+   [
+    "mario",
+    2,
+    6
+   ],
+   [
+    "kazuya",
+    5,
+    16
+   ],
+   [
+    "captain_falcon",
+    2,
+    7
+   ]
+  ],
+  "sonic": [
+   [
+    "sora",
+    8,
+    2
+   ],
+   [
+    "kazuya",
+    7,
+    3
+   ],
+   [
+    "terry",
+    11,
+    8
+   ],
+   [
+    "snake",
+    5,
+    5
+   ],
+   [
+    "incineroar",
+    3,
+    8
+   ]
+  ],
+  "sora": [
+   [
+    "ken",
+    10,
+    0
+   ],
+   [
+    "snake",
+    15,
+    6
+   ],
+   [
+    "luigi",
+    6,
+    3
+   ],
+   [
+    "steve",
+    5,
+    3
+   ],
+   [
+    "mii_brawler",
+    7,
+    5
+   ],
+   [
+    "samus",
+    6,
+    7
+   ],
+   [
+    "pyra",
+    3,
+    5
+   ],
+   [
+    "dark_samus",
+    4,
+    8
+   ],
+   [
+    "mr_game_and_watch",
+    5,
+    12
+   ],
+   [
+    "terry",
+    5,
+    15
+   ],
+   [
+    "incineroar",
+    2,
+    7
+   ],
+   [
+    "zelda",
+    3,
+    11
+   ],
+   [
+    "kazuya",
+    4,
+    15
+   ],
+   [
+    "sonic",
+    2,
+    8
+   ]
+  ],
+  "steve": [
+   [
+    "pikachu",
+    51,
+    35
+   ],
+   [
+    "sora",
+    3,
+    5
+   ],
+   [
+    "cloud",
+    6,
+    11
+   ],
+   [
+    "diddy_kong",
+    10,
+    21
+   ],
+   [
+    "dark_samus",
+    3,
+    7
+   ],
+   [
+    "snake",
+    3,
+    9
+   ],
+   [
+    "mii_brawler",
+    2,
+    7
+   ],
+   [
+    "mr_game_and_watch",
+    3,
+    16
+   ],
+   [
+    "ken",
+    2,
+    20
+   ],
+   [
+    "terry",
+    1,
+    10
+   ],
+   [
+    "kazuya",
+    1,
+    14
+   ]
+  ],
+  "terry": [
+   [
+    "steve",
+    10,
+    1
+   ],
+   [
+    "sora",
+    15,
+    5
+   ],
+   [
+    "mii_swordfighter",
+    12,
+    5
+   ],
+   [
+    "snake",
+    13,
+    6
+   ],
+   [
+    "mr_game_and_watch",
+    15,
+    7
+   ],
+   [
+    "pokemon_trainer",
+    6,
+    3
+   ],
+   [
+    "ken",
+    15,
+    9
+   ],
+   [
+    "kazuya",
+    13,
+    8
+   ],
+   [
+    "diddy_kong",
+    8,
+    5
+   ],
+   [
+    "mii_brawler",
+    11,
+    8
+   ],
+   [
+    "cloud",
+    27,
+    21
+   ],
+   [
+    "joker",
+    15,
+    12
+   ],
+   [
+    "dark_samus",
+    5,
+    4
+   ],
+   [
+    "palutena",
+    5,
+    4
+   ],
+   [
+    "roy",
+    8,
+    7
+   ],
+   [
+    "zelda",
+    13,
+    12
+   ],
+   [
+    "samus",
+    10,
+    10
+   ],
+   [
+    "pyra",
+    5,
+    5
+   ],
+   [
+    "mewtwo",
+    4,
+    5
+   ],
+   [
+    "mario",
+    7,
+    9
+   ],
+   [
+    "luigi",
+    6,
+    8
+   ],
+   [
+    "sonic",
+    8,
+    11
+   ],
+   [
+    "minmin",
+    5,
+    7
+   ],
+   [
+    "incineroar",
+    9,
+    14
+   ],
+   [
+    "link",
+    8,
+    16
+   ],
+   [
+    "rob",
+    5,
+    10
+   ],
+   [
+    "zero_suit_samus",
+    3,
+    7
+   ],
+   [
+    "wolf",
+    2,
+    6
+   ],
+   [
+    "yoshi",
+    2,
+    6
+   ],
+   [
+    "king_k_rool",
+    3,
+    10
+   ],
+   [
+    "king_dedede",
+    1,
+    7
+   ],
+   [
+    "kirby",
+    1,
+    9
+   ],
+   [
+    "captain_falcon",
+    0,
+    10
+   ]
+  ],
+  "toon_link": [
+   [
+    "cloud",
+    2,
+    6
+   ]
+  ],
+  "wolf": [
+   [
+    "terry",
+    6,
+    2
+   ],
+   [
+    "pikachu",
+    7,
+    4
+   ],
+   [
+    "pyra",
+    5,
+    3
+   ],
+   [
+    "minmin",
+    7,
+    7
+   ],
+   [
+    "kazuya",
+    4,
+    4
+   ],
+   [
+    "joker",
+    6,
+    7
+   ],
+   [
+    "samus",
+    3,
+    5
+   ]
+  ],
+  "yoshi": [
+   [
+    "terry",
+    6,
+    2
+   ],
+   [
+    "link",
+    6,
+    4
+   ]
+  ],
+  "zelda": [
+   [
+    "sora",
+    11,
+    3
+   ],
+   [
+    "incineroar",
+    8,
+    4
+   ],
+   [
+    "minmin",
+    15,
+    8
+   ],
+   [
+    "pyra",
+    7,
+    4
+   ],
+   [
+    "cloud",
+    9,
+    6
+   ],
+   [
+    "samus",
+    7,
+    5
+   ],
+   [
+    "snake",
+    5,
+    4
+   ],
+   [
+    "terry",
+    12,
+    13
+   ],
+   [
+    "diddy_kong",
+    4,
+    5
+   ],
+   [
+    "joker",
+    7,
+    10
+   ],
+   [
+    "kazuya",
+    7,
+    10
+   ],
+   [
+    "banjo_and_kazooie",
+    4,
+    6
+   ],
+   [
+    "link",
+    11,
+    19
+   ],
+   [
+    "captain_falcon",
+    4,
+    9
+   ],
+   [
+    "ness",
+    3,
+    7
+   ]
+  ],
+  "zero_suit_samus": [
+   [
+    "terry",
+    7,
+    3
+   ],
+   [
+    "king_dedede",
+    6,
+    3
+   ]
+  ]
+ }
 }

@@ -1,4 +1,8 @@
-"""Render the draft matchup guide for review and check it against the character catalog. Not published."""
+"""Render the draft matchup guide for review and check it against the character catalog. Not published.
+
+Two kinds of content, never mixed: weaknesses paraphrased from SmashWiki (each with its article), and the
+real record of each matchup in the Guatemalan cut's games.
+"""
 import json
 import re
 import sys
@@ -7,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "docs/smash/guia/matchups-borrador.json"
 TARGET = ROOT / "docs/smash/guia/MATCHUPS-BORRADOR.md"
+WIKI = re.compile(r"https://www\.ssbwiki\.com/[A-Za-z0-9_.%&()-]+_\(SSBU\)")
 
 
 def catalog():
@@ -15,39 +20,54 @@ def catalog():
 
 
 def validate(guide, names):
-    entries = guide["characters"]
+    entries, minimum = guide["characters"], guide["sceneMinimumGames"]
     for slug, entry in entries.items():
-        if slug not in names:
-            raise ValueError(f"Personaje fuera del catálogo: {slug}")
-        if "sameAs" in entry:
-            if set(entry) != {"sameAs"} or "counters" not in entries.get(entry["sameAs"], {}):
-                raise ValueError(f"Referencia inválida en {slug}")
-            continue
-        if set(entry) != {"weakness", "counters"} or not entry["weakness"].strip() or not 1 <= len(entry["counters"]) <= 3:
-            raise ValueError(f"Ficha incompleta: {slug}")
+        if slug not in names or set(entry) != {"weaknesses", "source"}:
+            raise ValueError(f"Ficha inválida: {slug}")
+        # A weakness without its article is an opinion, and opinions are what this file replaced.
+        if not WIKI.fullmatch(entry["source"]) or not 1 <= len(entry["weaknesses"]) <= 3:
+            raise ValueError(f"Ficha sin fuente o sin debilidades: {slug}")
+        if any(not isinstance(text, str) or not text.strip() or len(text) > 200 for text in entry["weaknesses"]):
+            raise ValueError(f"Debilidad vacía o demasiado larga: {slug}")
+    for echo, original in guide["echoes"].items():
+        if echo not in names or echo in entries or original not in entries:
+            raise ValueError(f"Eco inválido: {echo}")
+    for main, rows in guide["scene"].items():
         seen = set()
-        for counter, reason in entry["counters"]:
-            if counter not in names or counter == slug or counter in seen or not reason.strip() or len(reason) > 220:
-                raise ValueError(f"Counter inválido en {slug}: {counter}")
-            seen.add(counter)
+        for other, won, lost in rows:
+            if main not in names or other not in names or other == main or other in seen:
+                raise ValueError(f"Cruce inválido: {main} / {other}")
+            if type(won) is not int or type(lost) is not int or won < 0 or lost < 0 or won + lost < minimum:
+                raise ValueError(f"Cruce por debajo de la muestra mínima: {main} / {other}")
+            seen.add(other)
+
+
+def scene_lines(guide, names, slug):
+    rows = [row for row in guide["scene"].get(slug, []) if row[1] > row[2]][:3]
+    if not rows:
+        return [f"- Ningún personaje le gana más de lo que pierde con {guide['sceneMinimumGames']} games o más."]
+    return [f"- **{names[other]}** — le gana {won} de {won + lost} games" for other, won, lost in rows]
 
 
 def render(guide, names):
     entries = guide["characters"]
+    day = "/".join(reversed(guide["sceneCut"].split("-")))
     lines = ["# Guía de matchups — BORRADOR SIN REVISAR", "",
              "Generado desde `matchups-borrador.json` con `python scripts/smash/guia_matchups.py`. No editar a mano.", "",
-             "**No son datos del ranking.** Es conocimiento general del juego redactado por Claude Code, sin fuente verificable. "
-             "No se publica hasta que el dueño o jugadores de la escena lo revisen. Para corregir: cambia el texto en el JSON, "
-             "o marca aquí la línea y dile a Claude Code qué está mal.", "",
-             f"Fichas: {len(entries)} de {len(names)} personajes (primero los más jugados en Guatemala).", ""]
+             "Cada ficha tiene dos partes que no se mezclan:", "",
+             "- **Le cuesta (SmashWiki):** debilidades del personaje, parafraseadas del artículo enlazado. " + guide["license"],
+             f"- **En Guatemala le ganan:** récord real en los games del corte del {day}, solo cruces con "
+             f"{guide['sceneMinimumGames']} games o más. Es un dato de la escena, no una regla del juego: "
+             "refleja también quién juega cada personaje aquí.", "",
+             "No se publica hasta que el dueño lo revise. Para corregir, dile a Claude Code qué línea está mal y por qué.", "",
+             f"Fichas: {len(entries)} de {len(names)} personajes (los más jugados en Guatemala).", ""]
     for slug, entry in sorted(entries.items(), key=lambda item: names[item[0]].casefold()):
-        lines.append(f"## {names[slug]}")
-        if "sameAs" in entry:
-            lines += ["", f"Igual que **{names[entry['sameAs']]}** (personaje eco o muy parecido).", ""]
-            continue
-        lines += ["", f"**Le cuesta:** {entry['weakness']}", ""]
-        lines += [f"- **{names[counter]}** — {reason}" for counter, reason in entry["counters"]]
-        lines.append("")
+        lines += [f"## {names[slug]}", "", f"**Le cuesta** ([SmashWiki]({entry['source']})):", ""]
+        lines += [f"- {text}" for text in entry["weaknesses"]]
+        lines += ["", "**En Guatemala le ganan:**", ""] + scene_lines(guide, names, slug) + [""]
+    for echo, original in sorted(guide["echoes"].items()):
+        lines += [f"## {names[echo]}", "", f"Personaje eco: mismas debilidades que **{names[original]}**.", "",
+                  "**En Guatemala le ganan:**", ""] + scene_lines(guide, names, echo) + [""]
     return "\n".join(lines)
 
 

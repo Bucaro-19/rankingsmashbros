@@ -15,12 +15,21 @@ class MatchupGuideTests(unittest.TestCase):
         from deploy import FILES
         self.assertFalse([name for name in FILES if "matchup" in name.lower() or "guia" in name.lower()])
 
-    def test_unknown_characters_and_self_counters_are_rejected(self):
-        names = {"a": "A", "b": "B"}
-        for bad in ({"x": {"weakness": "w", "counters": [["a", "r"]]}}, {"a": {"weakness": "w", "counters": [["a", "r"]]}},
-                    {"a": {"weakness": "w", "counters": []}}, {"a": {"sameAs": "b"}}):
+    def test_every_weakness_names_its_article_and_scene_rows_meet_the_sample(self):
+        data, names = json.loads(guide.SOURCE.read_text(encoding="utf-8")), guide.catalog()
+        self.assertTrue(all(guide.WIKI.fullmatch(entry["source"]) for entry in data["characters"].values()))
+        self.assertIn("CC BY-SA", data["license"])
+        ok = {"weaknesses": ["w"], "source": "https://www.ssbwiki.com/Mario_(SSBU)"}
+        base = {"sceneMinimumGames": 8, "echoes": {}, "scene": {}}
+        for bad in ({**base, "characters": {"mario": {**ok, "source": "https://example.com/x"}}},
+                    {**base, "characters": {"mario": {**ok, "weaknesses": []}}},
+                    {**base, "characters": {"nadie": ok}},
+                    {**base, "characters": {"mario": ok}, "scene": {"mario": [["link", 3, 2]]}},
+                    {**base, "characters": {"mario": ok}, "scene": {"mario": [["mario", 6, 4]]}},
+                    {**base, "characters": {"mario": ok}, "echoes": {"link": "samus"}}):
             with self.assertRaises(ValueError):
-                guide.validate({"characters": bad}, names)
+                guide.validate(bad, names)
+        guide.validate({**base, "characters": {"mario": ok}, "scene": {"mario": [["link", 6, 4]]}}, names)
 
 
 if __name__ == "__main__":
