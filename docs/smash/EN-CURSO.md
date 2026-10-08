@@ -14,6 +14,14 @@
 - Falta captura cPanel Uso de recursos (solicitada), límites/uso/fallos del plan y duración del worker. Producción espera **orden expresa y horario** elegido por el dueño de madrugada lunes–viernes. Sin fusión, despliegue, cambios de cron ni escrituras en producción.
 
 
+
+## Guía de matchups con fuentes, límites del hosting y fase de agenda (9/oct)
+
+- **Guía de matchups rehecha** ([guia/MATCHUPS-BORRADOR.md](guia/MATCHUPS-BORRADOR.md)): se descartó el borrador escrito de memoria. Ahora cada ficha tiene (1) debilidades parafraseadas de SmashWiki, con el enlace del artículo (CC BY-SA, exige atribución), y (2) qué personajes le ganan en los games reales del corte del 4/oct, solo cruces con 8 games o más (310 cruces de 45 personajes, leídos de producción). 20 fichas, las de los personajes más jugados. Sigue sin publicarse: falta la revisión del dueño y decidir cómo se muestra en «Por qué funciona» con su crédito.
+- **Límites del plan de hosting** (captura de cPanel del dueño, 8/oct): CPU 300 %, memoria 6 GB, E/S 10 MB/s, 1024 IOPS, **35 procesos de entrada** y 100 procesos. Uso por hora del 7 al 8/oct: CPU 1–7 %, memoria 4–25 MB, procesos de entrada 0.05–0.28 de media, **cero fallos**. El sitio usa una fracción mínima del plan.
+- **Prueba de carga de Codex (#61):** el dueño informó que terminó. Mide en laboratorio hasta 40 visitantes virtuales sin errores porque 40 era el tope del encargo, no porque el sitio falle a 41; producción no se ha medido. La PR sigue abierta a la espera de la orden de fusionar.
+- **Fase nueva pedida por el dueño: agenda de próximos torneos en Guatemala y cerca de cada jugador.** [Brief para Claude Design](BRIEF-CLAUDE-DESIGN-TORNEOS.md) y [encargo para Codex](ENCARGO-CODEX-AGENDA-TORNEOS.md) de la captura. «Cerca de mí» se resuelve en el navegador con permiso del visitante; la ubicación no se envía ni se guarda.
+
 ## «Prepara el set»: análisis ampliado del rival (8/oct, noche)
 
 - Handoff `design_handoff_smash_gt_analisis_ampliado` implementado en `preparar.html` / `preparar.js` / `preparar.css`, enlazado desde el análisis de rival. La API añade el campo de pago `deep` (contrato en [ANALISIS-RIVAL.md](ANALISIS-RIVAL.md)).

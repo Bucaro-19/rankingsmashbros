@@ -2,274 +2,294 @@
 
 Generado desde `matchups-borrador.json` con `python scripts/smash/guia_matchups.py`. No editar a mano.
 
-**No son datos del ranking.** Es conocimiento general del juego redactado por Claude Code, sin fuente verificable. No se publica hasta que el dueño o jugadores de la escena lo revisen. Para corregir: cambia el texto en el JSON, o marca aquí la línea y dile a Claude Code qué está mal.
+Cada ficha tiene dos partes que no se mezclan:
 
-Fichas: 35 de 86 personajes (primero los más jugados en Guatemala).
+- **Le cuesta (SmashWiki):** debilidades del personaje, parafraseadas del artículo enlazado. Texto derivado de SmashWiki, CC BY-SA 4.0 (contribuciones anteriores al 27/feb/2026: CC BY-SA 3.0). Requiere atribución y compartir bajo la misma licencia.
+- **En Guatemala le ganan:** récord real en los games del corte del 04/10/2026, solo cruces con 8 games o más. Es un dato de la escena, no una regla del juego: refleja también quién juega cada personaje aquí.
 
-## Banjo & Kazooie
+No se publica hasta que el dueño lo revise. Para corregir, dile a Claude Code qué línea está mal y por qué.
 
-**Le cuesta:** Lento para cerrar vidas y con recuperación limitada cuando se le acaban las plumas.
-
-- **Pikachu** — Presión y castigo fuera del escenario.
-- **Palutena** — Reflector contra los huevos y mejor movilidad.
-- **Fox** — Velocidad y reflector contra su juego de proyectiles.
-
-## Captain Falcon
-
-**Le cuesta:** Recuperación predecible y sin buenas opciones para salir de la desventaja.
-
-- **Pikachu** — Lo castiga fuera del escenario con mucha facilidad.
-- **R.O.B.** — Proyectiles que cortan su carrera y agarres que lo dejan lejos.
-- **Mr. Game & Watch** — Opciones fuera del escudo contra su presión y cobertura de su regreso.
-
-## Chrom
-
-Igual que **Roy** (personaje eco o muy parecido).
+Fichas: 20 de 86 personajes (los más jugados en Guatemala).
 
 ## Cloud
 
-**Le cuesta:** Recuperación corta y predecible, sobre todo sin Límite; pierde mucho cuando lo sacan del escenario.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Cloud_(SSBU))):
 
-- **Pikachu** — Uno de los mejores castigando regresos como el de Cloud.
-- **Mr. Game & Watch** — Castiga fuera del escudo sus aéreos y lo intercepta con facilidad fuera del escenario.
-- **R.O.B.** — Controla la distancia y lo deja lejos, obligándolo a regresar una y otra vez.
+- Recuperación corta: fácil de interceptar o rematar fuera del escenario.
+- Pocas formas seguras de salir de la presión; sus opciones son castigables en escudo.
+- Agarre corto y lanzamientos con poco provecho.
 
-## Corrin
+**En Guatemala le ganan:**
 
-**Le cuesta:** Movilidad lenta y recuperación interceptable; le cuesta contra personajes rápidos que no respetan su rango.
-
-- **Pikachu** — Velocidad y castigo fuera del escenario.
-- **Fox** — Entra antes de que pueda usar su alcance.
-- **Palutena** — Movilidad aérea superior y aéreos que le ganan el intercambio.
-
-## Dark Samus
-
-Igual que **Samus** (personaje eco o muy parecido).
+- **Palutena** — le gana 8 de 8 games
+- **Diddy Kong** — le gana 9 de 11 games
+- **Samus** — le gana 15 de 19 games
 
 ## Diddy Kong
 
-**Le cuesta:** Depende de la banana; pierde mucho cuando el rival se la quita o lo castiga al sacarla, y su recuperación es interceptable.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Diddy_Kong_(SSBU))):
 
-- **Pikachu** — Castiga su recuperación y le disputa la banana con velocidad.
-- **Palutena** — Aéreos seguros y buen control del espacio que le quitan su ritmo.
-- **R.O.B.** — Control de objetos propio con el giroscopio y peso para aguantar sus combos.
+- La banana se puede usar en su contra: el rival puede agarrarla y lanzársela.
+- Le cuesta cerrar vidas a porcentaje alto.
+- Recuperación explotable: si lo golpean durante los barriles suele perder la vida.
+
+**En Guatemala le ganan:**
+
+- **Pikachu** — le gana 8 de 8 games
+- **Steve** — le gana 21 de 31 games
+- **Zelda** — le gana 5 de 9 games
 
 ## Incineroar
 
-**Le cuesta:** El más lento del juego en el suelo y con una recuperación muy limitada; sufre contra proyectiles y contra quien no se acerca.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Incineroar_(SSBU))):
 
-- **Samus** — Lo mantiene lejos con proyectiles y lo castiga cuando salta para acercarse.
-- **Min Min** — Rango enorme contra un personaje que no puede cerrar la distancia.
-- **Pikachu** — Rápido, pequeño y letal contra una recuperación tan corta.
+- El caminar y la carrera más lentos del juego, poco alcance y sin proyectil: sufre contra quien lo mantiene lejos.
+- Remates inconsistentes que dependen mucho de agarres, lo que lo hace previsible.
+- Recuperación limitada y muy vulnerable a que lo intercepten sin su doble salto.
+
+**En Guatemala le ganan:**
+
+- **Diddy Kong** — le gana 13 de 16 games
+- **Sora** — le gana 7 de 9 games
+- **Kazuya** — le gana 11 de 15 games
 
 ## Joker
 
-**Le cuesta:** Sin Arsene pega poco y es ligero; pierde la ventaja cuando se le niega cargar la barra o se le hace gastar Arsene sin sacarle provecho.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Joker_(SSBU))):
 
-- **Pikachu** — Presión constante y difícil de golpear; lo castiga fuera del escenario antes de que Arsene importe.
-- **Mr. Game & Watch** — Sus opciones fuera del escudo castigan la presión aérea de Joker y lo mata temprano por ser ligero.
-- **R.O.B.** — Aguanta bien a Arsene por su peso y controla el ritmo con proyectiles.
+- Sin Arsène le cuesta cerrar vidas a porcentaje alto; depende de interceptar fuera del escenario o de un remate directo.
+- Opciones fuera del escudo más débiles que las de la mayoría del elenco.
+- Con Arsène, recibir golpes vacía la barra más rápido, y su recuperación deja de proteger al terminar la invencibilidad.
+
+**En Guatemala le ganan:**
+
+- **Kazuya** — le gana 14 de 18 games
+- **Mii Brawler** — le gana 8 de 11 games
+- **Diddy Kong** — le gana 7 de 10 games
 
 ## Kazuya
 
-**Le cuesta:** Movilidad pobre y recuperación explotable; depende de acertar un golpe de cerca y le cuesta alcanzar a quien se mantiene lejos.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Kazuya_(SSBU))):
 
-- **Min Min** — Lo golpea desde donde no puede responder y lo deja fuera del escenario, su peor posición.
-- **Samus** — Proyectiles cargados y control del espacio que lo obligan a caminar hacia el daño.
-- **Sonic** — Entra y sale sin dejarle una apertura clara, y gana tiempo sin arriesgar el combo que Kazuya necesita.
+- Mala desventaja: sin opciones aéreas para cortar combos y con una recuperación explotable.
+- Ataques lentos e inseguros: muchos salen del frame 12 en adelante y son castigables en escudo.
+- Movilidad pobre en suelo y aire, con el inicio de salto más lento del juego.
+
+**En Guatemala le ganan:**
+
+- **Steve** — le gana 14 de 15 games
+- **Ken** — le gana 11 de 13 games
+- **Mr. Game & Watch** — le gana 19 de 23 games
 
 ## Ken
 
-**Le cuesta:** Recuperación limitada y dificultad para alcanzar a quien se mantiene lejos; necesita estar pegado para hacer daño.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Ken_(SSBU))):
 
-- **Min Min** — Rango que anula su juego de cerca.
-- **Samus** — Proyectiles que lo obligan a acercarse recibiendo daño.
-- **Pikachu** — Castiga su regreso y es difícil de confirmar por su tamaño.
+- Fácil de combear y con una recuperación lineal que se puede leer e interceptar.
+- Algunos de sus golpes clave se pueden escapar moviendo el control, lo que permite castigarlo.
+- Pocas formas de acercarse: en muchos cruces tiene que caminar hacia el rival.
 
-## King K. Rool
+**En Guatemala le ganan:**
 
-**Le cuesta:** Lento y muy grande; sufre contra combos largos y contra quien ignora o devuelve sus proyectiles.
-
-- **Pikachu** — Combos muy largos sobre un cuerpo enorme.
-- **Fox** — Reflector y velocidad contra un personaje lento.
-- **Zero Suit Samus** — Castigos consistentes por su tamaño y movilidad para evitar sus trampas.
+- **Steve** — le gana 20 de 22 games
 
 ## Link
 
-**Le cuesta:** Marco grande y opciones lentas de cerca; sufre contra personajes veloces que entran por debajo de sus proyectiles.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Link_(SSBU))):
 
-- **Fox** — Velocidad y reflector para castigar cada proyectil mal puesto.
-- **Pikachu** — Entra con facilidad y lo castiga fuera del escenario.
-- **Palutena** — Reflector y aéreos seguros que le ganan en la media distancia.
+- Movimiento lento: le cuesta contra personajes veloces que esquivan sus proyectiles.
+- Golpes de espada lentos que ataques más rápidos pueden superar.
+- Por su peso es fácil de combear y de mantener en desventaja.
 
-## Luigi
+**En Guatemala le ganan:**
 
-**Le cuesta:** Movilidad aérea muy pobre y recuperación lenta; no puede alcanzar a quien se mantiene lejos.
-
-- **Min Min** — Fuera de su alcance, donde su agarre no importa.
-- **Samus** — Proyectiles contra un personaje que no puede acercarse rápido.
-- **R.O.B.** — Control a distancia y cobertura de un regreso muy lento.
+- **Mario** — le gana 13 de 16 games
+- **Min Min** — le gana 7 de 9 games
+- **Terry** — le gana 16 de 24 games
 
 ## Mario
 
-**Le cuesta:** Poco alcance; sufre contra espadas y personajes con rango que lo mantienen fuera.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Mario_(SSBU))):
 
-- **Lucina** — Lo deja en la punta de la espada, lejos de sus combos.
-- **Cloud** — Rango y velocidad aérea que le ganan la media distancia.
-- **Min Min** — No lo deja acercarse.
+- Poco alcance: le cuesta acercarse contra personajes de rango largo o con espada.
+- Pocos remates fiables.
+- Recuperación lineal: fácil de interceptar cuando no tiene el doble salto.
 
-## Mewtwo
+**En Guatemala le ganan:**
 
-**Le cuesta:** Marco enorme para lo ligero que es; se come combos largos y muere temprano.
-
-- **Pikachu** — Combos largos sobre un cuerpo grande y ligero.
-- **Fox** — Presión veloz y reflector para la Bola Sombra.
-- **Zero Suit Samus** — Castigos consistentes por su tamaño.
+- **Snake** — le gana 6 de 8 games
+- **Mii Brawler** — le gana 6 de 10 games
+- **Terry** — le gana 9 de 16 games
 
 ## Mii Brawler
 
-**Le cuesta:** Poco alcance y recuperación que depende de los especiales elegidos; sufre contra rango y contra proyectiles.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Mii_Brawler_(SSBU))):
 
-- **Lucina** — Rango de espada que no lo deja entrar.
-- **Min Min** — Lo mantiene lejos de donde hace daño.
-- **R.O.B.** — Proyectiles y control de escenario contra un personaje que necesita estar cerca.
+- Muy poco alcance.
+- Sus combos pierden fuerza a porcentaje alto: le faltan remates confirmados.
+- Caída rápida que invita a combos y poco peso: aguanta poco.
+
+**En Guatemala le ganan:**
+
+- **Ken** — le gana 8 de 10 games
+- **Steve** — le gana 7 de 9 games
+- **Mr. Game & Watch** — le gana 12 de 17 games
 
 ## Min Min
 
-**Le cuesta:** Muy vulnerable cuando el rival ya está encima o debajo de ella, y con una recuperación fácil de cubrir.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Min_Min_(SSBU))):
 
-- **Fox** — Cierra la distancia rápido y la deja sin respuesta de cerca.
-- **Pikachu** — Pasa por debajo de los brazos y la castiga fuera del escenario.
-- **Zero Suit Samus** — Movilidad para rodear los brazos y castigos fuertes cuando entra.
+- Sobrevive mal fuera del escenario: poca velocidad aérea y recuperación corta en horizontal.
+- Pocas salidas de la desventaja; por su caída lenta es fácil de mantener en el aire.
+- Ataques comprometidos que se castigan si fallan; le cuesta contra personajes rápidos.
+
+**En Guatemala le ganan:**
+
+- **Palutena** — le gana 7 de 10 games
+- **Mii Brawler** — le gana 6 de 10 games
+- **Terry** — le gana 7 de 12 games
 
 ## Mr. Game & Watch
 
-**Le cuesta:** El más ligero entre los de su nivel y con poco alcance; sufre contra rango largo y muere muy temprano.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Mr._Game_%26_Watch_(SSBU))):
 
-- **Lucina** — Lo mantiene en la punta de la espada, donde no puede usar sus opciones fuera del escudo.
-- **Cloud** — Aéreos con rango que le ganan el intercambio y remates tempranos.
-- **Min Min** — Fuera de su alcance todo el tiempo.
+- De los más ligeros: muere temprano.
+- Defensa débil: aéreos lentos y esquivas de poco recorrido.
+- Poco alcance y sin buen juego a distancia: sufre contra espadas y personajes con mejor rango.
 
-## Palutena
+**En Guatemala le ganan:**
 
-**Le cuesta:** Pocas opciones rápidas en el suelo y remates que dependen de lecturas; sufre contra presión de cerca.
-
-- **Pikachu** — Entra por debajo de sus aéreos y la presiona en el suelo.
-- **Fox** — Velocidad en el suelo, justo donde ella es más débil.
-- **Mr. Game & Watch** — Castiga sus aéreos desde el escudo.
+- **Steve** — le gana 16 de 19 games
+- **Sora** — le gana 12 de 17 games
 
 ## Pikachu
 
-**Le cuesta:** Muy ligero y con poco alcance; muere temprano si lo alcanza un golpe fuerte y le cuesta contra espadas con buen rango.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Pikachu_(SSBU))):
 
-- **Mr. Game & Watch** — Opciones fuera del escudo que cortan su presión y remates que lo matan temprano.
-- **Lucina** — Rango de espada que lo mantiene fuera y castigos consistentes.
-- **R.O.B.** — Peso para aguantar sus combos y herramientas para controlarle el acercamiento.
+- Muy ligero: fácil de rematar para quien tiene golpes fuertes.
+- Le cuesta cerrar vidas: sus remates funcionan a porcentaje alto o tienen inconvenientes.
+- Poco alcance y sin golpes desligados del cuerpo: depende mucho del proyectil para acercarse.
+
+**En Guatemala le ganan:**
+
+- Ningún personaje le gana más de lo que pierde con 8 games o más.
 
 ## Pyra & Mythra
 
-**Le cuesta:** Recuperación corta y explotable en las dos formas; pierde vidas enteras fuera del escenario.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Pyra_(SSBU))):
 
-- **Pikachu** — Castiga su regreso mejor que casi nadie.
-- **Mr. Game & Watch** — Intercepta fuera del escenario y castiga la presión de Mythra desde el escudo.
-- **R.O.B.** — La saca lejos con agarres y proyectiles y cubre su regreso.
+- Movimiento lento en el suelo: le cuesta acercarse.
+- Mala desventaja: fácil de combear y con pocas formas seguras de cortar el combo.
+- Recuperación por debajo del promedio, corta en horizontal y fácil de disputar.
+
+**En Guatemala le ganan:**
+
+- **Ken** — le gana 10 de 11 games
+- **Joker** — le gana 6 de 8 games
+- **Kazuya** — le gana 6 de 8 games
 
 ## R.O.B.
 
-**Le cuesta:** Marco grande y fácil de combear; sufre contra presión rápida y contra quien le quita o devuelve el giroscopio.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/R.O.B._(SSBU))):
 
-- **Pikachu** — Combos largos sobre un cuerpo grande y pesado.
-- **Fox** — Presión veloz y reflector contra sus proyectiles.
-- **Zero Suit Samus** — Castigos largos que su tamaño hace fáciles de conectar.
+- Cuerpo grande, pesado y de caída rápida: fácil de combear y sin opciones para cortar el combo.
+- Recuperación con combustible limitado y sin golpe: se puede interceptar si no vuelve por arriba.
+- Aéreos lentos y agarre corto para su tamaño.
 
-## Roy
+**En Guatemala le ganan:**
 
-**Le cuesta:** Recuperación corta y necesidad de estar muy cerca para pegar fuerte.
-
-- **Pikachu** — Castiga su regreso y evita la zona fuerte de la espada.
-- **Min Min** — Lo mantiene lejos, donde su espada pega con la punta débil.
-- **R.O.B.** — Proyectiles y agarres que lo dejan fuera del escenario.
-
-## Ryu
-
-Igual que **Ken** (personaje eco o muy parecido).
+- **Diddy Kong** — le gana 7 de 8 games
+- **Terry** — le gana 10 de 15 games
+- **Joker** — le gana 5 de 9 games
 
 ## Samus
 
-**Le cuesta:** Sufre cuando le reflejan o absorben los proyectiles y bajo presión rápida de cerca, donde sus opciones son más lentas.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Samus_(SSBU))):
 
-- **Fox** — Reflector y velocidad para no dejarla cargar ni disparar con calma.
-- **Pikachu** — Se cuela entre los proyectiles y la presiona de cerca.
-- **Palutena** — Reflector y movilidad aérea para anular su juego a distancia.
+- Movilidad lenta y proyectiles con retraso que la dejan castigable.
+- Juego de cerca poco fiable cuando el rival ya entró.
+- Flotante: fácil de mantener en el aire, con una recuperación lenta y lineal.
+
+**En Guatemala le ganan:**
+
+- **Captain Falcon** — le gana 7 de 8 games
+- **Pikachu** — le gana 10 de 14 games
+- **Kazuya** — le gana 14 de 22 games
 
 ## Snake
 
-**Le cuesta:** Recuperación lenta y vulnerable; sufre cuando lo sacan del escenario y contra quien invade su zona de explosivos sin miedo.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Snake_(SSBU))):
 
-- **Pikachu** — Lo castiga durante todo el regreso con el Cypher y es difícil de atrapar con granadas.
-- **Zero Suit Samus** — Movilidad para rodear sus trampas y castigos muy fuertes cuando lo alcanza.
-- **Palutena** — Aéreos seguros que le ganan en el intercambio y buenas herramientas para cubrir su regreso.
+- Recuperación predecible y fácil de interceptar; el Cypher se puede destruir.
+- Mala desventaja: vulnerable a combos y con problemas para aterrizar.
+- Sus remates principales son bastante previsibles.
 
-## Sonic
+**En Guatemala le ganan:**
 
-**Le cuesta:** Poco alcance y dificultad para rematar; depende de la paciencia y de que el rival se desespere.
-
-- **Pikachu** — Velocidad parecida y mejor castigo cuando lo atrapa.
-- **R.O.B.** — Controla el escenario y aguanta su daño goteado.
-- **Mr. Game & Watch** — Opciones fuera del escudo que castigan sus entradas.
+- **Pikachu** — le gana 32 de 39 games
+- **Steve** — le gana 9 de 12 games
+- **Mr. Game & Watch** — le gana 27 de 41 games
 
 ## Sora
 
-**Le cuesta:** Flotante y ligero; fácil de rematar por arriba y con poca fuerza para cerrar vidas en el suelo.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Sora_(SSBU))):
 
-- **R.O.B.** — Lo castiga en el aire y lo remata temprano por los lados.
-- **Pikachu** — Presión que no lo deja flotar con calma.
-- **Cloud** — Rango y remates verticales que aprovechan su poco peso.
+- Menos alcance que la mayoría de espadachines y agarres cortos.
+- Ligero y de caída lenta: fácil de rematar por arriba y le cuesta salir de combos.
+- Varios especiales tienen limitaciones que lo dejan expuesto.
+
+**En Guatemala le ganan:**
+
+- **Ken** — le gana 10 de 10 games
+- **Snake** — le gana 15 de 21 games
+- **Luigi** — le gana 6 de 9 games
 
 ## Steve
 
-**Le cuesta:** Necesita tiempo para minar; sufre contra quien lo presiona sin pausa y contra quien controla el escenario desde lejos.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Steve_(SSBU))):
 
-- **Min Min** — Lo golpea por encima de los bloques y no le deja minar tranquilo.
-- **R.O.B.** — Proyectiles que interrumpen la recolección y buen control de las plataformas.
-- **Pikachu** — Presión constante de cerca que no le da respiro para armar recursos.
+- Movilidad pobre en suelo y aire: le cuesta acercarse.
+- Depende de sus materiales; quedarse sin ellos le quita herramientas clave.
+- Ataques de poco alcance y sin proyectil convencional: sufre contra rango y espadas.
+
+**En Guatemala le ganan:**
+
+- **Pikachu** — le gana 51 de 86 games
 
 ## Terry
 
-**Le cuesta:** Recuperación lineal y fácil de interceptar; sufre contra quien no lo deja acercarse y contra quien lo saca del escenario temprano.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Terry_(SSBU))):
 
-- **Pikachu** — Cuerpo pequeño que esquiva sus confirmaciones, y un juego fuera del escenario que castiga su regreso predecible.
-- **Min Min** — Lo mantiene a distancia con los brazos y lo obliga a acercarse sin sus herramientas de presión.
-- **R.O.B.** — Proyectiles y giroscopio le cortan la aproximación, y sus agarres lo sacan lejos, donde su recuperación sufre.
+- Depende de que el rival se acerque: le cuesta contra quien pelea a distancia.
+- Mala desventaja: le cuesta aterrizar y, por alto y de caída rápida, es fácil de combear en el aire.
+- Recuperación débil y predecible, con poca velocidad aérea: vulnerable fuera del escenario.
 
-## Wolf
+**En Guatemala le ganan:**
 
-**Le cuesta:** Recuperación corta y lineal; pierde vidas cuando lo sacan del escenario.
-
-- **Pikachu** — Castiga su regreso sin mucho riesgo.
-- **Mr. Game & Watch** — Lo intercepta fuera del escenario y castiga sus aéreos en el escudo.
-- **R.O.B.** — Lo saca lejos y cubre las pocas rutas que tiene para volver.
-
-## Yoshi
-
-**Le cuesta:** Pocas opciones fuera del escudo y sin agarre rápido; sufre contra presión bien espaciada.
-
-- **Lucina** — Presión de espada segura sobre un escudo con pocas respuestas.
-- **Cloud** — Aéreos con rango que le ganan en el aire.
-- **Min Min** — Lo mantiene fuera de su rango aéreo.
+- **Steve** — le gana 10 de 11 games
+- **Sora** — le gana 15 de 20 games
+- **Mii Swordfighter** — le gana 12 de 17 games
 
 ## Zelda
 
-**Le cuesta:** Movilidad lenta y marco grande; sufre bajo presión rápida de cerca y cuando no tiene espacio para preparar el Fantasma.
+**Le cuesta** ([SmashWiki](https://www.ssbwiki.com/Zelda_(SSBU))):
 
-- **Fox** — Velocidad para estar siempre encima y no dejarla preparar nada.
-- **Pikachu** — Entra por debajo de sus herramientas y la castiga fuera del escenario.
-- **Joker** — Movilidad y presión segura que le quitan el tiempo que necesita para controlar el espacio.
+- Movimiento lento: le cuesta espaciar sus ataques y entrar con seguridad.
+- Sus mejores remates exigen precisión; si falla el punto dulce queda castigable.
+- Alta, flotante y ligera, con pocas formas seguras de aterrizar: mala desventaja y poco aguante.
 
-## Zero Suit Samus
+**En Guatemala le ganan:**
 
-**Le cuesta:** Ligera y con pocas opciones defensivas de cerca; un error le cuesta la vida temprano.
+- **Sora** — le gana 11 de 14 games
+- **Incineroar** — le gana 8 de 12 games
+- **Min Min** — le gana 15 de 23 games
 
-- **Pikachu** — Presión de cerca donde ella tiene menos respuestas.
-- **Mr. Game & Watch** — La remata temprano y castiga desde el escudo.
-- **Fox** — Velocidad para no dejarla jugar a media distancia.
+## Dark Samus
+
+Personaje eco: mismas debilidades que **Samus**.
+
+**En Guatemala le ganan:**
+
+- **Joker** — le gana 9 de 12 games
+- **Steve** — le gana 7 de 10 games
+- **Sora** — le gana 8 de 12 games
