@@ -2,6 +2,9 @@ name: Comprobar dueños de torneos en start.gg
 # Consulta de un solo uso, solo lectura. Imprime conteos agregados, sin identificadores.
 on:
   workflow_dispatch:
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
 permissions:
   contents: read
 jobs:
@@ -14,12 +17,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Comprobar esquema vigente de start.gg (agenda, solo lectura)
+      - name: Capturar agenda de Guatemala (solo lectura, sin FTP ni SQL)
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/agenda_probe.py
+        run: python scripts/smash/agenda.py capture
       - uses: actions/upload-artifact@v4
         with:
-          name: smash-agenda-schema
-          path: scripts/smash/data/agenda-schema.json
+          name: smash-agenda-readonly
+          path: ranking-smash-ultimate/data/agenda.json
           retention-days: 7
