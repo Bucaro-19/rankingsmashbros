@@ -6,7 +6,7 @@ permissions:
   contents: read
 jobs:
   probe:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/feat/tournament-agenda'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -14,7 +14,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probar la consulta de dueños que usa la captura semanal
+      - name: Comprobar esquema vigente de start.gg (agenda, solo lectura)
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/probe_owners.py
+        run: python scripts/smash/agenda_probe.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smash-agenda-schema
+          path: scripts/smash/data/agenda-schema.json
+          retention-days: 7
