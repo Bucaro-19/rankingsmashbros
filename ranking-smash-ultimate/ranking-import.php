@@ -144,6 +144,37 @@ function sr_game_context(array $c, array $ids, array $slots): void {
     }
 }
 
+function sr_catalog_columns(): string {
+    return 'tournament_id event_id owner_startgg_user_id tournament_name slug starts_at city event_name entrants reason captured_at';
+}
+function sr_catalog(array $c): void {
+    $rows = $c['tournamentCatalog'] ?? null;
+    sr_require(is_array($rows)); $events = []; $tournaments = [];
+    $columns = explode(' ', sr_catalog_columns()); sort($columns);
+    foreach ($rows as $row) {
+        sr_require(is_array($row)); $keys = array_keys($row); sort($keys); sr_require($keys === $columns);
+        foreach (['tournament_id', 'event_id', 'owner_startgg_user_id'] as $key) {
+            if ($key === 'owner_startgg_user_id' && $row[$key] === null) continue;
+            sr_require(is_int($row[$key])); sr_id($row[$key]);
+        }
+        sr_require(!isset($events[$row['event_id']])); $events[$row['event_id']] = true;
+        sr_text($row['tournament_name'], 255); sr_text($row['city'], 120, true); sr_text($row['event_name'], 255, true);
+        $slug = $row['slug'];
+        sr_require($slug === null || (is_string($slug) && strlen($slug) <= 255 && strpos($slug, 'tournament/') === 0
+            && preg_match('/\A[\x20-\x7e]+\z/D', $slug) === 1));
+        if ($row['entrants'] !== null) sr_int($row['entrants']);
+        sr_require(in_array($row['reason'], [null, 'not_singles', 'online_or_unknown', 'unfinished_event', 'under_20_entrants', 'outside_window'], true));
+        foreach (['starts_at', 'captured_at'] as $key) {
+            $value = $row[$key]; if ($key === 'starts_at' && $value === null) continue;
+            sr_require(is_string($value) && preg_match('/\A\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{6}\z/D', $value) === 1);
+            sr_require(sr_at(str_replace(' ', 'T', $value) . 'Z') === $value);
+        }
+        sr_require($row['captured_at'] === sr_at($c['capturedAt']));
+        $identity = array_map(static function ($key) use ($row) { return $row[$key]; }, ['owner_startgg_user_id', 'tournament_name', 'slug', 'starts_at', 'city']);
+        sr_require(!isset($tournaments[$row['tournament_id']]) || $tournaments[$row['tournament_id']] === $identity);
+        $tournaments[$row['tournament_id']] = $identity;
+    }
+}
 function sr_package(string $raw): array {
     sr_require(strlen($raw) <= 32 * 1024 * 1024);
     $obj = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
@@ -151,14 +182,18 @@ function sr_package(string $raw): array {
     sr_require(array_keys(get_object_vars($obj)) === ['content', 'sha256'] && is_string($obj->sha256)
         && hash_equals(hash('sha256', sr_json($obj->content)), $obj->sha256));
     $p = json_decode($raw, true, 512, JSON_THROW_ON_ERROR); $c = $p['content']; $v = $c['public']; $tables = $c['entities'];
-    sr_require(in_array($c['packageVersion'], [1, 2], true) && $c['capturedAt'] === $v['generatedAt']);
+    sr_require(in_array($c['packageVersion'], [1, 2, 3], true) && $c['capturedAt'] === $v['generatedAt']);
+    if ($c['packageVersion'] === 3) {
+        // Preserve the JSON array/object distinction, including an empty catalog.
+        sr_require(is_array($obj->content->tournamentCatalog ?? null)); sr_catalog($c);
+    } else sr_require(!array_key_exists('tournamentCatalog', $c));
     sr_view($v, false); sr_view($v['localRanking'], true);
     foreach (['generatedAt', 'seasonYear', 'seasonLabel', 'methodVersion', 'eligibilityRules'] as $key)
         sr_require(($v[$key] ?? null) === ($v['localRanking'][$key] ?? null));
     $gt = array_values(array_filter($v['events'], static function ($e) { return $e['country'] === 'GT'; }));
     $gtIds = array_keys(sr_index($gt)); $localIds = array_keys(sr_index($v['localRanking']['events'])); sort($gtIds); sort($localIds); sr_require($gtIds === $localIds);
     $wantedNames = ['entrant_players', 'entrants', 'events', 'players', 'set_slots', 'sets', 'tournaments'];
-    if ($c['packageVersion'] === 2) { $wantedNames[] = 'games'; $wantedNames[] = 'game_selections'; }
+    if ($c['packageVersion'] >= 2) { $wantedNames[] = 'games'; $wantedNames[] = 'game_selections'; }
     $names = array_keys($tables); sort($names); sort($wantedNames); sr_require($names === $wantedNames);
     $ids = []; foreach (['players', 'tournaments', 'events', 'entrants', 'sets'] as $table) $ids[$table] = sr_index($tables[$table]);
     foreach ($tables['players'] as $r) { sr_text($r['tag'], 100); sr_text($r['known_as'] ?? null, 100, true); sr_text($r['country_basis'] ?? null, 255, true); }
@@ -193,7 +228,7 @@ function sr_package(string $raw): array {
             sr_require(isset($links[$winner . ':' . sr_id($r['playerIds'][0])], $links[$loser . ':' . sr_id($r['playerIds'][1])]));
         }
     }
-    if ($c['packageVersion'] === 2) sr_game_context($c, $ids, $slots);
+    if ($c['packageVersion'] >= 2) sr_game_context($c, $ids, $slots);
     $p['_public_json'] = sr_json($obj->content->public);
     return $p;
 }
@@ -265,6 +300,27 @@ function sr_replace_game_context(PDO $db, array $c): void {
     }
 }
 
+function sr_catalog_plan(PDO $db, array $c): array {
+    if ($c['packageVersion'] !== 3) return ['status' => 'not_in_package', 'rows' => 0];
+    $count = count($c['tournamentCatalog']);
+    if (!sr_query($db, "SELECT version FROM schema_migrations WHERE version='005_organizer_tops'"))
+        return ['status' => 'migration_missing', 'rows' => $count];
+    sr_require(sr_query($db, "SELECT ENGINE FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='tournament_catalog'") === [['InnoDB']], 'schema_invalid');
+    $columns = array_column(sr_query($db, 'SHOW COLUMNS FROM tournament_catalog'), 0);
+    sr_require(!array_diff(explode(' ', sr_catalog_columns()), $columns), 'schema_invalid');
+    return ['status' => 'ready', 'rows' => $count];
+}
+function sr_replace_catalog(PDO $db, array $c, array &$plan): void {
+    if ($plan['status'] !== 'ready') return;
+    $db->exec('DELETE FROM tournament_catalog');
+    sr_insert($db, 'tournament_catalog', sr_catalog_columns(), $c['tournamentCatalog']);
+    $columns = explode(' ', sr_catalog_columns());
+    $expected = array_map(static function ($row) use ($columns) {
+        return array_map(static function ($key) use ($row) { return $row[$key]; }, $columns);
+    }, $c['tournamentCatalog']);
+    sr_equal_rows(sr_query($db, 'SELECT ' . implode(',', $columns) . ' FROM tournament_catalog'), $expected);
+    $plan['status'] = 'replaced';
+}
 function sr_import(PDO $db, array $package, bool $apply = false): array {
     sr_require(!$db->inTransaction(), 'transaction_already_active');
     $c = $package['content']; $p = $c['public']; $identity = [sr_at($p['generatedAt']), $p['seasonYear'], $p['methodVersion']];
@@ -283,10 +339,13 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         foreach (array_merge(array_keys($columns), ['cuts', 'cut_events', 'cut_set_results', 'rankings', 'player_characters', 'characters', 'games', 'game_selections']) as $t)
             sr_require(($engines[$t] ?? null) === 'InnoDB', 'schema_invalid');
         $db->exec("SET time_zone='+00:00'"); $db->exec("SET SESSION sql_mode=CONCAT(@@sql_mode,',STRICT_TRANS_TABLES')");
+        $catalog = sr_catalog_plan($db, $c);
         $existing = sr_query($db, 'SELECT id,source_hash,status FROM cuts WHERE generated_at=? AND season_year=? AND method_version=?', $identity);
         if ($existing) {
             sr_require($existing[0][1] === $package['sha256'] && $existing[0][2] === 'published', 'cut_conflict');
-            sr_parity($db, $p, (int)$existing[0][0], $package['_public_json']); return ['status' => 'already_imported', 'cutId' => (int)$existing[0][0]];
+            sr_parity($db, $p, (int)$existing[0][0], $package['_public_json']);
+            if ($catalog['status'] === 'ready') $catalog['status'] = 'not_reapplied';
+            return ['status' => 'already_imported', 'cutId' => (int)$existing[0][0], 'catalog' => $catalog];
         }
         $cuts = sr_query($db, 'SELECT generated_at,status FROM cuts ORDER BY generated_at'); $moments = [];
         foreach ($cuts as $cut) { sr_require($cut[1] === 'published', 'unfinished_cut_present'); $moments[] = $cut[0]; }
@@ -297,7 +356,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         foreach (sr_scopes($p) as $view) foreach ($view['players'] as $r) foreach ($r['mains'] as $m)
             sr_require(isset($known[sr_id($m['characterId'])]), 'character_missing');
         foreach ($c['entities']['game_selections'] ?? [] as $r) sr_require(isset($known[sr_id($r['character_id'])]), 'character_missing');
-        if (!$apply) return ['status' => 'validated_no_writes'];
+        if (!$apply) return ['status' => 'validated_no_writes', 'catalog' => $catalog];
         $db->beginTransaction();
         $s = $db->prepare('INSERT INTO cuts(generated_at,season_year,method_version,season_label,schema_version,character_captured_at,public_snapshot,source_hash) VALUES (?,?,?,?,?,?,?,?)');
         $s->execute(array_merge($identity, [$p['seasonLabel'], $p['schemaVersion'], sr_at($p['characterCapturedAt']), $package['_public_json'], $package['sha256']]));
@@ -315,6 +374,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
             sr_insert($db, $table, $cols, $c['entities'][$table], true);
         }
         sr_replace_game_context($db, $c);
+        sr_replace_catalog($db, $c, $catalog);
         $events = []; $results = []; $rankings = []; $mains = []; $hashes = array_column($c['entities']['sets'], 'source_hash', 'id');
         foreach (sr_scopes($p) as $scope => $v) {
             foreach ($v['events'] as $e) $events[] = ['cut_id' => $cut, 'scope' => $scope, 'event_id' => sr_id($e['id']), 'tournament_name' => $e['name'], 'event_name' => $e['eventName'], 'event_date' => $e['date'], 'country_code' => $e['country'], 'active_players' => $e['activePlayers'], 'url' => $e['url']];
@@ -335,7 +395,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         sr_insert($db, 'rankings', 'cut_id scope player_id player_tag rank_position previous_rank previous_cut_at previous_cut_id rating wins losses events_count sets_queried sets_with_selections games_with_selections ambiguous_games', $rankings);
         sr_insert($db, 'player_characters', 'cut_id scope player_id character_id games', $mains);
         sr_parity($db, $p, $cut, $package['_public_json']); sr_query($db, "UPDATE cuts SET status='published' WHERE id=?", [$cut]); $db->commit();
-        return ['status' => 'imported', 'cutId' => $cut];
+        return ['status' => 'imported', 'cutId' => $cut, 'catalog' => $catalog];
     } catch (Throwable $e) { if ($db->inTransaction()) $db->rollBack(); throw $e; }
     finally { sr_query($db, 'SELECT RELEASE_LOCK(?)', [$lock]); }
 }
