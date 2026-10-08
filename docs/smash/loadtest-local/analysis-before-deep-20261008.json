@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "origin": "http://127.0.0.1:61966",
+  "origin": "http://127.0.0.1:59944",
   "scenario": "analysis-local",
   "userAgent": "SmashGT-LoadTest",
   "production": false,
-  "startedAt": "2026-10-08T21:20:26.094279+00:00",
+  "startedAt": "2026-10-08T21:08:54.742942+00:00",
   "hardLimits": {
     "users": 40,
     "requests": 2000,
@@ -19,232 +19,232 @@
   "steps": [
     {
       "users": 1,
-      "elapsedSeconds": 60.011,
+      "elapsedSeconds": 60.002,
       "complete": true,
       "stopReason": null,
       "metrics": {
         "requests": 6,
         "requestsPerSecond": 0.1,
-        "p50": 0.081382,
-        "p95": 0.10087,
-        "p99": 0.10087,
+        "p50": 0.077555,
+        "p95": 0.084354,
+        "p99": 0.084354,
         "errors": 0,
         "errorRate": 0.0,
         "statusCounts": {
           "200": 6
         },
         "errorKinds": {},
-        "bodyBytes": 78156
+        "bodyBytes": 64530
       },
       "endpoints": {
         "/analisis-api.php": {
           "requests": 6,
           "requestsPerSecond": 0.1,
-          "p50": 0.081382,
-          "p95": 0.10087,
-          "p99": 0.10087,
+          "p50": 0.077555,
+          "p95": 0.084354,
+          "p99": 0.084354,
           "errors": 0,
           "errorRate": 0.0,
           "statusCounts": {
             "200": 6
           },
           "errorKinds": {},
-          "bodyBytes": 78156
+          "bodyBytes": 64530
         }
       },
-      "driverProcessCpuSeconds": 0.303
+      "driverProcessCpuSeconds": 0.311
     },
     {
       "users": 2,
-      "elapsedSeconds": 60.001,
+      "elapsedSeconds": 60.006,
       "complete": true,
       "stopReason": null,
       "metrics": {
         "requests": 12,
         "requestsPerSecond": 0.2,
-        "p50": 0.077561,
-        "p95": 0.094114,
-        "p99": 0.094114,
+        "p50": 0.072756,
+        "p95": 0.083854,
+        "p99": 0.083854,
         "errors": 0,
         "errorRate": 0.0,
         "statusCounts": {
           "200": 12
         },
         "errorKinds": {},
-        "bodyBytes": 156312
+        "bodyBytes": 129060
       },
       "endpoints": {
         "/analisis-api.php": {
           "requests": 12,
           "requestsPerSecond": 0.2,
-          "p50": 0.077561,
-          "p95": 0.094114,
-          "p99": 0.094114,
+          "p50": 0.072756,
+          "p95": 0.083854,
+          "p99": 0.083854,
           "errors": 0,
           "errorRate": 0.0,
           "statusCounts": {
             "200": 12
           },
           "errorKinds": {},
-          "bodyBytes": 156312
+          "bodyBytes": 129060
         }
       },
-      "driverProcessCpuSeconds": 0.289
+      "driverProcessCpuSeconds": 0.296
     },
     {
       "users": 5,
-      "elapsedSeconds": 60.003,
+      "elapsedSeconds": 60.006,
       "complete": true,
       "stopReason": null,
       "metrics": {
         "requests": 30,
         "requestsPerSecond": 0.5,
-        "p50": 0.091319,
-        "p95": 0.152105,
-        "p99": 0.153115,
+        "p50": 0.084372,
+        "p95": 0.147486,
+        "p99": 0.148014,
         "errors": 0,
         "errorRate": 0.0,
         "statusCounts": {
           "200": 30
         },
         "errorKinds": {},
-        "bodyBytes": 390780
+        "bodyBytes": 322650
       },
       "endpoints": {
         "/analisis-api.php": {
           "requests": 30,
           "requestsPerSecond": 0.5,
-          "p50": 0.091319,
-          "p95": 0.152105,
-          "p99": 0.153115,
+          "p50": 0.084372,
+          "p95": 0.147486,
+          "p99": 0.148014,
           "errors": 0,
           "errorRate": 0.0,
           "statusCounts": {
             "200": 30
           },
           "errorKinds": {},
-          "bodyBytes": 390780
+          "bodyBytes": 322650
         }
       },
-      "driverProcessCpuSeconds": 0.278
+      "driverProcessCpuSeconds": 0.323
     },
     {
       "users": 10,
-      "elapsedSeconds": 60.006,
+      "elapsedSeconds": 60.004,
       "complete": true,
       "stopReason": null,
       "metrics": {
         "requests": 60,
         "requestsPerSecond": 1.0,
-        "p50": 0.136457,
-        "p95": 0.219886,
-        "p99": 0.263406,
+        "p50": 0.134528,
+        "p95": 0.238758,
+        "p99": 0.349757,
         "errors": 0,
         "errorRate": 0.0,
         "statusCounts": {
           "200": 60
         },
         "errorKinds": {},
-        "bodyBytes": 781560
+        "bodyBytes": 645300
       },
       "endpoints": {
         "/analisis-api.php": {
           "requests": 60,
           "requestsPerSecond": 1.0,
-          "p50": 0.136457,
-          "p95": 0.219886,
-          "p99": 0.263406,
+          "p50": 0.134528,
+          "p95": 0.238758,
+          "p99": 0.349757,
           "errors": 0,
           "errorRate": 0.0,
           "statusCounts": {
             "200": 60
           },
           "errorKinds": {},
-          "bodyBytes": 781560
+          "bodyBytes": 645300
         }
       },
-      "driverProcessCpuSeconds": 0.313
+      "driverProcessCpuSeconds": 0.299
     },
     {
       "users": 20,
-      "elapsedSeconds": 60.012,
+      "elapsedSeconds": 60.005,
       "complete": true,
       "stopReason": null,
       "metrics": {
         "requests": 120,
         "requestsPerSecond": 2.0,
-        "p50": 0.184365,
-        "p95": 0.406467,
-        "p99": 0.462682,
+        "p50": 0.165943,
+        "p95": 0.338996,
+        "p99": 0.393178,
         "errors": 0,
         "errorRate": 0.0,
         "statusCounts": {
           "200": 120
         },
         "errorKinds": {},
-        "bodyBytes": 1563120
+        "bodyBytes": 1290600
       },
       "endpoints": {
         "/analisis-api.php": {
           "requests": 120,
           "requestsPerSecond": 2.0,
-          "p50": 0.184365,
-          "p95": 0.406467,
-          "p99": 0.462682,
+          "p50": 0.165943,
+          "p95": 0.338996,
+          "p99": 0.393178,
           "errors": 0,
           "errorRate": 0.0,
           "statusCounts": {
             "200": 120
           },
           "errorKinds": {},
-          "bodyBytes": 1563120
+          "bodyBytes": 1290600
         }
       },
-      "driverProcessCpuSeconds": 0.382
+      "driverProcessCpuSeconds": 0.349
     },
     {
       "users": 40,
-      "elapsedSeconds": 60.009,
+      "elapsedSeconds": 60.012,
       "complete": true,
       "stopReason": null,
       "metrics": {
         "requests": 240,
         "requestsPerSecond": 3.999,
-        "p50": 0.314665,
-        "p95": 0.56898,
-        "p99": 0.626865,
+        "p50": 0.292924,
+        "p95": 0.56283,
+        "p99": 0.720183,
         "errors": 0,
         "errorRate": 0.0,
         "statusCounts": {
           "200": 240
         },
         "errorKinds": {},
-        "bodyBytes": 3126240
+        "bodyBytes": 2581200
       },
       "endpoints": {
         "/analisis-api.php": {
           "requests": 240,
           "requestsPerSecond": 3.999,
-          "p50": 0.314665,
-          "p95": 0.56898,
-          "p99": 0.626865,
+          "p50": 0.292924,
+          "p95": 0.56283,
+          "p99": 0.720183,
           "errors": 0,
           "errorRate": 0.0,
           "statusCounts": {
             "200": 240
           },
           "errorKinds": {},
-          "bodyBytes": 3126240
+          "bodyBytes": 2581200
         }
       },
-      "driverProcessCpuSeconds": 0.503
+      "driverProcessCpuSeconds": 0.524
     }
   ],
   "stopReason": "completed_capped_ladder",
   "requestsAttempted": 468,
   "writeRequestsAttempted": 0,
-  "finishedAt": "2026-10-08T21:27:26.185948+00:00",
-  "wallSeconds": 420.085,
+  "finishedAt": "2026-10-08T21:15:54.830748+00:00",
+  "wallSeconds": 420.073,
   "fixture": {
     "rows": {
       "players": 3435,
@@ -259,8 +259,8 @@
     "compressedPublicBytes": 189182,
     "publicBytes": 3067344,
     "resourcePeaksCumulative": {
-      "phpRssKiB": 292752,
-      "dbThreadsRunning": 4,
+      "phpRssKiB": 281120,
+      "dbThreadsRunning": 5,
       "phpProcesses": 5
     }
   },
