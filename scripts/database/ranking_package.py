@@ -69,6 +69,75 @@ def country(value):
             'Panamá': 'PA', 'Nicaragua': 'NI', 'Canada': 'CA', 'Japan': 'JP'}.get(value)
 
 
+CATALOG_COLUMNS = 'tournament_id event_id owner_startgg_user_id tournament_name slug starts_at city event_name entrants reason captured_at'
+CATALOG_REASONS = {None, 'not_singles', 'online_or_unknown', 'unfinished_event', 'under_20_entrants', 'outside_window'}
+
+
+def catalog_id(value):
+    # Match the signed integer transport supported by PHP (the SQL column is unsigned).
+    value = identifier(value)
+    require(value <= 9223372036854775807, 'ID de catálogo fuera del contrato de transporte.')
+    return value
+
+
+def tournament_catalog(raw):
+    source = raw.get('tournamentCatalog')
+    if source is None:
+        return None
+    require(type(source) is list, 'Catálogo inválido.')
+    rows, tournaments = [], set()
+    for tournament in source:
+        tid = catalog_id(tournament['id'])
+        require(tid not in tournaments and type(tournament['events']) is list, 'Torneo de catálogo repetido/inválido.')
+        tournaments.add(tid)
+        slug = tournament.get('slug')
+        if not isinstance(slug, str) or not slug.startswith('tournament/'):
+            slug = None
+        for event in tournament['events']:
+            rows.append(dict(tournament_id=tid, event_id=catalog_id(event['id']),
+                owner_startgg_user_id=catalog_id(tournament['ownerId']) if tournament.get('ownerId') is not None else None,
+                tournament_name=text(tournament['name'], 255), slug=slug,
+                starts_at=epoch(tournament.get('startAt')), city=text(tournament.get('city'), 120, optional=True),
+                event_name=text(event.get('name'), 255, optional=True),
+                entrants=integer(event['numEntrants']) if event.get('numEntrants') is not None else None,
+                reason=event.get('reason'), captured_at=instant(raw['generatedAt'])))
+    rows.sort(key=lambda r: (r['tournament_id'], r['event_id']))
+    validate_tournament_catalog(rows, raw['generatedAt'])
+    return rows
+
+
+def validate_tournament_catalog(rows, captured_at):
+    require(type(rows) is list, 'Catálogo inválido.')
+    events, tournaments = set(), {}
+    columns = set(CATALOG_COLUMNS.split())
+    for row in rows:
+        require(type(row) is dict and set(row) == columns, 'Columnas de catálogo inválidas.')
+        for key in ('tournament_id', 'event_id', 'owner_startgg_user_id'):
+            if key == 'owner_startgg_user_id' and row[key] is None:
+                continue
+            require(type(row[key]) is int and catalog_id(row[key]) == row[key], 'ID de catálogo inválido.')
+        require(row['event_id'] not in events, 'Evento de catálogo repetido.')
+        events.add(row['event_id'])
+        text(row['tournament_name'], 255)
+        text(row['city'], 120, optional=True); text(row['event_name'], 255, optional=True)
+        slug = row['slug']
+        require(slug is None or (isinstance(slug, str) and len(slug) <= 255
+                and slug.startswith('tournament/') and re.fullmatch(r'[\x20-\x7e]+', slug)), 'Slug de catálogo inválido.')
+        if row['entrants'] is not None:
+            integer(row['entrants'])
+        require(row['reason'] is None or (isinstance(row['reason'], str) and row['reason'] in CATALOG_REASONS), 'Motivo de catálogo inválido.')
+        for key in ('starts_at', 'captured_at'):
+            value = row[key]
+            if key == 'starts_at' and value is None:
+                continue
+            require(isinstance(value, str) and re.fullmatch(r'\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{6}', value)
+                    and instant(value.replace(' ', 'T') + 'Z') == value, 'Fecha de catálogo inválida.')
+        require(row['captured_at'] == instant(captured_at), 'Catálogo de otra captura.')
+        identity = tuple(row[key] for key in ('owner_startgg_user_id', 'tournament_name', 'slug', 'starts_at', 'city'))
+        require(row['tournament_id'] not in tournaments or tournaments[row['tournament_id']] == identity, 'Torneo de catálogo inconsistente.')
+        tournaments[row['tournament_id']] = identity
+
+
 def character_ids():
     """Same versioned catalog installed by seed-characters.sql; Random is a real API ID."""
     catalog = Path(__file__).resolve().parents[2] / 'ranking-smash-ultimate/characters.js'
@@ -305,6 +374,10 @@ def build_package(raw, public):
                      'Games cover admitted ranked-player sets and both entrants; missing/ambiguous picks are omitted.',
                      'game_number is capture array position, not an API order field; stage_id is NULL.',
                      'Invalidated sets clear prior game context; published cut snapshots remain immutable.'])
+    catalog = tournament_catalog(raw)
+    if catalog is not None:
+        content['packageVersion'] = 3
+        content['tournamentCatalog'] = catalog
     return dict(content=content, sha256=digest(content))
 
 
@@ -312,12 +385,16 @@ def validate_package(package):
     """Validate normalized identities and published relationships before SQL writes."""
     require(set(package) == {'content', 'sha256'} and package['sha256'] == digest(package['content']), 'Hash de paquete inválido.')
     c = package['content']; public = c['public']; tables = c['entities']
-    require(type(c['packageVersion']) is int and c['packageVersion'] in (1,2) and c['capturedAt'] == public['generatedAt'], 'Versión/captura del paquete inválida.')
+    require(type(c['packageVersion']) is int and c['packageVersion'] in (1,2,3) and c['capturedAt'] == public['generatedAt'], 'Versión/captura del paquete inválida.')
     instant(c['capturedAt'])
     validate_public_data(public)
     require(public['schemaVersion'] == 3 and 'localRanking' in public, 'Se requieren mains y ambas vistas.')
     expected_tables = {'players','tournaments','events','entrants','sets','entrant_players','set_slots'}
-    if c['packageVersion'] == 2: expected_tables |= {'games','game_selections'}
+    if c['packageVersion'] >= 2: expected_tables |= {'games','game_selections'}
+    if c['packageVersion'] == 3:
+        validate_tournament_catalog(c.get('tournamentCatalog'), c['capturedAt'])
+    else:
+        require('tournamentCatalog' not in c, 'Catálogo requiere paquete versión 3.')
     require(set(tables) == expected_tables, 'Tablas de paquete inválidas.')
     ids = {}
     for table in ('players','tournaments','events','entrants','sets'):
@@ -360,7 +437,7 @@ def validate_package(package):
             loser = next(v['entrant_id'] for v in ws if v['entrant_id'] != winner)
             require((winner, identifier(r['playerIds'][0])) in links and
                     (loser, identifier(r['playerIds'][1])) in links, 'Ganador/perdedor no coinciden con participantes.')
-    if c['packageVersion'] == 2: validate_game_context(c, ids, smap, links)
+    if c['packageVersion'] >= 2: validate_game_context(c, ids, smap, links)
     return c
 
 

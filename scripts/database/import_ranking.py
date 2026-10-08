@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 import re
 
-from ranking_package import canonical, identifier, instant, require, validate_package
+from ranking_package import CATALOG_COLUMNS, canonical, identifier, instant, require, validate_package
 
 # SQL identifiers are fixed in source, never supplied by the package or request.
 COLUMNS = {
@@ -45,6 +45,33 @@ def verify_schema(db):
         require(rows.get(name) == 'InnoDB', 'Tabla requerida ausente o sin transacciones.')
     sql(db, "SET time_zone='+00:00'")
     sql(db, "SET SESSION sql_mode=CONCAT(@@sql_mode,',STRICT_TRANS_TABLES')")
+
+
+def catalog_plan(db, content):
+    if content['packageVersion'] != 3:
+        return dict(status='not_in_package', rows=0)
+    count = len(content['tournamentCatalog'])
+    if not sql(db, "SELECT version FROM schema_migrations WHERE version='005_organizer_tops'"):
+        return dict(status='migration_missing', rows=count)
+    engine = sql(db, "SELECT ENGINE FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='tournament_catalog'")
+    require(engine == (('InnoDB',),), 'Catálogo instalado sin tabla transaccional.')
+    columns = {r[0] for r in sql(db, 'SHOW COLUMNS FROM tournament_catalog')}
+    require(set(CATALOG_COLUMNS.split()) <= columns, 'Columnas de catálogo instaladas incompletas.')
+    return dict(status='ready', rows=count)
+
+
+def replace_tournament_catalog(db, content, plan):
+    if plan['status'] != 'ready':
+        return
+    # DELETE (not TRUNCATE): the replacement must roll back with the entire cut.
+    sql(db, 'DELETE FROM tournament_catalog')
+    rows = content['tournamentCatalog']
+    insert_rows(db, 'tournament_catalog', CATALOG_COLUMNS, rows)
+    found = sql(db, 'SELECT ' + CATALOG_COLUMNS.replace(' ', ',') + ' FROM tournament_catalog')
+    normalized = {tuple(instant(v.isoformat()+'+00:00') if hasattr(v, 'isoformat') else v for v in row) for row in found}
+    expected = {tuple(row[key] for key in CATALOG_COLUMNS.split()) for row in rows}
+    require(normalized == expected and len(found) == len(rows), 'Paridad del catálogo falló.')
+    plan['status'] = 'replaced'
 
 
 def scope_rows(content):
@@ -146,11 +173,14 @@ def import_package(db, package, *, apply=False):
         existing = sql(db, 'SELECT id,source_hash,status FROM cuts WHERE generated_at=%s AND season_year=%s AND method_version=%s', identity)
         plan = dict(sha256=package['sha256'], generatedAt=p['generatedAt'],
             entities={k:len(v) for k,v in content['entities'].items()},
-            views={s:dict(players=len(v['players']),events=len(v['events']),results=len(v['results'])) for s,v in scope_rows(content)})
+            views={s:dict(players=len(v['players']),events=len(v['events']),results=len(v['results'])) for s,v in scope_rows(content)},
+            catalog=catalog_plan(db, content))
         if existing:
             cut_id, old_hash, status = existing[0]
             require(old_hash==package['sha256'] and status=='published', 'Conflicto: identidad del corte ya existe con otro paquete o estado.')
             verify_parity(db,content,cut_id)
+            if plan['catalog']['status'] == 'ready':
+                plan['catalog']['status'] = 'not_reapplied'
             db.rollback()
             return dict(plan,status='already_imported',cutId=cut_id)
         cuts = sql(db, 'SELECT generated_at,status FROM cuts')
@@ -179,6 +209,7 @@ def import_package(db, package, *, apply=False):
                 require(all(not present.get(r['entrant_id']) or present[r['entrant_id']]=={r['player_id']} for r in content['entities'][table]), 'Entrant vinculado a otro jugador.')
             insert_rows(db, table, COLUMNS[table], content['entities'][table], keep_existing=True)
         replace_game_context(db,content)
+        replace_tournament_catalog(db, content, plan['catalog'])
         events, results = [], []
         set_hashes = {s['id']:s['source_hash'] for s in content['entities']['sets']}
         for scope,view in scope_rows(content):
