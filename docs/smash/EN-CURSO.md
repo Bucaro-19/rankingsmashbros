@@ -1,5 +1,12 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Top 15 por organizador — decisiones del dueño y brief (7/oct, madrugada)
+
+- El dueño decidió: lo usa quien tiene el **rol de organizador** (y premium), y el top cuenta **solo a quienes participaron en los torneos de ese organizador**. Brief para Claude Design: [BRIEF-CLAUDE-DESIGN-TOP15-ORGANIZADOR.md](BRIEF-CLAUDE-DESIGN-TOP15-ORGANIZADOR.md), entregado al dueño.
+- **Sin verificar todavía:** cómo saber qué torneos creó cada cuenta. La hipótesis es comparar el `owner` del torneo en start.gg con el `startgg_user_id` de la cuenta; hay que comprobar en la documentación y con una consulta real que ese campo es público con el token del sitio, y que la captura semanal puede guardarlo sin consultas extra por visita. Los coorganizadores probablemente no salgan por esa vía: por eso el brief incluye el estado «por confirmar» con revisión manual del dueño.
+- **Decisiones abiertas** antes de implementar: si los puntos de este top se calculan solo con los sets de esos torneos (propuesta, coherente con «solo sus torneos») o con la fuerza del ranking nacional; y el mínimo de actividad para aparecer. Es un cálculo nuevo y aparte: no toca el ranking publicado.
+- Premium real sigue pendiente: el dueño aún no tiene acceso a cPanel.
+
 ## Pantalla del análisis de rival — publicada (Claude Code, 7/oct)
 
 Implementa el handoff `design_handoff_smash_gt_analisis/` sobre la API de Codex (ANALISIS-RIVAL.md). Dirección: `analisis.html?rival=<playerId>&scope=gt|intl`; sin `rival` abre el buscador.
