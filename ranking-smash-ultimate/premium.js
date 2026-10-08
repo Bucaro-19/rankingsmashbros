@@ -3,7 +3,7 @@
 const SmashPremium = (() => {
   const PLANS={annual:{name:'Anual',amount:24,period:'año',each:'al año',note:'Equivale a 2 USD al mes, pagados una vez al año.'},monthly:{name:'Mensual',amount:3,period:'mes',each:'al mes',note:'Pagas mes a mes.'}};
   // What premium includes. «available» turns the «Próximamente» label off when a feature ships.
-  const FEATURES=[{title:'Análisis del rival',text:'Probabilidad estimada, historial, forma reciente y matchup de personajes antes de un set.',available:false},{title:'Top 15 por organizador',text:'El ranking de cada organizador con sus propios torneos.',available:false}];
+  const FEATURES=[{title:'Análisis del rival',text:'Probabilidad estimada, historial, forma reciente y matchup de personajes antes de un set.',available:true,href:'./analisis.html',action:'Analizar un rival →'},{title:'Top 15 por organizador',text:'El ranking de cada organizador con sus propios torneos.',available:false}];
   const FREE=['El ranking completo','Tu puesto, también fuera del top 100','Tu perfil y tus personajes','Tu historial de torneos','Tu récord contra cada rival'];
   const RECURRENTE='El pago se hace en la página segura de Recurrente, la pasarela de Guatemala. Saldrás de Smash GT y volverás al terminar. Smash GT nunca ve ni guarda tu tarjeta.';
   const PRINCIPLE='Pagar no da puntos ni cambia tu puesto.';
@@ -24,7 +24,7 @@ const SmashPremium = (() => {
     } finally {clearTimeout(stop);}
   }
   const notice=(kind,glyph,title,text,extra='')=>`<div class="p-notice ${kind}" role="${kind==='error'?'alert':'status'}"><span aria-hidden="true">${glyph}</span><div><strong>${title}</strong><p>${text}</p>${extra}</div></div>`;
-  const included=()=>`<section class="p-box p-includes" aria-labelledby="p-inc"><h3 id="p-inc">Qué incluye</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p></div></li>`).join('')}</ul></section>`;
+  const included=()=>`<section class="p-box p-includes" aria-labelledby="p-inc"><h3 id="p-inc">Qué incluye</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p>${f.available&&f.href&&info?.premium?.premium?`<a href="${f.href}">${f.action}</a>`:''}</div></li>`).join('')}</ul></section>`;
   const free=()=>`<section class="p-box" aria-labelledby="p-free"><h3 id="p-free">Gratis para todos</h3><ul class="p-free">${FREE.map(item=>`<li><span aria-hidden="true">✓</span>${item}</li>`).join('')}</ul></section><p class="p-principle">${PRINCIPLE}</p>`;
   function renderPlans(top='') {
     const p=PLANS[plan], signed=context.authenticated, off=info&&info.available===false;
@@ -72,7 +72,7 @@ const SmashPremium = (() => {
           ${canceled?'<p class="note">Puedes volver a suscribirte cuando termine este periodo.</p>':askCancel?`<div class="p-confirm" role="alertdialog" aria-labelledby="p-confirm-title" aria-describedby="p-confirm-text"><strong id="p-confirm-title">¿Cancelar tu suscripción?</strong><p id="p-confirm-text">Seguirás siendo premium${end?` hasta el ${end}`:' hasta el final del periodo pagado'}. Después no habrá más cobros. Puedes volver cuando quieras.</p><div><button type="button" id="p-keep" class="p-keep">No, mantener</button><button type="button" id="p-confirm-cancel" class="p-danger" ${busy?'disabled':''}>${busy?'Cancelando…':'Sí, cancelar'}</button></div></div>`
             :'<p class="note">Cancelas cuando quieras, sin escribirle a nadie. Sigues siendo premium hasta el final del periodo que ya pagaste.</p><button type="button" id="p-cancel" class="outline">Cancelar suscripción</button>'}
           <p id="p-error" class="p-warn" role="alert" hidden></p></section></div>
-        <aside class="p-side"><section class="p-box p-includes" aria-labelledby="p-have"><h3 id="p-have">Lo que tienes</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p></div></li>`).join('')}</ul></section>${free()}</aside></div>`;
+        <aside class="p-side"><section class="p-box p-includes" aria-labelledby="p-have"><h3 id="p-have">Lo que tienes</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p>${f.available&&f.href&&info?.premium?.premium?`<a href="${f.href}">${f.action}</a>`:''}</div></li>`).join('')}</ul></section>${free()}</aside></div>`;
     root().querySelector('#p-cancel')?.addEventListener('click',()=>{askCancel=true;render();root().querySelector('#p-keep').focus();});
     const close=()=>{askCancel=false;render();root().querySelector('#p-cancel')?.focus();};
     root().querySelector('#p-keep')?.addEventListener('click',close);
@@ -90,7 +90,7 @@ const SmashPremium = (() => {
   }
   function renderSuccess() {
     const s=info.premium, p=PLANS[s.plan]||PLANS.monthly, end=day(s.currentPeriodEnd);
-    root().innerHTML=`<div class="p-success"><span aria-hidden="true">✓</span><h1>¡Ya eres premium!</h1><p>Gracias por apoyar Smash GT. Tu plan ${p.name.toLowerCase()} de ${p.amount} USD ${p.each} queda activo${end?`; el próximo cobro es el ${end}`:''}.</p><div class="button-row"><button type="button" id="p-see" class="outline dark">Ver mi suscripción</button></div></div>`;
+    root().innerHTML=`<div class="p-success"><span aria-hidden="true">✓</span><h1>¡Ya eres premium!</h1><p>Gracias por apoyar Smash GT. Tu plan ${p.name.toLowerCase()} de ${p.amount} USD ${p.each} queda activo${end?`; el próximo cobro es el ${end}`:''}.</p><div class="button-row"><a class="outline dark" href="./analisis.html">Analizar un rival →</a><button type="button" id="p-see" class="outline dark">Ver mi suscripción</button></div></div>`;
     root().querySelector('#p-see').addEventListener('click',()=>{arrival=null;render();});
   }
   function render() {

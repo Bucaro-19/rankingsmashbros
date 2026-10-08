@@ -148,6 +148,7 @@
     $('rival-season').textContent=data.profile.seasonYear;
     $('rival-sets').innerHTML=h2h.sets.map(set=>{const score=AccountModel.setScore(set,me);return `<div><span class="result ${score.won?'won':'lost'}" aria-label="${score.won?'Ganaste':'Perdiste'}">${score.won?'G':'P'}</span><p><strong>${escape(set.tournament||'Torneo')}</strong><small>${date(set.date)}</small></p><b>${escape(score.text)}</b></div>`;}).join('')||'<p class="note">No hay sets entre ustedes en este corte.</p>';
     $('rival-link').hidden=!link;if(link)$('rival-link').href=link;
+    $('rival-analyze').href=`./analisis.html?rival=${encodeURIComponent(id)}${scope==='guatemala'?'&scope=gt':''}`;
     rivalOpener=opener;$('rival-dialog').showModal();$('close-rival').focus();
   }
   function renderCharacters() {
