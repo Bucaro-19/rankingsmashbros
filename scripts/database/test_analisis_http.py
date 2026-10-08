@@ -24,7 +24,7 @@ from import_ranking import import_package
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT/'ranking-smash-ultimate'
 DATABASE = os.environ.get('SMASH_SCHEMA_TEST_DB', '')
-PAID = {'h2h', 'streak', 'rivalForm', 'rivalTiers', 'meVsChar', 'himVsChar', 'gameMatrix', 'recommendations', 'probability', 'gameDataStatus', 'setDataScope'}
+PAID = {'h2h', 'streak', 'rivalForm', 'rivalTiers', 'meVsChar', 'himVsChar', 'gameMatrix', 'recommendations', 'probability', 'gameDataStatus', 'setDataScope', 'deep'}
 
 
 class AnalysisStaticTests(unittest.TestCase):
@@ -201,6 +201,12 @@ class AnalysisHttpTests(unittest.TestCase):
         self.assertEqual(intl['gameDataStatus'],'available'); self.assertEqual(intl['gameMatrix']['mario|link']['me'],[4,6])
         self.assertEqual(intl['gameMatrix']['mario|link']['him'],[6,4]); self.assertEqual(intl['meVsChar'],{'link':[2,3]})
         self.assertEqual(intl['himVsChar'],{'mario':[3,2]}); self.assertEqual(intl['recommendations'][0]['confidence'],'media')
+        deep=intl['deep']
+        self.assertEqual(sorted(deep),['avoid','byTier','common','commonTotal','counters','punishable','rival','setPattern','toolkit','vsChars'])
+        self.assertEqual(deep['rival']['main'],'link'); self.assertIsNone(deep['toolkit']); self.assertIsNone(deep['punishable'])
+        for card in deep['counters']+deep['avoid']:
+            self.assertEqual(sorted(card),['confidence','guide','hisGames','mine','mySets','sceneGames','slug']); self.assertIsNone(card['guide'])
+        self.assertNotIn('"id"',json.dumps(deep['common']))
         self.assertEqual(gt['record'],dict(wins=2,losses=2,sets=4)); self.assertEqual(len(gt['h2h']),4)
         for key in ('gameMatrix','recommendations','meVsChar','himVsChar'): self.assertEqual(gt[key],intl[key])
         self.assertNotEqual(gt['probability']['p'],intl['probability']['p'])

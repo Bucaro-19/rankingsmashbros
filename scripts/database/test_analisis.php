@@ -41,4 +41,42 @@ foreach ([149,150] as $n) {
 analysis_check(smash_analisis_recommendations([],['link'],[],[],[],'1')===[],'No selected character: no advice');
 analysis_check(smash_analisis_recommendations(['mario'],[],[],[],[],'1')===[],'No rival detected: no advice');
 analysis_check(smash_analisis_recommendations(['mario'],['link'],[],[],['mario|link'=>['scene'=>[100,100],'sceneGames'=>200]],'1')===[],'Tied record gives no direction');
+// «Prepara el set»: measured from sets and games only. Me = 1 (Mario), rival = 2 (Link main), others 3 (Pikachu) and 4 (Fox).
+$deepCatalog=['1302'=>['slug'=>'mario'],'1296'=>['slug'=>'link'],'1338'=>['slug'=>'pikachu'],'1286'=>['slug'=>'fox'],'1746'=>['slug'=>'random']];
+$ids=['mario'=>'1302','link'=>'1296','pikachu'=>'1338','fox'=>'1286'];
+$dg=static function (string $set,int $n,array $a,array $b,string $winner) use ($ids): array {
+    $pick=static fn(array $x)=>['players'=>[$x[0]=>true]]+($x[1]===null ? [] : ['characters'=>[$ids[$x[1]]=>true]]);
+    return ['id'=>$set.$n,'number'=>$n,'setId'=>$set,'winner'=>'e'.$winner,'picks'=>['e'.$a[0]=>$pick($a),'e'.$b[0]=>$pick($b)]];
+};
+$R=['2','link']; $P=['3','pikachu']; $F=['4','fox']; $M=['1','mario'];
+$deepGames=[$dg('S1',1,$R,$P,'2'),$dg('S1',2,$R,$P,'3'),$dg('S1',3,$R,$P,'3'), $dg('S2',1,$R,$P,'3'),$dg('S2',2,$R,$P,'3'),
+    $dg('S3',1,$M,$R,'1'),$dg('S3',2,$M,$R,'1'), $dg('S4',1,$R,$F,'2'),$dg('S4',2,$R,$F,'2'),
+    $dg('S6',1,$R,$F,'4'),$dg('S6',2,['2','mario'],$F,'2'),$dg('S6',3,['2','mario'],$F,'2')];
+$deepResults=[['id'=>'S1','playerIds'=>['3','2'],'score'=>'Pika 2 - Rival 1'],['id'=>'S2','playerIds'=>['3','2'],'score'=>'Pika 2 - Rival 0'],
+    ['id'=>'S3','playerIds'=>['1','2'],'score'=>'Yo 2 - Rival 0'],['id'=>'S4','playerIds'=>['2','4'],'score'=>'Rival 2 - Zorro 0'],
+    ['id'=>'S5','playerIds'=>['1','3'],'score'=>'Yo 2 - Pika 1'],['id'=>'S6','playerIds'=>['2','4'],'score'=>'Rival 2 - Zorro 1'],
+    ['id'=>'S7','playerIds'=>['2','9'],'score'=>'DQ']];
+$deepPublic=['results'=>$deepResults]; $deepView=['results'=>$deepResults,'players'=>[['id'=>'3','rank'=>5],['id'=>'1','rank'=>20],['id'=>'4','rank'=>40]]];
+$lite=new PDO('sqlite::memory:'); $lite->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+$lite->exec("CREATE TABLE players (id TEXT PRIMARY KEY, tag TEXT); INSERT INTO players VALUES ('3','Pika'),('4','Zorro')");
+$deepChars=smash_analisis_set_characters($deepGames,$deepResults,$deepCatalog);
+$deep=smash_analisis_deep($lite,$deepPublic,$deepView,['games'=>$deepGames],$deepCatalog,$deepChars,'1','2',['mario'],'link');
+analysis_check($deep['rival']===['main'=>'link','mainShare'=>0.8333,'coveredSets'=>5,'totalSets'=>6],'Main share over registered games; sets with a known opposing character');
+analysis_check($deep['vsChars']===['hard'=>[['slug'=>'mario','won'=>0,'lost'=>2],['slug'=>'pikachu','won'=>1,'lost'=>4]],'good'=>[['slug'=>'fox','won'=>4,'lost'=>1]]],'His games against each character, worst first');
+analysis_check(array_column($deep['counters'],'slug')===['pikachu','mario'] && array_column($deep['avoid'],'slug')===['fox'],'Counters and avoid, strongest evidence first');
+analysis_check($deep['counters'][0]===['slug'=>'pikachu','mine'=>false,'mySets'=>null,'hisGames'=>[1,4],'sceneGames'=>[4,1],'confidence'=>'media','guide'=>null],'A counter from his own games: his record, the scene and no invented guide');
+analysis_check($deep['counters'][1]===['slug'=>'mario','mine'=>true,'mySets'=>[1,0],'hisGames'=>[0,2],'sceneGames'=>[2,0],'confidence'=>'baja','guide'=>null],'My own sets come first as evidence; a single set is low confidence');
+analysis_check($deep['avoid'][0]['hisGames']===[2,1] && $deep['avoid'][0]['sceneGames']===[1,2] && !isset($deep['counters'][0]['edge']),'Avoid: his main wins that matchup; internal score does not leave');
+$pattern=$deep['setPattern'];
+analysis_check($pattern['setsScored']===5 && $pattern['setsWithScores']===5 && $pattern['game1']===[2,3] && $pattern['decider']===[1,1] && $pattern['close21']===[1,1] && $pattern['close32']===[0,0],'Set pattern: first game, deciding game and close sets; a DQ is not a set');
+analysis_check($pattern['afterLoss']===['total'=>4,'kept'=>3,'switched'=>[['slug'=>'mario','n'=>1]]],'After losing a game: keeps or switches, and to whom');
+analysis_check($deep['common']===[['alias'=>'Pika','me'=>[1,0],'him'=>[0,2]]] && $deep['commonTotal']===1,'Common opponents with both records, no ids');
+analysis_check($deep['byTier']===['top10'=>[0,2],'t11_30'=>[0,1],'rest'=>[2,0]],'Sets by rank band; unranked opponents left out');
+analysis_check($deep['toolkit']===null && $deep['punishable']===null,'No frame data without a licensed source');
+$none=smash_analisis_deep($lite,['results'=>[]],['results'=>[],'players'=>[]],['games'=>[]],$deepCatalog,[],'1','2',['mario'],null);
+analysis_check($none['counters']===[] && $none['avoid']===[] && $none['vsChars']===['hard'=>[],'good'=>[]] && $none['setPattern']===null && $none['common']===[] && $none['byTier']===null && $none['rival']['mainShare']===null,'No data: empty lists and nulls, never zeros presented as records');
+$tied=smash_analisis_deep($lite,$deepPublic,$deepView,['games'=>[$dg('S4',1,$R,$F,'2'),$dg('S4',2,$R,$F,'4')]],$deepCatalog,[],'1','2',[],'link');
+analysis_check($tied['counters']===[] && $tied['avoid']===[],'A tied record takes no side');
+analysis_check(smash_analisis_deep_confidence([4,0],[0,0],[0,0])==='alta' && smash_analisis_deep_confidence(null,[6,4],[0,0])==='alta' && smash_analisis_deep_confidence([1,1],[0,0],[0,0])==='media'
+    && smash_analisis_deep_confidence(null,[0,0],[12,8])==='media' && smash_analisis_deep_confidence(null,[2,2],[5,5])==='baja','Confidence thresholds');
 echo "Analysis pure contracts: OK\n";
