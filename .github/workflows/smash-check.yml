@@ -29,6 +29,7 @@ jobs:
           node --check ranking-smash-ultimate/account-model.js
           node --check ranking-smash-ultimate/cuenta.js
           node --check ranking-smash-ultimate/premium.js
+          node --check ranking-smash-ultimate/organizador.js
           node --check ranking-smash-ultimate/analisis-model.js
           node --check ranking-smash-ultimate/analisis.js
           node --check ranking-smash-ultimate/visita.js
@@ -95,6 +96,8 @@ jobs:
           php scripts/database/test_stats.php
           php scripts/database/test_premium.php
           python scripts/database/test_premium_http.py
+          php scripts/database/test_organizador.php
+          python scripts/database/test_organizador_http.py
           python scripts/database/test_panel_http.py
           php scripts/database/test_analisis.php
           python scripts/database/test_analisis_http.py

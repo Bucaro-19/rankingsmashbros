@@ -8,6 +8,12 @@ Options -Indexes
   </Files>
 </IfModule>
 
+# Stable public address of an organizer's top: /top/{slug}.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^top/([a-z0-9-]{1,60})/?$ top.php?o=$1 [L]
+</IfModule>
+
 # Included by PHP only; never served as a standalone endpoint.
 <Files "database.php">
   Require all denied
@@ -25,6 +31,9 @@ Options -Indexes
   Require all denied
 </Files>
 <Files "analisis.php">
+  Require all denied
+</Files>
+<Files "organizador.php">
   Require all denied
 </Files>
 <Files "premium.php">

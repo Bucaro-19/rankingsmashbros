@@ -27,6 +27,11 @@ function account_sign_out(?string $userId = null): void {
     $_SESSION['smash_account_csrf'] = bin2hex(random_bytes(24));
 }
 function account_verified_user(PDO $pdo): array { return smash_account_current($pdo); }
+// The organizer tab is offered only once the weekly catalog (migration 005) has reached this database.
+function account_organizer_ready(): bool {
+    try { return account_pdo()->query('SELECT 1 FROM tournament_catalog LIMIT 1')->fetchColumn() !== false; }
+    catch (Throwable $error) { return false; }
+}
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'], true)) {
     header('Allow: GET, POST'); account_response(405, ['ok' => false, 'reason' => 'method_not_allowed']);
 }
@@ -48,13 +53,14 @@ try {
     }
     if (!account_signed_in()) {
         unset($_SESSION['smash_account']);
-        account_response(200, ['ok' => true, 'authenticated' => false, 'oauthReady' => $ready, 'csrf' => $_SESSION['smash_account_csrf']]);
+        account_response(200, ['ok' => true, 'authenticated' => false, 'oauthReady' => $ready, 'csrf' => $_SESSION['smash_account_csrf']] + (account_organizer_ready() ? ['organizerReady' => true] : []));
     }
     $pdo = account_pdo(); $user = account_verified_user($pdo);
     $user['avatarUrl'] = smash_account_safe_image($_SESSION['smash_account']['avatarUrl'] ?? null);
     $user['url'] = $_SESSION['smash_account']['url'] ?? $user['url'];
     // Only the owner's account learns that a private panel exists; nobody else receives the key.
     $owner = smash_stats_is_owner($pdo, $user['id']) ? ['panel' => true] : [];
+    if (account_organizer_ready()) $owner['organizerReady'] = true;
     account_response(200, $owner + ['ok' => true, 'authenticated' => true, 'oauthReady' => $ready,
         'csrf' => $_SESSION['smash_account_csrf'], 'user' => $user, 'profile' => smash_account_profile(smash_account_public(__DIR__), $user['playerId'])]);
 } catch (SmashAccountError $error) {
