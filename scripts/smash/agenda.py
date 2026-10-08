@@ -219,7 +219,10 @@ def validate(data, *, now=None, fresh=False):
             require(e['id']==identifier(e['id']) and e['id'] not in event_ids);event_ids.add(e['id'])
             require(e['name']==text(e['name']) and e['slug']==text(e['slug']))
             link(e['slug'],e['url'],event=True)
-            if e['startAt'] is not None: aware(e['startAt'])
+            if t['slug'] is not None and e['slug'] is not None:require(e['slug'].startswith(t['slug']+'/event/'))
+            if e['startAt'] is not None:
+                event_start=aware(e['startAt'])
+                if tz is not None:require(event_start.utcoffset()==event_start.astimezone(ZoneInfo(tz)).utcoffset())
             count(e['type']);count(e['numEntrants']);boolean(e['isOnline'])
             roster=e['teamRosterSize']
             if roster is not None:
@@ -245,6 +248,7 @@ def capture(client, *, now=None, clock=utc_now):
         total,pages=info.get('total'),info.get('totalPages')
         require(type(total) is int and total>=0 and type(pages) is int and pages>=0)
         require(pages<=MAX_PAGES and total<=MAX_PAGES*PER_PAGE,'Límite de captura alcanzado; no se publica parcialmente.')
+        require(pages==math.ceil(total/PER_PAGE) if total else pages in (0,1),'Paginación incompatible con el total de torneos.')
         require((total,pages)==expected if expected else True,'La paginación cambió durante la captura.')
         expected=(total,pages)
         nodes=con.get('nodes');require(isinstance(nodes,list) and len(nodes)<=PER_PAGE)
@@ -298,7 +302,8 @@ def publish(ftp,data, *, remote='.', clock=utc_now):
             buffer.write(chunk)
         try:ftp.retrbinary('RETR agenda.json',receive)
         except ftplib.error_perm as error:
-            if not str(error).startswith('550'):raise
+            message=str(error).lower()
+            if not message.startswith('550') or not any(term in message for term in ('not found','no such file','does not exist')):raise
         else:
             prior=json.loads(buffer.getvalue())
             require(isinstance(prior,dict) and isinstance(prior.get('tournaments'),list))
@@ -338,7 +343,7 @@ def main():
             else:print('Agenda válida; sin publicación FTP (publish requiere --apply).')
     except (APIError,ValueError,TypeError,KeyError,OverflowError,OSError,ftplib.Error,EOFError) as error:
         # Never echo a server response, filename, token or FTP credential.
-        parser.exit(1, ('Captura/publicación detenida: '+str(error) if isinstance(error,(APIError,ValueError)) else 'Captura/publicación detenida: '+type(error).__name__)+'. No se sustituye el archivo anterior.\n')
+        parser.exit(1, ('Captura/publicación detenida: '+str(error) if isinstance(error,(APIError,ValueError)) else 'Captura/publicación detenida: '+type(error).__name__)+'. Sin archivos parciales; ante un fallo FTP revisar si el renombrado terminó.\n')
 
 
 if __name__=='__main__':main()

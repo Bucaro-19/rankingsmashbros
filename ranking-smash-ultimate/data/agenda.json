@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-08T22:03:19.017932+00:00",
+  "requests": 1,
+  "coverage": {
+    "countryCode": "GT",
+    "videogameId": "1386",
+    "complete": true,
+    "pagesFetched": 1,
+    "rawTournaments": 1
+  },
+  "tournaments": [
+    {
+      "id": "957726",
+      "name": "GAMELAND 2",
+      "slug": "tournament/gameland-2",
+      "url": "https://www.start.gg/tournament/gameland-2",
+      "countryCode": "GT",
+      "startAt": "2026-10-11T10:00:00-06:00",
+      "endAt": "2026-10-11T18:00:00-06:00",
+      "timezone": "America/Guatemala",
+      "city": "San Pedro Sacatepequez",
+      "department": "San Marcos",
+      "venueName": null,
+      "venueAddress": "X6F8+49 San Pedro Sacatepequez, Guatemala",
+      "latitude": 14.9728125,
+      "longitude": -91.78406249999999,
+      "isOnline": false,
+      "attendanceType": "offline",
+      "isRegistrationOpen": true,
+      "registrationClosesAt": "2026-10-11T18:00:00-06:00",
+      "eventRegistrationClosesAt": null,
+      "numAttendees": 10,
+      "isOfflineSingles": true,
+      "events": [
+        {
+          "id": "1719230",
+          "name": "Ultimate Singles",
+          "slug": "tournament/gameland-2/event/ultimate-singles",
+          "url": "https://www.start.gg/tournament/gameland-2/event/ultimate-singles",
+          "videogameId": "1386",
+          "startAt": "2026-10-11T10:00:00-06:00",
+          "type": 1,
+          "competitionType": "singles",
+          "isOnline": false,
+          "numEntrants": 10,
+          "teamRosterSize": null,
+          "isOfflineSingles": true
+        }
+      ]
+    }
+  ]
+}

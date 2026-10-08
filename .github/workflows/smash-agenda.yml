@@ -1,0 +1,53 @@
+name: Actualizar agenda de torneos Smash GT
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publicar solo agenda.json (requiere orden del dueño; solo main)
+        type: boolean
+        default: false
+  schedule:
+    # Propuesta: diario a las 07:17 Guatemala (13:17 UTC), separado del corte del domingo.
+    - cron: '17 13 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
+jobs:
+  agenda:
+    # La variable nueva queda desactivada hasta que el dueño autorice la agenda.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.ref == 'refs/heads/main' && vars.SMASH_AGENDA_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probar captura, validación y FTP simulados (sin credenciales)
+        run: python -m unittest discover -s scripts/smash -p test_agenda.py -v
+      - name: Capturar torneos futuros de Guatemala (solo lectura)
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        run: python scripts/smash/agenda.py capture
+      - name: Validar agenda antes de cualquier publicación
+        run: python scripts/smash/agenda.py validate ranking-smash-ultimate/data/agenda.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smash-gt-agenda
+          path: ranking-smash-ultimate/data/agenda.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Publicar únicamente agenda.json por renombrado atómico
+        if: >-
+          github.ref == 'refs/heads/main' &&
+          (github.event_name == 'schedule' || inputs.publish == true)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          SMASH_FTP_DIR: ${{ vars.SMASH_FTP_DIR }}
+        run: python scripts/smash/agenda.py publish ranking-smash-ultimate/data/agenda.json --apply
