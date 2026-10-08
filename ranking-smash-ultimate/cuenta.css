@@ -68,3 +68,5 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 /* Móvil: el encabezado de la cuenta acompaña al desplazarse. */
 @media(max-width:859px){.account-header{position:sticky;top:0;z-index:30;background:var(--bg)}}
+.tab-links{display:flex;align-items:center;gap:4px;flex:none}
+@media(max-width:560px){.account-tabs{flex-wrap:wrap}.tab-links{width:100%;justify-content:flex-end}}
