@@ -3,6 +3,13 @@
 
 
 
+
+## Peticiones del dueño sobre el análisis de rival y la carga del sitio (8/oct, tarde)
+
+- El dueño confirmó que el análisis de rival ya muestra los cruces por personaje tras la carga de games.
+- **Quiere un análisis más profundo para que premium valga la pena:** counters contra los mains del rival con explicación de por qué, y consejos técnicos (por ejemplo, el movimiento más rápido del personaje en frames). Medido en producción (solo lectura): 4,756 games con ambos personajes; 469 casos jugador-contra-personaje con 5+ games; 1,137 cruces de personajes vistos, solo 107 con 10+ games. Propuesta enviada al dueño: cinco secciones con datos medidos (a qué personajes les pierde, counters para ti, cómo juega el set, rivales en común, contra qué nivel rinde) y una guía escrita aparte, marcada como guía general y no como dato del ranking. **Sin decidir:** quién redacta y revisa la guía, y de qué fuente salen los datos de frames (hace falta una con permiso de uso y crédito). El prompt para Claude Design ya se entregó; nada de esto está programado.
+- **[Encargo para Codex](ENCARGO-CODEX-PRUEBA-DE-CARGA.md):** medir cuántos visitantes aguanta el sitio, con escalones pequeños, freno automático y producción solo con orden del dueño (hosting compartido).
+
 ## Carga inicial de games aplicada y portada más tolerante a la red (8/oct)
 
 - **Carga inicial de games (#43) aplicada en producción por orden expresa del dueño**, desde su Mac, en una sola transacción: `context_imported`, corte 1, 21.8 s. Verificado con SELECT: **4,787 games y 9,530 selecciones**; sigue 1 corte, 376 posiciones y el mismo hash original `ecb1d4a5…`. Se llamó a `import_context(apply=True)` con 20 s de conexión porque el límite de 10 s de la orden `load` falla con la red lenta del dueño. Falta que el dueño confirme en `analisis.html` que ya aparecen los cruces por personaje.
