@@ -1,5 +1,11 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Reparto vigente — 7/oct, madrugada
+
+- **Codex:** carga inicial de games del 4/oct (herramienta y simulación; escritura solo con orden del dueño) y rediseño de «Tu opinión». Encargo: [ENCARGO-CODEX-OPINION-Y-CARGA-INICIAL.md](ENCARGO-CODEX-OPINION-Y-CARGA-INICIAL.md). Sus PR #36 (games por corte) y #40 (API del análisis) están fusionadas y publicadas por orden del dueño (`656b7af`, `47a9181`; despliegues `37706467920` y `37707771272`).
+- **Claude Code:** pantalla del análisis de rival sobre la API de #40, en la rama `feat/rival-analysis-screen`.
+- **Premium en real, a medias:** el dueño dice haber puesto la llave real en el archivo privado del servidor, pero no pudo terminar (no tiene acceso a cPanel por ahora). El `webhook_secret` de ese archivo sigue siendo el del sandbox y **no hay webhook de producción registrado**. Comprobado por HTTP solo que la configuración sigue siendo válida; no se sabe desde fuera si la llave activa es de prueba o real. Pendiente: registrar el webhook de producción y actualizar el secreto. Mientras tanto un pago se activaría al volver (consulta directa a Recurrente), pero los avisos de renovación o cancelación serían rechazados por firma.
+
 ## API de análisis de rival — Codex, 7/oct
 
 Servidor entregado en `feat/rival-analysis-api`, [PR #40](https://github.com/Bucaro-19/rankingsmashbros/pull/40), **sin fusionar ni desplegar; espera revisión y orden del dueño**. Contrato final e integración para Claude Code: [ANALISIS-RIVAL.md](ANALISIS-RIVAL.md). No incluye pantallas ni toca los módulos asignados a Claude.
