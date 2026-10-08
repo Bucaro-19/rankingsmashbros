@@ -136,3 +136,21 @@ Claude Code puede conectar la pantalla consumiendo este contrato. Inicialmente p
 La biblioteca queda denegada en `.htaccess` y `deploy.py` la coloca después de sus dependencias y antes del endpoint. No cambia cálculo, elegibilidad, `public.json`, su esquema, ni cuentas/encuesta/panel/premium. **Nada fusionado ni desplegado por esta entrega.**
 
 Pendientes del dueño: autorizar revisión/fusión/publicación de esta PR; PR #36 fue fusionada por el otro flujo en `656b7af` mientras se preparaba esta API; por separado, comprobar su publicación y ordenar la simulación/carga inicial de games del 4/oct si la desea. No se ejecutó carga inicial en producción ni se creó una migración. El primer corte nuevo del domingo 11/oct conserva el circuito normal. La pantalla y el pago de prueba siguen a cargo de Claude Code/dueño.
+
+## «Prepara el set» (`deep`), 8/oct
+
+Pantalla `preparar.html?rival={id}&scope={gt|intl}` (handoff `design_handoff_smash_gt_analisis_ampliado`). Usa la misma API; el campo `deep` solo existe con acceso completo, igual que el resto de campos de pago. Todo sale de sets y games del corte; nada se escribe a mano.
+
+| Campo | Contenido |
+| --- | --- |
+| `rival` | `main` (primer personaje detectado utilizable o `null`), `mainShare` (parte de sus games con personaje registrado jugados con el main), `coveredSets` (sets suyos con el personaje del oponente registrado en algún game), `totalSets`. |
+| `vsChars` | `hard` y `good`: hasta 5 `{slug, won, lost}` con sus games contra cada personaje. `hard` son récords negativos, peor primero; `good`, positivos. Los empates no aparecen. |
+| `counters`, `avoid` | Hasta 5 cada una: `{slug, mine, mySets:[w,l]\|null, hisGames:[w,l], sceneGames:[w,l], confidence, guide}`. `mySets`: mis sets con ese personaje contra su main. `hisGames`: su main contra ese personaje, desde su lado. `sceneGames`: ese personaje contra su main en todos los games del corte, desde el lado del personaje. La dirección la decide la primera fuente que no esté empatada, en ese orden. `guide` es `null` hasta que exista una guía revisada. |
+| `confidence` | `alta`: 4+ sets míos o 10+ games suyos. `media`: 2+ sets míos, 5+ games suyos o 20+ de la escena. `baja`: el resto. El diseño proponía 100–150 games de escena; en el corte real solo 7 cruces pasan de 30, así que ese umbral nunca se cumpliría. |
+| `setPattern` | `null` sin sets con marcador. `setsScored` (sets con marcador legible), `setsWithScores` (los que además tienen todos sus games), `game1`, `decider` (sets que llegaron al último game), `close21`, `close32`, y `afterLoss` `{total, kept, switched:[{slug,n}]}` (games perdidos con personaje registrado en ese y en el siguiente). |
+| `common`, `commonTotal` | Hasta 12 `{alias, me:[w,l], him:[w,l]}` en sets del corte combinado, sin identificadores. |
+| `byTier` | `{top10, t11_30, rest}` en sets, según el puesto del oponente en la vista elegida; `null` sin sets contra clasificados. Los oponentes sin puesto no entran. |
+| `toolkit`, `punishable` | `null`: los datos de frames esperan una fuente con permiso de uso. La pantalla muestra el estado «sin ficha». |
+
+Pruebas: `scripts/database/test_analisis.php` (bloque «Prepara el set») y `test_analisis_http.py`.
+

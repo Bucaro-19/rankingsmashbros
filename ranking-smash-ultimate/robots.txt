@@ -3,6 +3,7 @@ Disallow: /panel.php
 Disallow: /opiniones.php
 Disallow: /cuenta.html
 Disallow: /analisis.html
+Disallow: /preparar.html
 Disallow: /top/
 Disallow: /top.php
 Disallow: /*-api.php

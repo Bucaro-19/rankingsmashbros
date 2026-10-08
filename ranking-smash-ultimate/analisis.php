@@ -205,6 +205,149 @@ function smash_analisis_recommendations(array $chosen, array $his, array $h2h, a
     usort($out,static fn($a,$b)=>($strength[$b['confidence']]<=>$strength[$a['confidence']]) ?: ($b['ownSets']<=>$a['ownSets']) ?: ($b['sceneGames']<=>$a['sceneGames']) ?: strcmp($a['slug'],$b['slug']));
     return array_slice($out,0,2);
 }
+// «Prepara el set»: everything below is measured from the cut's sets and games. Nothing here is advice
+// written by hand; the guide text of a counter stays null until a reviewed guide exists.
+const SMASH_ANALISIS_DEEP_LIST = 5;
+const SMASH_ANALISIS_COMMON_LIST = 12;
+function smash_analisis_deep_confidence(?array $mine, array $his, array $scene): string {
+    $own = $mine === null ? 0 : array_sum($mine); $him = array_sum($his); $all = array_sum($scene);
+    if ($own >= 4 || $him >= 10) return 'alta';
+    return $own >= 2 || $him >= 5 || $all >= 20 ? 'media' : 'baja';
+}
+// One row per valid game: who played, with which character (null when unregistered, Random or ambiguous), who won.
+function smash_analisis_game_rows(array $games, array $catalog): array {
+    $rows = [];
+    foreach ($games as $g) {
+        if (count($g['picks']) !== 2 || !isset($g['picks'][$g['winner']])) continue;
+        $sides = [];
+        foreach ($g['picks'] as $entrant => $pick) {
+            if (count($pick['players']) !== 1) continue 2;
+            $chars = $pick['characters'] ?? []; $cid = count($chars) === 1 ? (string)array_key_first($chars) : null;
+            $sides[] = ['player' => (string)array_key_first($pick['players']), 'slug' => $cid !== null && $cid !== '1746' && isset($catalog[$cid]) ? $catalog[$cid]['slug'] : null,
+                'won' => (string)$entrant === $g['winner']];
+        }
+        if ($sides[0]['player'] === $sides[1]['player']) continue;
+        $rows[] = ['setId' => $g['setId'], 'number' => $g['number'], 'sides' => $sides];
+    }
+    return $rows;
+}
+function smash_analisis_deep(PDO $db, array $public, array $view, array $data, array $catalog, array $chars, string $me, string $rival, array $chosen, ?string $main): array {
+    $rows = smash_analisis_game_rows($data['games'], $catalog);
+    $add = static function (array &$table, string $key, bool $won): void { if (!isset($table[$key])) $table[$key] = [0, 0]; $table[$key][$won ? 0 : 1]++; };
+    // Games of the rival against each character, his main against each character, and the whole scene against his main.
+    $vs = []; $mainVs = []; $scene = []; $hisChars = []; $bySet = []; $coveredSets = [];
+    foreach ($rows as $row) foreach ([0, 1] as $i) {
+        $side = $row['sides'][$i]; $other = $row['sides'][1 - $i];
+        if ($main !== null && $other['slug'] === $main && $side['slug'] !== null && $side['slug'] !== $main) $add($scene, $side['slug'], $side['won']);
+        if ($side['player'] !== $rival) continue;
+        $bySet[$row['setId']][$row['number']] = ['won' => $side['won'], 'slug' => $side['slug']];
+        if ($side['slug'] !== null) $hisChars[$side['slug']] = ($hisChars[$side['slug']] ?? 0) + 1;
+        if ($other['slug'] === null) continue;
+        $coveredSets[$row['setId']] = true; $add($vs, $other['slug'], $side['won']);
+        if ($main !== null && $side['slug'] === $main && $other['slug'] !== $main) $add($mainVs, $other['slug'], $side['won']);
+    }
+    $list = static function (array $table, bool $hard): array {
+        $out = [];
+        foreach ($table as $slug => $r) if ($hard ? $r[1] > $r[0] : $r[0] > $r[1]) $out[] = ['slug' => (string)$slug, 'won' => $r[0], 'lost' => $r[1]];
+        usort($out, static function (array $a, array $b) use ($hard): int {
+            $ra = $a['won'] / ($a['won'] + $a['lost']); $rb = $b['won'] / ($b['won'] + $b['lost']);
+            return ($hard ? $ra <=> $rb : $rb <=> $ra) ?: (($b['won'] + $b['lost']) <=> ($a['won'] + $a['lost'])) ?: strcmp($a['slug'], $b['slug']);
+        });
+        return array_slice($out, 0, SMASH_ANALISIS_DEEP_LIST);
+    };
+    $totalSets = 0; $hisSets = [];
+    foreach ($public['results'] ?? [] as $r) if (in_array($rival, $r['playerIds'], true)) { $totalSets++; $hisSets[(string)$r['id']] = $r; }
+    $registered = array_sum($hisChars);
+
+    // Counters: each character with any evidence against his main, judged by the most direct source that takes a side.
+    $counters = []; $avoid = [];
+    if ($main !== null) {
+        $mySets = [];
+        foreach ($hisSets as $sid => $r) {
+            if (!in_array($me, $r['playerIds'], true) || ($chars[$sid][$rival] ?? null) !== $main) continue;
+            $mine = $chars[$sid][$me] ?? null; if ($mine !== null) $add($mySets, $mine, $r['playerIds'][0] === $me);
+        }
+        $strength = ['alta' => 3, 'media' => 2, 'baja' => 1];
+        foreach (array_unique(array_merge(array_keys($mySets), array_keys($mainVs), array_keys($scene))) as $slug) {
+            $slug = (string)$slug; if ($slug === $main) continue;
+            $own = $mySets[$slug] ?? null; $his = $mainVs[$slug] ?? [0, 0]; $all = $scene[$slug] ?? [0, 0];
+            // His record is stored from his side; a counter is good for me when he loses.
+            $edge = null;
+            foreach ([$own, [$his[1], $his[0]], $all] as $source) if ($source !== null && $source[0] !== $source[1]) { $edge = $source[0] / ($source[0] + $source[1]); break; }
+            if ($edge === null) continue;
+            $card = ['slug' => $slug, 'mine' => in_array($slug, $chosen, true), 'mySets' => $own, 'hisGames' => $his, 'sceneGames' => $all,
+                'confidence' => smash_analisis_deep_confidence($own, $his, $all), 'guide' => null, 'edge' => $edge];
+            if ($edge > 0.5) $counters[] = $card; else $avoid[] = $card;
+        }
+        $order = static function (bool $good) use ($strength): callable {
+            return static function (array $a, array $b) use ($strength, $good): int {
+                return ($strength[$b['confidence']] <=> $strength[$a['confidence']]) ?: ((int)$b['mine'] <=> (int)$a['mine'])
+                    ?: ($good ? $b['edge'] <=> $a['edge'] : $a['edge'] <=> $b['edge'])
+                    ?: ((array_sum($b['hisGames']) + array_sum($b['sceneGames'])) <=> (array_sum($a['hisGames']) + array_sum($a['sceneGames']))) ?: strcmp($a['slug'], $b['slug']);
+            };
+        };
+        usort($counters, $order(true)); usort($avoid, $order(false));
+        $strip = static function (array $card): array { unset($card['edge']); return $card; };
+        $counters = array_map($strip, array_slice($counters, 0, SMASH_ANALISIS_DEEP_LIST)); $avoid = array_map($strip, array_slice($avoid, 0, SMASH_ANALISIS_DEEP_LIST));
+    }
+
+    // How he plays a set. Close sets come from the published score; game-by-game facts only from complete sequences.
+    $pattern = ['setsWithScores' => 0, 'game1' => [0, 0], 'decider' => [0, 0], 'close21' => [0, 0], 'close32' => [0, 0], 'afterLoss' => ['total' => 0, 'kept' => 0, 'switched' => []]];
+    $scored = 0; $switched = [];
+    foreach ($hisSets as $sid => $r) {
+        [$a, $b] = smash_analisis_score($r, $rival); if ($a === null) continue;
+        $scored++; $won = $r['playerIds'][0] === $rival; $high = max($a, $b); $low = min($a, $b);
+        if ($low === $high - 1) {
+            $pattern['decider'][$won ? 0 : 1]++;
+            if ($high === 2) $pattern['close21'][$won ? 0 : 1]++; elseif ($high === 3) $pattern['close32'][$won ? 0 : 1]++;
+        }
+        $games = $bySet[$sid] ?? []; ksort($games);
+        if (!$games || array_keys($games) !== range(1, $a + $b)) continue;
+        $pattern['setsWithScores']++; $pattern['game1'][$games[1]['won'] ? 0 : 1]++;
+        for ($n = 1; $n < $a + $b; $n++) {
+            if ($games[$n]['won'] || $games[$n]['slug'] === null || $games[$n + 1]['slug'] === null) continue;
+            $pattern['afterLoss']['total']++;
+            if ($games[$n + 1]['slug'] === $games[$n]['slug']) $pattern['afterLoss']['kept']++; else $switched[$games[$n + 1]['slug']] = ($switched[$games[$n + 1]['slug']] ?? 0) + 1;
+        }
+    }
+    arsort($switched);
+    foreach ($switched as $slug => $n) $pattern['afterLoss']['switched'][] = ['slug' => (string)$slug, 'n' => $n];
+    $pattern['setsScored'] = $scored;
+
+    // Opponents both have faced, in the combined cut.
+    $faced = ['me' => [], 'him' => []];
+    foreach ($public['results'] ?? [] as $r) foreach (['me' => $me, 'him' => $rival] as $kind => $pid) {
+        $pos = array_search($pid, $r['playerIds'], true); if ($pos === false) continue;
+        $other = (string)$r['playerIds'][1 - $pos]; if ($other === $me || $other === $rival) continue;
+        $add($faced[$kind], $other, $pos === 0);
+    }
+    $common = [];
+    foreach ($faced['me'] as $id => $mine) if (isset($faced['him'][$id])) $common[] = ['id' => (string)$id, 'me' => $mine, 'him' => $faced['him'][$id]];
+    usort($common, static fn($a, $b) => ((array_sum($b['me']) + array_sum($b['him'])) <=> (array_sum($a['me']) + array_sum($a['him']))) ?: strcmp($a['id'], $b['id']));
+    $commonTotal = count($common); $common = array_slice($common, 0, SMASH_ANALISIS_COMMON_LIST);
+    if ($common) {
+        $tags = []; $ids = array_column($common, 'id');
+        foreach (smash_analisis_query($db, 'SELECT id,tag FROM players WHERE id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')', $ids) as $row) $tags[(string)$row['id']] = $row['tag'];
+        foreach ($common as &$row) { $row = ['alias' => $tags[$row['id']] ?? 'Sin alias', 'me' => $row['me'], 'him' => $row['him']]; }
+        unset($row);
+    }
+
+    // Sets against ranked opponents of the chosen view. An opponent without a rank is not a weak opponent: left out.
+    $ranks = []; foreach ($view['players'] as $p) $ranks[(string)$p['id']] = $p['rank'];
+    $tiers = ['top10' => [0, 0], 't11_30' => [0, 0], 'rest' => [0, 0]];
+    foreach ($view['results'] ?? [] as $r) {
+        $pos = array_search($rival, $r['playerIds'], true); if ($pos === false) continue;
+        $rank = $ranks[(string)$r['playerIds'][1 - $pos]] ?? null; if ($rank === null) continue;
+        $tiers[$rank <= 10 ? 'top10' : ($rank <= 30 ? 't11_30' : 'rest')][$pos === 0 ? 0 : 1]++;
+    }
+    return ['rival' => ['main' => $main, 'mainShare' => $main !== null && $registered > 0 ? round(($hisChars[$main] ?? 0) / $registered, 4) : null,
+            'coveredSets' => count($coveredSets), 'totalSets' => $totalSets],
+        'vsChars' => ['hard' => $list($vs, true), 'good' => $list($vs, false)], 'counters' => $counters, 'avoid' => $avoid,
+        'setPattern' => $scored > 0 ? $pattern : null, 'common' => $common, 'commonTotal' => $commonTotal,
+        'byTier' => array_sum(array_map('array_sum', $tiers)) > 0 ? $tiers : null,
+        // No reviewed guide and no licensed frame data yet: the screen shows their empty states.
+        'toolkit' => null, 'punishable' => null];
+}
 function smash_analisis_full(PDO $db, array $public, array $base, array $user, string $rival, string $scope): array {
     $me=$user['playerId']; $views=['intl'=>$public,'gt'=>$public['localRanking']]; $view=$views[$scope];
     $catalog=smash_analisis_catalog($db); $data=smash_analisis_games($db,$public);
@@ -265,6 +408,7 @@ function smash_analisis_full(PDO $db, array $public, array $base, array $user, s
     $base+=['h2h'=>$history,'h2hTruncated'=>count($h2h)>200,'streak'=>$streak,'rivalForm'=>array_slice($form,0,5),'rivalFormTotal'=>count($form),
         'rivalTiers'=>$tiers,'meVsChar'=>(object)$meVs,'himVsChar'=>(object)$himVs,'gameMatrix'=>(object)$matrix,'gameDataStatus'=>$data['status'],'setDataScope'=>'published_ledger',
         'recommendations'=>smash_analisis_recommendations($chosen,$his,$allH2h,$chars,$matrix,$me),
+        'deep'=>smash_analisis_deep($db,$public,$view,$data,$catalog,$chars,$me,$rival,$chosen,$his[0] ?? null),
         'probability'=>['p'=>smash_analisis_probability($base['me']['points'][$scope],$base['rival']['points'][$scope],$public['methodVersion']),'scale'=>400,'methodVersion'=>$public['methodVersion']]];
     return $base;
 }

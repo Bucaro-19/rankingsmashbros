@@ -2,6 +2,15 @@
 
 
 
+## «Prepara el set»: análisis ampliado del rival (8/oct, noche)
+
+- Handoff `design_handoff_smash_gt_analisis_ampliado` implementado en `preparar.html` / `preparar.js` / `preparar.css`, enlazado desde el análisis de rival. La API añade el campo de pago `deep` (contrato en [ANALISIS-RIVAL.md](ANALISIS-RIVAL.md)).
+- **Con datos medidos:** le cuesta / le va bien contra, counters para ti y mejor evita (mis sets, sus games, la escena), cómo juega el set, rivales en común y contra qué nivel rinde. Versión gratis: las siete secciones bloqueadas, sin cifras.
+- **Sin contenido todavía, con su estado vacío:** «Por qué funciona» (la guía de matchups está en borrador sin revisar) y «Tus herramientas contra él» (frames: falta permiso de la fuente; el dueño enviará el correo a Ultimate Frame Data). El pie que cita la fuente de frames no se muestra hasta tener el permiso.
+- Umbral de confianza por escena bajado a 20 games frente a los 100–150 del diseño, porque el corte real no los alcanza.
+- Revisado en navegador con una respuesta inventada (solo en la copia de pruebas): 375 px, estados completo, bloqueado y sin datos; sin desbordes ni errores de consola. Falta la revisión del dueño con su sesión real y a 1440 px.
+- El PR #61 de Codex (prueba de carga) sigue abierto: el dueño aclaró que Codex no ha terminado.
+
 ## Imagen para compartir publicada (8/oct, noche)
 
 - Imagen aprobada por el dueño y entregada por Claude Design (`social/` en su carpeta local): 1200 × 630, JPG de 89 KB, sin arte oficial. Queda en `assets/smash-gt-social.jpg`, en la lista de publicación, con `og:image`, `twitter:image` y `summary_large_image` activos en las cuatro páginas públicas (eran las etiquetas que #58 dejó comentadas).
