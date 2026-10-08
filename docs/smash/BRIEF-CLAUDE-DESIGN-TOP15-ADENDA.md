@@ -17,7 +17,8 @@ start.gg solo dice quién creó el torneo. El organizador puede sumar hasta 10 c
 - Caja «Coorganizadores» en la columna lateral: lista (nombre, «desde el DD/MM/AAAA», «Quitar»), estado vacío, botón «Crear invitación».
 - Invitación creada: dirección para copiar, «Copiar invitación», y el texto «Envíasela a una sola persona: sirve una vez y vence en 7 días. Crear otra anula esta.»
 - Confirmación al quitar a alguien.
-- Texto fijo: «Ven este top y tus torneos; tu premium los cubre. No reciben permisos en start.gg ni pueden cambiar tu enlace.»
+- Texto fijo: «Aparecen como coorganizadores en tu top y en tu página pública. Para verlo desde su cuenta cada uno usa su propio premium. No reciben permisos en start.gg ni pueden cambiar tu enlace.»
+- Crédito visible: línea «Coorganizan: {nombres}» bajo el título, en la pestaña y en la página pública (cabe en la captura de 390 × 844 con hasta 10 nombres).
 
 ## 3. Quien recibe la invitación
 
@@ -27,7 +28,7 @@ Abre `cuenta.html?invita=…#torneos`.
 - Con sesión: aviso con «Unirme al equipo» y «Ahora no».
 - Invitación usada o vencida; invitación propia; ya es miembro.
 - Vista del coorganizador: igual que la del organizador pero **sin** interruptor del enlace, selector de tamaño ni caja de coorganizadores. Lleva «Eres coorganizador de {Organizador}» y «Salir del equipo».
-- Si el organizador no tiene premium vigente: «El organizador necesita premium. No necesitas pagar tú.»
+- Cada cuenta paga su premium. Coorganizador sin premium: pantalla de premium con «Eres coorganizador de {Organizador}. Tu nombre aparece en su top aunque no tengas premium.»
 - Si la cuenta tiene sus propios torneos **y** es coorganizadora de otros: selector para cambiar de organizador (hoy son botones «Mis torneos / {Organizador}»).
 
 ## 4. Revisiones para el dueño del sitio

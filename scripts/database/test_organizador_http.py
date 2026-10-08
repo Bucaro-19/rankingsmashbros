@@ -149,7 +149,7 @@ class OrganizerHttpTests(unittest.TestCase):
         self.assertEqual(status, 200)
         for text in ('Top 5 · Temporada 2026', 'Árena Xelá', 'Kenji', 'Muestra pequeña: 2 torneos.', 'Torneos usados', 'Torneo 1', 'Quetzaltenango', 'Pagar no da puntos ni cambia puestos.', '30/08/2026 – 27/09/2026'):
             self.assertIn(text, page)
-        for text in ('<b>Solo</b>', 'Ajeno', 'Torneo 3', 'Coorganizador', '<script', 'Set-Cookie'):
+        for text in ('<b>Solo</b>', 'Ajeno', 'Torneo 3', 'Coorganizan', '<script', 'Set-Cookie'):
             self.assertNotIn(text, page)
         with self.db.cursor() as q:
             q.execute('UPDATE premium_subscriptions SET current_period_end=%s WHERE user_id=%s', ('2026-01-01 00:00:00', org))
@@ -174,6 +174,13 @@ class OrganizerHttpTests(unittest.TestCase):
         self.assertEqual(self.call('/organizador-api.php?organizador='+org, client=guest)[1]['state'], 'interest')
         self.assertEqual(self.call('/organizador-api.php', {'action': 'join', 'token': token}, seen['csrf'], client=guest), (200, {'ok': True, 'organizer': org}))
         self.assertEqual(self.call('/organizador-api.php', {'action': 'join', 'token': token}, seen['csrf'], client=guest), (400, {'ok': False, 'reason': 'invalid_invite'}))
+        # Each account pays for itself: joined and credited, but the top needs the co-organizer's own premium.
+        gate = self.call('/organizador-api.php?organizador='+org, client=guest)[1]
+        self.assertEqual((gate['state'], gate['role']), ('premium', 'member')); self.assertNotIn('data', gate)
+        self.assertEqual(self.call('/organizador-api.php')[1]['data']['coorganizers'], ['Coorganizador'])
+        self.call('/organizador-api.php', {'action': 'settings', 'publicEnabled': True}, csrf)
+        self.assertIn('Coorganizan: Coorganizador', self.call('/top.php?o=arena-xela', client=self.browser(), raw=True)[2])
+        self.premium(co)
         team = self.call('/organizador-api.php?organizador='+org, client=guest)[1]
         self.assertEqual((team['state'], team['role'], team['members']), ('data', 'member', None)); self.assertEqual(team['data']['top'][0]['alias'], 'Kenji')
         self.assertEqual([c['role'] for c in team['contexts']], ['owner', 'member'])

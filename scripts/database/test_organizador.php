@@ -30,7 +30,7 @@ try {
     $owned = smash_org_tournament_ids($pdo, $org);
     check_org(count($owned) === 5 && !isset($owned[(string)($B + 5)]), 'Tournaments come from the start.gg creator, not from the profile interest');
     $view = smash_org_view($pdo, $org, '2098-10-04T06:00:00+00:00', $now, true);
-    check_org($view['organizer'] === ['name' => 'Árena Xelá', 'slug' => 'arena-xela', 'publicEnabled' => false, 'topSize' => 15], 'Profile is created with a readable stable address, private by default');
+    check_org($view['coorganizers'] === [] && $view['organizer'] === ['name' => 'Árena Xelá', 'slug' => 'arena-xela', 'publicEnabled' => false, 'topSize' => 15], 'Profile is created with a readable stable address, private by default');
     check_org($view['summary'] === ['eventsCounted' => 2, 'distinctPlayers' => 4, 'validSets' => 7, 'rankedPlayers' => 3, 'periodFrom' => '2026-08-30', 'periodTo' => '2026-09-27', 'cutDate' => '2098-10-04', 'isStale' => false],
         'Summary uses only this organizer\'s counting tournaments; DQ sets and other tournaments stay out');
     check_org(array_column($view['top'], 'alias') === ['Kenji', 'Vlad', 'Momo'] && array_column($view['top'], 'rank') === [1, 2, 3] && $view['rest'] === [], 'Order by points; one-set player does not appear');
@@ -67,6 +67,7 @@ try {
     check_org(smash_org_join($pdo, $co, $token, $now) === $org && org_fails(static fn() => smash_org_join($pdo, $other, $token, $now), 'invalid_invite'), 'One use');
     check_org(array_column(smash_org_contexts($pdo, $co), 'role') === ['owner', 'member'] && smash_org_contexts($pdo, $co)[1]['slug'] === 'arena-xela' && count(smash_org_contexts($pdo, $other)) === 1, 'The co-organizer can open the organizer\'s top; a stranger cannot');
     check_org(smash_org_members($pdo, $org) === [['id' => $co, 'name' => 'Coorganizador', 'since' => '2026-10-07']], 'Members list');
+    check_org(smash_org_view($pdo, $org, null, $now, false)['coorganizers'] === ['Coorganizador'] && smash_org_public($pdo, 'arena-xela', null, $yes, $now)['coorganizers'] === ['Coorganizador'], 'Co-organizers are credited by name, also on the public page');
     $second = smash_org_invite($pdo, $org, $now); $third = smash_org_invite($pdo, $org, $now);
     check_org(smash_org_invite_peek($pdo, $second, $now) === null && smash_org_invite_peek($pdo, $third, $now) !== null, 'A new invitation replaces the previous one');
     smash_org_remove_member($pdo, $org, $co);

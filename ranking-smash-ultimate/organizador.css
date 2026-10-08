@@ -61,3 +61,5 @@
 /* Cuatro pestañas: en pantallas angostas la fila se desliza en vez de cortarse. */
 .account-tabs>div{overflow-x:auto;scrollbar-width:none}.account-tabs>div::-webkit-scrollbar{display:none}.account-tabs button{white-space:nowrap;flex:none}
 .o-team>.outline,.organizer .p-notice>div>.outline{flex:none;align-self:flex-start}
+.o-coorg{font-size:14px;color:#C9CED8;overflow-wrap:anywhere}.o-coorg strong{color:var(--text)}
+.o-credit{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;background:var(--bg);font-size:14px;color:#C9CED8}.o-credit span{color:var(--green);font-weight:900}

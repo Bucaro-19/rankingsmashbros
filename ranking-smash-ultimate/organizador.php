@@ -22,12 +22,13 @@ final class SmashOrganizerError extends RuntimeException
     public function __construct(string $reason) { $this->reason = $reason; parent::__construct('No se pudo completar la operación del organizador.'); }
 }
 
-// Premium belongs to the organizer and covers the co-organizers and the public address. Needs
-// premium.php and stats.php loaded by the caller. $config null: premium is off, only the site owner passes.
-function smash_org_premium(PDO $pdo, string $organizerId, ?array $config, int $now): array
+// Whether one account has premium running. Each account pays for itself: a co-organizer needs their own
+// premium to open the tab, and the public address depends on the organizer's. Needs premium.php and
+// stats.php loaded by the caller. $config null: premium is off, only the site owner passes.
+function smash_org_premium(PDO $pdo, string $accountId, ?array $config, int $now): array
 {
-    if (smash_stats_is_owner($pdo, $organizerId)) return ['active' => true, 'expiredAt' => null];
-    $status = $config === null ? null : smash_premium_status($pdo, $organizerId, $config['live'], $now);
+    if (smash_stats_is_owner($pdo, $accountId)) return ['active' => true, 'expiredAt' => null];
+    $status = $config === null ? null : smash_premium_status($pdo, $accountId, $config['live'], $now);
     $active = $status !== null && $status['premium']; $end = $status['currentPeriodEnd'] ?? null;
     return ['active' => $active, 'expiredAt' => !$active && $end !== null && strtotime($end) <= $now ? $end : null];
 }
@@ -330,7 +331,8 @@ function smash_org_view(PDO $pdo, string $organizerId, ?string $publicCut, int $
     $dates = array_column($ledger['events'], 'date');
     $cutTime = $cut === null ? null : strtotime(substr($cut['generatedAt'], 0, 19) . ' UTC');
     $publicTime = $publicCut === null ? false : strtotime($publicCut);
-    return ['organizer' => $profile, 'seasonYear' => $season, 'events' => $events,
+    // Co-organizers are credited by name wherever the top is shown, whether or not they pay.
+    return ['organizer' => $profile, 'coorganizers' => array_column(smash_org_members($pdo, $organizerId), 'name'), 'seasonYear' => $season, 'events' => $events,
         'top' => array_slice($ranking['rows'], 0, $profile['topSize']),
         'rest' => array_map(static function (array $row): array { unset($row['detail']); return $row; }, array_slice($ranking['rows'], $profile['topSize'])),
         'summary' => ['eventsCounted' => count(array_unique(array_column($ledger['events'], 'tournamentId'))), 'distinctPlayers' => $ranking['distinctPlayers'],
@@ -355,7 +357,7 @@ function smash_org_public(PDO $pdo, string $slug, ?string $publicCut, callable $
     if ($view['summary']['eventsCounted'] === 0) return ['state' => 'paused'];
     $used = [];
     foreach ($view['events'] as $event) if ($event['status'] === 'counts') $used[] = ['name' => $event['name'], 'date' => $event['date'], 'place' => $event['place'], 'url' => $event['url'], 'activePlayers' => $event['activePlayers'], 'validSets' => $event['validSets']];
-    return ['state' => 'open', 'organizer' => ['name' => $view['organizer']['name'], 'topSize' => $view['organizer']['topSize']], 'seasonYear' => $view['seasonYear'],
+    return ['state' => 'open', 'organizer' => ['name' => $view['organizer']['name'], 'topSize' => $view['organizer']['topSize']], 'coorganizers' => $view['coorganizers'], 'seasonYear' => $view['seasonYear'],
         'top' => array_map(static function (array $row): array { unset($row['detail']); return $row; }, $view['top']), 'summary' => $view['summary'], 'events' => $used];
 }
 

@@ -22,8 +22,8 @@ Diseño: handoff local `design_handoff_smash_gt_top_organizador/` (pestaña «Mi
 | Qué torneos cuentan | Los del organizador que **también entran al ranking nacional** (presencial, singles, 20 jugadores activos o más) | Son los únicos con sets capturados. Incluir torneos más chicos exige ampliar la captura semanal. |
 | Quién aparece | Jugadores con al menos **2 sets válidos** en esos torneos, de cualquier país | Mínimo bajo a propósito; es la constante `SMASH_ORG_MIN_SETS`. |
 | Cálculo | Bradley–Terry regularizado como el nacional: prior 0.5, peso `min(2, √(activos/32))`, pareja repetida ÷ √repeticiones, escala 1500 + 400/ln 10 | Mismo criterio, sin tabla TTS. Se calcula al consultar, desde SQL. |
-| Premium | El premium **del organizador** cubre a sus coorganizadores y a la página pública | Un solo pago por equipo. |
-| Coorganizadores | Por **invitación de un solo uso** (vence en 7 días, crear otra anula la anterior). Máximo 10. Solo miran: no cambian el enlace ni el tamaño | No hay forma de buscar una cuenta por alias sin exponer cuentas. |
+| Premium | **Cada cuenta paga el suyo** (decisión del dueño, 7/oct): el coorganizador necesita su propio premium para ver la pestaña; la página pública depende del premium del organizador | Unirse como coorganizador es gratis y su nombre aparece («Coorganizan: …») en la pestaña y en la página pública aunque no pague. |
+| Coorganizadores | Por **invitación de un solo uso** (vence en 7 días, crear otra anula la anterior). Máximo 10. Solo miran (con su premium): no cambian el enlace ni el tamaño | No hay forma de buscar una cuenta por alias sin exponer cuentas. |
 | Torneo de otra cuenta | «Pedir revisión» con el enlace; lo aprueba o rechaza el dueño del sitio a mano. Aprobado, cuenta para ese organizador | start.gg no expone administradores. |
 | Dirección pública | `/top/{slug}`, estable, generada del nombre de la cuenta; apagada por defecto | El organizador decide si comparte. |
 
@@ -37,9 +37,9 @@ Diseño: handoff local `design_handoff_smash_gt_top_organizador/` (pestaña «Mi
 
 ## API (`organizador-api.php`)
 
-`GET` (opcional `?organizador={id}` y `?invita={código}`): `state` es `login`, `interest`, `premium`, `expired` o `data`. Orden de acceso: sesión → interés «Organizador» (no se exige a un coorganizador) → premium del organizador → datos. Nunca se envían cifras en un estado bloqueado. El `id` pedido solo se acepta si la cuenta es ese organizador o uno de sus coorganizadores.
+`GET` (opcional `?organizador={id}` y `?invita={código}`): `state` es `login`, `interest`, `premium`, `expired` o `data`. Orden de acceso: sesión → interés «Organizador» (no se exige a un coorganizador) → premium de la cuenta que mira → datos. Nunca se envían cifras en un estado bloqueado. El `id` pedido solo se acepta si la cuenta es ese organizador o uno de sus coorganizadores.
 
-Con `state: data`: `data` (`organizer`, `events`, `top`, `rest`, `summary`, `sizes`, `minRule`), `members` (solo el organizador), `publicUrl`, `contexts`, `role`. La cuenta con rol `admin` recibe además `pendingReviews`.
+Con `state: data`: `data` (`organizer`, `coorganizers`, `events`, `top`, `rest`, `summary`, `sizes`, `minRule`), `members` (solo el organizador), `publicUrl`, `contexts`, `role`. La cuenta con rol `admin` recibe además `pendingReviews`.
 
 `POST` JSON con `X-CSRF-Token`: `settings` (`publicEnabled`, `topSize`), `invite`, `removeMember`, `review` (`url`), `join` (`token`), `leave`, y `resolve` (`claim`, `approve`, `message`; solo `admin`).
 
