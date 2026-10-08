@@ -11,7 +11,7 @@ const SmashPremium = (() => {
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   // Dates are shown in Guatemala time (UTC−6, no daylight saving).
   const day=iso=>{const time=Date.parse(iso);if(Number.isNaN(time))return null;const d=new Date(time-21600000);return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`;};
-  let context={csrf:'',authenticated:false,onStatus:null}, info=null, plan='annual', arrival=null, confirming=false, askCancel=false, busy=false, timer=null;
+  let context={csrf:'',authenticated:false,onStatus:null,admin:false}, info=null, plan='annual', arrival=null, confirming=false, askCancel=false, busy=false, timer=null;
   function setContext(next){context={...context,...next};}
   async function api(body=null) {
     const controller=new AbortController(), stop=setTimeout(()=>controller.abort(),20000);
@@ -24,11 +24,13 @@ const SmashPremium = (() => {
     } finally {clearTimeout(stop);}
   }
   const notice=(kind,glyph,title,text,extra='')=>`<div class="p-notice ${kind}" role="${kind==='error'?'alert':'status'}"><span aria-hidden="true">${glyph}</span><div><strong>${title}</strong><p>${text}</p>${extra}</div></div>`;
-  const included=()=>`<section class="p-box p-includes" aria-labelledby="p-inc"><h3 id="p-inc">Qué incluye</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p>${f.available&&f.href&&info?.premium?.premium?`<a href="${f.href}">${f.action}</a>`:''}</div></li>`).join('')}</ul></section>`;
+  const included=()=>`<section class="p-box p-includes" aria-labelledby="p-inc"><h3 id="p-inc">Qué incluye</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p>${f.available&&f.href&&context.authenticated?`<a class="p-go" href="${f.href}">${f.action}</a>`:''}</div></li>`).join('')}</ul></section>`;
   const free=()=>`<section class="p-box" aria-labelledby="p-free"><h3 id="p-free">Gratis para todos</h3><ul class="p-free">${FREE.map(item=>`<li><span aria-hidden="true">✓</span>${item}</li>`).join('')}</ul></section><p class="p-principle">${PRINCIPLE}</p>`;
   function renderPlans(top='') {
     const p=PLANS[plan], signed=context.authenticated, off=info&&info.available===false;
-    root().innerHTML=`${info?.test?notice('info','i','Modo de prueba.','Los pagos de esta pantalla usan el ambiente de pruebas de Recurrente: no se cobra dinero real.'):''}${top}
+    // The site owner's account opens every premium feature without a subscription; say so instead of looking locked.
+    const admin=context.admin?notice('ok','✓','Tu cuenta de administrador ya tiene todo lo de premium.','No necesitas suscripción para usar el análisis de rival ni las demás funciones. Si te suscribes, además apoyas el sitio y aparece la insignia Premium.','<a class="p-go" href="./analisis.html">Analizar un rival →</a>'):'';
+    root().innerHTML=`${info?.test?notice('info','i','Modo de prueba.','Los pagos de esta pantalla usan el ambiente de pruebas de Recurrente: no se cobra dinero real.'):''}${admin}${top}
       <div class="p-hero"><p class="kicker yellow">Premium · Apoya el sitio</p><h1>Que la arena<br><span>se sostenga sola.</span></h1><p class="lead">Smash GT es un proyecto independiente de la comunidad. Con una suscripción pequeña ayudas a pagar el servidor y el trabajo de mantenerlo, y recibes funciones extra para preparar tus sets.</p></div>
       <div class="p-columns"><div class="p-main"><h2>Elige tu plan</h2>
         <div class="p-plans" role="radiogroup" aria-label="Plan">${Object.entries(PLANS).map(([key,item])=>`<button type="button" role="radio" aria-checked="${key===plan}" data-plan="${key}" tabindex="${key===plan?0:-1}"><span class="p-radio" aria-hidden="true"></span><span class="p-plan-name">${item.name}</span><span class="p-price"><b>${item.amount}</b> USD ${item.each}</span><span class="p-plan-note">${item.note}</span></button>`).join('')}</div>
@@ -72,7 +74,7 @@ const SmashPremium = (() => {
           ${canceled?'<p class="note">Puedes volver a suscribirte cuando termine este periodo.</p>':askCancel?`<div class="p-confirm" role="alertdialog" aria-labelledby="p-confirm-title" aria-describedby="p-confirm-text"><strong id="p-confirm-title">¿Cancelar tu suscripción?</strong><p id="p-confirm-text">Seguirás siendo premium${end?` hasta el ${end}`:' hasta el final del periodo pagado'}. Después no habrá más cobros. Puedes volver cuando quieras.</p><div><button type="button" id="p-keep" class="p-keep">No, mantener</button><button type="button" id="p-confirm-cancel" class="p-danger" ${busy?'disabled':''}>${busy?'Cancelando…':'Sí, cancelar'}</button></div></div>`
             :'<p class="note">Cancelas cuando quieras, sin escribirle a nadie. Sigues siendo premium hasta el final del periodo que ya pagaste.</p><button type="button" id="p-cancel" class="outline">Cancelar suscripción</button>'}
           <p id="p-error" class="p-warn" role="alert" hidden></p></section></div>
-        <aside class="p-side"><section class="p-box p-includes" aria-labelledby="p-have"><h3 id="p-have">Lo que tienes</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p>${f.available&&f.href&&info?.premium?.premium?`<a href="${f.href}">${f.action}</a>`:''}</div></li>`).join('')}</ul></section>${free()}</aside></div>`;
+        <aside class="p-side"><section class="p-box p-includes" aria-labelledby="p-have"><h3 id="p-have">Lo que tienes</h3><ul>${FEATURES.map(f=>`<li><span aria-hidden="true">${f.available?'✓':'…'}</span><div><strong>${f.title}${f.available?'':' <em>Próximamente</em>'}</strong><p>${f.text}</p>${f.available&&f.href&&context.authenticated?`<a class="p-go" href="${f.href}">${f.action}</a>`:''}</div></li>`).join('')}</ul></section>${free()}</aside></div>`;
     root().querySelector('#p-cancel')?.addEventListener('click',()=>{askCancel=true;render();root().querySelector('#p-keep').focus();});
     const close=()=>{askCancel=false;render();root().querySelector('#p-cancel')?.focus();};
     root().querySelector('#p-keep')?.addEventListener('click',close);

@@ -34,7 +34,7 @@
     ['profile','characters','premium','organizer'].forEach(name=>{$(`tab-${name}`).setAttribute('aria-selected',String(name===next));$(`tab-${name}`).tabIndex=name===next?0:-1;});
     if(next==='profile')renderProfile();if(next==='characters')renderCharacters();if(next==='premium')SmashPremium.show();if(next==='organizer')SmashOrganizador.show();
     // Four tabs do not fit a narrow screen: keep the active one in view.
-    if(!$('account-tabs').hidden)$(`tab-${next}`)?.scrollIntoView({block:'nearest',inline:'nearest'});
+    {const tab=$(`tab-${next}`),row=tab?.parentElement;if(tab&&row&&!$('account-tabs').hidden)row.scrollLeft=Math.max(0,tab.offsetLeft-row.offsetLeft-12);}
     return true;
   }
   function renderLogin() {
@@ -67,7 +67,7 @@
       SmashOrganizador.setContext({csrf:data.csrf,authenticated:true,goTo:name=>{if(setScreen(name))$(`tab-${name}`).focus();}});
       saved=[...data.user.chosen];chosen=[...saved];roles=data.user.roles.length?[...data.user.roles]:['player'];
       $('header-account').textContent=data.user.tag;$('header-account').href='./cuenta.html';$('tab-panel').hidden=data.panel!==true;$('tab-opinions').hidden=data.panel!==true;
-      SmashPremium.setContext({csrf:data.csrf,authenticated:true,onStatus:markPremium});
+      SmashPremium.setContext({csrf:data.csrf,authenticated:true,onStatus:markPremium,admin:data.panel===true});
       if(!data.user.roles.length){renderOnboarding();setScreen('onboarding',true);}else if(location.hash.startsWith('#premium'))setScreen('premium',true);else if(backToOrganizer){setScreen('organizer',true);SmashPremium.peek();}else{setScreen('profile',true);SmashPremium.peek();}
       if(location.hash==='#vinculada')history.replaceState(null,'','./cuenta.html');
     }catch(error){
