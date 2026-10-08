@@ -1,5 +1,13 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+
+## Migración 005 aplicada en producción y premium en modo real (8/oct)
+
+- **Migración `005_organizer_tops` aplicada** por orden expresa del dueño, desde su Mac. La primera ejecución perdió la conexión a mitad (error 2013) y dos reintentos se quedaron colgados por la red; la migración es repetible y terminó completa. Verificado con SELECT: 42 tablas, marcador `005_organizer_tops` presente, las cinco tablas nuevas con sus 15 restricciones, y sin cambios en lo existente (1 corte, 376 posiciones, 2 cuentas). `tournament_catalog` está vacía: la llena el siguiente corte nuevo (domingo 11/oct); el corte del 4/oct ya importado no la rellena.
+- En producción `/top/{slug}` ya responde «No encontramos este top» (404) en vez del 503 anterior. La pestaña «Mis torneos» sigue oculta hasta que el catálogo tenga filas.
+- **Premium en modo real:** el dueño registró el webhook de producción en Recurrente y guardó su secreto en el archivo privado del servidor. Su pestaña Premium ya no muestra «Modo de prueba» y ofrece los planes. El webhook rechaza una firma falsa con 401. **Falta confirmar** que un aviso firmado por Recurrente llega y queda registrado (`premium_events` no tiene ninguno nuevo desde la prueba del 7/oct); no se ha hecho ningún pago real.
+- Pendiente: marcar «Top por organizador» como disponible en la pestaña Premium cuando el catálogo esté cargado; simulación de la carga inicial de games (#43) cuando el dueño la pida.
+
 ## Codex — catálogo semanal en SQL, 7/oct (PR #52; sin producción)
 
 [PR #52](https://github.com/Bucaro-19/rankingsmashbros/pull/52), rama `feat/tournament-catalog-sql` desde `origin/main` **8282223** (#50), actualizada sobre **28de811** (#51) conservando los módulos y las notas de Claude. Auditoría previa: árbol limpio, origin `Bucaro-19/rankingsmashbros`, CI de main correcta ([37718094855](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37718094855)). `main` está ocupado en un worktree de Claude; se creó la rama directamente desde el remoto actualizado, sin modificar ese checkout.
