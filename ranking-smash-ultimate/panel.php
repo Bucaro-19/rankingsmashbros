@@ -45,7 +45,7 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
 <body data-state="<?= $state ?>">
   <a class="skip-link" href="#panel-content">Saltar al contenido</a>
   <header class="panel-header"><a class="panel-brand" href="./"><span class="brand-mark">GT</span><span>SMASH GT</span></a>
-    <div><a href="./">Volver al sitio</a><?php if ($state === 'owner'): ?><button id="panel-logout" class="outline" type="button">Cerrar sesión</button><?php endif; ?></div>
+    <div><a href="./">Volver al sitio</a><?php if ($state === 'owner'): ?><a href="./opiniones.php">Opiniones ↗</a><button id="panel-logout" class="outline" type="button">Cerrar sesión</button><?php endif; ?></div>
   </header>
 <?php if ($state === 'denied'): ?>
   <main id="panel-content" class="sober" tabindex="-1"><div><h1>Sin acceso.</h1><p>Esta página no está disponible para tu cuenta.</p><a class="primary" href="./"><span>Volver al sitio</span></a></div></main>

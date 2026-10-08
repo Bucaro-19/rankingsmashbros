@@ -4,6 +4,14 @@
 
 
 
+
+## Agenda de Codex fusionada y atajo del dueño a las opiniones (8/oct, noche)
+
+- **#66 (captura de la agenda de torneos, Codex) fusionado por orden del dueño** como `2282684`, tras resolver el cruce de este archivo conservando ambos bloques; CI en verde. **La publicación diaria sigue apagada** (`SMASH_AGENDA_ENABLED` sin activar): encenderla es otra orden del dueño. Contrato en AGENDA-TORNEOS.md. La captura real encontró 1 torneo futuro.
+- Claude Design entregó un paquete nuevo (pendiente de revisar si es el de «Próximos torneos»); la pantalla la hará Claude Code.
+- **Atajo a las opiniones:** la cuenta con rol `admin` ve «Opiniones ↗» junto a «Panel privado ↗» en su cuenta y en el encabezado del panel privado. Es solo un enlace: `opiniones.php` sigue pidiendo su clave propia y no se tocó. Nadie más recibe el enlace (misma señal `panel` de `account-api.php`).
+- Desplegado antes: #67 (textos de cuentas y encabezado fijo en móvil), run `37855713891`, verificado en producción.
+
 ## Codex — captura de agenda estática, 8/oct (sin publicar)
 
 [PR #66](https://github.com/Bucaro-19/rankingsmashbros/pull/66), abierta para revisión, sin fusionar. Rama `feat/tournament-agenda` desde main actualizado `2029572` (#64), origin `Bucaro-19/rankingsmashbros`, auditoría inicial sin cambios tracked (solo `social/` ajena), CI main [37849667374](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37849667374) correcta. Rebase sobre `b57a025` (#65), con CI [37851540927](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37851540927) correcta, conserva la prueba de carga fusionada y las notas/orden de Claude; no se ejecuta aquí esa tarea de producción. No se tocó `social/`.
