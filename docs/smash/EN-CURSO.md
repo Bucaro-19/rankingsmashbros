@@ -1,5 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## API de análisis de rival — Codex, 7/oct
+
+Servidor preparado en `feat/rival-analysis-api`, **pendiente de PR/CI, revisión y orden para fusionar/publicar**. Contrato final e integración para Claude Code: [ANALISIS-RIVAL.md](ANALISIS-RIVAL.md). No incluye pantallas ni toca los módulos asignados a Claude.
+
+- `analisis-api.php` + biblioteca protegida `analisis.php`: «yo» de la sesión, gratis solo perfiles y récord; gate real antes de construir/enviar datos premium. Premium desde `smash_premium_status`, admin desde `smash_stats_is_owner`; sin consultas a proveedores. Transacción del análisis solo lectura.
+- Historial, forma, tramos (incluye puesto real >100), personajes por set y por game, escena del corte y recomendaciones con confianza del diseño. Puesto final/inscritos por torneo siguen null. Funciona con games vacíos; no altera mains/cobertura publicados ni `public.json`.
+- Precisiones para la pantalla: probabilidad con constante **400** por el modelo publicado; umbral **150 games** cuando no hay sets propios (la frase de 80 del diseño contradice su tabla); detectados con **conteos**, no `share`; `access.full` habilita también al dueño sin pago. Todos los detalles y errores están en el contrato.
+- Local: contratos puros PHP y 13 pruebas Python (11 HTTP) correctos en MariaDB desechable. CI incluye MySQL 8.0/MariaDB 10.11. En copia local del 4/oct con games de caché: ~54–57 ms, pico 44 MiB, usando índices existentes; no propone migración. No se midió BanaHosting.
+- **PR #36 ya fue fusionada por el otro flujo** en main `656b7af` mientras se preparaba esta entrega. Su carga inicial sigue requiriendo orden expresa; esta API admite tables vacías y también games cargados. No se repitió aquí la lectura de producción. Esta entrega no escribe producción, no fusiona ni despliega. La carga del domingo conserva el circuito actual.
+
 ## Pestaña Premium y primer pago real de prueba — publicado (Claude Code, 7/oct)
 
 - **Circuito de pago comprobado en el sandbox con el dueño:** pagó un checkout mensual de 3 USD con la tarjeta de prueba de Recurrente. El webhook `subscription.create` llegó a producción, pasó la verificación de firma y dejó su cuenta `active` con `current_period_end` 2026-11-07 (lectura directa de la base: una fila en `premium_subscriptions`, dos avisos en `premium_events`, uno sincronizado y uno ignorado). Los campos de una suscripción pagada coincidieron con lo supuesto de la documentación.
@@ -19,11 +29,13 @@ Primera mitad del handoff `design_handoff_smash_gt_metodo_opinion/` (carpeta loc
 
 ## Reparto vigente — 7/oct, cierre de la noche
 
-- **Codex:** datos del análisis de rival, solo servidor. Encargo y prompt: [ENCARGO-CODEX-API-ANALISIS-RIVAL.md](ENCARGO-CODEX-API-ANALISIS-RIVAL.md). Su PR #36 (personajes por game) está abierta con CI en verde y espera la orden del dueño para fusionar y publicar.
+- **Codex:** datos del análisis de rival, solo servidor. Encargo y prompt: [ENCARGO-CODEX-API-ANALISIS-RIVAL.md](ENCARGO-CODEX-API-ANALISIS-RIVAL.md). La PR #36 (personajes por game) fue fusionada por el otro flujo en `656b7af`; la carga inicial requiere su propia orden y verificación.
 - **Claude Code:** rediseño de Método y Tu opinión (handoff `design_handoff_smash_gt_metodo_opinion/`, en curso en la rama `feat/metodo-opinion-redesign`), después la pantalla del análisis de rival (handoff `design_handoff_smash_gt_analisis/`) y la pestaña Premium cuando llegue su diseño.
 - **Premium en modo prueba, encendido en producción:** el dueño subió `private-smash/recurrente.local.php` con la llave de prueba y el secreto del webhook del sandbox, registrado por Claude Code con su orden. Comprobado por HTTP: `premium-api.php` responde `available: true` y el webhook exige firma (401 sin ella). Falta el pago de prueba del dueño.
 
-## Codex: games y selecciones SQL — preparada, sin fusionar ni publicar (7/oct)
+## Codex: games y selecciones SQL — PR #36 fusionada en main (7/oct)
+
+**Actualización:** fusión externa a la entrega de esta API en `656b7af`. Lo siguiente registra las comprobaciones originales, anteriores a esa fusión; no constituye verificación de un despliegue ni de una carga inicial posterior.
 
 Encargo [ENCARGO-CODEX-SELECCIONES-POR-GAME.md](ENCARGO-CODEX-SELECCIONES-POR-GAME.md). Rama **`feat/game-selections-sql`**, iniciada desde main `4e5bb2d` / PR #34 y actualizada sobre `e9d308d` (premium de Claude, PR #35). **PR de esta entrega: [#36](https://github.com/Bucaro-19/rankingsmashbros/pull/36).** Al empezar: árbol limpio, origin `Bucaro-19/rankingsmashbros`, main actualizado, CI `37701181158` y despliegue `37700879178` correctos; `SMASH_SQL_SYNC_ENABLED=true` verificado. Este encargo exige orden del dueño antes de fusionar/desplegar; no usar la autorización de Claude para sus propias entregas.
 
@@ -34,7 +46,7 @@ Encargo [ENCARGO-CODEX-SELECCIONES-POR-GAME.md](ENCARGO-CODEX-SELECCIONES-POR-GA
 - Medición Oct4 real, solo base local desechable: 4,787 games, 9,530 selecciones; 10,429,237 bytes JSON / 1,159,150 gzip (+16.4%/+8.9%); worker 150,945,792 bytes (144 MiB), ~2.42 s bajo 512M. Paridad Python/PHP en las 14 tablas comparadas. Mac MariaDB 13.0.2 / PHP 8.5.3; falta medición V2 en BanaHosting PHP 8.1 tras autorización. Detalles/reproducción en IMPORTACION-RANKING.md.
 - Pruebas locales: 48 del ranking, 14 del paquete/importador, 13 del cargador y 18 de transporte/PHP/SQL; incluye 5,000 games / 10,000 selecciones bajo límites. Sintaxis PHP y catálogo/seed correctos. CI comprobada en MySQL 8.0 y MariaDB 10.11: [run 37703150785](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37703150785), tres jobs correctos sobre la implementación `5efa913`. Tras rebase de documentación sobre la entrega de Claude, comprobar los checks de la PR #36 antes de autorizar fusión; no se modificó su código de premium.
 
-**Pendiente del dueño:** revisar PR y ordenar fusión/despliegue. **Backfill Oct4:** propuesta concreta solo de contexto en IMPORTACION-RANKING.md; no implementada ni ejecutada. No reenviar el V2 reconstruido como corte normal ni cambiar el hash de cutId 1. Necesita paso manual/herramienta con simulación, bloqueo, anclaje al hash original y comprobación de que no pisa contexto posterior. Si pasa el 11/oct, usar captura del último corte y comparar antes de añadir contexto viejo. Automatización continúa como hoy hasta publicación de la extensión; no tocar cron ni variables.
+**Pendiente:** comprobar publicación y, por orden del dueño, la carga inicial. **Backfill Oct4:** propuesta concreta solo de contexto en IMPORTACION-RANKING.md; no implementada ni ejecutada. No reenviar el V2 reconstruido como corte normal ni cambiar el hash de cutId 1. Necesita paso manual/herramienta con simulación, bloqueo, anclaje al hash original y comprobación de que no pisa contexto posterior. Si pasa el 11/oct, usar captura del último corte y comparar antes de añadir contexto viejo. Automatización continúa como hoy hasta publicación de la extensión; no tocar cron ni variables.
 
 ## Cobros de premium con Recurrente — servidor listo, sin pantallas (Claude Code, 7/oct)
 
