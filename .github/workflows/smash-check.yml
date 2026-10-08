@@ -32,6 +32,7 @@ jobs:
           node --check ranking-smash-ultimate/analisis-model.js
           node --check ranking-smash-ultimate/analisis.js
           node --check ranking-smash-ultimate/visita.js
+          node --check ranking-smash-ultimate/encuesta.js
           node --check ranking-smash-ultimate/cabecera.js
           node --check ranking-smash-ultimate/panel-model.js
           node --check ranking-smash-ultimate/panel.js

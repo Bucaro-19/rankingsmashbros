@@ -1,55 +1,70 @@
-.survey-page{max-width:960px;padding:58px 24px 85px}
-.survey-page h1{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(58px,11vw,118px);font-style:italic;line-height:.85;margin:24px 0;letter-spacing:-2px}
-.survey-page h1 em{color:#ffe364;font-style:inherit}
-.survey-lead{max-width:700px;color:#b7c4d8;line-height:1.65;margin-bottom:36px}
-.survey-form{display:grid;gap:18px}
-.survey-form fieldset,.survey-text{border:1px solid #3c4e68;background:#151e30;padding:22px;margin:0}
-.survey-form legend,.survey-text>label{color:#ffe364;font-family:'Barlow Condensed',Impact,sans-serif;font-size:24px;font-weight:700;font-style:italic;text-transform:uppercase;padding:0 8px}
-.question-help{max-width:760px;color:#c4d1e4;font-size:13px;line-height:1.6;margin:5px 0 14px}
-.question-help strong{color:#fff}
-.question-help a{color:#ffe364;font-weight:700}
-.survey-form fieldset.activity-question{padding:30px 32px 32px}
-.activity-intro{max-width:710px;color:#d0dbeb;font-size:15px;line-height:1.7;margin:8px 0 24px}
-.activity-intro strong,.activity-question strong{color:#fff}
-.activity-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 26px}
-.activity-definition{position:relative;padding:24px 24px 22px;background:#1d2a3f;border:1px solid #354760}
-.activity-number{display:inline-block;color:#ffe364;font:800 12px 'DM Sans',sans-serif;letter-spacing:.12em;margin-bottom:12px}
-.activity-guide h3,.activity-example h3,.activity-choice-title{color:#ffe364;font:700 italic 22px 'Barlow Condensed',Impact,sans-serif;text-transform:uppercase;letter-spacing:.02em}
-.activity-guide h3{margin:0 0 12px}
-.activity-guide p,.activity-scenario,.activity-notes p{color:#c4d1e4;font-size:14px;line-height:1.7}
-.activity-guide p{margin:0}
-.activity-example{padding:23px 24px 24px;background:#172336;border:1px solid #3c4e68;border-left:4px solid #ffe364;margin:0 0 22px}
-.activity-example h3{margin:0 0 16px}
-.activity-scenarios{display:grid;gap:10px}
-.activity-scenario{display:flex;align-items:flex-start;gap:13px;margin:0;padding:14px 16px;background:#1d2a3f;border:1px solid #354760}
-.activity-scenario.yes{border-left:3px solid #64d89a}
-.activity-scenario.no{border-left:3px solid #f27880}
-.scenario-icon{display:grid;place-items:center;flex:none;width:23px;height:23px;border-radius:50%;font-size:17px;font-weight:800;line-height:1}
-.yes .scenario-icon{color:#10261d;background:#64d89a}
-.no .scenario-icon{color:#34171d;background:#f27880}
-.activity-notes{display:grid;gap:12px;margin:0 0 27px;padding:0 2px}
-.activity-notes p{margin:0}
-.activity-notes p+p{color:#aabbd0;font-size:13px}
-.activity-notes a{color:#ffe364;font-weight:700;text-underline-offset:3px}
-.activity-choice-title{margin:0 0 13px;padding-top:22px;border-top:1px solid #3c4e68}
-.activity-question .choices{margin-top:0;gap:10px}
-.activity-question .choices label{padding:15px 17px;line-height:1.5}
-.choices{display:grid;gap:8px;margin-top:12px}
-.choices label{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:#1d2a3f;border:1px solid #354760;cursor:pointer;line-height:1.35}
-.choices label:has(input:checked){border-color:#ffe364;background:#313244}
-.choices input{accent-color:#ffe364;margin-top:3px;flex:none}
-.survey-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.survey-form select,.survey-text input,.survey-text textarea{width:100%;margin-top:14px;border:1px solid #53647d;border-radius:0;background:#0d1624;color:#f3f7ff;padding:13px;font:inherit}
-.survey-form select{max-width:280px}
-.survey-text>label{display:block;padding:0}
-.survey-text textarea{resize:vertical;min-height:120px}
-.survey-form :focus-visible{outline:3px solid #ffe364;outline-offset:3px}
-.privacy-note{color:#aab8cf;font-size:12px;line-height:1.6;max-width:760px}
-.survey-submit{justify-self:start;border:0;background:#ffe364;color:#171d2b;padding:17px 25px;font:800 14px 'DM Sans',sans-serif;letter-spacing:.5px;cursor:pointer;box-shadow:5px 5px 0 #66502b;transform:skew(-5deg)}
-.survey-submit:hover{background:#fff1a0}
-.survey-message{border:1px solid #618c78;background:#183329;padding:25px;margin:32px 0;color:#edf7ed}
-.survey-message h2{font-size:32px;margin:0 0 8px}
-.survey-message a{display:inline-block;margin-top:16px;color:#ffe364}
-.survey-message.error{border-color:#c86b74;background:#45212d;color:#fff}
-.trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
-@media(max-width:650px){.survey-page{padding:40px 18px 65px}.survey-pair,.activity-guide{grid-template-columns:1fr}.survey-form fieldset,.survey-text{padding:17px}.survey-form legend,.survey-text>label{font-size:21px}.choices label{font-size:13px}.survey-form fieldset.activity-question{padding:20px 18px 22px}.activity-intro{font-size:14px;margin:5px 0 20px}.activity-guide{gap:12px;margin-bottom:20px}.activity-definition{padding:19px}.activity-example{padding:19px 17px}.activity-scenario{padding:12px}.activity-notes{margin-bottom:23px}.activity-question .choices label{font-size:14px}}
+/* Tu opinión: the approved reading-page handoff. Form behavior lives in PHP. */
+.page-read .survey-page{width:100%;max-width:760px;margin:0 auto;padding:56px 24px 80px;display:flex;flex-direction:column;gap:28px}
+.page-read .survey-hero{display:flex;flex-direction:column;gap:20px}
+.page-read .survey-dot{display:inline-block;width:8px;height:8px;margin-right:10px;background:var(--yellow)}
+.page-read .survey-hero h1{font-size:clamp(60px,9vw,108px);line-height:.88;letter-spacing:-.02em}
+.page-read .survey-hero h1 em{color:var(--blue);font-style:normal;text-shadow:none}
+.page-read .survey-lead{font-size:17px;color:var(--long);text-wrap:pretty}
+.page-read .survey-form{display:flex;flex-direction:column;gap:20px;min-width:0}
+.page-read .trap{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.page-read .survey-progress{position:sticky;top:0;z-index:5;padding:12px 0 0;background:var(--bg);border-bottom:1px solid #f4f1ea14}
+.page-read .survey-progress p{font-size:14px;font-weight:700}
+.page-read .progress-segments{display:flex;gap:5px}
+.page-read .progress-segments a{flex:1;min-height:44px;display:flex;align-items:center}
+.page-read .progress-segments span{width:100%;height:8px;background:var(--track)}
+.page-read .progress-segments .answered span{background:var(--blue)}
+.page-read .progress-segments .missing span{background:var(--red)}
+.page-read .survey-question{margin:0;min-width:0;padding:24px;background:var(--panel);border:2px solid transparent;scroll-margin-top:108px}
+.page-read .survey-question legend{float:left;width:100%;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:8px;font:800 32px/1.05 'Big Shoulders Display',sans-serif}
+.page-read .question-number{font-size:20px;line-height:1;color:var(--blue);font-weight:900}
+.page-read .question-body{clear:both;display:flex;flex-direction:column;gap:16px}
+.page-read .choices{display:flex;flex-direction:column;gap:8px}
+.page-read .choices label{display:flex;align-items:center;gap:14px;min-height:72px;padding:12px 16px;background:var(--bg);border:2px solid #f4f1ea29;cursor:pointer;font-size:16px;line-height:1.4}
+.page-read .choices label:hover{border-color:var(--blue)}
+.page-read .choices label:has(input:checked){border-color:var(--blue);background:#49a6e91f;font-weight:700}
+.page-read .choices input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--blue);cursor:pointer}
+.page-read .choices input:checked+span{font-weight:700}
+.page-read .scale-choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.page-read .scale-choices label{flex-direction:column;justify-content:center;gap:6px;padding:8px 4px}
+.page-read .scale-choices span{font:900 26px/1 'Big Shoulders Display',sans-serif}
+.page-read .scale-labels{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:600;color:var(--long)}
+.page-read .activity-intro,.page-read .activity-guide{font-size:15px;color:var(--long)}
+.page-read .activity-guide{display:flex;flex-direction:column;gap:4px}
+.page-read .activity-guide .fold{background:var(--bg)}
+.page-read .activity-guide summary{gap:12px;padding:12px 14px;line-height:1.4}
+.page-read .activity-guide summary::after{content:'+';margin-left:auto;color:var(--blue);flex:none;font-size:20px}
+.page-read .activity-guide details[open] summary::after{content:'−'}
+.page-read .activity-number{flex:none;color:var(--blue);font:900 18px/1 'Big Shoulders Display',sans-serif}
+.page-read .activity-number.yellow{color:var(--yellow)}
+.page-read .activity-guide strong{color:var(--text)}
+.page-read .activity-scenario{display:flex;gap:10px}
+.page-read .scenario-icon{flex:none;width:24px;height:24px;display:grid;place-items:center;background:var(--green);color:var(--bg);font-weight:900}
+.page-read .no .scenario-icon{background:var(--red)}
+.page-read .activity-choice-title{font-size:24px;text-transform:none;line-height:1.1}
+.page-read .question-error{border-color:var(--red)}
+.page-read .question-error-text{display:flex;align-items:center;gap:10px;color:#ff8a73;font-size:14px;font-weight:700}
+.page-read .question-error-text>span{flex:none;display:grid;place-items:center;width:22px;height:22px;background:var(--red);color:var(--bg)}
+.page-read .survey-optional{display:flex;flex-direction:column;gap:20px;padding:24px;background:var(--panel)}
+.page-read .survey-optional .kicker{color:var(--muted)}
+.page-read .survey-text{display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:600;min-width:0}
+.page-read .survey-text input,.page-read .survey-text textarea{min-width:0;width:100%;min-height:52px;padding:12px 14px;border:2px solid #f4f1ea29;border-radius:0;background:var(--bg);color:var(--text);font:500 16px/1.5 Archivo,sans-serif}
+.page-read .survey-text textarea{min-height:140px;resize:vertical}
+.page-read .survey-text input::placeholder,.page-read .survey-text textarea::placeholder{color:var(--muted)}
+.page-read #comment-count{align-self:flex-end;font-size:12px;font-weight:400;color:var(--muted)}
+.page-read .privacy-note{display:flex;gap:14px;padding:18px;border:1px solid #f4f1ea33;font-size:14px;color:var(--long)}
+.page-read .privacy-mark{flex:none;width:32px;height:32px;display:grid;place-items:center;background:var(--track);color:var(--text);font:900 22px 'Big Shoulders Display',sans-serif}
+.page-read .survey-submit{align-self:stretch;margin:0 6px}
+.page-read .survey-submit>span{display:inline-flex;align-items:center;gap:12px}
+.page-read .survey-submit:disabled{opacity:.7;cursor:wait}
+.page-read .survey-submit.sending>span::before{content:'';width:18px;height:18px;border:2px solid #0b0f1a55;border-top-color:var(--bg);border-radius:50%;animation:survey-spin .8s linear infinite}
+.page-read .survey-message{display:flex;flex-direction:column;gap:14px;padding:24px;background:var(--panel);font-size:16px;color:var(--long)}
+.page-read .survey-message h2{font-size:36px;line-height:1.05;color:var(--text)}
+.page-read .survey-message.success{border-top:4px solid var(--green)}
+.page-read .survey-message.success h2{font-size:44px}
+.page-read .survey-message.error{border:2px solid var(--red);scroll-margin-top:108px}
+.page-read .survey-message.error h2{font-size:28px}
+.page-read .message-mark{display:grid;place-items:center;align-self:flex-start;width:40px;height:40px;background:var(--blue);color:var(--bg);transform:skewX(-10deg);font-weight:900;font-size:22px}
+.page-read .success .message-mark{background:var(--green)}
+.page-read .error .message-mark{background:var(--red)}
+@keyframes survey-spin{to{transform:rotate(360deg)}}
+@media(max-width:700px){.page-read .survey-page{padding:32px 16px 64px}.page-read .survey-question,.page-read .survey-optional{padding:16px}.page-read .survey-question legend{font-size:28px}.page-read .survey-hero h1{font-size:clamp(54px,14.7vw,78px)}.page-read .choices label{padding:12px;gap:12px}.page-read .scale-choices label{padding:8px 4px}}
