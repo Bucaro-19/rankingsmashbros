@@ -3,6 +3,19 @@
 
 
 
+
+## Codex — captura de agenda estática, 8/oct (sin publicar)
+
+Rama `feat/tournament-agenda` desde main actualizado `2029572` (#64), origin `Bucaro-19/rankingsmashbros`, auditoría inicial sin cambios tracked (solo `social/` ajena), CI main [37849667374](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37849667374) correcta. Rebase sobre `b57a025` (#65) conserva la prueba de carga fusionada y las notas/orden de Claude; no se ejecuta aquí esa tarea de producción. No se tocó `social/`.
+
+- `scripts/smash/agenda.py` reutiliza Client, filtro GT/Ultimate/futuros/publicados, paginación comprobada, campos nullable sin personas y archivo público schema **1** separado de public.json. Solo marca singles presencial; **ningún mínimo de inscritos/actividad** ni reglas del ranking se aplican a agenda. El contrato/limitaciones para Claude están en [AGENDA-TORNEOS.md](AGENDA-TORNEOS.md).
+- Esquema vigente comprobado antes de fijar QUERY ([37850420246](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37850420246), [37850546000](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37850546000)). Tipo real TournamentPageFilter; isOnline indica algún evento online, numAttendees incluye espectadores. Solo online con país GT publicado; no se conoce el país del organizador ni se piden dueños/IDs de personas.
+- **Captura real solo lectura** [37850971108](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37850971108), 8/oct 16:03 Guatemala: **1 próximo torneo, 1 consulta, 1 página, 1,598 bytes**. GAMELAND 2, 11/oct 10:00, San Marcos, Ultimate Singles presencial, 10 entrants. Agenda local validada. Se usó Secrets mediante un runner de lectura temporal en esta rama; workflow original restaurado/helper eliminado del diff, nunca FTP/SQL.
+- Workflow propio `smash-agenda.yml`: propuesta diaria **07:17 GT**, grupo FTP `smash-gt-publication`, cancel-in-progress false; programación requiere variable nueva SMASH_AGENDA_ENABLED y orden del dueño. Manual publish=false por defecto; FTP solo main/publicación autorizada, solo agenda.json. **No** añadir a FILES del deploy genérico: evita restaurar semilla vieja. Sin modificar publicación semanal/SQL.
+- Publicación simulada: validación estricta/512 KiB, STOR temporal + RNTO, revalidación de fecha tras STOR; captura fallida no reemplaza, vacío no borra anuncios futuros, lectura FTP denegada no se trata como inexistente. Acuse RNTO perdido puede dejar nuevo completo; se documenta, no se promete rollback de red. La UI debe ocultar al renderizar torneos que ya empezaron y mostrar antigüedad >48 h.
+- **19 pruebas nuevas y 81 de pipeline Python** correctas; ver checks finales de la PR. No cambios en discover, cálculo, public.json, SQL, páginas/cuentas/premium/encuesta. La pantalla la hace Claude Code con Claude Design. Pendiente orden de fusión/despliegue y activar el diario tras comprobar el primer envío. **No se fusionó, publicó ni activó el scheduler.**
+
+
 ## Medición de carga en producción programada (orden del dueño, 8/oct 16:00)
 
 - **#61 (prueba de carga, Codex) fusionado por orden del dueño** como `6a5d5f0`, tras resolver el cruce de este archivo conservando ambos bloques; CI de la PR y de main en verde. Nada que desplegar.
