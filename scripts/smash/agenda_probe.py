@@ -19,8 +19,8 @@ urllib.request.urlopen=diagnostic_open
 TYPE = 'kind name ofType { kind name ofType { kind name ofType { kind name } } }'
 client=Client(os.environ['STARTGG_TOKEN'])
 query='query AgendaSchema {'
-for name in ('Tournament','Event','Query','TournamentQuery','EventFilter'):
- query+=name+':__type(name:"'+name+'"){name kind fields{name description type{'+TYPE+'} args{name type{'+TYPE+'}}} inputFields{name type{'+TYPE+'}} enumValues{name description}} '
+for name in ('TournamentPageFilter','TeamRosterSize'):
+ query+=name+':__type(name:"'+name+'"){name kind fields{name description type{'+TYPE+'} args{name type{'+TYPE+'}}} inputFields{name description type{'+TYPE+'}} enumValues{name description}} '
 query+='}'
 data=client.query(query,{})
 out=Path('scripts/smash/data/agenda-schema.json');out.parent.mkdir(exist_ok=True)
