@@ -1,5 +1,17 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — catálogo semanal en SQL, 7/oct (PR pendiente; sin producción)
+
+Rama `feat/tournament-catalog-sql` desde `origin/main` **8282223** (#50). Auditoría previa: árbol limpio, origin `Bucaro-19/rankingsmashbros`, CI de main correcta ([37718094855](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37718094855)). `main` está ocupado en un worktree de Claude; se creó la rama directamente desde el remoto actualizado, sin modificar ese checkout.
+
+- Paquete privado **V3** únicamente cuando `tournamentCatalog` es una lista, incluido `[]`. Captura ausente/null genera el V2 anterior exactamente; comprobado contra el código base y hashes de fixture V1/V2 fijados. `public.json`, mains, cálculo, elegibilidad y `discover.py` intactos. No consultas nuevas a start.gg.
+- Exportación normalizada de las 11 columnas de 005: fechas UTC (inicio del torneo, no del evento), ID de creador nullable, nombres/ciudad y longitudes, slug ajeno a `tournament/` → NULL, motivos admitidos, IDs y eventos únicos. Los excluidos quedan solo en el catálogo; no se incorporan sets al ranking.
+- Python/PHP reemplazan toda `tournament_catalog` con **DELETE + INSERT + comparación de las 11 columnas**, dentro de la transacción del corte. El marcador 005 ausente omite el catálogo (`migration_missing`) y el corte se publica normalmente; una instalación marcada pero rota se rechaza. Null/ausente y paquetes V1/V2 no leen ni modifican el catálogo.
+- Repetición = `already_imported`: conserva el hash y no reescribe el catálogo, aunque después se instale 005 o ya exista un corte posterior. **Instalar 005 después de un corte sin catálogo no hace backfill**: el siguiente corte nuevo con catálogo lo llena. Carga extraordinaria aparte necesita nueva orden del dueño.
+- 11 pruebas nuevas: contratos/hash, validación rehasheada, paridad tabla por tabla, reemplazo/vaciado, rollback del catálogo y del corte, reenvío antiguo, ausencia de 005, instalación posterior y HTTP real → cola → worker con/sin 005. Correctas en MariaDB local desechable; matriz MySQL 8.0/MariaDB 10.11 añadida a CI (pendiente del push). Regresiones locales correctas: 51 de pipeline, 14 de importación, 9 de contexto, 13 de carga semanal y 18 de transporte/worker. Evidencia CI final pendiente del push de esta PR.
+- Medición **sintética local** (no producción): 5,000 games + 10,000 selecciones + 1,000 filas de catálogo; JSON **1,621,930 bytes**, gzip **72,055 bytes**, pico worker PHP **31,457,280 bytes** (30 MiB), **0.570 s**. Límites 32 MiB/4 MiB/512M conservados y probados.
+- **Sí se puede fusionar y desplegar antes del 11/oct sin aplicar 005**, con CI verde y orden del dueño: la ruta sin migración termina con `sync_jobs=succeeded`. Primero instalar los assets compatibles V3 (`assets_only=true`); no lanzar un corte manual. Detalle, estados y comando de migración para el dueño en [IMPORTACION-RANKING.md](IMPORTACION-RANKING.md) y [CARGA-SEMANAL-SQL.md](CARGA-SEMANAL-SQL.md).
+- No se accedió a producción, no se aplicó 005 allí, no hubo fusión/despliegue, ni cambios en organizador/top/cuentas o pantallas.
 
 ## Claude Code — top por organizador programado; falta el dato en producción (7/oct, noche)
 

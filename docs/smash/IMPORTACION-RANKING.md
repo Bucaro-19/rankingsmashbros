@@ -1,5 +1,37 @@
 # Importador de ranking e historial — 7 de octubre de 2026
 
+## Catálogo opcional de torneos — paquete privado V3 (7/oct)
+
+`ranking_package.py` consume la llave existente `tournamentCatalog` de la captura, sin llamar a start.gg. Si es una lista, genera V3 con la sección privada superior `content.tournamentCatalog`, normalizada y ordenada por `(tournament_id, event_id)`. Mantiene las mismas entidades, cobertura de games y objeto `public` que V2. **No sube la versión de public.json.** Si la llave falta o es null, genera exactamente el V2 anterior, sin sección de catálogo; V1/V2 y sus hashes siguen siendo válidos. No se puede añadir catálogo a un paquete antiguo sin cambiar su versión/hash ni sustituir el paquete de un corte existente.
+
+Cada fila tiene exactamente las columnas de 005: `tournament_id`, `event_id`, `owner_startgg_user_id`, `tournament_name`, `slug`, `starts_at`, `city`, `event_name`, `entrants`, `reason`, `captured_at`. Fechas SQL UTC con seis decimales; `starts_at` viene del **torneo**, puede ser null; `captured_at` coincide con `content.capturedAt`. Creador, ciudad, evento e inscritos nullable. IDs positivos dentro del transporte PHP de 64 bits firmado; nombres/evento ≤255, ciudad ≤120, slug ASCII ≤255 y prefijo `tournament/` (otros prefijos → null al exportar). Motivo solo null o los cinco motivos de exclusión de discover. Se rechazan duplicados de evento, identidad contradictoria del torneo, fechas/longitudes/columnas inválidas, incluso con hash recalculado. Los excluidos no requieren FK a las entidades de ranking ni se vuelven elegibles por estar aquí.
+
+Los dos importadores usan el bloqueo habitual. Para un **corte nuevo** con V3 y marcador `005_organizer_tops`, comprueban tabla InnoDB/columnas, borran con DELETE (nunca TRUNCATE), insertan y comparan las 11 columnas antes de publicar el corte y hacer commit. Todo falla/retrocede junto, incluido el catálogo anterior. El catálogo es una foto vigente de la temporada, **no un historial por corte**. `[]` significa vaciarlo; null/ausente significa preservarlo, sin leerlo.
+
+| Condición | `catalog.status` del informe Python/PHP | Efecto |
+| --- | --- | --- |
+| Paquete V1/V2 | `not_in_package`, rows=0 | Importación normal; catálogo intacto. |
+| V3, marcador 005 ausente (tabla ausente o sin marcar) | `migration_missing` | Importación normal; catálogo omitido, sin fallo del trabajo. |
+| V3, 005 instalada, simulación | `ready` | Valida esquema; no escribe. |
+| V3, 005 instalada, corte nuevo aplicado | `replaced` | Reemplazo completo en la transacción. |
+| V3, 005 instalada, corte ya importado | `not_reapplied` + `already_imported` | Solo verifica las instantáneas; conserva el catálogo vigente. |
+
+`rows` informa el número del paquete, no expone creadores, nombres o IDs. Una 005 marcada pero con tabla faltante/no transaccional/columnas incompletas es un esquema roto: se rechaza antes de escribir. Repetir un corte importado antes de instalar 005 **no rellena** el catálogo; tampoco reenviar un corte viejo restaura su catálogo sobre el nuevo. Lo llenará el siguiente corte nuevo. Un backfill del catálogo, si se pide, sería otro encargo con simulación y autorización explícita; esta entrega no agrega herramienta de escritura extraordinaria ni altera hashes.
+
+Verificación: `scripts/database/test_tournament_catalog.py` (11 pruebas) y regresiones de importación/contexto/carga/transporte; CI ejecuta MySQL 8.0 y MariaDB 10.11. La prueba HTTP real firma el paquete, prueba deduplicación, ejecuta el worker, verifica `succeeded`, hash SQL exacto y limpieza del inbox **con y sin 005**. Compara Python/PHP tabla por tabla y el catálogo, fuerza fallo posterior y corrupción de catálogo para probar rollback/paridad. Medida sintética local: 5,000 games, 10,000 selecciones y 1,000 filas de catálogo, JSON 1,621,930 / gzip 72,055 bytes, worker 31,457,280 bytes y 0.570 s. No es una medición del hosting.
+
+### Migración 005: comando preparado para el dueño, NO ejecutado en producción
+
+Requiere la **orden expresa del dueño**, backup y las migraciones 002–004 ya instaladas. Desde la Mac con su IP autorizada, usando la configuración privada existente (no abrirla ni compartirla):
+
+```sh
+cd '/Users/joseaurelioporras/Documents/Proyectos Git /rankingsmashbros'
+/opt/homebrew/opt/mysql-client/bin/mysql --defaults-file="$HOME/.my.cnf" --database=ivcjgjlk_smash < docs/smash/migrations/005_organizer_tops.sql
+/opt/homebrew/opt/mysql-client/bin/mysql --defaults-file="$HOME/.my.cnf" --database=ivcjgjlk_smash -e "SELECT version FROM schema_migrations WHERE version='005_organizer_tops'; SELECT TABLE_NAME,ENGINE FROM information_schema.tables WHERE table_schema=DATABASE() AND TABLE_NAME IN ('tournament_catalog','organizer_profiles','organizer_members','organizer_invites','organizer_claims');"
+```
+
+Alternativa cPanel: phpMyAdmin → `ivcjgjlk_smash` → Importar **005_organizer_tops.sql**, tras la misma autorización. Deben existir el marcador y las cinco tablas InnoDB. El script es repetible, no llena el catálogo. Sin acceso a cPanel/IP, dejarlo pendiente: **el corte normal no depende de 005**. No probar instalando 005 en producción por iniciativa del agente.
+
 ## Carga inicial de contexto — implementada, pendiente de producción (7/oct)
 
 Entrega en `feat/initial-game-context`, desde main `8f2e53a`. `scripts/database/game_context.py` es una herramienta CLI, no un endpoint ni una migración. Construye un paquete **solo games/selecciones** con hash propio y exige aparte el paquete original como prueba; no reenvía V2 al importador semanal. Nunca modifica `cuts`, `rankings`, instantáneas ni el hash original. No realiza consultas a start.gg.
