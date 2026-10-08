@@ -24,6 +24,9 @@ Options -Indexes
 <Files "stats.php">
   Require all denied
 </Files>
+<Files "analisis.php">
+  Require all denied
+</Files>
 <Files "premium.php">
   Require all denied
 </Files>

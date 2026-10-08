@@ -40,6 +40,8 @@ jobs:
           docker run --rm -v "$PWD":/app -w /app php:8.1-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$f" || exit 1; done'
       - name: Verificar contratos estáticos de la encuesta
         run: |
+          php scripts/database/test_analisis.php
+          python scripts/database/test_analisis_http.py
           python scripts/database/test_survey_http.py
           python scripts/database/test_hosting_sync.py
 
@@ -90,6 +92,8 @@ jobs:
           php scripts/database/test_premium.php
           python scripts/database/test_premium_http.py
           python scripts/database/test_panel_http.py
+          php scripts/database/test_analisis.php
+          python scripts/database/test_analisis_http.py
           python scripts/database/test_diagnostic_http.py
           python scripts/database/test_import_ranking.py
           python scripts/database/test_weekly_ranking_load.py
