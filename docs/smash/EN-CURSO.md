@@ -2,13 +2,13 @@
 
 ## API de análisis de rival — Codex, 7/oct
 
-Servidor preparado en `feat/rival-analysis-api`, **pendiente de PR/CI, revisión y orden para fusionar/publicar**. Contrato final e integración para Claude Code: [ANALISIS-RIVAL.md](ANALISIS-RIVAL.md). No incluye pantallas ni toca los módulos asignados a Claude.
+Servidor entregado en `feat/rival-analysis-api`, [PR #40](https://github.com/Bucaro-19/rankingsmashbros/pull/40), **sin fusionar ni desplegar; espera revisión y orden del dueño**. Contrato final e integración para Claude Code: [ANALISIS-RIVAL.md](ANALISIS-RIVAL.md). No incluye pantallas ni toca los módulos asignados a Claude.
 
 - `analisis-api.php` + biblioteca protegida `analisis.php`: «yo» de la sesión, gratis solo perfiles y récord; gate real antes de construir/enviar datos premium. Premium desde `smash_premium_status`, admin desde `smash_stats_is_owner`; sin consultas a proveedores. Transacción del análisis solo lectura.
 - Historial, forma, tramos (incluye puesto real >100), personajes por set y por game, escena del corte y recomendaciones con confianza del diseño. Puesto final/inscritos por torneo siguen null. Funciona con games vacíos; no altera mains/cobertura publicados ni `public.json`.
 - Precisiones para la pantalla: probabilidad con constante **400** por el modelo publicado; umbral **150 games** cuando no hay sets propios (la frase de 80 del diseño contradice su tabla); detectados con **conteos**, no `share`; `access.full` habilita también al dueño sin pago. Todos los detalles y errores están en el contrato.
-- Local: contratos puros PHP y 13 pruebas Python (11 HTTP) correctos en MariaDB desechable. CI incluye MySQL 8.0/MariaDB 10.11. En copia local del 4/oct con games de caché: ~54–57 ms, pico 44 MiB, usando índices existentes; no propone migración. No se midió BanaHosting.
-- **PR #36 ya fue fusionada por el otro flujo** en main `656b7af` mientras se preparaba esta entrega. Su carga inicial sigue requiriendo orden expresa; esta API admite tables vacías y también games cargados. No se repitió aquí la lectura de producción. Esta entrega no escribe producción, no fusiona ni despliega. La carga del domingo conserva el circuito actual.
+- Local: contratos puros PHP y 13 pruebas Python (11 HTTP) correctos en MariaDB desechable. CI comprobada en MySQL 8.0/MariaDB 10.11: [run 37706831774](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37706831774), tres jobs correctos sobre `a030e9b`; la actualización final de documentación/legibilidad requiere sus propios checks verdes. En copia local del 4/oct con games de caché: ~47–52 ms, pico 44 MiB, usando índices existentes; no propone migración. No se midió BanaHosting.
+- **PR #36 ya fue fusionada por el otro flujo** en main `656b7af` mientras se preparaba esta entrega. Su carga inicial sigue requiriendo orden expresa; esta API admite tablas vacías y también games cargados. No se repitió aquí la lectura de producción. Esta entrega no escribe producción, no fusiona ni despliega. La carga del domingo conserva el circuito actual.
 
 ## Pestaña Premium y primer pago real de prueba — publicado (Claude Code, 7/oct)
 

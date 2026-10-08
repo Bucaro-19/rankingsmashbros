@@ -132,13 +132,16 @@ function smash_analisis_set_characters(array $games, array $results, array $cata
         if (count($g['picks'])!==2 || count($ids)!==2 || $ids!==$expected || !isset($g['picks'][$g['winner']])) { $invalid[$sid]=true; continue; }
         $numbers[$sid][]=$g['number'];
         foreach ($g['picks'] as $pick) {
-        if (count($pick['players'])!==1) continue; $pid=(string)array_key_first($pick['players']);
-        $sets[$g['setId']][$pid]['total']=($sets[$g['setId']][$pid]['total'] ?? 0)+1;
-        $chars=$pick['characters'] ?? [];
-        if (count($chars)===1) {
-            $cid=(string)array_key_first($chars);
-            if ($cid!=='1746' && isset($catalog[$cid])) { $sets[$g['setId']][$pid]['valid']=($sets[$g['setId']][$pid]['valid'] ?? 0)+1; $sets[$g['setId']][$pid]['chars'][$cid]=true; }
-        }
+            $pid=(string)array_key_first($pick['players']);
+            $sets[$sid][$pid]['total']=($sets[$sid][$pid]['total'] ?? 0)+1;
+            $chars=$pick['characters'] ?? [];
+            if (count($chars)===1) {
+                $cid=(string)array_key_first($chars);
+                if ($cid!=='1746' && isset($catalog[$cid])) {
+                    $sets[$sid][$pid]['valid']=($sets[$sid][$pid]['valid'] ?? 0)+1;
+                    $sets[$sid][$pid]['chars'][$cid]=true;
+                }
+            }
         }
     }
     $out=[];
