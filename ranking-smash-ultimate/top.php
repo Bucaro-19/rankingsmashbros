@@ -55,7 +55,7 @@ $name = $closed ? '' : $view['organizer']['name'];
   <title><?= $closed ? 'Smash GT' : 'Top ' . (int)$view['organizer']['topSize'] . ' · ' . top_e($name) . ' — Smash GT' ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/top.css?v=20261008-1">
+  <link rel="stylesheet" href="/top.css?v=20261008-2">
 </head>
 <body>
 <?php if ($closed): ?>
@@ -74,6 +74,9 @@ $name = $closed ? '' : $view['organizer']['name'];
   <section aria-labelledby="pt-title">
     <div class="top-line"><span class="kicker">Top <?= $size ?> · Temporada <?= (int)$view['seasonYear'] ?></span><a class="mark" href="/"><span aria-hidden="true">GT</span>Smash GT</a></div>
     <h1 id="pt-title"><?= top_e($name) ?></h1>
+<?php if ($view['coorganizers']): ?>
+    <p class="team">Coorganizan: <?= top_e(implode(', ', $view['coorganizers'])) ?></p>
+<?php endif; ?>
     <p class="line"><?= $period ?> · <?= $n === 1 ? '1 torneo' : $n . ' torneos' ?> · <?= (int)$s['distinctPlayers'] ?> jugadores</p>
 <?php if ($n < 3): ?>
     <p class="small" role="note"><span aria-hidden="true">≈</span><span><strong>Muestra pequeña: <?= $n === 1 ? '1 torneo' : '2 torneos' ?>.</strong> Los puestos pueden cambiar mucho con el próximo. Solo torneos de <?= top_e($name) ?>; no es el ranking nacional.</span></p>

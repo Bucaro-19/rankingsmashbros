@@ -46,13 +46,14 @@ try {
     $context = $contexts[0];
     foreach ($contexts as $candidate) if (is_string($wanted) && $candidate['id'] === $wanted) $context = $candidate;
     $owner = $context['role'] === 'owner';
-    $premium = smash_org_premium($pdo, $context['id'], $config, $now);
+    // Each account pays for itself: the viewer's own premium opens the tab, also for a co-organizer.
+    $premium = smash_org_premium($pdo, $user['id'], $config, $now);
     $allowed = $admin || $premium['active'];
 
     if ($post) {
         $action = $body['action'];
         if ($action === 'join') {
-            // Joining needs no premium of one's own: the organizer's covers the team.
+            // Joining is free and credits the account as co-organizer; seeing the top needs its own premium.
             $joined = smash_org_join($pdo, $user['id'], $body['token'] ?? null, $now);
             org_response(200, ['ok' => true, 'organizer' => $joined]);
         }
