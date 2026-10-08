@@ -2,6 +2,12 @@
 
 
 
+
+## Carga inicial de games aplicada y portada más tolerante a la red (8/oct)
+
+- **Carga inicial de games (#43) aplicada en producción por orden expresa del dueño**, desde su Mac, en una sola transacción: `context_imported`, corte 1, 21.8 s. Verificado con SELECT: **4,787 games y 9,530 selecciones**; sigue 1 corte, 376 posiciones y el mismo hash original `ecb1d4a5…`. Se llamó a `import_context(apply=True)` con 20 s de conexión porque el límite de 10 s de la orden `load` falla con la red lenta del dueño. Falta que el dueño confirme en `analisis.html` que ya aparecen los cruces por personaje.
+- **Aviso «No pudimos actualizar» en la portada:** la portada volvía a descargar `public.json` completo (3 MB; 180 KB comprimido) cada 60 s con `no-store`, y un solo fallo mostraba el aviso. Ahora `public.json` se sirve con `no-cache` (se revalida siempre; si el corte no cambió, responde 304) y las comprobaciones de fondo callan mientras haya un corte completo en pantalla: el aviso sale si el visitante pulsó «Actualizar», si no hay ningún corte cargado o tras tres fallos seguidos.
+
 ## Simulación de la carga inicial de games y encargo de SEO (8/oct)
 
 - **Webhook real de Recurrente confirmado:** un aviso `intent.succeeded` firmado por Recurrente llegó a las 18:38 UTC y quedó registrado como `ignored` (correcto para ese tipo). El ejemplo `subscription.create` falla a propósito: trae una suscripción inventada que Recurrente no reconoce. Sin pago real todavía.
