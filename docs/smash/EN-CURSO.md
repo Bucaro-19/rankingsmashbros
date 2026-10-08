@@ -37,6 +37,17 @@
 
 
 
+
+## Codex — guion de carga controlada, 8/oct (en pruebas locales; sin producción)
+
+Rama `feat/controlled-load-test` desde `origin/main` `0a99525` (#59). Auditoría previa: árbol limpio en `feat/technical-seo`, origin `Bucaro-19/rankingsmashbros`, CI main [37837761788](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37837761788) correcta. Esta rama no incorpora ni fusiona SEO #58 ni módulos de Claude.
+
+- Herramienta estándar Python: plan sin HTTP por defecto, escalera 1/2/5/10/20/40 × 60 s, techo 40 y 2,000 peticiones compartidas; freno inmediato >1 % de errores o p95 >3 s (también por endpoint), sin reintentos/redirects/orígenes arbitrarios. UA `SmashGT-LoadTest`, bloqueo de ejecuciones paralelas, informes sin bodies/credenciales. CLI de producción exige orden/ventana/captura/límites, bloquea fines de semana y espera entre escalones para excluir el cron. Nunca se ejecutó contra producción.
+- Laboratorio SQL independiente, esquema completo, paquete del Oct4 ya guardado (sin red/start.gg), sesiones admin sintéticas y PHP local. Principal completo hasta 40: 1,482 peticiones, cero errores, p95 42 ms; JSON 200/304 correcto. Otros perfiles en medición con escalones de 60 s. Resultado principal guardado sin datos privados; falta completar los perfiles separados. Calibraciones interrumpidas excluidas. Contador fuera del principal/producción; separado solo local, techo 2 visitantes/10 POST, verificación SQL antes/después.
+- 12 pruebas de seguridad/HTTP locales y 51 del pipeline correctas; CI propia solo loopback. Scripts fuera de FILES/FTP. Ningún archivo del sitio, cálculo, JSON, cuentas, premium o encuesta cambiado. Informe/reproducción y comando listo en [PRUEBA-DE-CARGA.md](PRUEBA-DE-CARGA.md).
+- Falta captura cPanel Uso de recursos (solicitada al dueño), límites/uso/fallos del plan y su confirmación de duración del worker; no inferirlos. Producción espera su orden y horario de madrugada lunes–viernes. Sin fusión, despliegue, cambios de cron ni escrituras en producción.
+
+
 ## Peticiones del dueño sobre el análisis de rival y la carga del sitio (8/oct, tarde)
 
 - El dueño confirmó que el análisis de rival ya muestra los cruces por personaje tras la carga de games.
