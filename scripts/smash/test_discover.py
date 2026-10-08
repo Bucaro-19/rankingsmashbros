@@ -39,6 +39,37 @@ class DiscoveryTests(unittest.TestCase):
             self.assertEqual(study["events"][0]["id"], 2)
             self.assertEqual(study["excludedEvents"], [])
 
+    def test_catalog_keeps_the_creator_of_excluded_tournaments_too(self):
+        class Client(CatalogClient):
+            def query(self, query, variables):
+                data = super().query(query, variables)
+                if "owner{id}" in query:
+                    data["tournaments"]["nodes"] = [{"id": 1, "city": " Xela ", "owner": {"id": 77}}]
+                return data
+        data = discover(Client(), 100, 200)
+        self.assertEqual(data["events"], [])
+        self.assertEqual(data["tournamentCatalog"], [{
+            "id": "1", "name": "The Oven prueba", "slug": None, "startAt": None, "city": "Xela", "ownerId": "77",
+            "events": [{"id": "2", "name": "Ultimate Singles", "type": 1, "numEntrants": 16, "startAt": 150,
+                        "reason": "under_20_entrants"}]}])
+
+    def test_owner_query_failure_never_blocks_the_capture(self):
+        from collect import APIError
+
+        class Client(CatalogClient):
+            def query(self, query, variables):
+                if "owner{id}" in query:
+                    raise APIError("rechazada")
+                return super().query(query, variables)
+        with patch("discover.fetch_event", return_value=({"id": 2, "entrantCountFetched": 20, "setsFetched": 20}, {}, {})):
+            data = discover(Client(20), 100, 200)
+        self.assertEqual(len(data["events"]), 1)
+        self.assertIsNone(data["tournamentCatalog"])
+
+    def test_tournament_without_visible_creator_stays_in_the_catalog(self):
+        data = discover(CatalogClient(), 100, 200)
+        self.assertEqual([(row["id"], row["ownerId"], row["city"]) for row in data["tournamentCatalog"]], [("1", None, None)])
+
 
 if __name__ == "__main__":
     unittest.main()
