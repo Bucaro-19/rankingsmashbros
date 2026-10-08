@@ -53,7 +53,7 @@ def fixture(source):
 
 
 class SEOTests(unittest.TestCase):
-    def test_public_page_canonical_social_metadata_unique_and_image_pending(self):
+    def test_public_page_canonical_social_metadata_unique_and_share_image(self):
         titles, descriptions = set(), set()
         for page in PUBLIC_PAGES:
             name = page or 'index.html'; text = (SITE / name).read_text(); head = Head(text)
@@ -65,13 +65,17 @@ class SEOTests(unittest.TestCase):
                 self.assertEqual(head.meta['twitter:title'], head.meta['og:title'])
                 self.assertEqual(head.meta['twitter:description'], head.meta['description'])
                 self.assertEqual(head.meta['og:type'], 'website'); self.assertEqual(head.meta['og:locale'], 'es_GT')
-                self.assertEqual(head.meta['twitter:card'], 'summary')
+                self.assertEqual(head.meta['twitter:card'], 'summary_large_image')
                 self.assertNotIn('noindex', head.meta.get('robots', ''))
                 self.assertIn('piloto', head.meta['description'])
-                # Prepared in a comment, not an active URL to a nonexistent image.
-                self.assertNotIn('og:image', head.meta)
-                self.assertIn('https://rankingsmashbros.com/assets/smash-gt-social.jpg', text)
-                self.assertIn('pendiente de aprobación', text)
+                # The approved 1200 x 630 image is published with the site, never a URL to a missing file.
+                image = 'https://rankingsmashbros.com/assets/smash-gt-social.jpg'
+                self.assertEqual((head.meta['og:image'], head.meta['twitter:image']), (image, image))
+                self.assertEqual((head.meta['og:image:width'], head.meta['og:image:height']), ('1200', '630'))
+                self.assertIn('assets/smash-gt-social.jpg', FILES)
+                data = (SITE / 'assets/smash-gt-social.jpg').read_bytes()
+                self.assertTrue(data.startswith(b'\xff\xd8') and len(data) < 300 * 1024)
+                self.assertNotIn('SEO: imagen', text)
                 titles.add(head.meta['og:title']); descriptions.add(head.meta['description'])
         self.assertEqual(len(titles), 4); self.assertEqual(len(descriptions), 4)
 
