@@ -1,6 +1,13 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
 
+
+## Simulación de la carga inicial de games y encargo de SEO (8/oct)
+
+- **Webhook real de Recurrente confirmado:** un aviso `intent.succeeded` firmado por Recurrente llegó a las 18:38 UTC y quedó registrado como `ignored` (correcto para ese tipo). El ejemplo `subscription.create` falla a propósito: trae una suscripción inventada que Recurrente no reconoce. Sin pago real todavía.
+- **Simulación de la carga inicial de games (#43), solo lectura, por orden del dueño:** `validated_no_writes`. Corte 1; 3,837 sets de contexto; existentes 0 games / 0 selecciones; esperados **4,787 games / 9,530 selecciones**, iguales a los conteos locales de Codex. Hash original `ecb1d4a5…`, hash de contexto `853b8788…`. 11.5 s. La orden `load` de la herramienta falló tres veces con `context_rejected` por su tiempo de conexión de 10 s con la red del dueño lenta (latencia media ~550 ms); la misma función llamada con 20 s de conexión pasó. **No se escribió nada**; `--apply` necesita la orden expresa del dueño.
+- **[Encargo para Codex](ENCARGO-CODEX-SEO.md):** bases técnicas de SEO (robots, sitemap, canonical, Open Graph, datos estructurados, `noindex` en lo privado). Hoy `robots.txt` y `sitemap.xml` responden 404.
+
 ## Migración 005 aplicada en producción y premium en modo real (8/oct)
 
 - **Migración `005_organizer_tops` aplicada** por orden expresa del dueño, desde su Mac. La primera ejecución perdió la conexión a mitad (error 2013) y dos reintentos se quedaron colgados por la red; la migración es repetible y terminó completa. Verificado con SELECT: 42 tablas, marcador `005_organizer_tops` presente, las cinco tablas nuevas con sus 15 restricciones, y sin cambios en lo existente (1 corte, 376 posiciones, 2 cuentas). `tournament_catalog` está vacía: la llena el siguiente corte nuevo (domingo 11/oct); el corte del 4/oct ya importado no la rellena.
