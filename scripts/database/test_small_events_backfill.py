@@ -86,14 +86,14 @@ class BackfillContracts(unittest.TestCase):
         def expensive(client,event):
             for _ in range(35):client.query('sets',{})
         with patch('small_events_backfill.probe_catalog',side_effect=catalog),patch('organizer_small.fetch_event',side_effect=expensive):
-            with self.assertRaises(Exception):backfill.capture_batch(client,inv,START,END)
-        self.assertLessEqual(client.calls,30)
+            with self.assertRaises(backfill.APIError):backfill.capture_batch(client,inv,START,END)
+        self.assertEqual(client.calls,28)  # Includes two catalog calls; reserves three attempts.
         for limit in (0,11,True):
             client=Client()
             with self.assertRaises(ValueError):backfill.capture_batch(client,inv,START,END,limit=limit)
             self.assertEqual(client.calls,0)
         client=Client(); times=iter([0,0,121])
-        with patch('small_events_backfill.probe_catalog',side_effect=catalog),self.assertRaises(Exception):
+        with patch('small_events_backfill.probe_catalog',side_effect=catalog),self.assertRaises(backfill.APIError):
             backfill.capture_batch(client,inv,START,END,clock=lambda:next(times))
         self.assertEqual(client.calls,0)
         inv['markedEventIds']=[e['id'] for e in fake_catalog()['organizerCandidates']]

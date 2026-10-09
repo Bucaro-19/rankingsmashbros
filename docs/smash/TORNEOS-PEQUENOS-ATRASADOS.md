@@ -2,7 +2,7 @@
 
 Decisión vigente del dueño, 9/oct/2026: **los torneos pequeños no cuentan para el ranking**. No se cambia ninguna regla ni se decide un mínimo nuevo para el top del organizador. El uso de esta carga es explicar al jugador, en su historial privado, por qué un evento que jugó no contó. Sustituye las propuestas de admisión del documento anterior de organizadores.
 
-Herramienta: `scripts/database/small_events_backfill.py`. CLI desde la Mac, sin endpoint nuevo, migración, cron, FTP, publicación o consultas por visita. No se incorpora al workflow semanal. Su carga **simula por defecto**; únicamente `load --apply` puede escribir y en producción necesita una orden expresa del dueño. En esta entrega no se ejecutó con `--apply` en producción.
+[PR #84](https://github.com/Bucaro-19/rankingsmashbros/pull/84), sin fusionar. Herramienta: `scripts/database/small_events_backfill.py`. CLI desde la Mac, sin endpoint nuevo, migración, cron, FTP, publicación o consultas por visita. No se incorpora al workflow semanal. Su carga **simula por defecto**; únicamente `load --apply` puede escribir y en producción necesita una orden expresa del dueño. En esta entrega no se ejecutó con `--apply` en producción.
 
 ## Circuito y garantías
 
