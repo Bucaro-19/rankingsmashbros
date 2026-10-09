@@ -12,6 +12,47 @@ Rama propia `feat/organizer-readiness` desde main actualizado **1a5d4d1** (PR #8
 - **Entrega: [PR #86](https://github.com/Bucaro-19/rankingsmashbros/pull/86), abierto, sin fusionar.** CI del código `9126cf8` [37975992019](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37975992019) correcta: `check`, MySQL 8.0 y MariaDB 10.11. Revisar también los checks del head final/documentación en el PR. Servidor local cerrado y base desechable eliminada tras la revisión. No hay migración nueva. Pendiente: revisión, orden de fusión/despliegue, diseño final y comprobar catálogo/sesión real tras el semanal. Los bloques anteriores son registros históricos; la carga productiva del backfill anterior se documenta aparte en [PR #85](https://github.com/Bucaro-19/rankingsmashbros/pull/85), no se repite en este trabajo.
 
 
+## Correo de contacto en «Tu opinión» (9/oct)
+
+`encuesta.php` muestra `contacto@rankingsmashbros.com` antes del botón de enviar y en el mensaje de respuesta recibida: el cuestionario es anónimo y no se puede contestar por ahí. No se agregó ningún campo ni se guarda correo. **El dueño debe confirmar que ese buzón existe en cPanel.** También se fusionó el #85 de Codex (documentación de la carga de los 19 torneos pequeños, verificada: 19 marcas, 554 sets, 1 corte, `public.json` sin cambios).
+
+## Codex — backfill pequeño aplicado y verificado (9/oct, 11:37 Guatemala)
+
+**Orden expresa del dueño en este chat:** aplicar únicamente las tandas de `small_events_backfill.py` en `ivcjgjlk_smash`, hasta cubrir los 19 candidatos. PR [#84](https://github.com/Bucaro-19/rankingsmashbros/pull/84) fusionada en main **1a5d4d1**; CI main [37965239323](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37965239323) correcto (MySQL 8.0 y MariaDB 10.11). Rama de operación/documentación `docs/small-backfill-production`; remoto comprobado; sin cambios tracked iniciales. `marca-rsb/` y `social/` ajenos, intactos.
+
+**Completado por lectura directa de producción:** 19 eventos candidatos, pertenecientes a **17 torneos**, con **589 sets terminados** (554 competitivos). Cero candidatos pendientes o excluidos. Corresponde a los candidatos terminados del catálogo consultado, 1/ene–9/oct/2026; no a futuros torneos del resto del año. Pequeños solo para explicar actividad que no cuenta: ninguna regla, punto, puesto o elegibilidad cambia.
+
+| Tanda | Eventos | Torneos distintos | Sets guardados | Competitivos | Marcas acumuladas | Candidatos restantes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 6 | 6 | 178 | 174 | 6 | 13 |
+| 2 | 6 | 5 | 193 | 180 | 12 | 7 |
+| 3 | 6 | 5 | 202 | 187 | 18 | 1 |
+| 4 | 1 | 1 | 16 | 13 | 19 | 0 |
+| Total | **19** | **17** | **589** | **554** | **19** | **0** |
+
+| Tanda | Consultas start.gg de la captura | Captura (s) | Simulación SQL (s) | Aplicación SQL (s) | Verificación SELECT (Guatemala) |
+| --- | ---: | ---: | ---: | ---: | --- |
+| [1](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37958722496) | 21 (reutilizada) | 20,624 | 3,447 | 31,610 | 11:29:44 |
+| [2](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37966732923) | 21 | 21,746 | 2,565 | 32,481 | 11:32:36 |
+| [3](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37967050469) | 21 | 21,842 | 2,581 | 46,047 | 11:35:22 |
+| [4](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37967380069) | 5 | 5,291 | 2,916 | 10,498 | 11:37:07 |
+
+Inventario nuevo por tanda y **`validated_no_writes` antes de cada `--apply`**; las cuatro aplicaciones respondieron `context_imported`, sin fallos ni reintentos. La primera reutilizó el paquete privado ya capturado/validado, comprobando el ancla y su separación de los eventos protegidos contra el inventario vigente; no repitió consultas a start.gg. Las cuatro capturas usadas suman 68 consultas, **47 nuevas durante esta operación**. El diagnóstico previo de la entrega está documentado en TORNEOS-PEQUENOS-ATRASADOS.md y no está incluido en esos totales.
+
+Las tandas 2–4 usaron exclusivamente el capturador fusionado con STARTGG_TOKEN en GitHub Secrets, artefactos cifrados para la llave de la Mac y retención un día. Runner temporal solo en esta rama, compartiendo la concurrencia de publicación, sin secretos SQL/FTP; **workflow original restaurado sin diff final**. Paquetes e inventarios fuera de Git, en `~/smash-small-backfill-private/`, permisos 600/carpeta 700; no se imprimieron/copiaron credenciales ni su archivo privado. Escrituras exclusivamente por el CLI autorizado; verificaciones mediante SELECT/HTTP.
+
+**Después de cada aplicación:** `organizer_event_context` = 6 → 12 → 18 → 19; `events` = 53 → 59 → 65 → 66 (partió de 47); **`cuts=1`, `cut_events=81`, `cut_set_results=5272`, `rankings=376`** sin cambios. Ninguno de los 19 eventos tiene membresía en cut_events. Inventario final coincide exactamente con la unión de los cuatro paquetes: no hay marcas ajenas contadas como cobertura.
+
+- SHA-256 del archivo servido por `https://rankingsmashbros.com/data/public.json`, antes y tras cada aplicación: **1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1**.
+- `cuts.source_hash` del único corte: **ecb1d4a5cd44f87250537a85d0d166fa6f9824ff3408f0b55c98ac6102fd9e45**, también intacto. Es el hash SQL del paquete del corte, distinto del hash del archivo servido.
+- **The Oven 7** confirmado por SELECT unido a su marca: Smash Ultimate Singles, **23/ago/2026 en Guatemala**, 13 activos, 88 sets guardados, 81 competitivos. Permanece fuera del ranking nacional; el contexto queda disponible para `smash_account_small_events()` con su contrato actual `counts=false`.
+- Fuera de la captura: **15 sets sin jugar**, todos en la primera tanda, omitidos porque no tenían ganador. **Cero eventos candidatos quedaron fuera**. Los otros 35 sets terminados no competitivos se conservaron según su tipo existente; no se inventaron resultados ni se usaron para actividad competitiva. Tampoco se promete cubrir torneos que no están registrados en start.gg o quedan fuera del catálogo conservador existente.
+- Tamaños JSON/gzip de las tandas: 138.953/18.945 B; 145.083/19.497 B; 158.302/21.259 B; 17.969/3.128 B. Todos por debajo de 32 MiB/4 MiB; cada captura dentro de 30 intentos/120 s y 6 eventos seleccionados como máximo.
+
+Operación realizada en viernes (11:27–11:37 GT), comprobando antes de cada aplicación que no había un run semanal activo. Se conserva el bloqueo/transacción/paridad de la herramienta y el semanal de seis recientes. **Sin nueva migración, cambio de cálculo, JSON, cuentas o encuesta; sin fusión, despliegue ni cron adicional.** Único pendiente operativo de esta carga: ninguno de estos 19; observar el primer corte automático del domingo 11/oct según el plan existente. Cualquier nueva escritura fuera de esa automatización necesita su orden correspondiente; no repetir el backfill por rutina.
+
+Los bloques de simulación conservados abajo son históricos: su «sin fusionar/sin autorización/sin cargar» fue sustituido por la fusión #84 y la operación autorizada descrita arriba. La entrega de documentación queda en esta rama para revisión; no fusionarla/desplegarla sin la orden del dueño.
+
 ## Codex — backfill de eventos pequeños atrasados (9/oct; simulación, sin cargar)
 
 [PR #84](https://github.com/Bucaro-19/rankingsmashbros/pull/84), abierta sin fusionar. Rama `feat/small-events-backfill` desde main **bbb08bb** (#83), remoto `Bucaro-19/rankingsmashbros`. Auditoría sin cambios tracked; carpetas ajenas `social/` y `marca-rsb/` sin leer/tocar. CI main [37894795531](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37894795531) y despliegue [37894818993](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37894818993) correctos. Encargo y decisión vigentes: pequeños solo para **explicar actividad que no cuenta**, sin regla nueva ni mínimo nuevo de organizador.

@@ -191,7 +191,7 @@ function survey_text(string $name): string {
       <p class="survey-lead">Queremos acordar reglas claras con la comunidad de Smash Ultimate de Guatemala. Contestar toma unos 3 minutos y no requiere cuenta. Esta consulta orienta la revisión; los puestos se calculan con resultados, no por votación.</p>
     </div>
     <?php if ($saved): ?>
-      <section class="survey-message success" role="status"><span class="message-mark" aria-hidden="true">✓</span><h2>¡Respuesta recibida!</h2><p>Gracias por ayudarnos a pulir el ranking 2026.</p><a class="outline" href="./metodologia.html">Ver reglas y torneos ↗</a></section>
+      <section class="survey-message success" role="status"><span class="message-mark" aria-hidden="true">✓</span><h2>¡Respuesta recibida!</h2><p>Gracias por ayudarnos a pulir el ranking 2026.</p><p>¿Tienes una duda y quieres respuesta? Escríbenos a <a href="mailto:contacto@rankingsmashbros.com">contacto@rankingsmashbros.com</a>.</p><a class="outline" href="./metodologia.html">Ver reglas y torneos ↗</a></section>
     <?php elseif ($surveyRecent): ?>
       <section class="survey-message recent" role="status"><span class="message-mark" aria-hidden="true">i</span><h2>Ya respondiste desde este navegador</h2><p><?= h($error) ?></p><div class="link-row"><a class="outline" href="./metodologia.html">Ver reglas y torneos ↗</a><a class="outline" href="./#ranking">Volver al ranking</a></div></section>
     <?php else: ?>
@@ -252,6 +252,7 @@ function survey_text(string $name): string {
           <div class="survey-text"><label for="comment">¿Qué mejorarías? Puedes mencionar jugadores, torneos o reglas.</label><textarea id="comment" name="comment" rows="5" maxlength="2000" placeholder="Cuéntanos qué cambiarías y por qué…" aria-describedby="comment-count<?= $surveyCommentError ? ' survey-error' : '' ?>"<?= $surveyCommentError ? ' aria-invalid="true"' : '' ?>><?= h(survey_text('comment')) ?></textarea><span id="comment-count"><?= function_exists('mb_strlen') ? mb_strlen(survey_text('comment'), 'UTF-8') : strlen(survey_text('comment')) ?> / 2,000</span></div>
         </div>
         <div class="privacy-note"><span class="privacy-mark" aria-hidden="true">i</span><p>No pedimos nombre, correo ni cuenta, y no guardamos tu IP en las respuestas. Evita incluir datos personales en el comentario. Las respuestas se guardan de forma privada en rankingsmashbros.com para revisar las reglas; publicaremos las decisiones y su justificación, no respuestas individuales.</p></div>
+        <div class="privacy-note contact-note"><span class="privacy-mark" aria-hidden="true">@</span><p><strong>¿Quieres que te respondamos?</strong> Este cuestionario es anónimo, así que no podemos contestarte por aquí. Si tienes una duda o un caso que revisar, escríbenos a <a href="mailto:contacto@rankingsmashbros.com">contacto@rankingsmashbros.com</a> y te damos una respuesta.</p></div>
         <button class="survey-submit cta blue" type="submit"><span>ENVIAR OPINIÓN <b aria-hidden="true">↗</b></span></button>
       </form>
     <?php endif; ?>

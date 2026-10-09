@@ -113,7 +113,7 @@ La columna UNIQUE guarda la huella de origen de cada respuesta: sha256 de la lí
 
 ## Acceso directo a la base (desde la Mac del dueño)
 
-Backfill de contexto pequeño (9/oct): herramienta independiente entregada con **simulación real READ ONLY**, sin carga/migración. 006 existente comprobada por lectura. Repetición omite marcas y no cambia cuts/ledger/rankings; contratos, evidencia agregada y comando `--apply` pendiente de orden en [TORNEOS-PEQUENOS-ATRASADOS.md](TORNEOS-PEQUENOS-ATRASADOS.md). No utilizar la repetición del importador de cortes para cargar estos eventos.
+Backfill de contexto pequeño (9/oct): PR #84 fusionada, **19 eventos de 17 torneos aplicados por orden expresa del dueño**, en cuatro tandas simuladas y verificadas por SELECT (589 sets, cero candidatos pendientes). 006 ya existente; no se aplicó migración. `cuts=1`, ledger/rankings y hash del sitio intactos. Repetición omite marcas; balance y evidencia en [EN-CURSO.md](EN-CURSO.md) y contrato en [TORNEOS-PEQUENOS-ATRASADOS.md](TORNEOS-PEQUENOS-ATRASADOS.md). No utilizar la repetición del importador de cortes para cargar estos eventos ni repetir escrituras manuales por rutina.
 
 Configurado y verificado por Claude Code el 7 de octubre de 2026. Detalle de lo consultado: `VERIFICACION-BASE-2026-10-07.md`.
 
