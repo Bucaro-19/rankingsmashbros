@@ -77,7 +77,15 @@
     root.innerHTML=`${mobileDetail?'':filtersPanel()}${stale}${body(now)}`;
     if(focusDetail)document.getElementById('t-detail-title')?.focus();
   }
-  function setOpen(slug,focus=true){open=slug;history.replaceState(null,'',slug?`#${slug}`:location.pathname+location.search);render(focus&&!!slug);if(!slug||!wide())scrollTo({top:0});}
+  // On a phone the detail replaces the list. Bring it to the top of the screen: jumping to the top of the page
+  // left it below the big title, which looked as if the button had done nothing. Going back returns to the same card.
+  function setOpen(slug,focus=true) {
+    const from=open; open=slug; history.replaceState(null,'',slug?`#${slug}`:location.pathname+location.search); render(false);
+    if(wide()){if(focus&&slug)document.getElementById('t-detail-title')?.focus({preventScroll:true});return;}
+    const target=slug?root.querySelector('.t-detail'):[...root.querySelectorAll('.t-card [data-open]')].find(b=>b.dataset.open===from)?.closest('.t-card')||root;
+    target?.scrollIntoView({block:'start'});
+    if(focus&&slug)document.getElementById('t-detail-title')?.focus({preventScroll:true});
+  }
   function locate() {
     if(!navigator.geolocation){geo={state:'noDisponible',position:null};render();return;}
     geo={state:'pidiendo',position:null};render();
@@ -114,6 +122,8 @@
       agenda=data;open=fromHash();
     } catch { failed=true; } finally { clearTimeout(stop); }
     render();
+    // Arriving by a link to one tournament (from the home block): show it, not the page title.
+    if(open&&!wide())root.querySelector('.t-detail')?.scrollIntoView({block:'start'});
   }
   load();
 })();
