@@ -7,6 +7,8 @@ on:
 permissions:
   contents: read
 jobs:
+  # Docker Official Images mirror: avoids Docker Hub anonymous pull limits.
+  # Same supported PHP/database versions; no private credentials or reduced checks.
   check:
     runs-on: ubuntu-latest
     steps:
@@ -48,8 +50,8 @@ jobs:
       - name: Verificar PHP en la versión del hosting y en la mínima admitida
         run: |
           # El servidor usa PHP 8.1; el código publicado debe seguir siendo válido desde 7.4.
-          docker run --rm -v "$PWD":/app -w /app php:7.4-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/import_survey.php; do php -l "$f" || exit 1; done'
-          docker run --rm -v "$PWD":/app -w /app php:8.1-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$f" || exit 1; done'
+          docker run --rm -v "$PWD":/app -w /app public.ecr.aws/docker/library/php:7.4-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/import_survey.php; do php -l "$f" || exit 1; done'
+          docker run --rm -v "$PWD":/app -w /app public.ecr.aws/docker/library/php:8.1-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$f" || exit 1; done'
       - name: Verificar contratos estáticos de la encuesta
         run: |
           php scripts/database/test_analisis.php
@@ -62,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ['mariadb:10.11', 'mysql:8.0']
+        image: ['public.ecr.aws/docker/library/mariadb:10.11', 'public.ecr.aws/docker/library/mysql:8.0']
     services:
       database:
         image: ${{ matrix.image }}
