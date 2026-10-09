@@ -46,3 +46,4 @@
 @media(prefers-reduced-motion:reduce){.t-bar span{animation:none}}
 .t-rank{display:flex;flex-direction:column;gap:5px;padding:8px 10px;background:#0B0F1A;border-left:3px solid var(--yellow)}.t-rank p{font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--yellow)}.t-rank small{font-size:12px;line-height:1.4;color:var(--long)}.t-rank.no{border-left-color:#7C869B}.t-rank.no p{color:var(--long)}
 .t-meter{height:8px;background:var(--track)}.t-meter span{display:block;height:100%;background:var(--yellow)}
+.t-detail,.t-card{scroll-margin-top:72px}#t-root{scroll-margin-top:72px}

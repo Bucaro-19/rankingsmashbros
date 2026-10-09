@@ -1,5 +1,14 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+
+## #76 fusionado, detalle de la agenda en móvil y plan de expansión (8/oct, 22:00)
+
+- **#76 (torneos pequeños para organizadores, Codex) fusionado por orden del dueño** como `06fc487`, aunque la recomendación fue esperar al lunes: toca el flujo semanal, la captura, el paquete y el importador. Queda **apagado** (`SMASH_ORGANIZER_SMALL_ENABLED` sin activar) y la **migración 006 sin aplicar**. Activarlo, aplicar la 006 y decidir la cobertura son órdenes aparte.
+- **Consulta del dueño sobre The Oven 7** (un jugador no lo ve en su historial): se jugó el 23/ago/2026 y su evento de singles tuvo 13 jugadores según su página pública; no entra al ranking (mínimo 20 activos) y por eso ni se capturó. No es un error de datos. No se leyó ninguna respuesta de la encuesta para esto. El dueño eligió explicar en el perfil los torneos que no contaron, sin cambiar la regla; depende de #76.
+- **«Ver detalle» en móvil:** el botón sí abría el detalle, pero la página saltaba al inicio y el detalle quedaba debajo del título, así que parecía no hacer nada. Ahora el detalle queda arriba de la pantalla, «← Todos los torneos» regresa a la misma tarjeta, y un enlace directo a un torneo abre ya en el detalle. Comprobado en navegador a 375 px.
+- **[Plan de expansión a El Salvador, México y Estados Unidos](PLAN-EXPANSION-PAISES.md)**, pedido por el dueño: propuesta por fases, sin nada programado.
+- El dueño conserva la clave del panel de opiniones como respaldo. Claude Code no la tiene ni la guarda.
+
 ## Codex — contexto de torneos pequeños para organizadores (8/oct, sin activar)
 
 [PR #76](https://github.com/Bucaro-19/rankingsmashbros/pull/76), abierta sin fusionar. Rama `feat/organizer-small-events`, desde `origin/main` **224d413** (#74), remoto `Bucaro-19/rankingsmashbros`. Auditoría inicial sin cambios tracked (solo carpeta ajena `social/`, sin leer/tocar); CI main [37868181042](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37868181042) y despliegue [37868310842](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37868310842) correctos. Integrado main actualizado **ef0f53a** (#75), conservando el trabajo de Claude; su CI [37874688164](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37874688164) y despliegue [37874829683](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37874829683) correctos. Contrato, mediciones y siguientes pasos en [TORNEOS-PEQUENOS-ORGANIZADOR.md](TORNEOS-PEQUENOS-ORGANIZADOR.md).
