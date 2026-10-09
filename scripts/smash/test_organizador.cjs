@@ -74,3 +74,31 @@ test('admin reviews show requester, confirmation and rejection validation entry'
   const body=JSON.parse(u.requests.find(r=>r.options.body)?.options.body);
   assert.equal(body.action,'resolve');assert.equal(body.claim,'7');assert.equal(body.approve,true);
 });
+
+test('approved refund policy is visible before payment even while paused',async()=>{
+  const u=ui('premium.js',{ok:true,authenticated:false,available:true,paused:true});
+  await u.app.show();
+  assert.match(u.root.innerHTML,/Los pagos no son reembolsables/);
+  assert.match(u.root.innerHTML,/ni completo ni en proporción/);
+  assert.match(u.root.innerHTML,/error del sitio o del procesador/);
+  assert.match(u.root.innerHTML,/5 días hábiles/);
+  assert.match(u.root.innerHTML,/Pagos en pausa temporalmente/);
+  assert.match(u.root.innerHTML,/href="\.\/reembolsos.html"/);
+  assert.doesNotMatch(u.root.innerHTML,/id="p-pay"|7 días|PROPUESTA/);
+});
+test('active and canceled subscription disclose price, date and identical refund policy',async()=>{
+  for(const plan of ['monthly','annual'])for(const cancelRequested of [false,true]){
+    const u=ui('premium.js',{ok:true,authenticated:true,available:true,paused:true,premium:{
+      premium:true,plan,status:'active',currentPeriodEnd:'2026-11-09T20:00:00Z',
+      startedAt:'2026-10-09T20:00:00Z',cancelRequested}});
+    u.app.setContext({authenticated:true});await u.app.show();
+    assert.match(u.root.innerHTML,plan==='monthly'?/3 USD al mes/:/24 USD al año/);
+    assert.match(u.root.innerHTML,/09\/11\/2026/);
+    assert.match(u.root.innerHTML,/Los pagos no son reembolsables/);
+    assert.match(u.root.innerHTML,/error del sitio o del procesador/);
+    assert.match(u.root.innerHTML,/href="\.\/terminos.html"/);
+    assert.doesNotMatch(u.root.innerHTML,/7 días|PROPUESTA/);
+    if(cancelRequested)assert.match(u.root.innerHTML,/<dt>Próximo cobro<\/dt><dd>Ninguno/);
+    else assert.match(u.root.innerHTML,/<dt>Próximo cobro<\/dt><dd>09\/11\/2026/);
+  }
+});

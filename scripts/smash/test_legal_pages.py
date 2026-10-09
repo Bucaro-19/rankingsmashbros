@@ -47,18 +47,24 @@ class LegalPagesTests(unittest.TestCase):
                         self.assertIn("'premium'",(SITE/'cuenta.js').read_text())
                     else:self.assertIn(url.fragment,Links(target.read_text()).ids,f'{page}: missing anchor {href}')
 
-    def test_prices_access_cancellation_and_draft_match_actual_contract(self):
+    def test_prices_access_cancellation_and_approved_refunds_match_actual_contract(self):
         terms=(SITE/'terminos.html').read_text();refunds=(SITE/'reembolsos.html').read_text()
         for text in ('3 USD al mes','24 USD al año','Recurrente','Pagar no da puntos ni cambia puestos',
                      'José Aurelio Porras','Guatemala','hasta el final del periodo','Sí, cancelar',
                      'hash','luego se descartan','no cancela automáticamente una suscripción'):
             self.assertIn(text,terms)
-        self.assertIn('smash-refund-policy-status" content="draft',refunds)
-        for text in ('PROPUESTA','7 días','renovación cuyo acceso premium ya hayas utilizado','5 días hábiles',
-                     'se devolverán siempre','contacto@rankingsmashbros.com','no tramita devoluciones automáticas'):
-            self.assertIn(text,refunds)
+        self.assertIn('smash-refund-policy-status" content="approved',refunds)
+        for page in ('terminos.html','reembolsos.html','premium.js'):
+            text=(SITE/page).read_text()
+            for old in ('PROPUESTA','pendiente de aprobación','7 días'):
+                self.assertNotIn(old,text)
+            for required in ('Los pagos no son reembolsables','ni completo ni en proporción',
+                             'error del sitio o del procesador','se devuelven completos','5 días hábiles',
+                             'contacto@rankingsmashbros.com','Antes de cada renovación'):
+                self.assertIn(required,text)
+        self.assertIn('tag de tu cuenta y la fecha del cobro',refunds)
+        self.assertIn('no tramita devoluciones automáticas',refunds)
         premium=(SITE/'premium.js').read_text()
-        before=premium[premium.index('p-before'):premium.index('const radios=')]
-        for page in LEGAL:self.assertIn('href="./'+page+'"',before)
+        for page in LEGAL:self.assertIn('href="./'+page+'"',premium)
 
 if __name__=='__main__':unittest.main()

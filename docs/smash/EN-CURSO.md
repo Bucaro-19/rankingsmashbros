@@ -1,5 +1,14 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — política de reembolsos aprobada (9/oct, 15:53 Guatemala)
+
+**Orden expresa del dueño:** sustituir la propuesta de #92 por pagos no reembolsables, excepto cobros duplicados o hechos por error del sitio/procesador; retirar el borrador; con CI correcta fusionar por nombre de rama y desplegar assets-only. Esta aprobación sustituye el requisito pendiente de la entrega anterior. No modifica cobros ni la lógica del proveedor.
+
+Auditoría al retomar: `feat/legal-terms-refunds`, head `adbaa0b`, tracked limpio; remoto `Bucaro-19/rankingsmashbros`, main `8de7ee8`. CI previa [37994430098](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37994430098) y publicación anterior correctas. `marca-rsb/` y `social/` ajenos intactos. SHA256 productivo antes de publicar: **1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1**.
+
+- Condiciones finales idénticas en términos, reembolsos y Premium (planes y gestión): acceso inmediato, sin devolución total ni proporcional de periodo iniciado; solo duplicados/error se devuelven completos, solicitud por correo con tag/fecha, respuesta ≤5 días hábiles. Cancelar evita siguientes cobros y mantiene acceso pagado; importe y fecha ya visibles en gestión. Sin nuevas pantallas, base, APIs o cambios al ranking. No asesoría legal ni validación legal de la política.
+- Retirados PROPUESTA/meta draft; meta approved, fecha editorial y sitemap actualizados. Se conserva la pausa de pagos nuevos. Pruebas cubren coherencia de textos, anonimato/pausa y gestión mensual/anual activa/cancelada con precio, fecha y política. Publicación y comprobación final se anotarán al terminar. **La propuesta de 7 días abajo es solo registro histórico y no rige.**
+
 ## Pagos de premium en pausa (9/oct, tarde)
 
 Recurrente avisó que, por políticas de riesgo de Visa, **ya no procesa tarjetas en la cuenta** (giro «CONTINUOUS SUBSCRIPTION»); las transferencias siguen. El dueño apeló y el caso está con una persona de su equipo.
