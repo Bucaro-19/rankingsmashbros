@@ -5,7 +5,9 @@ declare(strict_types=1);
 // Read-only figures for the owner's private panel: visits (see visits.php) and registrations.
 // Aggregates only: no visitor, network or account is ever listed.
 
-const SMASH_STATS_PAGES = ['inicio' => 'home', 'metodologia' => 'metodologia', 'cuenta' => 'cuenta', 'analisis-top20' => 'top20', 'analisis-torneos' => 'torneos'];
+// Additive contract: legacy panel key "torneos" stays the historical analysis; no SQL
+// renames or duplicate aliases in totals. The new stored page "torneos" is the agenda.
+const SMASH_STATS_PAGES = ['inicio' => 'home', 'metodologia' => 'metodologia', 'cuenta' => 'cuenta', 'analisis-top20' => 'top20', 'analisis-torneos' => 'torneos', 'torneos' => 'agendaTorneos'];
 
 final class SmashStatsError extends RuntimeException
 {

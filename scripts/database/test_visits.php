@@ -12,6 +12,8 @@ function visit_rejects(callable $operation, string $reason): void {
 check_visit(smash_visit_day(gmmktime(5, 59, 59, 10, 8, 2026)) === '2026-10-07' && smash_visit_day(gmmktime(6, 0, 0, 10, 8, 2026)) === '2026-10-08', 'Guatemala calendar day');
 check_visit(smash_visit_page('inicio') === 'inicio' && smash_visit_page('encuesta') === null && smash_visit_page('opiniones') === null
     && smash_visit_page(['inicio']) === null && smash_visit_page('inicio ') === null, 'Only known public pages, never the survey or the panel');
+check_visit(smash_visit_page('torneos') === 'torneos' && smash_visit_page('analisis-torneos') === 'analisis-torneos'
+    && smash_visit_page('agendaTorneos') === null, 'Agenda and historical analysis are distinct stored pages; panel keys are not page names');
 check_visit(smash_visit_same_origin(['HTTP_SEC_FETCH_SITE' => 'same-origin']) && !smash_visit_same_origin(['HTTP_SEC_FETCH_SITE' => 'cross-site'])
     && !smash_visit_same_origin(['HTTP_SEC_FETCH_SITE' => 'same-site', 'HTTP_ORIGIN' => 'https://rankingsmashbros.com', 'HTTP_HOST' => 'rankingsmashbros.com']), 'Fetch metadata decides when present');
 check_visit(smash_visit_same_origin(['HTTP_ORIGIN' => 'https://rankingsmashbros.com', 'HTTP_HOST' => 'rankingsmashbros.com'])
@@ -65,6 +67,11 @@ try {
     check_visit((int)$one("SELECT COUNT(*) FROM site_network_days WHERE day='$day'") === 2 && (int)$one("SELECT SUM(new_visitors) FROM site_network_days WHERE day='$day'") === 1, 'Two networks, one new identifier');
     $stored = json_encode($pdo->query("SELECT * FROM site_visitor_days WHERE day='$day'")->fetchAll(PDO::FETCH_ASSOC)) . json_encode($pdo->query("SELECT * FROM site_network_days WHERE day='$day'")->fetchAll(PDO::FETCH_ASSOC));
     check_visit(strpos($stored, $first['token']) === false && strpos($stored, substr($first['token'], 0, 32)) === false && strpos($stored, '203.0.113') === false, 'Neither the cookie value nor the address is stored');
+    smash_visit_record($pdo, $key, $day, 'analisis-torneos', $first['token'], $network, true, false);
+    smash_visit_record($pdo, $key, $day, 'torneos', $first['token'], $network, true, false);
+    smash_visit_record($pdo, $key, $day, 'torneos', $first['token'], $network, true, false);
+    check_visit($pdo->query("SELECT page, views FROM site_visit_days WHERE day='$day' AND page IN ('torneos','analisis-torneos') ORDER BY page")->fetchAll(PDO::FETCH_KEY_PAIR)
+        == ['analisis-torneos' => 1, 'torneos' => 2] && (int)$one("SELECT COUNT(*) FROM site_visitor_days WHERE day='$day'") === 1, 'Agenda adds views without changing analysis history or duplicating visitors');
     // A second browser on the same network is a second visitor.
     $second = smash_visit_record($pdo, $key, $day, 'inicio', null, $network, true, false);
     check_visit($second['token'] !== $first['token'] && (int)$one("SELECT COUNT(*) FROM site_visitor_days WHERE day='$day'") === 2, 'Second browser, second visitor');

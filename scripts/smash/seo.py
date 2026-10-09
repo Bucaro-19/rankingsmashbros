@@ -5,7 +5,7 @@ from xml.etree import ElementTree as ET
 
 ORIGIN = 'https://rankingsmashbros.com'
 SITEMAP_NS = 'http://www.sitemaps.org/schemas/sitemap/0.9'
-PUBLIC_PAGES = ('', 'metodologia.html', 'analisis-top20.html', 'analisis-torneos.html')
+PUBLIC_PAGES = ('', 'metodologia.html', 'analisis-top20.html', 'analisis-torneos.html', 'torneos.html')
 
 
 def timestamp(value):
@@ -17,16 +17,28 @@ def timestamp(value):
     return date.astimezone(timezone.utc)
 
 
-def build_sitemap(source, public):
+def build_sitemap(source, public, *, agenda=None):
     """Cut-based pages use the actual cut; historical studies keep their own date."""
     cut = timestamp(public['generatedAt'])
     top20 = json.loads((source / 'data/analisis-top20.json').read_text(encoding='utf-8'))
     tournaments = json.loads((source / 'data/analisis-torneos.json').read_text(encoding='utf-8'))
     # Top20 also reads public.json to warn when its archived cut is no longer current.
-    dates = (cut, cut, max(cut, timestamp(top20['cut'])), timestamp(tournaments['snapshotAt']))
+    dates = {'': cut, 'metodologia.html': cut,
+             'analisis-top20.html': max(cut, timestamp(top20['cut'])),
+             'analisis-torneos.html': timestamp(tournaments['snapshotAt'])}
+    # Agenda is independently published. Missing/unreadable metadata must not block a cut
+    # or substitute its date with the ranking cut, a Git snapshot, or the deploy clock.
+    if isinstance(agenda, dict):
+        try:
+            dates['torneos.html'] = timestamp(agenda.get('generatedAt'))
+        except (ValueError, OverflowError):
+            pass
     ET.register_namespace('', SITEMAP_NS)
     root = ET.Element('{' + SITEMAP_NS + '}urlset')
-    for page, date in zip(PUBLIC_PAGES, dates):
+    for page in PUBLIC_PAGES:
+        if page not in dates:
+            continue
+        date = dates[page]
         url = ET.SubElement(root, '{' + SITEMAP_NS + '}url')
         ET.SubElement(url, '{' + SITEMAP_NS + '}loc').text = ORIGIN + '/' + page
         ET.SubElement(url, '{' + SITEMAP_NS + '}lastmod').text = date.isoformat().replace('+00:00', 'Z')

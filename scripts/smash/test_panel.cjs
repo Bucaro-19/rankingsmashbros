@@ -58,3 +58,16 @@ test('short history notice, axis and page ranking',()=>{
   assert.deepEqual(pages.map(p=>[p.position,p.name,p.views,p.percent,p.width]).slice(0,3),[[1,'Inicio / ranking',10,63,100],[2,'Cuenta',4,25,40],[3,'Análisis del top 20',2,13,20]]);
   assert.deepEqual(m.pages({pages:{home:0,cuenta:0}}).map(p=>[p.percent,p.width]),[[0,0],[0,0]]);
 });
+test('agenda adds a distinct label and historical torneos keeps its meaning and share',()=>{
+  const old={pages:{home:10,torneos:2}};
+  const saved=JSON.stringify(old);
+  assert.equal(m.pages(old).find(p=>p.key==='torneos').name,'Análisis de torneos');
+  assert.equal(m.pages(old).find(p=>p.key==='torneos').percent,17);
+  assert.equal(JSON.stringify(old),saved);
+  const pages=m.pages({pages:{home:10,torneos:2,agendaTorneos:8}});
+  assert.deepEqual(pages.map(p=>[p.key,p.name,p.views,p.percent,p.width]),[
+    ['home','Inicio / ranking',10,50,100], ['agendaTorneos','Agenda de torneos',8,40,80],
+    ['torneos','Análisis de torneos',2,10,20]
+  ]);
+  assert.equal(pages.reduce((n,p)=>n+p.views,0),20);
+});
