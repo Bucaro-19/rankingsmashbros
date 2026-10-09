@@ -5,7 +5,7 @@ const SmashPremium = (() => {
   // What premium includes. «available» turns the «Próximamente» label off when a feature ships.
   const FEATURES=[{title:'Análisis del rival',text:'Probabilidad estimada, historial, forma reciente y matchup de personajes antes de un set.',available:true,href:'./analisis.html',action:'Analizar un rival →'},{title:'Top 15 por organizador',text:'El ranking de cada organizador con sus propios torneos.',available:false}];
   const FREE=['El ranking completo','Tu puesto, también fuera del top 100','Tu perfil y tus personajes','Tu historial de torneos','Tu récord contra cada rival'];
-  const RECURRENTE='El pago se hace en la página segura de Recurrente, la pasarela de Guatemala. Saldrás de Smash GT y volverás al terminar. Smash GT nunca ve ni guarda tu tarjeta.';
+  const RECURRENTE='El pago se hace en la página segura de Recurrente, la pasarela de Guatemala. Saldrás de Ranking Smash Bros y volverás al terminar. Ranking Smash Bros nunca ve ni guarda tu tarjeta.';
   const PRINCIPLE='Pagar no da puntos ni cambia tu puesto.';
   const root=()=>document.getElementById('premium-screen');
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -31,7 +31,7 @@ const SmashPremium = (() => {
     // The site owner's account opens every premium feature without a subscription; say so instead of looking locked.
     const admin=context.admin?notice('ok','✓','Tu cuenta de administrador ya tiene todo lo de premium.','No necesitas suscripción para usar el análisis de rival ni las demás funciones. Si te suscribes, además apoyas el sitio y aparece la insignia Premium.','<a class="p-go" href="./analisis.html">Analizar un rival →</a>'):'';
     root().innerHTML=`${info?.test?notice('info','i','Modo de prueba.','Los pagos de esta pantalla usan el ambiente de pruebas de Recurrente: no se cobra dinero real.'):''}${admin}${top}
-      <div class="p-hero"><p class="kicker yellow">Premium · Apoya el sitio</p><h1>Que la arena<br><span>se sostenga sola.</span></h1><p class="lead">Smash GT es un proyecto independiente de la comunidad. Con una suscripción pequeña ayudas a pagar el servidor y el trabajo de mantenerlo, y recibes funciones extra para preparar tus sets.</p></div>
+      <div class="p-hero"><p class="kicker yellow">Premium · Apoya el sitio</p><h1>Que la arena<br><span>se sostenga sola.</span></h1><p class="lead">Ranking Smash Bros es un proyecto independiente de la comunidad. Con una suscripción pequeña ayudas a pagar el servidor y el trabajo de mantenerlo, y recibes funciones extra para preparar tus sets.</p></div>
       <div class="p-columns"><div class="p-main"><h2>Elige tu plan</h2>
         <div class="p-plans" role="radiogroup" aria-label="Plan">${Object.entries(PLANS).map(([key,item])=>`<button type="button" role="radio" aria-checked="${key===plan}" data-plan="${key}" tabindex="${key===plan?0:-1}"><span class="p-radio" aria-hidden="true"></span><span class="p-plan-name">${item.name}</span><span class="p-price"><b>${item.amount}</b> USD ${item.each}</span><span class="p-plan-note">${item.note}</span></button>`).join('')}</div>
         <div class="p-box p-before"><h3>Antes de pagar</h3><p>Se renueva automáticamente cada ${p.period} por ${p.amount} USD hasta que lo canceles.</p><p>Cancelas cuando quieras en esta pestaña, sin escribirle a nadie. Sigues siendo premium hasta el final del periodo que ya pagaste.</p>
@@ -92,7 +92,7 @@ const SmashPremium = (() => {
   }
   function renderSuccess() {
     const s=info.premium, p=PLANS[s.plan]||PLANS.monthly, end=day(s.currentPeriodEnd);
-    root().innerHTML=`<div class="p-success"><span aria-hidden="true">✓</span><h1>¡Ya eres premium!</h1><p>Gracias por apoyar Smash GT. Tu plan ${p.name.toLowerCase()} de ${p.amount} USD ${p.each} queda activo${end?`; el próximo cobro es el ${end}`:''}.</p><div class="button-row"><a class="outline dark" href="./analisis.html">Analizar un rival →</a><button type="button" id="p-see" class="outline dark">Ver mi suscripción</button></div></div>`;
+    root().innerHTML=`<div class="p-success"><span aria-hidden="true">✓</span><h1>¡Ya eres premium!</h1><p>Gracias por apoyar Ranking Smash Bros. Tu plan ${p.name.toLowerCase()} de ${p.amount} USD ${p.each} queda activo${end?`; el próximo cobro es el ${end}`:''}.</p><div class="button-row"><a class="outline dark" href="./analisis.html">Analizar un rival →</a><button type="button" id="p-see" class="outline dark">Ver mi suscripción</button></div></div>`;
     root().querySelector('#p-see').addEventListener('click',()=>{arrival=null;render();});
   }
   function render() {

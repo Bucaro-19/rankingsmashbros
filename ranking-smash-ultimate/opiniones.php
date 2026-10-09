@@ -126,7 +126,7 @@ if ($authenticated) {
     } catch (Throwable $failure) {
         $rows = [];
         $readError = true;
-        error_log('Smash GT opiniones: lectura fallida (' . smash_survey_failure_code($failure) . ')');
+        error_log('Ranking Smash Bros opiniones: lectura fallida (' . smash_survey_failure_code($failure) . ')');
         $failure = null;
     }
 }
@@ -151,12 +151,12 @@ $groups = [
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="theme-color" content="#0c101c">
   <meta name="smash-survey-storage" content="sql">
-  <title>Opiniones privadas — Smash GT</title>
+  <title>Opiniones privadas — Ranking Smash Bros</title>
   <link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./arena.css"><link rel="stylesheet" href="./opiniones.css">
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
-  <header class="site-header wrap"><a class="brand" href="./" aria-label="Smash GT, inicio"><span class="brand-mark" aria-hidden="true">S<span>↗</span></span><span>SMASH<span class="brand-gt">GT</span><small>POR INGPORRAS</small></span></a><nav aria-label="Principal"><a href="./">Ranking público</a><a href="./encuesta.php">Cuestionario</a></nav><span class="country">ACCESO PRIVADO</span></header>
+  <header class="site-header wrap"><a class="brand" href="./" aria-label="Ranking Smash Bros, inicio"><span class="brand-mark" aria-hidden="true">S<span>↗</span></span><span>SMASH<span class="brand-gt">GT</span><small>POR INGPORRAS</small></span></a><nav aria-label="Principal"><a href="./">Ranking público</a><a href="./encuesta.php">Cuestionario</a></nav><span class="country">ACCESO PRIVADO</span></header>
   <main id="contenido" class="wrap opinions-page">
     <?php if (!$authenticated): ?>
       <section class="login-panel"><p class="eyebrow"><span class="tiny-line"></span> SOLO PARA EL ORGANIZADOR</p><h1>OPINIONES<br><em>DE LA COMUNIDAD.</em></h1><p>Ingresa tu clave para consultar las respuestas del cuestionario 2026.</p>
@@ -188,6 +188,6 @@ $groups = [
       <?php endif; ?>
     <?php endif; ?>
   </main>
-  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS ↗</a><p>Panel privado de Smash GT.</p><span>SMASH GT</span></footer>
+  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS ↗</a><p>Panel privado de Ranking Smash Bros.</p><span>RANKING SMASH BROS</span></footer>
 </body>
 </html>

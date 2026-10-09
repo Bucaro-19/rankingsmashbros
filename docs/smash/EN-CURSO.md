@@ -3,6 +3,15 @@
 
 
 
+## El sitio pasa a llamarse «Ranking Smash Bros» (9/oct, madrugada)
+
+Decisión del dueño: la marca es el dominio, **Ranking Smash Bros**, para poder expandirse a otros países; «GT» queda como etiqueta de país.
+
+- Cambiado el nombre visible en `ranking-smash-ultimate/` (títulos, Open Graph, datos estructurados, encabezados, textos, nombre del plan que se envía a Recurrente). El bloque «GT» del encabezado se conserva como etiqueta de país.
+- No cambia: datos, cálculo, rutas, nombres de archivos, variables, sesiones ni «Smash Gt Rankup! League» (es el nombre de un torneo).
+- Pendiente: la imagen para compartir (`assets/smash-gt-social.jpg`) todavía dice «Smash GT»; se reemplaza cuando Claude Design entregue la identidad nueva (prompt en `PENDIENTES-DUENO.md` 1.2). Los documentos internos y los nombres de workflows siguen diciendo «Smash GT».
+- Aviso dado al dueño: «Smash Bros» es marca de Nintendo; el monograma debe funcionar sin el nombre.
+
 ## Adelanto gratis de «Prepara el set» y portafolio (8/oct, 23:00)
 
 - **Pedido del dueño**, con una captura de referencia: que las funciones premium muestren un adelanto en vez de solo títulos bloqueados. Cambia una regla de los handoffs anteriores («la pantalla bloqueada no muestra cifras»): ahora muestra **un** hallazgo real.

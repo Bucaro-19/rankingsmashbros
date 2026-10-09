@@ -140,7 +140,7 @@
   async function load() {
     if(!rivalId){openSearch();return;}
     renderLoading();
-    try{data=await api({rival:rivalId,scope});render();document.title=`${data.rival?.tag?`Tú vs ${data.rival.tag}`:'Análisis de rival'} — Smash GT`;}
+    try{data=await api({rival:rivalId,scope});render();document.title=`${data.rival?.tag?`Tú vs ${data.rival.tag}`:'Análisis de rival'} — Ranking Smash Bros`;}
     catch(error){renderError(error);}
   }
   scopeBar.querySelectorAll('[data-scope]').forEach(button=>button.addEventListener('click',()=>{if(scope===button.dataset.scope)return;scope=button.dataset.scope;pair=null;address();if(searching){render();}else load();}));

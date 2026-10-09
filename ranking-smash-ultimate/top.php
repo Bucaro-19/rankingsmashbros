@@ -52,7 +52,7 @@ $name = $closed ? '' : $view['organizer']['name'];
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0B0F1A"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
-  <title><?= $closed ? 'Smash GT' : 'Top ' . (int)$view['organizer']['topSize'] . ' · ' . top_e($name) . ' — Smash GT' ?></title>
+  <title><?= $closed ? 'Ranking Smash Bros' : 'Top ' . (int)$view['organizer']['topSize'] . ' · ' . top_e($name) . ' — Ranking Smash Bros' ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/top.css?v=20261008-2">
@@ -60,7 +60,7 @@ $name = $closed ? '' : $view['organizer']['name'];
 <body>
 <?php if ($closed): ?>
 <main class="closed">
-  <a class="brand" href="/" aria-label="Smash GT, inicio"><span aria-hidden="true">GT</span>SMASH GT</a>
+  <a class="brand" href="/" aria-label="Ranking Smash Bros, inicio"><span aria-hidden="true">GT</span>RANKING SMASH BROS</a>
   <span class="glyph" aria-hidden="true"><?= $closed[0] ?></span>
   <h1><?= $closed[1] ?></h1>
   <p><?= $closed[2] ?></p>
@@ -72,7 +72,7 @@ $name = $closed ? '' : $view['organizer']['name'];
 ?>
 <main class="open">
   <section aria-labelledby="pt-title">
-    <div class="top-line"><span class="kicker">Top <?= $size ?> · Temporada <?= (int)$view['seasonYear'] ?></span><a class="mark" href="/"><span aria-hidden="true">GT</span>Smash GT</a></div>
+    <div class="top-line"><span class="kicker">Top <?= $size ?> · Temporada <?= (int)$view['seasonYear'] ?></span><a class="mark" href="/"><span aria-hidden="true">GT</span>Ranking Smash Bros</a></div>
     <h1 id="pt-title"><?= top_e($name) ?></h1>
 <?php if ($view['coorganizers']): ?>
     <p class="team">Coorganizan: <?= top_e(implode(', ', $view['coorganizers'])) ?></p>
@@ -81,7 +81,7 @@ $name = $closed ? '' : $view['organizer']['name'];
 <?php if ($n < 3): ?>
     <p class="small" role="note"><span aria-hidden="true">≈</span><span><strong>Muestra pequeña: <?= $n === 1 ? '1 torneo' : '2 torneos' ?>.</strong> Los puestos pueden cambiar mucho con el próximo. Solo torneos de <?= top_e($name) ?>; no es el ranking nacional.</span></p>
 <?php else: ?>
-    <p class="only">Solo torneos de <?= top_e($name) ?>. No es el ranking nacional de Smash GT.</p>
+    <p class="only">Solo torneos de <?= top_e($name) ?>. No es el ranking nacional de Ranking Smash Bros.</p>
 <?php endif; ?>
     <div class="table" role="table" aria-label="Top <?= $size ?> de <?= top_e($name) ?>">
       <div class="head" role="row"><span role="columnheader">#</span><span role="columnheader" aria-label="Personaje"></span><span role="columnheader">Jugador</span><span role="columnheader">Sets</span><span role="columnheader">Pts</span></div>
@@ -106,7 +106,7 @@ $name = $closed ? '' : $view['organizer']['name'];
       <li><<?= $url ? 'a href="' . top_e($url) . '" target="_blank" rel="noopener noreferrer"' : 'div' ?>><span><b><?= top_e($event['name']) ?><?= $url ? ' ↗' : '' ?></b><small><?= top_e($meta) ?></small></span><small><?= (int)$event['activePlayers'] ?> activos · <?= (int)$event['validSets'] ?> sets</small></<?= $url ? 'a' : 'div' ?>></li>
 <?php endforeach; ?>
     </ul></section>
-    <p class="foot">Calculado por Smash GT con resultados públicos de start.gg, usando solo los torneos de este organizador. Pagar no da puntos ni cambia puestos. <a href="/#ranking">Ver el ranking nacional ↗</a></p>
+    <p class="foot">Calculado por Ranking Smash Bros con resultados públicos de start.gg, usando solo los torneos de este organizador. Pagar no da puntos ni cambia puestos. <a href="/#ranking">Ver el ranking nacional ↗</a></p>
   </div>
 </main>
 <?php endif; ?>

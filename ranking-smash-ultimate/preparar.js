@@ -136,15 +136,15 @@
     root.innerHTML=`${intro(true)}${finding(rv)}${also(rv)}
       <section class="pr-lock"><div class="pr-lock-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
         <div class="pr-lock-box"><span class="pr-lock-glyph" aria-hidden="true">★</span><h2>${expired?'Renueva para volver a verlo':'Disponible con premium'}</h2><p>${basis} Lo gratis sigue igual: su puesto, sus puntos y el récord entre ustedes.</p>
-          <a class="pr-cta" href="./cuenta.html#premium"><span>Apoyar con 3 USD al mes o 24 USD al año</span></a><p class="pr-note">Se renueva solo hasta que lo canceles desde la pestaña Premium. El cobro ocurre en Recurrente; Smash GT nunca ve tu tarjeta.</p></div></section>
+          <a class="pr-cta" href="./cuenta.html#premium"><span>Apoyar con 3 USD al mes o 24 USD al año</span></a><p class="pr-note">Se renueva solo hasta que lo canceles desde la pestaña Premium. El cobro ocurre en Recurrente; Ranking Smash Bros nunca ve tu tarjeta.</p></div></section>
       <h2 class="pr-locked-title">Lo que incluye</h2><ol class="pr-locked">${SECTIONS.map((s,i)=>`<li id="${s[0]}"><span class="pr-num" aria-hidden="true">${i+1}</span><div><h2>${s[1]}</h2><p>${s[2]}</p></div><span class="pr-star">★ Premium</span></li>`).join('')}</ol>${foot()}`;
   }
-  const foot=()=>`<p class="pr-principle">Pagar no da puntos ni cambia tu puesto.</p><p class="pr-note center">Datos de resultados: start.gg · Smash GT, ranking experimental.</p>`;
+  const foot=()=>`<p class="pr-principle">Pagar no da puntos ni cambia tu puesto.</p><p class="pr-note center">Datos de resultados: start.gg · Ranking Smash Bros, ranking experimental.</p>`;
   function render() {
     const cut=Date.parse(data.generatedAt), day=Number.isNaN(cut)?'':new Date(cut-21600000).toISOString().slice(0,10).split('-').reverse().join('/');
     document.getElementById('pr-cut').textContent=`${SCOPES[scope]}${day?` · ${day}`:''}`;
     if(data.state==='sinJugador'){root.innerHTML=`<section class="pr-sober"><h1>Primero, <span>tu jugador.</span></h1><p>Tu cuenta todavía no tiene un jugador de start.gg vinculado, así que no hay sets tuyos para comparar.</p><a class="pr-cta blue" href="./cuenta.html"><span>Ir a tu cuenta</span></a></section>`;return;}
-    document.title=`Prepara el set contra ${data.rival.tag} — Smash GT`;
+    document.title=`Prepara el set contra ${data.rival.tag} — Ranking Smash Bros`;
     if(!data.deep){renderLocked();return;}
     const d=data.deep;
     root.innerHTML=`${intro(false)}<div class="pr-columns"><div>${cards(1,'counters',d.counters,true)}${cards(2,'evita',d.avoid,false)}${toolkit()}</div><div>${vsChars()}${setPattern()}${common()}${tiers()}</div></div>${foot()}`;
