@@ -7,6 +7,7 @@ function organizer_fixture_clean(PDO $pdo): void
 {
     $B = ORGANIZER_FIXTURE_BASE;
     $r = "BETWEEN $B AND " . ($B + 99999);
+    $pdo->exec("DELETE FROM cut_set_results WHERE event_id $r");
     $pdo->exec("DELETE FROM cut_events WHERE event_id $r");
     $pdo->exec("DELETE FROM cuts WHERE source_hash = '" . str_repeat('e', 64) . "'");
     foreach (['set_slots' => 'set_id', 'sets' => 'id', 'entrant_players' => 'entrant_id', 'entrants' => 'id', 'events' => 'id', 'tournaments' => 'id', 'tournament_catalog' => 'tournament_id'] as $table => $column) $pdo->exec("DELETE FROM $table WHERE $column $r");
@@ -53,5 +54,34 @@ function organizer_fixture_seed(PDO $pdo): array
     $cut = (string)$pdo->lastInsertId();
     foreach ([[11, '2026-08-30', 24], [12, '2026-09-27', 24], [15, '2026-07-12', 24]] as $e) $pdo->exec("INSERT INTO cut_events (cut_id, scope, event_id, tournament_name, event_name, event_date, active_players, url) VALUES ($cut, 'combined', " . ($B + $e[0]) . ", 'Torneo " . ($e[0] - 10) . "', 'Singles', '{$e[1]}', {$e[2]}, 'https://www.start.gg/tournament/torneo-" . ($e[0] - 10) . "/event/singles')");
 
+    // Admitted results are an immutable ledger, distinct from live context and DQs.
+    $pdo->exec("INSERT INTO cut_set_results (cut_id, scope, set_id, event_id, winner_id, loser_id, winner_tag, loser_tag)
+        SELECT $cut, 'combined', s.id, s.event_id, w.player_id, l.player_id, pw.tag, pl.tag
+        FROM sets s JOIN cut_events ce ON ce.cut_id=$cut AND ce.scope='combined' AND ce.event_id=s.event_id
+        JOIN set_slots sw ON sw.set_id=s.id AND sw.entrant_id=s.winner_entrant_id
+        JOIN set_slots sl ON sl.set_id=s.id AND sl.entrant_id<>s.winner_entrant_id
+        JOIN entrant_players w ON w.entrant_id=sw.entrant_id JOIN entrant_players l ON l.entrant_id=sl.entrant_id
+        JOIN players pw ON pw.id=w.player_id JOIN players pl ON pl.id=l.player_id WHERE s.outcome_type='competitive'");
+
     return [$org, $co, $other, $twin];
+}
+
+// A field larger than Top 15, with two admitted sets per added player.
+function organizer_fixture_more_players(PDO $pdo): void
+{
+    $B = ORGANIZER_FIXTURE_BASE; $event = $B + 11;
+    $cut = (string)$pdo->query("SELECT MAX(id) FROM cuts WHERE source_hash='" . str_repeat('e', 64) . "'")->fetchColumn();
+    for ($n = 20; $n < 38; $n++) {
+        $player = $B + $n; $entrant = $B + 1100 + $n;
+        $pdo->exec("INSERT INTO players (id,tag) VALUES ($player,'Campo $n')");
+        $pdo->exec("INSERT INTO entrants (id,event_id,name) VALUES ($entrant,$event,'Campo $n')");
+        $pdo->exec("INSERT INTO entrant_players (entrant_id,player_id) VALUES ($entrant,$player)");
+    }
+    for ($n = 20; $n < 38; $n++) {
+        $other = $n === 37 ? 20 : $n + 1; $sid = $B + 8000 + $n;
+        $winner = $B + 1100 + $n; $loser = $B + 1100 + $other;
+        $pdo->exec("INSERT INTO sets (id,event_id,status,outcome_type,winner_entrant_id) VALUES ($sid,$event,'completed','competitive',$winner)");
+        $pdo->exec("INSERT INTO set_slots (set_id,slot_index,event_id,entrant_id) VALUES ($sid,0,$event,$winner),($sid,1,$event,$loser)");
+        $pdo->exec("INSERT INTO cut_set_results (cut_id,scope,set_id,event_id,winner_id,loser_id,winner_tag,loser_tag) VALUES ($cut,'combined',$sid,$event," . ($B+$n) . "," . ($B+$other) . ",'Campo $n','Campo $other')");
+    }
 }

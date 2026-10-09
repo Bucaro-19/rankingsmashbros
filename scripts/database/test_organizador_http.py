@@ -29,6 +29,7 @@ $pdo->exec("INSERT IGNORE INTO oauth_connections (user_id, scopes) VALUES ($id, 
 $pdo->exec("INSERT IGNORE INTO user_roles (user_id, role) VALUES ($id, 'player')");
 if (!isset($_GET['nointerest'])) $pdo->exec("INSERT IGNORE INTO user_roles (user_id, role) VALUES ($id, 'organizer')");
 if (isset($_GET['admin'])) $pdo->exec("INSERT IGNORE INTO user_roles (user_id, role) VALUES ($id, 'admin')");
+if (isset($_GET['wide'])) organizer_fixture_more_players($pdo);
 $user=smash_account_user($pdo,$id);
 $_SESSION['smash_account']=['id'=>$id,'at'=>time(),'version'=>$user['connectionVersion'],'url'=>null,'avatarUrl'=>null];
 session_regenerate_id(true); echo $id;
@@ -39,7 +40,7 @@ def build_site(home, port):
     site, private, sessions = home/'site', home/'private-smash', home/'sessions'
     for path in (site/'data', private, sessions):
         path.mkdir(parents=True)
-    for filename in ('database.php', 'accounts.php', 'stats.php', 'premium.php', 'organizador.php', 'organizador-api.php', 'top.php', 'top.css', 'characters.js', 'account-api.php'):
+    for filename in ('database.php', 'accounts.php', 'stats.php', 'premium.php', 'organizador.php', 'organizador-api.php', 'top.php', 'top.css', 'characters.js', 'account-api.php', 'premium-api.php', 'cuenta.html', 'cuenta.css', 'cuenta.js', 'account-model.js', 'premium.js', 'organizador.js', 'organizador.css'):
         shutil.copyfile(SITE/filename, site/filename)
     shutil.copyfile(ROOT/'scripts/database/organizer_fixture.php', site/'organizer_fixture.php')
     shutil.copyfile(SITE/'data/public.json', site/'data/public.json')
@@ -94,6 +95,7 @@ class OrganizerHttpTests(unittest.TestCase):
         try: response = (client or self.client).open(req, timeout=10)
         except urllib.error.HTTPError as error: response = error
         text = response.read().decode()
+        response.close()
         return (response.status, response.headers, text) if raw else (response.status, json.loads(text))
 
     def login(self, who, extra='', client=None):
@@ -171,7 +173,7 @@ class OrganizerHttpTests(unittest.TestCase):
         seen = self.call('/organizador-api.php?invita='+token, client=guest)[1]
         self.assertEqual(seen['invite'], {'valid': True, 'organizer': 'Árena Xelá', 'own': False, 'member': False}); self.assertEqual(seen['state'], 'interest')
         # Another account's organizer id is never taken on trust.
-        self.assertEqual(self.call('/organizador-api.php?organizador='+org, client=guest)[1]['state'], 'interest')
+        self.assertEqual(self.call('/organizador-api.php?organizador='+org, client=guest), (403, {'ok': False, 'reason': 'forbidden'}))
         self.assertEqual(self.call('/organizador-api.php', {'action': 'join', 'token': token}, seen['csrf'], client=guest), (200, {'ok': True, 'organizer': org}))
         self.assertEqual(self.call('/organizador-api.php', {'action': 'join', 'token': token}, seen['csrf'], client=guest), (400, {'ok': False, 'reason': 'invalid_invite'}))
         # Each account pays for itself: joined and credited, but the top needs the co-organizer's own premium.
@@ -188,7 +190,7 @@ class OrganizerHttpTests(unittest.TestCase):
             self.assertEqual(self.call('/organizador-api.php', {**action, 'organizer': org}, seen['csrf'], client=guest), (403, {'ok': False, 'reason': 'forbidden'}))
         self.assertEqual(self.call('/organizador-api.php')[1]['members'][0]['name'], 'Coorganizador')
         self.assertEqual(self.call('/organizador-api.php', {'action': 'leave', 'organizer': org}, seen['csrf'], client=guest), (200, {'ok': True}))
-        self.assertEqual(self.call('/organizador-api.php?organizador='+org, client=guest)[1]['state'], 'interest')
+        self.assertEqual(self.call('/organizador-api.php?organizador='+org, client=guest), (403, {'ok': False, 'reason': 'forbidden'}))
 
     def test_reviews_are_requested_by_the_organizer_and_resolved_by_the_site_owner(self):
         org = self.login('org'); self.premium(org)
@@ -207,6 +209,159 @@ class OrganizerHttpTests(unittest.TestCase):
         self.assertEqual((status, [r for r in done['pendingReviews'] if r['id'] == claim]), (200, []))
         data = self.call('/organizador-api.php')[1]['data']
         self.assertEqual(data['summary']['eventsCounted'], 3); self.assertEqual(data['top'][0]['alias'], 'Ajeno')
+
+    def assert_free_projection(self, data, expected_players=3):
+        self.assertNotIn('data', data)
+        for key in ('members', 'publicUrl', 'top', 'rest', 'summary', 'pendingReviews'):
+            self.assertNotIn(key, data)
+        teaser = data['teaser']
+        self.assertEqual(set(teaser), {'headline', 'locked'})
+        self.assertEqual(teaser['headline'], {'kind': 'latest_counted_tournament', 'name': 'Torneo 2', 'date': '2026-09-27',
+                                             'url': 'https://www.start.gg/tournament/torneo-2/event/singles'})
+        self.assertEqual(teaser['locked'], {'tournaments': 5, 'countedTournaments': 2, 'rankedPlayers': expected_players, 'validSets': 7})
+        for forbidden in ('Kenji', 'Vlad', 'Momo', 'Ajeno', 'setsWon', 'setsLost', 'points', 'rank', 'detail', 'opponents', 'message'):
+            self.assertNotIn('\"'+forbidden+'\"', json.dumps(teaser))
+
+    def test_free_expired_and_member_teasers_do_not_send_paid_data_or_create_profiles(self):
+        org = self.login('org')
+        free = self.call('/organizador-api.php')[1]
+        self.assert_free_projection(free)
+        with self.db.cursor() as q:
+            q.execute('SELECT COUNT(*) FROM organizer_profiles WHERE user_id=%s', (org,))
+            self.assertEqual(q.fetchone()[0], 0)
+        self.premium(org, '2026-01-01 00:00:00')
+        expired = self.call('/organizador-api.php')[1]
+        self.assertEqual(expired['state'], 'expired'); self.assert_free_projection(expired)
+        self.premium(org)
+        full = self.call('/organizador-api.php')[1]
+        self.assertNotIn('teaser', full)
+        token = self.call('/organizador-api.php', {'action': 'invite'}, full['csrf'])[1]['inviteUrl'].split('invita=')[1].split('#')[0]
+        co_client = self.browser(); self.login('co', '&nointerest=1', client=co_client)
+        csrf = self.call('/organizador-api.php', client=co_client)[1]['csrf']
+        self.call('/organizador-api.php', {'action': 'join', 'token': token}, csrf, client=co_client)
+        member = self.call('/organizador-api.php?organizador='+org, client=co_client)[1]
+        self.assertEqual((member['state'], member['role']), ('premium', 'member')); self.assert_free_projection(member)
+        # Leaving is free, even without the organizer interest or a subscription.
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'leave', 'organizer': org}, csrf, client=co_client), (200, {'ok': True}))
+        self.assertEqual(self.call('/organizador-api.php?organizador='+org, client=co_client)[0], 403)
+
+    def test_unrelated_contexts_are_rejected_and_invalid_settings_are_atomic(self):
+        org = self.login('org'); self.premium(org)
+        data = self.call('/organizador-api.php')[1]; csrf = data['csrf']; before = data['data']['organizer']
+        for invalid in ('0', '99999999', org+'x'):
+            self.assertEqual(self.call('/organizador-api.php?organizador='+invalid)[0], 403)
+            self.assertEqual(self.call('/organizador-api.php', {'action': 'settings', 'organizer': invalid, 'publicEnabled': True}, csrf)[0], 403)
+        self.assertEqual(self.call('/organizador-api.php?organizador[]=1')[0], 403)
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'settings', 'publicEnabled': True, 'topSize': 7}, csrf)[0], 400)
+        self.assertEqual(self.call('/organizador-api.php')[1]['data']['organizer'], before)
+
+    def test_all_top_sizes_with_large_field_and_switch_off(self):
+        org = self.login('org', '&wide=1'); self.premium(org)
+        csrf = self.call('/organizador-api.php')[1]['csrf']
+        baseline = None
+        for size in (5, 10, 15):
+            self.assertEqual(self.call('/organizador-api.php', {'action': 'settings', 'topSize': size, 'publicEnabled': True}, csrf)[0], 200)
+            data = self.call('/organizador-api.php')[1]['data']
+            self.assertEqual((len(data['top']), len(data['rest'])), (size, 21-size))
+            order = [(r['alias'], r['rank'], r['points']) for r in data['top']+data['rest']]
+            if baseline is None: baseline = order
+            self.assertEqual(order, baseline)
+            status, headers, page = self.call('/top.php?o=arena-xela', client=self.browser(), raw=True)
+            self.assertEqual(status, 200); self.assertIn(f'Top {size} · Temporada 2026', page)
+            self.assertEqual(page.count('role="row"'), size+1)
+            self.assertIn('no-store', headers['Cache-Control'])
+        self.call('/organizador-api.php', {'action': 'settings', 'publicEnabled': False}, csrf)
+        closed = self.call('/top.php?o=arena-xela', client=self.browser(), raw=True)[2]
+        self.assertIn('Este enlace está desactivado', closed); self.assertNotIn('Kenji', closed)
+
+    def test_review_of_small_context_never_admits_it_to_the_top(self):
+        co = self.login('co'); self.premium(co)
+        csrf = self.call('/organizador-api.php')[1]['csrf']
+        self.call('/organizador-api.php', {'action': 'review', 'url': 'https://www.start.gg/tournament/torneo-4'}, csrf)
+        admin = self.browser(); self.login('other', '&admin=1', client=admin)
+        panel = self.call('/organizador-api.php', client=admin)[1]
+        claim = next(r for r in panel['pendingReviews'] if r['organizer'] == 'Coorganizador')
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'resolve', 'claim': claim['id'], 'approve': True}, panel['csrf'], client=admin)[0], 200)
+        data = self.call('/organizador-api.php')[1]['data']
+        self.assertEqual(data['summary']['validSets'], 0); self.assertEqual(data['top'], [])
+        self.assertEqual((data['events'][0]['status'], data['events'][0]['reason']), ('excluded', 'small'))
+
+    def test_empty_organizer_free_and_premium_states(self):
+        co = self.login('co')
+        free = self.call('/organizador-api.php')[1]
+        self.assertEqual(free['teaser'], {'headline': None, 'locked': {'tournaments': 0, 'countedTournaments': 0, 'rankedPlayers': 0, 'validSets': 0}})
+        self.premium(co)
+        full = self.call('/organizador-api.php')[1]
+        self.assertEqual((full['data']['events'], full['data']['top'], full['publicUrl']), ([], [], None))
+
+    def test_review_catalog_arrival_rejection_retry_and_owner_permissions(self):
+        org = self.login('org'); self.premium(org)
+        csrf = self.call('/organizador-api.php')[1]['csrf']
+        # Requested before a weekly catalog refresh: keep the claim's tournament_id NULL.
+        with self.db.cursor() as q:
+            q.execute("INSERT INTO organizer_claims (organizer_user_id, requested_by, tournament_slug, created_at) VALUES (%s,%s,'tournament/torneo-5','2026-10-01')", (org, org))
+            claim = str(q.lastrowid)
+        owner = self.browser(); self.login('other', '&admin=1', client=owner)
+        panel = self.call('/organizador-api.php', client=owner)[1]
+        row = next(r for r in panel['pendingReviews'] if r['id'] == claim)
+        self.assertEqual((row['inCatalog'], row['tournament'], row['requestedBy']), (True, 'Torneo 5', 'Árena Xelá'))
+        # An admin needs no paid subscription. Everyone else must be denied, including forged actions.
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'resolve', 'claim': claim, 'approve': True}, csrf)[0], 403)
+        for message in (' ', 'x'*256):
+            self.assertEqual(self.call('/organizador-api.php', {'action': 'resolve', 'claim': claim, 'approve': False, 'message': message}, panel['csrf'], client=owner)[0], 400)
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'resolve', 'claim': claim, 'approve': False, 'message': 'No se acreditó la organización.'}, panel['csrf'], client=owner)[0], 200)
+        rejected = next(e for e in self.call('/organizador-api.php')[1]['data']['events'] if e['review'] and e['review']['id'] == claim)
+        self.assertEqual(rejected['review']['message'], 'No se acreditó la organización.')
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'review', 'url': 'https://www.start.gg/tournament/torneo-5'}, csrf)[0], 200)
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'resolve', 'claim': claim, 'approve': True}, panel['csrf'], client=owner)[0], 200)
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'resolve', 'claim': claim, 'approve': False, 'message': 'Otro criterio.'}, panel['csrf'], client=owner)[0], 400)
+        self.assertEqual(self.call('/organizador-api.php')[1]['data']['summary']['eventsCounted'], 3)
+        # An unknown tournament cannot be approved until it reaches the catalog.
+        self.call('/organizador-api.php', {'action': 'review', 'url': 'https://www.start.gg/tournament/no-catalogo'}, csrf)
+        unknown = next(r for r in self.call('/organizador-api.php', client=owner)[1]['pendingReviews'] if not r['inCatalog'])
+        self.assertEqual(self.call('/organizador-api.php', {'action': 'resolve', 'claim': unknown['id'], 'approve': True}, panel['csrf'], client=owner)[0], 400)
+
+    def test_concurrent_invitation_replacement_and_consumption(self):
+        org = self.login('org'); self.premium(org)
+        guest = self.browser(); co = self.login('co', client=guest)
+        other_client = self.browser(); other = self.login('other', client=other_client)
+        worker = r"""
+require $argv[1].'/ranking-smash-ultimate/database.php';
+require $argv[1].'/ranking-smash-ultimate/organizador.php';
+$name=getenv('SMASH_SCHEMA_TEST_DB');
+if (strpos($name,'smash_schema_test')!==0) exit(2);
+$pdo=smash_database_connect(['host'=>'127.0.0.1','port'=>(int)getenv('SMASH_SCHEMA_TEST_PORT'),'name'=>$name,'user'=>'root','password'=>getenv('SMASH_SCHEMA_TEST_PASSWORD')]);
+try {
+ if ($argv[2]==='invite') echo json_encode(['token'=>smash_org_invite($pdo,$argv[3],time())]);
+ else echo json_encode(['joined'=>smash_org_join($pdo,$argv[3],$argv[4],time())]);
+} catch (SmashOrganizerError $e) {echo json_encode(['reason'=>$e->reason]);}
+"""
+        def concurrent(args):
+            processes = []
+            self.db.begin()
+            try:
+                with self.db.cursor() as q: q.execute('SELECT id FROM users WHERE id=%s FOR UPDATE', (org,))
+                for argv in args:
+                    processes.append(subprocess.Popen(['php', '-r', worker, str(ROOT), *argv], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True))
+                time.sleep(.25)
+                self.assertTrue(all(p.poll() is None for p in processes), 'Both clients wait for the organizer lock')
+            finally: self.db.rollback()
+            try:
+                outputs = [p.communicate(timeout=10) for p in processes]
+                self.assertTrue(all(p.returncode == 0 for p in processes))
+                return [json.loads(out) for out, _ in outputs]
+            finally:
+                for p in processes:
+                    if p.poll() is None: p.kill(); p.wait(timeout=5)
+        tokens = [r['token'] for r in concurrent([['invite', org], ['invite', org]])]
+        self.assertEqual(sum(self.call('/organizador-api.php?invita='+t, client=self.browser())[1]['invite']['valid'] for t in tokens), 1)
+        token = next(t for t in tokens if self.call('/organizador-api.php?invita='+t, client=self.browser())[1]['invite']['valid'])
+        results = concurrent([['join', co, token], ['join', other, token]])
+        self.assertEqual(sum(r.get('joined') == org for r in results), 1)
+        self.assertEqual(sum(r.get('reason') == 'invalid_invite' for r in results), 1)
+        with self.db.cursor() as q:
+            q.execute('SELECT COUNT(*) FROM organizer_members WHERE organizer_user_id=%s', (org,))
+            self.assertEqual(q.fetchone()[0], 1)
 
     def test_method_and_body_contracts(self):
         self.login('org')

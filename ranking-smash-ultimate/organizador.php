@@ -139,34 +139,34 @@ function smash_org_fit(array $sets, array $active): array
 }
 
 // Everything the top needs from SQL for one set of tournaments, at the latest published cut.
-function smash_org_ledger(PDO $pdo, array $tournamentIds, ?array $cut): array
+function smash_org_ledger(PDO $pdo, array $tournamentIds, ?array $cut, bool $withCharacters = true): array
 {
     $empty = ['events' => [], 'sets' => [], 'tags' => [], 'characters' => []];
     if (!$tournamentIds || $cut === null) return $empty;
     $events = [];
     foreach (smash_org_rows($pdo, "SELECT ce.event_id, e.tournament_id, ce.tournament_name, ce.event_date, ce.active_players, ce.url
         FROM cut_events ce JOIN events e ON e.id = ce.event_id
-        WHERE ce.cut_id = ? AND ce.scope = 'combined' AND e.tournament_id IN (" . smash_org_marks($tournamentIds) . ') ORDER BY ce.event_date, ce.event_id',
+        WHERE ce.cut_id = ? AND ce.scope = 'combined' AND ce.active_players >= 20 AND e.tournament_id IN (" . smash_org_marks($tournamentIds) . ') ORDER BY ce.event_date, ce.event_id',
         array_merge([$cut['id']], $tournamentIds)) as $row) {
         $events[(string)$row['event_id']] = ['id' => (string)$row['event_id'], 'tournamentId' => (string)$row['tournament_id'], 'name' => $row['tournament_name'],
             'date' => (string)$row['event_date'], 'activePlayers' => (int)$row['active_players'], 'url' => $row['url']];
     }
     if (!$events) return $empty;
     $ids = array_keys($events); $marks = smash_org_marks($ids);
-    // Singles only: one player per entrant. A set is valid exactly when the capture marked it competitive.
-    $sets = smash_org_rows($pdo, "SELECT s.id, s.event_id, w.player_id AS winner, l.player_id AS loser
-        FROM sets s JOIN set_slots sw ON sw.set_id = s.id AND sw.entrant_id = s.winner_entrant_id
-        JOIN set_slots sl ON sl.set_id = s.id AND sl.entrant_id <> s.winner_entrant_id
-        JOIN entrant_players w ON w.entrant_id = sw.entrant_id JOIN entrant_players l ON l.entrant_id = sl.entrant_id
-        WHERE s.event_id IN ($marks) AND s.outcome_type = 'competitive' AND w.player_id <> l.player_id ORDER BY s.id", $ids);
+    // Only results admitted in the published cut. Live corrections/new sets must not
+    // change a top labelled with an older cut; small-event context is never admitted.
+    $sets = smash_org_rows($pdo, "SELECT set_id AS id, event_id, winner_id AS winner, loser_id AS loser
+        FROM cut_set_results WHERE cut_id = ? AND scope = 'combined' AND event_id IN ($marks) ORDER BY set_id",
+        array_merge([$cut['id']], $ids));
     $players = [];
     foreach ($sets as $set) { $players[(string)$set['winner']] = true; $players[(string)$set['loser']] = true; }
     $tags = [];
     if ($players) foreach (smash_org_rows($pdo, 'SELECT id, tag FROM players WHERE id IN (' . smash_org_marks($players) . ')', array_map('strval', array_keys($players))) as $row) $tags[(string)$row['id']] = (string)$row['tag'];
     $characters = [];
-    foreach (smash_org_rows($pdo, "SELECT ep.player_id, gs.character_id, COUNT(*) AS games FROM game_selections gs
-        JOIN sets s ON s.id = gs.set_id JOIN entrant_players ep ON ep.entrant_id = gs.entrant_id
-        WHERE s.event_id IN ($marks) GROUP BY ep.player_id, gs.character_id ORDER BY games DESC, gs.character_id", $ids) as $row) {
+    if ($withCharacters) foreach (smash_org_rows($pdo, "SELECT ep.player_id, gs.character_id, COUNT(*) AS games FROM game_selections gs
+        JOIN cut_set_results r ON r.set_id = gs.set_id AND r.cut_id = ? AND r.scope = 'combined'
+        JOIN entrant_players ep ON ep.entrant_id = gs.entrant_id
+        WHERE r.event_id IN ($marks) GROUP BY ep.player_id, gs.character_id ORDER BY games DESC, gs.character_id", array_merge([$cut['id']], $ids)) as $row) {
         if (!isset($characters[(string)$row['player_id']])) $characters[(string)$row['player_id']] = (string)$row['character_id'];
     }
     return ['events' => $events, 'sets' => $sets, 'tags' => $tags, 'characters' => $characters];
@@ -303,15 +303,16 @@ function smash_org_profile(PDO $pdo, string $organizerId, int $now, bool $create
 
 function smash_org_settings(PDO $pdo, string $organizerId, array $input, int $now): void
 {
+    if ((array_key_exists('publicEnabled', $input) && !is_bool($input['publicEnabled']))
+        || (array_key_exists('topSize', $input) && !in_array($input['topSize'], SMASH_ORG_SIZES, true))) throw new SmashOrganizerError('invalid_setting');
+    if (!$input) throw new SmashOrganizerError('invalid_setting');
     if (smash_org_profile($pdo, $organizerId, $now, true) === null) throw new SmashOrganizerError('organizer_write_failed');
-    if (array_key_exists('publicEnabled', $input)) {
-        if (!is_bool($input['publicEnabled'])) throw new SmashOrganizerError('invalid_setting');
-        smash_org_write($pdo, 'UPDATE organizer_profiles SET public_enabled = ?, updated_at = ? WHERE user_id = ?', [$input['publicEnabled'] ? 1 : 0, smash_org_stamp($now), $organizerId]);
-    }
-    if (array_key_exists('topSize', $input)) {
-        if (!in_array($input['topSize'], SMASH_ORG_SIZES, true)) throw new SmashOrganizerError('invalid_setting');
-        smash_org_write($pdo, 'UPDATE organizer_profiles SET top_size = ?, updated_at = ? WHERE user_id = ?', [$input['topSize'], smash_org_stamp($now), $organizerId]);
-    }
+    $changes = ['updated_at = ?']; $params = [smash_org_stamp($now)];
+    if (array_key_exists('publicEnabled', $input)) { $changes[] = 'public_enabled = ?'; $params[] = $input['publicEnabled'] ? 1 : 0; }
+    if (array_key_exists('topSize', $input)) { $changes[] = 'top_size = ?'; $params[] = $input['topSize']; }
+    $params[] = $organizerId;
+    smash_org_write($pdo, 'UPDATE organizer_profiles SET ' . implode(', ', $changes) . ' WHERE user_id = ?', $params);
+
 }
 
 // The whole view of one organizer: tournaments, top, summary. $publicCut is public.json's generatedAt.
@@ -345,6 +346,25 @@ function smash_org_view(PDO $pdo, string $organizerId, ?string $publicCut, int $
         'minRule' => 'tener al menos ' . SMASH_ORG_MIN_SETS . ' sets válidos en los torneos que cuentan. Cuentan los torneos presenciales de singles que también entran al ranking nacional.'];
 }
 
+// Deliberate free projection: one tournament fact and aggregate counts only.
+// Never fit a paid top, reserve a slug, or return players/points/records/reviews.
+function smash_org_teaser(PDO $pdo, string $organizerId, int $now): array
+{
+    $cut = smash_org_cut($pdo); $owned = smash_org_tournament_ids($pdo, $organizerId);
+    $ledger = smash_org_ledger($pdo, array_map('strval', array_keys($owned)), $cut, false);
+    $events = smash_org_events($pdo, $organizerId, $owned, $ledger, $cut['seasonYear'] ?? (int)gmdate('Y', $now - 21600));
+    $activity = [];
+    foreach ($ledger['sets'] as $set) foreach (['winner', 'loser'] as $side) {
+        $id = (string)$set[$side]; $activity[$id] = ($activity[$id] ?? 0) + 1;
+    }
+    $counted = array_values($ledger['events']);
+    usort($counted, static function (array $a, array $b): int { return strcmp($b['date'], $a['date']) ?: strcmp($a['id'], $b['id']); });
+    $last = $counted[0] ?? null;
+    return ['headline' => $last === null ? null : ['kind' => 'latest_counted_tournament', 'name' => $last['name'], 'date' => $last['date'], 'url' => $last['url']],
+        'locked' => ['tournaments' => count($events), 'countedTournaments' => count(array_unique(array_column($counted, 'tournamentId'))),
+            'rankedPlayers' => count(array_filter($activity, static function (int $sets): bool { return $sets >= SMASH_ORG_MIN_SETS; })), 'validSets' => count($ledger['sets'])]];
+}
+
 // What a visitor of the public address gets: no account, no contact, no per-player detail.
 function smash_org_public(PDO $pdo, string $slug, ?string $publicCut, callable $premium, int $now): array
 {
@@ -368,14 +388,30 @@ function smash_org_members(PDO $pdo, string $organizerId): array
         smash_org_rows($pdo, 'SELECT u.id, u.display_name, m.created_at FROM organizer_members m JOIN users u ON u.id = m.member_user_id WHERE m.organizer_user_id = ? ORDER BY m.created_at, u.id', [$organizerId]));
 }
 
+// Serialize invitation replacement/consumption and the member cap per organizer.
+function smash_org_lock_owner(PDO $pdo, string $organizerId): void
+{
+    if (!smash_org_rows($pdo, "SELECT id FROM users WHERE id = ? AND status = 'active' FOR UPDATE", [$organizerId])) throw new SmashOrganizerError('invalid_invite');
+}
+
 function smash_org_invite(PDO $pdo, string $organizerId, int $now): string
 {
-    if (count(smash_org_members($pdo, $organizerId)) >= SMASH_ORG_MAX_MEMBERS) throw new SmashOrganizerError('invalid_member_limit');
-    smash_org_write($pdo, 'DELETE FROM organizer_invites WHERE organizer_user_id = ? OR expires_at <= ?', [$organizerId, smash_org_stamp($now)]);
-    $token = bin2hex(random_bytes(24));
-    smash_org_write($pdo, 'INSERT INTO organizer_invites (token_hash, organizer_user_id, created_at, expires_at) VALUES (?, ?, ?, ?)',
-        [hash('sha256', $token), $organizerId, smash_org_stamp($now), smash_org_stamp($now + SMASH_ORG_INVITE_AGE)]);
-    return $token;
+    if ($pdo->inTransaction()) throw new SmashOrganizerError('organizer_write_failed');
+    try {
+        $pdo->beginTransaction();
+        smash_org_lock_owner($pdo, $organizerId);
+        if (count(smash_org_members($pdo, $organizerId)) >= SMASH_ORG_MAX_MEMBERS) throw new SmashOrganizerError('invalid_member_limit');
+        smash_org_write($pdo, 'DELETE FROM organizer_invites WHERE organizer_user_id = ?', [$organizerId]);
+        $token = bin2hex(random_bytes(24));
+        smash_org_write($pdo, 'INSERT INTO organizer_invites (token_hash, organizer_user_id, created_at, expires_at) VALUES (?, ?, ?, ?)',
+            [hash('sha256', $token), $organizerId, smash_org_stamp($now), smash_org_stamp($now + SMASH_ORG_INVITE_AGE)]);
+        $pdo->commit(); return $token;
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        if ($error instanceof SmashOrganizerError) throw $error;
+        throw new SmashOrganizerError('organizer_write_failed');
+    }
+
 }
 
 // Who is inviting, so the invited account can decide before joining. Reveals only the organizer's name.
@@ -388,20 +424,26 @@ function smash_org_invite_peek(PDO $pdo, $token, int $now): ?array
 
 function smash_org_join(PDO $pdo, string $userId, $token, int $now): string
 {
+    if ($pdo->inTransaction()) throw new SmashOrganizerError('organizer_write_failed');
     $invite = smash_org_invite_peek($pdo, $token, $now);
     if ($invite === null) throw new SmashOrganizerError('invalid_invite');
     if ($invite['organizerId'] === $userId) throw new SmashOrganizerError('invalid_invite_own');
     try {
         $pdo->beginTransaction();
-        $q = $pdo->prepare('DELETE FROM organizer_invites WHERE token_hash = ?'); $q->execute([hash('sha256', $token)]);
-        if ($q->rowCount() !== 1) { $pdo->rollBack(); throw new SmashOrganizerError('invalid_invite'); }
-        $q = $pdo->prepare('SELECT COUNT(*) FROM organizer_members WHERE organizer_user_id = ?'); $q->execute([$invite['organizerId']]);
-        if ((int)$q->fetchColumn() >= SMASH_ORG_MAX_MEMBERS) { $pdo->rollBack(); throw new SmashOrganizerError('invalid_member_limit'); }
-        $q = $pdo->prepare('INSERT IGNORE INTO organizer_members (organizer_user_id, member_user_id, created_at) VALUES (?, ?, ?)');
-        $q->execute([$invite['organizerId'], $userId, smash_org_stamp($now)]);
-        $pdo->commit();
-    } catch (PDOException $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw new SmashOrganizerError('organizer_write_failed'); }
-    return $invite['organizerId'];
+        smash_org_lock_owner($pdo, $invite['organizerId']);
+        $invite = smash_org_invite_peek($pdo, $token, $now);
+        if ($invite === null) throw new SmashOrganizerError('invalid_invite');
+        if (smash_org_rows($pdo, 'SELECT 1 FROM organizer_members WHERE organizer_user_id = ? AND member_user_id = ?', [$invite['organizerId'], $userId])) throw new SmashOrganizerError('invalid_invite_member');
+        if (count(smash_org_members($pdo, $invite['organizerId'])) >= SMASH_ORG_MAX_MEMBERS) throw new SmashOrganizerError('invalid_member_limit');
+        if (smash_org_write($pdo, 'DELETE FROM organizer_invites WHERE token_hash = ? AND expires_at > ?', [hash('sha256', $token), smash_org_stamp($now)]) !== 1) throw new SmashOrganizerError('invalid_invite');
+        smash_org_write($pdo, 'INSERT INTO organizer_members (organizer_user_id, member_user_id, created_at) VALUES (?, ?, ?)', [$invite['organizerId'], $userId, smash_org_stamp($now)]);
+        $pdo->commit(); return $invite['organizerId'];
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        if ($error instanceof SmashOrganizerError) throw $error;
+        throw new SmashOrganizerError('organizer_write_failed');
+    }
+
 }
 
 // The organizer removes a co-organizer, or a co-organizer leaves.
@@ -420,14 +462,14 @@ function smash_org_claim(PDO $pdo, string $organizerId, string $requestedBy, $ur
     $tournamentId = $found ? (string)$found[0]['tournament_id'] : null;
     if ($tournamentId !== null && isset(smash_org_tournament_ids($pdo, $organizerId)[$tournamentId])) throw new SmashOrganizerError('invalid_already_yours');
     $existing = smash_org_rows($pdo, 'SELECT id, status FROM organizer_claims WHERE organizer_user_id = ? AND tournament_slug = ?', [$organizerId, $slug]);
+    if ($existing && $existing[0]['status'] !== 'rejected') throw new SmashOrganizerError('invalid_already_sent');
+    $open = smash_org_rows($pdo, "SELECT COUNT(*) AS n FROM organizer_claims WHERE organizer_user_id = ? AND status = 'sent'", [$organizerId]);
+    if ((int)$open[0]['n'] >= SMASH_ORG_MAX_OPEN_CLAIMS) throw new SmashOrganizerError('invalid_claim_limit');
     if ($existing) {
-        if ($existing[0]['status'] !== 'rejected') throw new SmashOrganizerError('invalid_already_sent');
         smash_org_write($pdo, "UPDATE organizer_claims SET status = 'sent', message = NULL, requested_by = ?, tournament_id = ?, created_at = ?, resolved_at = NULL, resolved_by = NULL WHERE id = ?",
             [$requestedBy, $tournamentId, smash_org_stamp($now), $existing[0]['id']]);
         return;
     }
-    $open = smash_org_rows($pdo, "SELECT COUNT(*) AS n FROM organizer_claims WHERE organizer_user_id = ? AND status = 'sent'", [$organizerId]);
-    if ((int)$open[0]['n'] >= SMASH_ORG_MAX_OPEN_CLAIMS) throw new SmashOrganizerError('invalid_claim_limit');
     smash_org_write($pdo, 'INSERT INTO organizer_claims (organizer_user_id, requested_by, tournament_slug, tournament_id, created_at) VALUES (?, ?, ?, ?, ?)',
         [$organizerId, $requestedBy, $slug, $tournamentId, smash_org_stamp($now)]);
 }
@@ -436,11 +478,11 @@ function smash_org_claim(PDO $pdo, string $organizerId, string $requestedBy, $ur
 function smash_org_pending_claims(PDO $pdo): array
 {
     return array_map(static function (array $row): array {
-        return ['id' => (string)$row['id'], 'organizer' => $row['display_name'] ?? 'Cuenta start.gg', 'url' => 'https://www.start.gg/' . $row['tournament_slug'],
+        return ['id' => (string)$row['id'], 'organizer' => $row['display_name'] ?? 'Cuenta start.gg', 'requestedBy' => $row['requester_name'] ?? 'Cuenta start.gg', 'url' => 'https://www.start.gg/' . $row['tournament_slug'],
             'tournament' => $row['tournament_name'], 'inCatalog' => $row['tournament_id'] !== null, 'sentAt' => smash_org_day($row['created_at'])];
-    }, smash_org_rows($pdo, "SELECT c.id, c.tournament_slug, c.tournament_id, c.created_at, u.display_name,
-        (SELECT MAX(t.tournament_name) FROM tournament_catalog t WHERE t.tournament_id = c.tournament_id) AS tournament_name
-        FROM organizer_claims c JOIN users u ON u.id = c.organizer_user_id WHERE c.status = 'sent' ORDER BY c.created_at, c.id LIMIT 100"));
+    }, smash_org_rows($pdo, "SELECT c.id, c.tournament_slug, COALESCE(c.tournament_id, (SELECT MAX(t.tournament_id) FROM tournament_catalog t WHERE t.slug = c.tournament_slug)) AS tournament_id, c.created_at, u.display_name, requester.display_name AS requester_name,
+        (SELECT MAX(t.tournament_name) FROM tournament_catalog t WHERE t.tournament_id = c.tournament_id OR (c.tournament_id IS NULL AND t.slug = c.tournament_slug)) AS tournament_name
+        FROM organizer_claims c JOIN users u ON u.id = c.organizer_user_id LEFT JOIN users requester ON requester.id = c.requested_by WHERE c.status = 'sent' ORDER BY c.created_at, c.id LIMIT 100"));
 }
 
 function smash_org_resolve(PDO $pdo, string $adminId, $claimId, $approve, $message, int $now): void
@@ -457,6 +499,7 @@ function smash_org_resolve(PDO $pdo, string $adminId, $claimId, $approve, $messa
     }
     // A tournament the weekly catalog has never seen cannot count: it has no results here.
     if ($approve && $tournamentId === null) throw new SmashOrganizerError('invalid_review_unknown_tournament');
-    smash_org_write($pdo, 'UPDATE organizer_claims SET status = ?, message = ?, tournament_id = ?, resolved_at = ?, resolved_by = ? WHERE id = ? AND status = ?',
+    $changed = smash_org_write($pdo, 'UPDATE organizer_claims SET status = ?, message = ?, tournament_id = ?, resolved_at = ?, resolved_by = ? WHERE id = ? AND status = ?',
         [$approve ? 'approved' : 'rejected', $message === '' ? null : $message, $tournamentId, smash_org_stamp($now), $adminId, $claimId, 'sent']);
+    if ($changed !== 1) throw new SmashOrganizerError('invalid_review');
 }

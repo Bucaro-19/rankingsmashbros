@@ -1,6 +1,6 @@
 # Pendientes del dueño — para cuando esté frente a la computadora
 
-Lista viva. Actualizada el 8 de octubre de 2026 (noche). Lo que ya se hizo se borra de aquí.
+Lista viva. Actualizada el 9 de octubre de 2026 (auditoría del organizador). Lo que ya se hizo se borra de aquí.
 
 ## 1. Claude Design (pegar estos prompts)
 
@@ -14,7 +14,7 @@ La identidad «Ranking Smash Bros» ya se entregó y está en el sitio. Falta pe
 
 ### 1.3 Adenda del top del organizador
 
-El prompt está en [BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md](BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md): coorganizadores, selector 5/10/15, invitación recibida, revisiones del dueño y motivos nuevos de «no cuenta». Hoy funcionan con componentes prestados.
+El prompt está en [BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md](BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md): coorganizadores, selector 5/10/15, invitación recibida, revisiones del dueño y motivos nuevos de «no cuenta». Hoy funcionan con componentes prestados. La auditoría añade nombre del remitente de las revisiones y salida del equipo también gratis; pedir a Claude Design que cierre estos estados, sin pantalla nueva por ahora.
 
 ## 2. cPanel y cuentas externas
 
@@ -33,10 +33,11 @@ Ya está programado con componentes existentes (recuadro con ◆, barra de inscr
 
 ### 1.5 Adelanto gratis de las funciones premium
 
-Ya está programado en «Prepara el set» con componentes existentes: «Hallazgo principal · gratis» (un dato real del rival), dos tarjetas «También calculado» con conteos y texto que se desvanece, y un bloque bloqueado con la invitación a premium. Pedir a Claude Design que lo diseñe bien (referencia: la captura de «Diagnóstico de Operación» que mandó el dueño) y que proponga el mismo patrón para la pestaña «Mis torneos». Regla fija: el adelanto es un dato real y las cifras de pago no se muestran ni difuminadas.
+Ya está programado en «Prepara el set» con componentes existentes: «Hallazgo principal · gratis» (un dato real del rival), dos tarjetas «También calculado» con conteos y texto que se desvanece, y un bloque bloqueado con la invitación a premium. Pedir a Claude Design que lo diseñe bien (referencia: la captura de «Diagnóstico de Operación» que mandó el dueño) y que cierre el patrón ya conectado en «Mis torneos»: torneo admitido más reciente (nombre/fecha/enlace), conteos de jugadores, sets y torneos; vacío honesto, fallo de lectura y premium vencido. Reutiliza `.p-box`/`.p-columns`; no tiene diseño nuevo propio. Regla fija: el adelanto es un dato real y las cifras de pago no se muestran ni difuminadas.
 
 ## 4. Revisiones que solo el dueño puede hacer
 
 1. Ver «Prepara el set» con su sesión real, con un rival real y en pantalla grande.
 2. Revisar el borrador de matchups ([guia/MATCHUPS-BORRADOR.md](guia/MATCHUPS-BORRADOR.md)) y decir si el formato sirve.
-3. Lunes 12/oct: confirmar con Claude Code el primer corte automático y que aparece la pestaña «Mis torneos».
+3. Lunes 12/oct: confirmar con Claude Code el primer corte automático y que aparece la pestaña «Mis torneos» y «Top por organizador» disponible en Premium. La migración 005 aplicada es confirmación del dueño, no verificación productiva de esta auditoría.
+4. Revisar el PR de `feat/organizer-readiness` y ordenar la fusión/despliegue cuando corresponda. Auditoría solo inventada/desechable; no hubo cambios productivos ni migraciones. Resolver solicitudes con la cuenta admin en «Mis torneos → Revisiones por resolver»; ya no requiere edición manual de la base. Aprobar organización no hace contar pequeños.

@@ -95,5 +95,62 @@ try {
     smash_org_claim($pdo, $org, $co, 'https://www.start.gg/tournament/desconocido', $now);
     check_org((string)$pdo->query("SELECT status FROM organizer_claims WHERE id = {$mine[1]['id']}")->fetchColumn() === 'sent', 'Asking again after a rejection reopens the same request');
     check_org(smash_org_view($pdo, $other, null, $now, true)['organizer']['slug'] !== null && smash_org_view($pdo, $co, null, $now, true)['organizer']['slug'] === null && smash_org_view($pdo, $co, null, $now, true)['top'] === [], 'No tournaments: no top and no address reserved');
+    // A published-cut top cannot follow live corrections or unadmitted context.
+    $before = smash_org_view($pdo, $org, null, $now, false);
+    $pdo->exec("UPDATE sets SET winner_entrant_id=" . ($B + 1102) . " WHERE id=" . ($B + 5001));
+    $live = $B + 7000; $eid = $B + 11; $w = $B + 1101; $l = $B + 1102;
+    $pdo->exec("INSERT INTO sets (id,event_id,status,outcome_type,winner_entrant_id) VALUES ($live,$eid,'completed','competitive',$w)");
+    $pdo->exec("INSERT INTO set_slots (set_id,slot_index,event_id,entrant_id) VALUES ($live,0,$eid,$w),($live,1,$eid,$l)");
+    check_org(smash_org_view($pdo, $org, null, $now, false) === $before, 'Live correction and unadmitted set cannot change the published-cut top');
+    $cut = smash_org_cut($pdo)['id'];
+    $smallEvent = $B + 14;
+    $pdo->exec("INSERT INTO organizer_event_context (event_id,cut_id,captured_at,active_players,valid_sets,context_hash) VALUES ($smallEvent,$cut,'2026-10-07',12,1,'" . str_repeat('a',64) . "')");
+    check_org(smash_org_view($pdo, $org, null, $now, false) === $before, 'Small context marker never adds national membership or affects the top');
+    $pdo->exec("DELETE FROM organizer_event_context WHERE event_id=$smallEvent");
+    $teaser = smash_org_teaser($pdo, $org, $now);
+    check_org(array_keys($teaser) === ['headline','locked'] && $teaser['locked']['validSets'] === 9 && $teaser['headline']['name'] === 'Torneo 2', 'Free projection counts the same admitted ledger, not live context');
+
+    // Invalid mixed settings never partly toggle sharing or reserve a profile.
+    $profile = smash_org_profile($pdo, $org, $now, false);
+    check_org(org_fails(static fn() => smash_org_settings($pdo, $org, ['publicEnabled'=>false,'topSize'=>9], $now), 'invalid_setting')
+        && smash_org_profile($pdo, $org, $now, false) === $profile, 'Settings validate the entire request before any mutation');
+    check_org(org_fails(static fn() => smash_org_settings($pdo, $co, ['publicEnabled'=>true,'topSize'=>9], $now), 'invalid_setting')
+        && smash_org_profile($pdo, $co, $now, false) === null, 'Invalid settings do not allocate a slug');
+
+    // Already a member: do not consume a code meant for someone else.
+    $token = smash_org_invite($pdo, $org, $now); smash_org_join($pdo, $co, $token, $now);
+    $token = smash_org_invite($pdo, $org, $now);
+    check_org(org_fails(static fn() => smash_org_join($pdo, $co, $token, $now), 'invalid_invite_member')
+        && smash_org_invite_peek($pdo, $token, $now) !== null, 'Already joined account cannot burn another invitation');
+    smash_org_join($pdo, $other, $token, $now);
+    smash_org_remove_member($pdo, $org, $co); smash_org_remove_member($pdo, $org, $other);
+    $pdo->beginTransaction();
+    check_org(org_fails(static fn() => smash_org_invite($pdo, $org, $now), 'organizer_write_failed') && $pdo->inTransaction(), 'Inviting never commits or rolls back a foreign transaction');
+    $pdo->rollBack();
+    $members = [];
+    for ($n=50;$n<60;$n++) {
+        $pdo->exec("INSERT INTO users (startgg_user_id,display_name) VALUES (" . ($B+$n) . ",'Miembro $n')"); $members[]=(string)$pdo->lastInsertId();
+    }
+    foreach (array_slice($members,0,9) as $id) $pdo->exec("INSERT INTO organizer_members (organizer_user_id,member_user_id,created_at) VALUES ($org,$id,'2026-10-07')");
+    $token=smash_org_invite($pdo,$org,$now);
+    $pdo->exec("INSERT INTO organizer_members (organizer_user_id,member_user_id,created_at) VALUES ($org,{$members[9]},'2026-10-07')");
+    check_org(org_fails(static fn()=>smash_org_join($pdo,$co,$token,$now),'invalid_member_limit') && smash_org_invite_peek($pdo,$token,$now)!==null
+        && org_fails(static fn()=>smash_org_invite($pdo,$org,$now),'invalid_member_limit'), 'Member cap holds when filling up after invitation creation, with full rollback');
+    $pdo->exec("DELETE FROM organizer_members WHERE organizer_user_id=$org");
+
+    // Reopening an old rejection has the same ten-pending cap as a new request.
+    $pdo->exec("UPDATE organizer_claims SET status='rejected' WHERE organizer_user_id=$org AND tournament_slug='tournament/desconocido'");
+    for ($n=0;$n<10;$n++) smash_org_claim($pdo,$org,$org,'https://www.start.gg/tournament/pending-'.$n,$now);
+    check_org(org_fails(static fn()=>smash_org_claim($pdo,$org,$org,'https://www.start.gg/tournament/desconocido',$now),'invalid_claim_limit'), 'Rejection retry cannot bypass the pending-review cap');
+
+    // Changing the size only changes the projection, never the fitted order/points.
+    organizer_fixture_more_players($pdo);
+    $all=null;
+    foreach ([5,10,15] as $size) {
+        smash_org_settings($pdo,$org,['topSize'=>$size],$now); $v=smash_org_view($pdo,$org,null,$now,false);
+        check_org(count($v['top'])===$size && count($v['rest'])===22-$size, 'Large-field Top '.$size.' slice');
+        $order=array_map(static fn($r)=>[$r['rank'],$r['alias'],$r['points']],array_merge($v['top'],$v['rest']));
+        if ($all===null) $all=$order; check_org($order===$all,'Top-size changes leave points and order intact');
+    }
     echo "Organizer SQL tests passed.\n";
 } finally { $clean(); }

@@ -45,6 +45,7 @@ try {
     $wanted = $post ? ($body['organizer'] ?? null) : ($_GET['organizador'] ?? null);
     $context = $contexts[0];
     foreach ($contexts as $candidate) if (is_string($wanted) && $candidate['id'] === $wanted) $context = $candidate;
+    if ($wanted !== null && (!is_string($wanted) || $context['id'] !== $wanted)) org_response(403, ['ok' => false, 'reason' => 'forbidden']);
     $owner = $context['role'] === 'owner';
     // Each account pays for itself: the viewer's own premium opens the tab, also for a co-organizer.
     $premium = smash_org_premium($pdo, $user['id'], $config, $now);
@@ -99,7 +100,12 @@ try {
     if ($admin) $base['pendingReviews'] = smash_org_pending_claims($pdo);
     // Access order of the design: interest, then premium, then data. A co-organizer was invited: no interest needed.
     if ($owner && !$admin && !in_array('organizer', $user['roles'], true)) org_response(200, $base + ['state' => 'interest']);
-    if (!$allowed) org_response(200, $base + ['state' => $premium['expiredAt'] !== null ? 'expired' : 'premium', 'expiredAt' => $premium['expiredAt'], 'premiumAvailable' => $config !== null]);
+    if (!$allowed) {
+        $teaser = null;
+        try { $teaser = smash_org_teaser($pdo, $context['id'], $now); } catch (SmashOrganizerError $error) {}
+        org_response(200, $base + ['state' => $premium['expiredAt'] !== null ? 'expired' : 'premium', 'expiredAt' => $premium['expiredAt'],
+            'premiumAvailable' => $config !== null, 'teaser' => $teaser]);
+    }
     $public = null;
     try { $public = smash_account_public(__DIR__)['generatedAt']; } catch (SmashAccountError $error) {}
     $view = smash_org_view($pdo, $context['id'], $public, $now, $owner);

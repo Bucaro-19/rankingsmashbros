@@ -49,6 +49,7 @@
     $('loading').hidden=false;$('account-error').hidden=true;
     try {
       data=await request();
+      SmashPremium.setContext({csrf:data.csrf,authenticated:data.authenticated===true,admin:data.panel===true,organizerReady:data.organizerReady===true});
       // Display hint for the home page header only; never proof of a session.
       try{if(data.authenticated)localStorage.setItem('smashgt.cuenta',data.user.tag);else localStorage.removeItem('smashgt.cuenta');}catch{}
       // A visitor arriving at the Premium address sees the plans first; paying needs an account.
