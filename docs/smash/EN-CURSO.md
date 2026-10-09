@@ -1,6 +1,10 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
 
+## Correo de contacto en «Tu opinión» (9/oct)
+
+`encuesta.php` muestra `contacto@rankingsmashbros.com` antes del botón de enviar y en el mensaje de respuesta recibida: el cuestionario es anónimo y no se puede contestar por ahí. No se agregó ningún campo ni se guarda correo. **El dueño debe confirmar que ese buzón existe en cPanel.** También se fusionó el #85 de Codex (documentación de la carga de los 19 torneos pequeños, verificada: 19 marcas, 554 sets, 1 corte, `public.json` sin cambios).
+
 ## Codex — backfill pequeño aplicado y verificado (9/oct, 11:37 Guatemala)
 
 **Orden expresa del dueño en este chat:** aplicar únicamente las tandas de `small_events_backfill.py` en `ivcjgjlk_smash`, hasta cubrir los 19 candidatos. PR [#84](https://github.com/Bucaro-19/rankingsmashbros/pull/84) fusionada en main **1a5d4d1**; CI main [37965239323](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37965239323) correcto (MySQL 8.0 y MariaDB 10.11). Rama de operación/documentación `docs/small-backfill-production`; remoto comprobado; sin cambios tracked iniciales. `marca-rsb/` y `social/` ajenos, intactos.
