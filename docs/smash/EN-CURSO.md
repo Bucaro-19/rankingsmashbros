@@ -1,6 +1,12 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
 
+
+## «Ver detalle» en escritorio (8/oct, 22:30)
+
+- El dueño aclaró con una captura que el botón que «no funcionaba» era el de la vista de escritorio. Ahí el detalle del torneo ya está abierto en el panel derecho, así que pulsar «Ver detalle» en esa misma tarjeta no cambiaba nada. El arreglo anterior (móvil) atendía otro caso, real pero distinto.
+- Ahora, en escritorio: la tarjeta seleccionada dice «Detalle abierto a la derecha →» en lugar del botón; el panel derecho lleva marco celeste; y al elegir otro torneo el panel se trae a la vista y se resalta un instante (sin animación si el sistema pide reducir movimiento). Comprobado en navegador a 960 px.
+
 ## #76 fusionado, detalle de la agenda en móvil y plan de expansión (8/oct, 22:00)
 
 - **#76 (torneos pequeños para organizadores, Codex) fusionado por orden del dueño** como `06fc487`, aunque la recomendación fue esperar al lunes: toca el flujo semanal, la captura, el paquete y el importador. Queda **apagado** (`SMASH_ORGANIZER_SMALL_ENABLED` sin activar) y la **migración 006 sin aplicar**. Activarlo, aplicar la 006 y decidir la cobertura son órdenes aparte.

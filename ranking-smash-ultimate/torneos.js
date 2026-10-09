@@ -21,7 +21,7 @@
     return `<li><article class="t-card ${open===t.slug&&wide()?'selected':''}">${dateBox(t,now)}<div class="t-body">${count(t,now)}
       <h3><button type="button" data-open="${escape(t.slug)}">${escape(t.name)}</button></h3><p class="t-where">${escape(M.where(t))}${distance(t)}</p>
       <p class="t-chips"><span>${M.modeLabel(t)}</span>${t.kinds.length?`<span>${M.kindsLabel(t)}</span>`:''}${t.entrants!==null?`<span>${M.plural(t.entrants,'inscrito','inscritos')}</span>`:''}</p>
-      ${reg(t,now)}${badge(t)}<div class="t-actions">${cta(t)}<button type="button" class="t-link" data-open="${escape(t.slug)}">Ver detalle</button></div></div></article></li>`;
+      ${reg(t,now)}${badge(t)}<div class="t-actions">${cta(t)}${open===t.slug&&wide()?'<span class="t-shown">Detalle abierto a la derecha →</span>':`<button type="button" class="t-link" data-open="${escape(t.slug)}">Ver detalle</button>`}</div></div></article></li>`;
   }
   function detail(t,now) {
     const r=M.registration(t,now), note=M.rankingNote(t), map=M.mapUrl(t), place=[t.city,t.department].filter(Boolean).join(', ');
@@ -37,7 +37,7 @@
         <div><dt>Inscripción</dt><dd><p class="t-reg ${r.kind}"><span aria-hidden="true">${r.glyph}</span> ${r.text}</p><p>${closes}</p><p>${t.entrants!==null?`${M.plural(t.entrants,'inscrito','inscritos')} hasta ahora.`:'start.gg no muestra cuántos van inscritos.'}</p></dd></div>
         <div><dt>${t.online?'Modalidad':'Lugar'}</dt><dd>${venue}</dd></div>
         ${M.rankingBadge(t)?`<div><dt>Ranking</dt><dd>${badge(t)}${note?.ok?`<p>${note.text}</p>`:''}</dd></div>`:''}</dl>
-      ${cta(t,'big')}<p class="t-note">Datos de start.gg, actualizados el ${updated()}.</p></article>`;
+      ${cta(t,'big')}<p class="t-note">Datos de start.gg, actualizados el ${updated()}</p></article>`;
   }
   const updated=()=>{const at=Date.parse(agenda?.generatedAt);return Number.isNaN(at)?'fecha desconocida':`${M.date(at)} ${M.time(at)}`;};
   const zoneLabel=()=>filters.zone?filters.zone.slice(2):'todo el país';
@@ -81,7 +81,12 @@
   // left it below the big title, which looked as if the button had done nothing. Going back returns to the same card.
   function setOpen(slug,focus=true) {
     const from=open; open=slug; history.replaceState(null,'',slug?`#${slug}`:location.pathname+location.search); render(false);
-    if(wide()){if(focus&&slug)document.getElementById('t-detail-title')?.focus({preventScroll:true});return;}
+    if(wide()){
+      // On a wide screen the detail lives in the right column: bring it into view and mark it for a moment.
+      const panel=root.querySelector('.t-side .t-detail');
+      if(slug&&panel){panel.scrollIntoView({block:'nearest'});panel.classList.add('flash');setTimeout(()=>panel.classList.remove('flash'),900);}
+      if(focus&&slug)document.getElementById('t-detail-title')?.focus({preventScroll:true});return;
+    }
     const target=slug?root.querySelector('.t-detail'):[...root.querySelectorAll('.t-card [data-open]')].find(b=>b.dataset.open===from)?.closest('.t-card')||root;
     target?.scrollIntoView({block:'start'});
     if(focus&&slug)document.getElementById('t-detail-title')?.focus({preventScroll:true});
