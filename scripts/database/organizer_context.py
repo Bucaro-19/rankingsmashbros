@@ -103,7 +103,7 @@ def national_package(package):
     from ranking_package import require, digest
     c=package['content']
     if c.get('packageVersion')!=4:return package
-    require(c.get('nationalPackageVersion') in (1,2,3), 'Versión nacional inválida.')
+    require(type(c.get('nationalPackageVersion')) is int and c['nationalPackageVersion'] in (1,2,3), 'Versión nacional inválida.')
     core={k:v for k,v in c.items() if k not in ('nationalPackageVersion','nationalSha256','organizerContext')}
     core['packageVersion']=c['nationalPackageVersion']
     require(digest(core)==c.get('nationalSha256'), 'Hash nacional del complemento inválido.')

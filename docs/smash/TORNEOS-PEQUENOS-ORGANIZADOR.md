@@ -1,6 +1,6 @@
 # Torneos pequeños: contexto SQL separado del ranking nacional
 
-Estado: implementación en `feat/organizer-small-events`, desde main `224d413` (8/oct/2026). Sin fusionar, desplegar, aplicar 006 ni escribir en producción. No se modifica la pantalla/API del organizador. La ampliación semanal está **apagada por defecto**; necesita una decisión del dueño sobre cobertura y costo. No se cambió ninguna variable del repositorio.
+Estado: [PR #76](https://github.com/Bucaro-19/rankingsmashbros/pull/76), implementación en `feat/organizer-small-events`, desde main `224d413` (8/oct/2026). Sin fusionar, desplegar, aplicar 006 ni escribir en producción. No se modifica la pantalla/API del organizador. La ampliación semanal está **apagada por defecto**; necesita una decisión del dueño sobre cobertura y costo. No se cambió ninguna variable del repositorio.
 
 ## Captura y costo comprobado
 
@@ -85,7 +85,7 @@ Un corte nuevo puede refrescar correcciones de los eventos pequeños seleccionad
 
 ## Pruebas y mediciones del worker
 
-Pruebas automáticas con datos inventados: cálculo/exportación nacional idénticos antes/después de capturar; flag de candidatos sin consultas adicionales; fallback ante fallos; hashes V1–V3 fijados; validación PHP/Python de V4 y 16 variantes inválidas; recepción HTTP real y deduplicación; worker con el `public` vigente; paridad tabla por tabla; repetición sin cambios; corrección en corte nuevo; 006 ausente/rota; fallos SQL/paridad incluso en identidades globales. No datos ni comentarios de producción.
+Pruebas automáticas con datos inventados: cálculo/exportación nacional idénticos antes/después de capturar; flag de candidatos sin consultas adicionales; fallback ante fallos; hashes V1–V3 fijados; validación PHP/Python de V4 y 17 variantes inválidas; recepción HTTP real y deduplicación; worker con el `public` vigente; paridad tabla por tabla; repetición sin cambios; corrección en corte nuevo; 006 ausente/rota; fallos SQL/paridad incluso en identidades globales. No datos ni comentarios de producción.
 
 Laboratorio MariaDB **13.0.2 local desechable**, sin configuración personal (`--no-defaults`), eliminado al terminar. 90 pruebas del pipeline, 9 de esquema y 8 nuevas del contrato/circuito (además de regresión de visitas/estadísticas). La matriz CI comprueba específicamente MySQL 8.0 y MariaDB 10.11; consultar los checks finales de la PR.
 

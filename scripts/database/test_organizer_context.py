@@ -65,10 +65,11 @@ class OrganizerContracts(unittest.TestCase):
         self.assertEqual(fixtures.legacy_package(build_package(*fixtures.fixture()))['sha256'],'fe6396196b208f0e2bd01e0af72336b9a6566ead6761749f0637ec8bd6f029d2')
 
     def test_rehashed_invalid_extensions_rejected_in_both_languages(self):
-        for kind in ('national_hash','national_version','duplicate','online','unfinished','doubles','large','active','country','slot','event','winner','timestamp','future','stray','duplicate_link'):
+        for kind in ('national_hash','national_version','boolean_version','duplicate','online','unfinished','doubles','large','active','country','slot','event','winner','timestamp','future','stray','duplicate_link'):
             p=package();c=p['content'];x=c['organizerContext'];t=x['entities']
             if kind=='national_hash':c['nationalSha256']='0'*64
             if kind=='national_version':c['nationalPackageVersion']=5
+            if kind=='boolean_version':c['nationalPackageVersion']=True
             if kind=='duplicate':t['events'].append(copy.deepcopy(t['events'][0]))
             if kind=='online':x['eligibility'][0]['is_online']=True
             if kind=='unfinished':x['eligibility'][0]['state']='ACTIVE'
