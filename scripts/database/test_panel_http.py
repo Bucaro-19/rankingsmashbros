@@ -97,7 +97,7 @@ class PanelHttpTests(unittest.TestCase):
         status, headers, body = self.get('/panel.php')
         self.assertEqual(status, 401); self.assert_private(headers); self.assert_reveals_nothing(body)
         self.assertIn('Tu sesión', body); self.assertIn('action="./oauth.php"', body); self.assertIn('name="csrf"', body)
-        self.assertIn('<title>Smash GT</title>', body); self.assertIn('name="robots" content="noindex', body)
+        self.assertIn('<title>Ranking Smash Bros</title>', body); self.assertIn('name="robots" content="noindex', body)
         status, headers, body = self.get('/panel-api.php')
         self.assertEqual((status, json.loads(body)), (401, {'ok': False, 'reason': 'login_required'})); self.assert_private(headers)
 

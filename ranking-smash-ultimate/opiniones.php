@@ -126,7 +126,7 @@ if ($authenticated) {
     } catch (Throwable $failure) {
         $rows = [];
         $readError = true;
-        error_log('Ranking Smash Bros opiniones: lectura fallida (' . smash_survey_failure_code($failure) . ')');
+        error_log('Smash GT opiniones: lectura fallida (' . smash_survey_failure_code($failure) . ')');
         $failure = null;
     }
 }

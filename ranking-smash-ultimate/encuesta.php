@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $failure) {
                 $saved = false;
                 // Only a reason code reaches the server log: no answer text, no visitor data.
-                error_log('Ranking Smash Bros encuesta: respuesta no guardada (' . smash_survey_failure_code($failure) . ')');
+                error_log('Smash GT encuesta: respuesta no guardada (' . smash_survey_failure_code($failure) . ')');
                 $failure = null;
             }
             if ($saved) {
