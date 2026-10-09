@@ -153,6 +153,43 @@ class AccountHttpTests(unittest.TestCase):
         # Ordinary accounts never learn that a private panel exists.
         self.assertNotIn('panel',data); self.assertNotIn('panel',json.dumps(data['user']))
 
+    def test_small_tournament_shows_as_activity_with_its_reason_and_never_counts(self):
+        before=self.login()
+        with self.db.cursor() as q:
+            q.execute("SHOW TABLES LIKE 'organizer_event_context'")
+            if not q.fetchone(): self.skipTest('Migration 006 not installed')
+        base=8999200; year=before['profile']['seasonYear']; clean=[
+            f'DELETE FROM organizer_event_context WHERE event_id={base}', f'DELETE FROM set_slots WHERE event_id={base}',
+            f'DELETE FROM sets WHERE event_id={base}', f'DELETE FROM entrant_players WHERE entrant_id IN ({base+1},{base+2})',
+            f'DELETE FROM entrants WHERE event_id={base}', f'DELETE FROM events WHERE id={base}', f'DELETE FROM tournaments WHERE id={base}',
+            f"DELETE FROM cuts WHERE source_hash='{'a'*64}'", f'DELETE FROM players WHERE id={base+9}']
+        def wipe():
+            with self.db.cursor() as q:
+                for sql in clean: q.execute(sql)
+        wipe(); self.addCleanup(wipe)
+        with self.db.cursor() as q:
+            q.execute(f"INSERT INTO players (id, tag) VALUES ({base+9}, 'Rival QA')")
+            q.execute(f"INSERT INTO tournaments (id, name, starts_at, country_code, url) VALUES ({base}, 'Torneo chico QA', '{year}-08-23 18:00:00', 'GT', 'https://www.start.gg/tournament/chico-qa')")
+            q.execute(f"INSERT INTO events (id, tournament_id, name) VALUES ({base}, {base}, 'Singles QA')")
+            q.execute(f"INSERT INTO entrants (id, event_id, name) VALUES ({base+1}, {base}, 'Jugador QA'), ({base+2}, {base}, 'Rival QA')")
+            q.execute(f"INSERT INTO entrant_players (entrant_id, player_id) VALUES ({base+1}, 184005), ({base+2}, {base+9})")
+            for n, (winner, kind) in enumerate([(base+1,'competitive'),(base+2,'competitive'),(base+1,'competitive'),(base+1,'dq')]):
+                q.execute(f"INSERT INTO sets (id, event_id, status, outcome_type, winner_entrant_id) VALUES ({base+10+n}, {base}, 'completed', '{kind}', {winner})")
+                q.execute(f"INSERT INTO set_slots (set_id, slot_index, event_id, entrant_id) VALUES ({base+10+n}, 0, {base}, {base+1}), ({base+10+n}, 1, {base}, {base+2})")
+            q.execute("INSERT INTO cuts (generated_at, season_year, season_label, method_version, schema_version, public_snapshot, source_hash, status) "
+                      f"VALUES ('{year}-08-24 00:00:00', {year}, 'QA', 'QA-SMALL', 3, '{{}}', '{'a'*64}', 'published')")
+            q.execute(f"INSERT INTO organizer_event_context (event_id, cut_id, captured_at, active_players, valid_sets, context_hash) VALUES ({base}, LAST_INSERT_ID(), '{year}-08-24 00:00:00', 13, 3, '{'b'*64}')")
+        data=self.login()
+        for scope in ('combined','guatemala'):
+            view=data['profile']['views'][scope]; old=before['profile']['views'][scope]
+            event=next(e for e in view['events'] if e['id']==str(base))
+            self.assertEqual((event['counts'],event['wins'],event['losses'],event['date'],event['name']),(False,2,1,f'{year}-08-23','Torneo chico QA'))
+            self.assertIn('13 jugadores activos',event['reason']); self.assertIn('20',event['reason'])
+            # Ranking figures and every other event are exactly what they were.
+            self.assertEqual({k:v for k,v in view.items() if k!='events'},{k:v for k,v in old.items() if k!='events'})
+            self.assertEqual([e for e in view['events'] if e['id']!=str(base)],old['events'])
+            self.assertEqual([e['date'] for e in view['events']],sorted((e['date'] for e in view['events']),reverse=True))
+
     def test_preferences_identity_is_server_bound(self):
         data=self.login(); csrf=data['csrf']
         self.assertEqual(self.request(body={'action':'roles','roles':['player','organizer'],'userId':'999'},csrf=csrf)[0],200)

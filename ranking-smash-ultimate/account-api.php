@@ -61,8 +61,10 @@ try {
     // Only the owner's account learns that a private panel exists; nobody else receives the key.
     $owner = smash_stats_is_owner($pdo, $user['id']) ? ['panel' => true] : [];
     if (account_organizer_ready()) $owner['organizerReady'] = true;
+    $public = smash_account_public(__DIR__); $profile = smash_account_profile($public, $user['playerId']);
+    $profile = smash_account_with_small_events($profile, smash_account_small_events($pdo, $user['playerId'], (int)$public['seasonYear']));
     account_response(200, $owner + ['ok' => true, 'authenticated' => true, 'oauthReady' => $ready,
-        'csrf' => $_SESSION['smash_account_csrf'], 'user' => $user, 'profile' => smash_account_profile(smash_account_public(__DIR__), $user['playerId'])]);
+        'csrf' => $_SESSION['smash_account_csrf'], 'user' => $user, 'profile' => $profile]);
 } catch (SmashAccountError $error) {
     if ($error->reason === 'login_required') {
         unset($_SESSION['smash_account']);

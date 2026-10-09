@@ -3,6 +3,16 @@
 
 
 
+## Torneos pequeños en el historial de la cuenta (9/oct, madrugada)
+
+Aclaración del dueño: los torneos pequeños **no cuentan y las reglas no cambian**; solo se explican. Tampoco se toca el top del organizador ni se decide un mínimo nuevo.
+
+- `accounts.php`: `smash_account_small_events()` y `smash_account_with_small_events()`. `account-api.php` agrega al historial de las dos vistas los torneos pequeños que el jugador jugó, con `counts=false` y el motivo «tuvo N jugadores activos y el ranking pide 20 o más». La pantalla ya los muestra como «Solo actividad» con «No cuenta: …»; no hubo cambios de diseño ni de JS. Sin la tabla o ante un error SQL la lista queda vacía y el perfil sale igual.
+- No cambia puesto, puntos, récord ni los demás eventos (lo comprueba `test_small_tournament_shows_as_activity_with_its_reason_and_never_counts`).
+- Solo lo ve el jugador con sesión iniciada en su cuenta; el perfil público del ranking no lo muestra todavía.
+- Carga semanal: `--limit` pasa de 2 a **6** (10 no cabe en el presupuesto de 30 intentos: ~3,5 consultas por evento medidas).
+- Encargo para Codex: [ENCARGO-CODEX-TORNEOS-PEQUENOS-ATRASADOS.md](ENCARGO-CODEX-TORNEOS-PEQUENOS-ATRASADOS.md) (carga única de los eventos viejos).
+
 ## Migración 006 aplicada y torneos pequeños encendidos (9/oct, 00:27 GT)
 
 Por orden explícita del dueño, antes del primer corte automático.

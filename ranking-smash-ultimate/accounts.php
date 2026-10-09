@@ -363,6 +363,49 @@ function smash_account_public(string $siteRoot): array
     return $data;
 }
 
+// Small tournaments this player entered, kept apart from the ranking (organizer_event_context).
+// They never count: the list only explains why. Without the table or on any SQL error it is empty.
+function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear): array
+{
+    if ($playerId === null) return [];
+    try {
+        $q = $pdo->prepare("SELECT e.id, t.name, e.name AS event_name, DATE(COALESCE(e.starts_at, t.starts_at)) AS day,
+              t.country_code, COALESCE(e.url, t.url) AS url, c.active_players,
+              COALESCE(SUM(s.outcome_type = 'competitive' AND s.winner_entrant_id = en.id), 0) AS wins,
+              COALESCE(SUM(s.outcome_type = 'competitive' AND s.winner_entrant_id IS NOT NULL AND s.winner_entrant_id <> en.id), 0) AS losses
+            FROM organizer_event_context c
+            JOIN events e ON e.id = c.event_id JOIN tournaments t ON t.id = e.tournament_id
+            JOIN entrants en ON en.event_id = e.id JOIN entrant_players ep ON ep.entrant_id = en.id AND ep.player_id = ?
+            LEFT JOIN set_slots sl ON sl.entrant_id = en.id AND sl.event_id = e.id LEFT JOIN sets s ON s.id = sl.set_id
+            WHERE YEAR(COALESCE(e.starts_at, t.starts_at)) = ? AND NOT EXISTS (SELECT 1 FROM cut_events ce WHERE ce.event_id = e.id)
+            GROUP BY e.id, en.id, t.name, e.name, day, t.country_code, url, c.active_players ORDER BY day DESC, e.id LIMIT 60");
+        $q->execute([$playerId, $seasonYear]);
+        $events = [];
+        foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $active = (int)$row['active_players'];
+            $events[(string)$row['id']] = ['id' => (string)$row['id'], 'name' => $row['name'], 'eventName' => $row['event_name'],
+                'date' => $row['day'], 'country' => $row['country_code'], 'url' => $row['url'],
+                'wins' => (int)$row['wins'], 'losses' => (int)$row['losses'], 'counts' => false,
+                'reason' => 'tuvo ' . $active . ($active === 1 ? ' jugador activo' : ' jugadores activos') . ' y el ranking pide 20 o más. Tus resultados ahí no suman ni restan puntos.'];
+        }
+        return array_values($events);
+    } catch (PDOException $error) {
+        return [];
+    }
+}
+
+// Adds those small tournaments to the activity of both views, never over an event the cut already lists.
+function smash_account_with_small_events(array $profile, array $small): array
+{
+    foreach ($profile['views'] as $scope => $view) {
+        $known = array_column($view['events'], 'id'); $events = $view['events'];
+        foreach ($small as $event) if (!in_array($event['id'], $known, true)) $events[] = $event;
+        usort($events, static fn($a, $b) => strcmp((string)$b['date'], (string)$a['date']) ?: strcmp($a['id'], $b['id']));
+        $profile['views'][$scope]['events'] = $events;
+    }
+    return $profile;
+}
+
 function smash_account_profile(array $public, ?string $playerId): array
 {
     $profiles = [];
