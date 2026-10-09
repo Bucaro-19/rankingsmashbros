@@ -8,6 +8,13 @@
 
 
 
+
+## #72 de Codex fusionado y desplegado (8/oct, noche)
+
+- Por orden del dueño («fusiona y despliega»): #72 (agenda en sitemap y contador) fusionado como `d53b1c9`, CI de main en verde, despliegue `assets_only` run `37865732254` correcto.
+- Comprobado en producción: el sitemap incluye `torneos.html` con la fecha de la agenda publicada; **`data/agenda.json` sobrevivió al despliegue** (mismo contenido y fecha que la publicación manual); `torneos.html` carga `visita.js` con `data-page="torneos"`; `visita.php` sigue rechazando orígenes ajenos (403); portada, cuenta, Tu opinión, análisis y panel responden como antes; `public.json` sin cambios. Queda resuelto el pendiente de comprobar que un despliegue no borra la agenda.
+- Falta ver en el panel privado, con la sesión del dueño, la fila nueva «Agenda de torneos».
+
 ## Codex — integrar la agenda en sitemap y visitas (8/oct; sin desplegar)
 
 [PR #72](https://github.com/Bucaro-19/rankingsmashbros/pull/72), abierta para revisión. Rama `feat/tournaments-page-integration` desde `origin/main` **f2fb618** (#71), remoto `Bucaro-19/rankingsmashbros`. Auditoría previa: ningún cambio tracked; carpeta ajena `social/` sin tocar. CI de main [37861498465](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37861498465) correcta. Se conservan la pantalla y la publicación diaria ya activadas por el dueño; esta tarea no lanza ese workflow ni publica.
