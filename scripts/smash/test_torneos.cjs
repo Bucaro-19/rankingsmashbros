@@ -101,3 +101,15 @@ test('labels, map link and home block choice', () => {
   const list = m.upcoming({tournaments:[raw({id:'online',attendanceType:'online',startAt:'2026-10-09T10:00:00-06:00'}),raw({id:'closed',isRegistrationOpen:false,startAt:'2026-10-09T12:00:00-06:00'}),raw({id:'open'})]}, now);
   assert.equal(m.next(list).id, 'open'); assert.equal(m.next(list.slice(0, 2)).id, 'online'); assert.equal(m.next([]), null);
 });
+
+test('possible ranked tournament: the way to twenty, never «already counts»', () => {
+  const b = over => m.rankingBadge(m.normalize(raw(over)));
+  const singles = n => [{competitionType:'singles',isOnline:false,numEntrants:n},{competitionType:'doubles',numEntrants:30}];
+  assert.deepEqual(b({events:singles(10)}), {kind:'possible',text:'Posible torneo rankeado',have:10,need:20,percent:50,detail:'10 de 20 inscritos en singles · faltan 10'});
+  assert.equal(b({events:singles(23)}).percent, 100); assert.match(b({events:singles(23)}).detail, /ya pasa de los 20, falta que jueguen/);
+  assert.equal(b({events:[{competitionType:'singles'}]}).percent, null); assert.match(b({events:[{competitionType:'singles'}]}).detail, /no dice cuántos/);
+  assert.equal(b({events:singles(0)}).have, 0);
+  assert.deepEqual(b({attendanceType:'online',isOfflineSingles:false}), {kind:'no',text:'No cuenta para el ranking',detail:'el ranking solo usa torneos presenciales.'});
+  assert.equal(b({isOfflineSingles:false,events:[{competitionType:'doubles'}]}).detail, 'el ranking solo usa singles.');
+  assert.equal(b({isOfflineSingles:null,attendanceType:null,events:[]}), null);
+});

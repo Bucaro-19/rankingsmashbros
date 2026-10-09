@@ -12,13 +12,16 @@
   const reg=(t,now)=>{const r=M.registration(t,now);return `<p class="t-reg ${r.kind}"><span aria-hidden="true">${r.glyph}</span> ${r.text}</p>`;};
   const cta=(t,big='')=>t.registration==='open'?`<a class="t-cta ${big}" href="${escape(t.url)}" target="_blank" rel="noopener noreferrer"><span>Inscribirme en start.gg ↗</span></a>`
     :`<a class="t-outline ${big}" href="${escape(t.url)}" target="_blank" rel="noopener noreferrer">Ver en start.gg ↗</a>`;
+  const badge=t=>{const b=M.rankingBadge(t);if(!b)return '';
+    return b.kind==='possible'?`<div class="t-rank possible"><p><span aria-hidden="true">◆</span> ${b.text}</p>${b.percent!==null?`<div class="t-meter" role="img" aria-label="${b.have} de ${b.need} inscritos en singles"><span style="width:${b.percent}%"></span></div>`:''}<small>${b.detail}. Se confirma cuando termine.</small></div>`
+      :`<div class="t-rank no"><p><span aria-hidden="true">—</span> ${b.text}</p><small>${b.detail}</small></div>`;};
   const distance=t=>geo.state!=='ok'?'':t.km!==null?` · a ${t.km<10?t.km.toFixed(1):Math.round(t.km)} km`:t.online?'':' · sin ubicación exacta';
 
   function card(t,now) {
     return `<li><article class="t-card ${open===t.slug&&wide()?'selected':''}">${dateBox(t,now)}<div class="t-body">${count(t,now)}
       <h3><button type="button" data-open="${escape(t.slug)}">${escape(t.name)}</button></h3><p class="t-where">${escape(M.where(t))}${distance(t)}</p>
       <p class="t-chips"><span>${M.modeLabel(t)}</span>${t.kinds.length?`<span>${M.kindsLabel(t)}</span>`:''}${t.entrants!==null?`<span>${M.plural(t.entrants,'inscrito','inscritos')}</span>`:''}</p>
-      ${reg(t,now)}<div class="t-actions">${cta(t)}<button type="button" class="t-link" data-open="${escape(t.slug)}">Ver detalle</button></div></div></article></li>`;
+      ${reg(t,now)}${badge(t)}<div class="t-actions">${cta(t)}<button type="button" class="t-link" data-open="${escape(t.slug)}">Ver detalle</button></div></div></article></li>`;
   }
   function detail(t,now) {
     const r=M.registration(t,now), note=M.rankingNote(t), map=M.mapUrl(t), place=[t.city,t.department].filter(Boolean).join(', ');
@@ -33,7 +36,7 @@
       <dl><div><dt>Eventos</dt><dd>${events}</dd></div>
         <div><dt>Inscripción</dt><dd><p class="t-reg ${r.kind}"><span aria-hidden="true">${r.glyph}</span> ${r.text}</p><p>${closes}</p><p>${t.entrants!==null?`${M.plural(t.entrants,'inscrito','inscritos')} hasta ahora.`:'start.gg no muestra cuántos van inscritos.'}</p></dd></div>
         <div><dt>${t.online?'Modalidad':'Lugar'}</dt><dd>${venue}</dd></div>
-        ${note?`<div><dt>Ranking</dt><dd><p class="${note.ok?'ok':''}">${note.ok?'◆':'—'} ${note.text}</p></dd></div>`:''}</dl>
+        ${M.rankingBadge(t)?`<div><dt>Ranking</dt><dd>${badge(t)}${note?.ok?`<p>${note.text}</p>`:''}</dd></div>`:''}</dl>
       ${cta(t,'big')}<p class="t-note">Datos de start.gg, actualizados el ${updated()}.</p></article>`;
   }
   const updated=()=>{const at=Date.parse(agenda?.generatedAt);return Number.isNaN(at)?'fecha desconocida':`${M.date(at)} ${M.time(at)}`;};
