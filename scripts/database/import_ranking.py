@@ -165,11 +165,13 @@ def replace_game_context(db, content):
 
 
 def import_package(db, package, *, apply=False):
-    validate_package(package)
-    organizer = package['content'].get('organizerContext') if package['content']['packageVersion'] == 4 else None
-    from organizer_context import national_package
-    package = national_package(package)
     content = validate_package(package)
+    organizer = None
+    if content['packageVersion'] == 4:
+        organizer = content['organizerContext']
+        from organizer_context import national_package
+        package = national_package(package)
+        content = validate_package(package)
     p = content['public']; identity = (instant(p['generatedAt']),p['seasonYear'],p['methodVersion'])
     require(sql(db, 'SELECT GET_LOCK(%s,0)', (LOCK,))[0][0] == 1, 'Otro importador está ejecutándose.')
     try:
