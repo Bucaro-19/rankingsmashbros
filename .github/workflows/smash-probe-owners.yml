@@ -4,9 +4,12 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
 jobs:
   probe:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/feat/organizer-small-events'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -17,4 +20,4 @@ jobs:
       - name: Probar la consulta de dueños que usa la captura semanal
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/probe_owners.py
+        run: python scripts/smash/organizer_small.py --probe --start 2026-01-01 --end 2026-10-09 --limit 2

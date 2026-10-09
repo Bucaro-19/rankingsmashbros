@@ -154,7 +154,20 @@ def tournament_catalog(tournaments, reasons, owners):
     return sorted(catalog, key=lambda row: row["id"])
 
 
-def discover(client, start, end, *, max_events=None, include_small=False):
+def small_organizer_candidates(tournaments, start, end):
+    """Private optional context, never merged with the national event/player/set collections."""
+    return sorted([
+        {**e, 'tournament': {k:t.get(k) for k in ('id','name','slug','countryCode')}}
+        for t in tournaments for e in t.get('events') or []
+        if t.get('countryCode') == 'GT' and t.get('isOnline') is False
+        and e.get('isOnline') is False and e.get('state') == 'COMPLETED'
+        and e.get('type') == 1 and str((e.get('videogame') or {}).get('id')) == str(GAME_ID)
+        and type(e.get('numEntrants')) is int and 1 <= e['numEntrants'] < LOCAL_MINIMUM_ACTIVE
+        and type(e.get('startAt')) is int and start <= e['startAt'] < end
+    ], key=lambda e:(e['startAt'], str(e['id'])), reverse=True)
+
+
+def discover(client, start, end, *, max_events=None, include_small=False, organizer_candidates=False):
     tournaments = []
     for page in range(1, 101):
         data = client.query(TOURNAMENTS, {"page": page, "after": start, "before": end})["tournaments"]
@@ -207,7 +220,7 @@ def discover(client, start, end, *, max_events=None, include_small=False):
     # After the event captures: the ranking data is already complete if this optional query fails.
     catalog = tournament_catalog(tournaments, reasons, tournament_owners(client, start, end))
     countries = Counter((((p.get("user") or {}).get("location") or {}).get("country") or "unknown") for p in players.values())
-    return {"kind": "national_discovery", "generatedAt": datetime.now(timezone.utc).isoformat(),
+    result = {"kind": "national_discovery", "generatedAt": datetime.now(timezone.utc).isoformat(),
             "season": {"startInclusive": start, "endExclusive": end},
             "catalogComplete": True, "eventsComplete": max_events is None,
             "tournamentsFound": len(tournaments), "candidateEventsFound": len([e for t in tournaments for e in t.get("events") or [] if str((e.get("videogame") or {}).get("id")) == str(GAME_ID)]),
@@ -216,6 +229,9 @@ def discover(client, start, end, *, max_events=None, include_small=False):
             "tournamentCatalog": catalog,
             "selectionNote": ("Estudio: todos los eventos presenciales singles con inscritos conocidos; aún requieren evaluación de DQ, puntos y exclusiones editoriales."
                               if include_small else "Provisional: eventos presenciales singles con al menos 20 inscritos; solo se admiten al cálculo los que tengan 20 jugadores activos; faltan DQ, excepciones por valor de jugadores y exclusiones editoriales de UltRank.")}
+    if organizer_candidates:
+        result['organizerCandidates'] = small_organizer_candidates(tournaments, start, end)
+    return result
 
 
 def main():
@@ -224,6 +240,7 @@ def main():
     parser.add_argument("--end", required=True)
     parser.add_argument("--max-events", type=int, help="Para una muestra reciente; la captura se marca incompleta")
     parser.add_argument("--include-small", action="store_true", help="Capturar también singles locales con menos de 20 inscritos para un estudio; no modifica el ranking publicado")
+    parser.add_argument('--organizer-candidates', action='store_true', help='Guardar candidatos pequeños aparte, sin descargar ni incorporar sus sets al ranking')
     args = parser.parse_args()
     try:
         start, end = season_timestamp(args.start), season_timestamp(args.end)
@@ -232,7 +249,7 @@ def main():
         token = os.environ.get("STARTGG_TOKEN") or getpass.getpass("Token start.gg (entrada oculta): ")
         if not token.strip():
             raise ValueError("Se requiere un token de start.gg.")
-        result = discover(Client(token.strip()), start, end, max_events=args.max_events, include_small=args.include_small)
+        result = discover(Client(token.strip()), start, end, max_events=args.max_events, include_small=args.include_small, organizer_candidates=args.organizer_candidates)
         target = Path(__file__).parent / "data" / "national.json"
         target.parent.mkdir(exist_ok=True)
         tmp = target.with_suffix(".tmp")
