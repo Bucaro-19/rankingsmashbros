@@ -64,10 +64,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ['public.ecr.aws/docker/library/mariadb:10.11', 'public.ecr.aws/docker/library/mysql:8.0']
+        image: ['mariadb:10.11', 'mysql:8.0']
     services:
       database:
-        image: ${{ matrix.image }}
+        image: public.ecr.aws/docker/library/${{ matrix.image }}
         env:
           MYSQL_ROOT_PASSWORD: disposable-test-only
           MYSQL_ROOT_HOST: '%'
