@@ -1,5 +1,14 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — pausa de pagos y condiciones de uso (9/oct, tarde)
+
+Orden del dueño en este chat: fusionar/desplegar la pausa de pagos de Claude (#90) con CI correcta; reintentar el fallo de infraestructura y, si persiste, corregirlo en PR independiente. Términos/reembolsos se preparan después; **no fusionar/publicar la Tarea 2 hasta que el dueño apruebe el texto de reembolsos**. Sin cambios de cálculo, public.json o base productiva.
+
+Auditoría inicial: main `36a2744`, remoto Bucaro-19/rankingsmashbros, tracked limpio; `marca-rsb/`/`social/` ajenos intactos. CI main 37986500345 y despliegue 37986507028 correctos. PR #90: rama `feat/premium-payments-paused`, código `d810c5d`; revisión del diff, sin cambios de suscripciones existentes. Run 37991166212 falló descargando imágenes (`toomanyrequests`), antes de ejecutar contratos SQL/PHP; reintento de sus jobs fallidos.
+
+Corrección de infraestructura en `fix/ci-official-image-mirror`: PHP 7.4/8.1 y servicios MariaDB 10.11/MySQL 8.0 desde `public.ecr.aws/docker/library/`, mirror de Docker Official Images. Los cuatro tags y plataforma amd64 se comprobaron mediante lectura de manifests públicos (HTTP 200); ninguna credencial nueva ni test eliminado. CI valida el pull, arranque y las suites reales. Entrega/fusión/despliegue por completar abajo tras los checks.
+
+
 ## Primer pago real y lista de premium en el panel (9/oct, tarde)
 
 - **Pago real confirmado** (solo lectura en producción): la suscripción mensual del dueño está `active` en modo real desde el 9/oct 14:15 GT, con periodo hasta el 9/nov; el aviso `subscription.create` de Recurrente quedó `synced`. Hay dos intentos `pending` sin pago (8 y 9/oct) que no dan acceso.
