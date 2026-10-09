@@ -121,7 +121,7 @@ class PanelHttpTests(unittest.TestCase):
         data = json.loads(body)
         self.assertEqual(sorted(data['report']), ['accounts', 'counterStartedAt', 'daily', 'periods', 'seasonYear', 'today', 'updatedAt', 'weekly', 'yesterday'])
         self.assertEqual(sorted(data['report']['periods']), ['30', '7', '90', 'season']); self.assertRegex(data['csrf'], r'^[0-9a-f]{48}$')
-        self.assertEqual(data['report']['seasonYear'], 2026); self.assertEqual(sorted(data['report']['accounts']), ['linked', 'premium', 'total'])
+        self.assertEqual(data['report']['seasonYear'], 2026); self.assertEqual(sorted(data['report']['accounts']), ['linked', 'premium', 'premiumList', 'total'])
         self.assertNotIn('Dueña', body); self.assertNotIn('8999401', body)
         self.assertEqual(self.get('/panel-api.php', method='POST')[0], 405)
         # Only the owner's account is told to show the link to the panel.
