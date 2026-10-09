@@ -1,12 +1,20 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Pagos de premium en pausa (9/oct, tarde)
+
+Recurrente avisó que, por políticas de riesgo de Visa, **ya no procesa tarjetas en la cuenta** (giro «CONTINUOUS SUBSCRIPTION»); las transferencias siguen. El dueño apeló y el caso está con una persona de su equipo.
+
+- Interruptor: `ranking-smash-ultimate/pagos-en-pausa.txt` con `1` pausa los pagos nuevos; con `0` los abre (cambiar el archivo y desplegar). `premium-api.php` devuelve `paused` y rechaza `checkout` con `premium_paused`; `premium.js` muestra «Pagos en pausa temporalmente» en lugar del botón. Leer el estado, cancelar y los periodos ya pagados siguen funcionando.
+- Conector de Recurrente disponible en Claude Code (solo lectura por decisión propia): cuenta activa, sin cuentas bancarias registradas, saldo 2,61 USD. El dueño registra su cuenta bancaria él mismo.
+- Si la respuesta final es no: cobrar por transferencia con activación manual, o cambiar de pasarela.
+
 ## Codex — pausa de pagos y condiciones de uso (9/oct, tarde)
 
 Orden del dueño en este chat: fusionar/desplegar la pausa de pagos de Claude (#90) con CI correcta; reintentar el fallo de infraestructura y, si persiste, corregirlo en PR independiente. Términos/reembolsos se preparan después; **no fusionar/publicar la Tarea 2 hasta que el dueño apruebe el texto de reembolsos**. Sin cambios de cálculo, public.json o base productiva.
 
 Auditoría inicial: main `36a2744`, remoto Bucaro-19/rankingsmashbros, tracked limpio; `marca-rsb/`/`social/` ajenos intactos. CI main 37986500345 y despliegue 37986507028 correctos. PR #90: rama `feat/premium-payments-paused`, código `d810c5d`; revisión del diff, sin cambios de suscripciones existentes. Run 37991166212 falló descargando imágenes (`toomanyrequests`), antes de ejecutar contratos SQL/PHP; reintento de sus jobs fallidos.
 
-Corrección de infraestructura en `fix/ci-official-image-mirror`: PHP 7.4/8.1 y servicios MariaDB 10.11/MySQL 8.0 desde `public.ecr.aws/docker/library/`, mirror de Docker Official Images. Los cuatro tags y plataforma amd64 se comprobaron mediante lectura de manifests públicos (HTTP 200); ninguna credencial nueva ni test eliminado. CI valida el pull, arranque y las suites reales. Entrega/fusión/despliegue por completar abajo tras los checks.
+Corrección de infraestructura en `fix/ci-official-image-mirror`: PHP 7.4/8.1 y servicios MariaDB 10.11/MySQL 8.0 desde `public.ecr.aws/docker/library/`, mirror de Docker Official Images. Los cuatro tags y plataforma amd64 se comprobaron mediante lectura de manifests públicos (HTTP 200); ninguna credencial nueva ni test eliminado. CI valida el pull, arranque y las suites reales. PR [#91](https://github.com/Bucaro-19/rankingsmashbros/pull/91) fusionado como `7c4f7ac`, con CI [37993241170](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37993241170) correcta en ambos motores y PHP. Reintento de #90 falló de nuevo por el mismo límite. Se integra main en su rama para validar la pausa con el mirror; conflicto solo documental resuelto conservando ambos registros.
 
 
 ## Primer pago real y lista de premium en el panel (9/oct, tarde)

@@ -12,6 +12,13 @@ const SMASH_PREMIUM_PLANS = [
     'monthly' => ['name' => 'Ranking Smash Bros Premium · mensual', 'cents' => 300, 'interval' => 'month'],
     'annual' => ['name' => 'Ranking Smash Bros Premium · anual', 'cents' => 2400, 'interval' => 'year'],
 ];
+// New payments are paused while this file next to the site holds "1" (the provider stopped taking cards).
+// Reading status, cancelling and the paid periods already running keep working. "0" or no file: open.
+function smash_premium_paused(string $dir): bool
+{
+    return trim((string)@file_get_contents($dir . '/pagos-en-pausa.txt')) === '1';
+}
+
 // A checkout nobody paid stops blocking a new attempt after this long.
 const SMASH_PREMIUM_PENDING_AGE = 3600;
 

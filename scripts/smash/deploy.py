@@ -18,7 +18,7 @@ FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "cuenta.css", "pan
 ASSET_ROOT = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate/assets/characters"
 CHARACTER_FILES = tuple("assets/characters/" + path.name for path in sorted(ASSET_ROOT.glob("*.png"))
                         if re.fullmatch(r"[a-z0-9_]+-(icon|portrait)\.png", path.name))
-FILES = FILES[:-1] + CHARACTER_FILES + ('assets/smash-gt-social.jpg', 'assets/rsb-logo-gt-oscuro.svg', 'assets/rsb-mark.svg', 'favicon.svg', 'favicon-16.png', 'favicon-32.png', 'favicon-48.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'site.webmanifest', 'robots.txt', 'sitemap.xml') + FILES[-1:]
+FILES = FILES[:-1] + CHARACTER_FILES + ('assets/smash-gt-social.jpg', 'assets/rsb-logo-gt-oscuro.svg', 'assets/rsb-mark.svg', 'favicon.svg', 'favicon-16.png', 'favicon-32.png', 'favicon-48.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'site.webmanifest', 'pagos-en-pausa.txt', 'robots.txt', 'sitemap.xml') + FILES[-1:]
 HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 

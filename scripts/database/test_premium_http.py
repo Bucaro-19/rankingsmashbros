@@ -96,6 +96,11 @@ class PremiumHttpTests(unittest.TestCase):
         self.assertEqual(post({'action': 'checkout', 'plan': 'annual'}), 403)
         self.assertEqual(post({'action': 'checkout', 'plan': 'annual'}, {'X-CSRF-Token': 'forged'}), 403)
         self.assertEqual(self.call('/premium-api.php', method='PUT')[0], 405)
+        self.assertFalse(data['paused'])
+        # The pause file stops new payments and says so; without it, or with "0", payments are open.
+        flag=self.site/'pagos-en-pausa.txt'; self.addCleanup(lambda: flag.unlink(missing_ok=True))
+        flag.write_text('1\n'); self.assertTrue(json.loads(self.call('/premium-api.php')[2])['paused'])
+        flag.write_text('0\n'); self.assertFalse(json.loads(self.call('/premium-api.php')[2])['paused'])
         self.configure(enabled=False)
         self.assertFalse(json.loads(self.call('/premium-api.php')[2])['available'])
 

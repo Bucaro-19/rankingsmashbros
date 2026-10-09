@@ -25,12 +25,12 @@ try {
     if ($post && !smash_account_csrf_valid($_SESSION, $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null)) premium_response(403, ['ok' => false, 'reason' => 'csrf_invalid']);
     if (!smash_account_resume('premium_pdo', time())) {
         if ($post) premium_response(401, ['ok' => false, 'reason' => 'login_required']);
-        premium_response(200, ['ok' => true, 'authenticated' => false, 'available' => $config !== null, 'plans' => $plans, 'csrf' => $_SESSION['smash_account_csrf']]);
+        premium_response(200, ['ok' => true, 'authenticated' => false, 'available' => $config !== null, 'paused' => smash_premium_paused(__DIR__), 'plans' => $plans, 'csrf' => $_SESSION['smash_account_csrf']]);
     }
     $user = smash_account_current(premium_pdo());
     if ($config === null) {
         if ($post) premium_response(503, ['ok' => false, 'reason' => 'premium_unavailable']);
-        premium_response(200, ['ok' => true, 'authenticated' => true, 'available' => false, 'plans' => $plans, 'csrf' => $_SESSION['smash_account_csrf'],
+        premium_response(200, ['ok' => true, 'authenticated' => true, 'available' => false, 'paused' => smash_premium_paused(__DIR__), 'plans' => $plans, 'csrf' => $_SESSION['smash_account_csrf'],
             'premium' => ['premium' => false, 'plan' => null, 'status' => 'none', 'currentPeriodEnd' => null, 'startedAt' => null, 'cancelRequested' => false, 'pending' => false]]);
     }
     if ($post) {
@@ -39,6 +39,7 @@ try {
         $body = json_decode((string)file_get_contents('php://input', false, null, 0, 513), true);
         $action = is_array($body) ? ($body['action'] ?? null) : null;
         if ($action === 'checkout') {
+            if (smash_premium_paused(__DIR__)) premium_response(503, ['ok' => false, 'reason' => 'premium_paused']);
             // The address is Recurrente's hosted page for this account's own checkout; the browser goes there to pay.
             premium_response(200, ['ok' => true, 'checkoutUrl' => smash_premium_start(premium_pdo(), $config, $user['id'], $body['plan'] ?? null, time())]);
         }
@@ -49,7 +50,7 @@ try {
         premium_response(400, ['ok' => false, 'reason' => 'invalid_action']);
     }
     smash_premium_refresh(premium_pdo(), $config, $user['id'], time());
-    premium_response(200, ['ok' => true, 'authenticated' => true, 'available' => true, 'test' => !$config['live'], 'plans' => $plans, 'csrf' => $_SESSION['smash_account_csrf'],
+    premium_response(200, ['ok' => true, 'authenticated' => true, 'available' => true, 'paused' => smash_premium_paused(__DIR__), 'test' => !$config['live'], 'plans' => $plans, 'csrf' => $_SESSION['smash_account_csrf'],
         'premium' => smash_premium_status(premium_pdo(), $user['id'], $config['live'], time())]);
 } catch (SmashAccountError $error) {
     if ($error->reason === 'login_required') { unset($_SESSION['smash_account']); premium_response(401, ['ok' => false, 'reason' => 'login_required']); }
