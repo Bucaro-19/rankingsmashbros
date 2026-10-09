@@ -87,7 +87,7 @@ Un corte nuevo puede refrescar correcciones de los eventos pequeños seleccionad
 
 Pruebas automáticas con datos inventados: cálculo/exportación nacional idénticos antes/después de capturar; flag de candidatos sin consultas adicionales; fallback ante fallos; hashes V1–V3 fijados; validación PHP/Python de V4 y 17 variantes inválidas; recepción HTTP real y deduplicación; worker con el `public` vigente; paridad tabla por tabla; repetición sin cambios; corrección en corte nuevo; 006 ausente/rota; fallos SQL/paridad incluso en identidades globales. No datos ni comentarios de producción.
 
-Laboratorio MariaDB **13.0.2 local desechable**, sin configuración personal (`--no-defaults`), eliminado al terminar. 90 pruebas del pipeline, 9 de esquema y 8 nuevas del contrato/circuito (además de regresión de visitas/estadísticas). La matriz CI comprueba específicamente MySQL 8.0 y MariaDB 10.11; consultar los checks finales de la PR.
+Laboratorio MariaDB **13.0.2 local desechable**, sin configuración personal (`--no-defaults`), eliminado al terminar. 90 pruebas del pipeline, 9 de esquema y 8 nuevas del contrato/circuito (además de regresión de visitas/estadísticas). **MySQL 8.0 y MariaDB 10.11 comprobados en CI** del código `70ee96e`: [PR 37876613537](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37876613537) y [push 37876609802](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37876609802), ambos correctos. Consultar los checks finales tras cambios documentales.
 
 | Fixture local a través del worker real | JSON | Gzip | Pico memoria PHP | Tiempo |
 | --- | ---: | ---: | ---: | ---: |
