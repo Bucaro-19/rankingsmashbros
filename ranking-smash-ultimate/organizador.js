@@ -11,11 +11,11 @@ const SmashOrganizador = (() => {
     unfinished:['Sin terminar','start.gg todavía no lo marca como terminado. Entrará con el corte siguiente a su cierre.'],
     excluded:['Fuera del ranking','quedó fuera del ranking nacional tras una revisión manual.']};
   const REVIEW={sent:['info','⏳','Revisión enviada.','La revisamos a mano. Verás el resultado aquí; no tienes que hacer nada más.'],
-    approved:['ok','✓','Revisión aprobada.','Comprobamos que eres administrador del torneo en start.gg. Ya cuenta para tu top.'],
+    approved:['ok','✓','Revisión aprobada.','Se confirmó que organizaste el torneo. Solo cuenta para tu top si cumple las reglas y está admitido en el corte nacional.'],
     rejected:['error','×','Revisión rechazada.','']};
   const ERRORS={invalid_tournament_url:'Pega un enlace de start.gg (https://www.start.gg/tournament/...).',invalid_already_yours:'Ese torneo ya aparece a tu nombre en la lista.',
     invalid_already_sent:'Ya pediste revisión de ese torneo. Verás el resultado en la lista.',invalid_claim_limit:'Tienes varias revisiones en espera. Cuando se resuelvan podrás pedir otra.',
-    invalid_member_limit:'Ya llegaste al máximo de coorganizadores.',invalid_invite:'Esta invitación ya se usó o venció. Pide una nueva al organizador.',invalid_invite_own:'Esta invitación es tuya: compártela con tu coorganizador.',
+    invalid_member_limit:'Ya llegaste al máximo de coorganizadores.',invalid_invite:'Esta invitación ya se usó o venció. Pide una nueva al organizador.',invalid_invite_own:'Esta invitación es tuya: compártela con tu coorganizador.',invalid_invite_member:'Ya eres coorganizador. La invitación sigue disponible para otra persona.',invalid_review:'Esa revisión ya fue resuelta. Recarga la lista.',forbidden:'No tienes acceso a ese organizador. Vuelve a Mis torneos.',
     invalid_review_unknown_tournament:'Ese torneo no está en el catálogo de la captura: todavía no se puede aprobar.',invalid_review_message:'Escribe el motivo del rechazo (máximo 255 caracteres).',premium_required:'Esta acción necesita premium vigente.'};
   const root=()=>document.getElementById('organizer-screen');
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -55,15 +55,27 @@ const SmashOrganizador = (() => {
       premium:['★','yellow','Disponible con premium','El top de tus torneos es parte de premium, junto al análisis de rival. Es un apoyo para que el sitio se sostenga.','Apoyar con 3 USD al mes o 24 USD al año','El cobro ocurre en Recurrente. Puedes cancelar cuando quieras desde la pestaña Premium.'],
       expired:['!','yellow','Renueva para volver a verlo','Tu top se sigue calculando con cada corte. Al renovar lo ves de nuevo y tu enlace público vuelve a funcionar.','Renovar premium','El cobro ocurre en Recurrente. Puedes cancelar cuando quieras desde la pestaña Premium.']}[kind];
     const member=info.role==='member';
-    const credit=member?`<p class="o-credit"><span aria-hidden="true">✓</span>Eres coorganizador de ${escape((info.contexts||[]).find(c=>c.id===organizer)?.name||'este organizador')}. Tu nombre aparece en su top aunque no tengas premium.</p>`:'';
+    const credit=member?`<p class="o-credit"><span aria-hidden="true">✓</span>Eres coorganizador de ${escape((info.contexts||[]).find(c=>c.id===(organizer||info.contexts?.[0]?.id))?.name||'este organizador')}. Tu nombre aparece en su top aunque no tengas premium. <button type="button" class="o-link" data-act="leave">Salir del equipo</button></p>`:'';
     const button=kind==='login'?`<form action="./oauth.php" method="post" id="o-login"><input type="hidden" name="csrf" value="${escape(info.csrf||context.csrf)}"><button type="submit" class="p-cta blue"><span>${G[4]}</span></button></form>`
       :`<button type="button" class="p-cta ${G[1]==='blue'?'blue':''}" data-act="${kind==='interest'?'profile':'premium'}"><span>${G[4]}</span></button>`;
     return `${kind==='expired'?notice('warn','!',`Tu premium venció${expired?` el ${expired}`:''}.`,member?'Sigues apareciendo como coorganizador. Al renovar vuelves a ver el top y sus torneos.':'Tu top y tu enlace público quedan en pausa. No se borra nada: al renovar vuelven igual, con el mismo enlace.'):''}
       <div class="p-hero"><p class="kicker yellow">Mis torneos · Premium</p><h1>El top<br><span>de tus torneos.</span></h1><p class="lead">Un ranking aparte, solo con los torneos que organizas en start.gg. Lo ves aquí y lo compartes con un enlace en tus redes. No reemplaza ni cambia el ranking nacional.</p></div>
+      ${['premium','expired'].includes(kind)?teaserBox():''}
       <div class="p-columns"><section class="p-box o-gate ${G[1]}" aria-labelledby="o-gate-title"><span class="o-glyph" aria-hidden="true">${G[0]}</span><h2 id="o-gate-title">${G[2]}</h2>
           <p>${member&&kind==='premium'?'Ver el top y los torneos de este organizador es parte de premium. Cada cuenta usa su propio premium.':G[3]}</p>${credit}${button}<p class="note">${G[5]}</p></section>
         <aside class="p-side"><section class="p-box"><h3>Qué verás</h3><ol class="o-steps"><li>Tus torneos del año y por qué cada uno cuenta o no.</li><li>El top 5, 10 o 15 con puntos, sets y torneos jugados contigo.</li><li>El detalle de cada jugador en tus torneos.</li><li>Un enlace público para compartir, que activas o desactivas.</li></ol>
           <p class="o-principle"><strong>Pagar no da puntos ni cambia puestos</strong>, ni en este top ni en el nacional. El ranking nacional, tu perfil y tu historial siguen gratis.</p></section></aside></div>`;
+  }
+
+  // Only the server's free projection is available here. No blurred paid rows.
+  function teaserBox() {
+    const t=info.teaser, h=t?.headline, l=t?.locked;
+    if(!t)return `<section class="p-box"><p class="kicker yellow">Adelanto gratis</p><h2>Aún no podemos preparar el adelanto</h2><p class="note">Vuelve después del próximo corte. No mostramos datos inventados.</p></section>`;
+    const url=safeUrl(h?.url);
+    const headline=h?`<h2>Tu torneo más reciente que cuenta</h2><p class="lead">${escape(h.name)}</p><p class="note">${longDay(h.date)}${url?` · <a href="${escape(url)}" target="_blank" rel="noopener noreferrer">Ver torneo en start.gg ↗</a>`:''}</p>`
+      :'<h2>Aún no hay un torneo que cuente</h2><p class="note">El adelanto usa los torneos admitidos en el último corte nacional: singles presenciales con al menos 20 activos.</p>';
+    return `<section class="p-box"><p class="kicker yellow">Hallazgo principal · gratis</p>${headline}<p class="note">Es un dato del corte publicado, no una estimación.</p></section>
+      ${l?`<div class="p-columns"><section class="p-box"><p class="kicker muted">También calculado</p><h3>${plural(l.rankedPlayers,'jugador con sets suficientes','jugadores con sets suficientes')}</h3><p>Con premium ves sus puestos, puntos y el detalle de sus resultados.</p></section><section class="p-box"><p class="kicker muted">También calculado</p><h3>${plural(l.validSets,'set válido','sets válidos')}</h3><p>${plural(l.countedTournaments,'torneo que cuenta','torneos que cuentan')} de ${plural(l.tournaments,'torneo encontrado','torneos encontrados')}. Los pequeños no entran al top.</p></section></div>`:''}`;
   }
 
   function invitationBox() {
@@ -84,7 +96,7 @@ const SmashOrganizador = (() => {
   function reviewsBox() {
     const list=info.pendingReviews; if(!Array.isArray(list))return '';
     return `<section class="p-box o-admin" aria-labelledby="o-admin-title"><h3 id="o-admin-title">Revisiones por resolver · ${list.length}</h3><p class="note">Solo tú ves esto. Aprueba únicamente si comprobaste en start.gg que la cuenta administra el torneo.</p>
-      ${list.length?`<ul>${list.map(r=>`<li><div><strong>${escape(r.organizer)}</strong> pide <a href="${escape(safeUrl(r.url)||'#')}" target="_blank" rel="noopener noreferrer">${escape(r.tournament||r.url.replace('https://www.start.gg/tournament/',''))} ↗</a><span class="note">${shortDay(r.sentAt)}${r.inCatalog?'':' · no está en el catálogo de la captura'}</span></div>
+      ${list.length?`<ul>${list.map(r=>`<li><div><strong>${escape(r.organizer)}</strong> pide <a href="${escape(safeUrl(r.url)||'#')}" target="_blank" rel="noopener noreferrer">${escape(r.tournament||r.url.replace('https://www.start.gg/tournament/',''))} ↗</a><span class="note">${shortDay(r.sentAt)} · Enviada por ${escape(r.requestedBy||r.organizer)}${r.inCatalog?'':' · no está en el catálogo de la captura'}</span></div>
         <label class="sr-only" for="o-why-${escape(r.id)}">Motivo si rechazas</label><input id="o-why-${escape(r.id)}" type="text" maxlength="255" placeholder="Motivo si rechazas">
         <div class="button-row"><button type="button" class="outline" data-act="resolve" data-id="${escape(r.id)}" data-approve="1" ${r.inCatalog?'':'disabled'}>Aprobar</button><button type="button" class="outline" data-act="resolve" data-id="${escape(r.id)}">Rechazar</button></div></li>`).join('')}</ul>`:'<p>No hay revisiones en espera.</p>'}${said('resolve')}</section>`;
   }
@@ -184,7 +196,12 @@ const SmashOrganizador = (() => {
     else if(a==='context'){organizer=button.dataset.id;open=-1;inviteUrl=null;flash={};show();}
     else if(a==='size')act('size',{action:'settings',topSize:Number(button.dataset.size)},()=>{open=-1;});
     else if(a==='public')act('public',{action:'settings',publicEnabled:!d.organizer.publicEnabled});
-    else if(a==='copy'){const key=button.dataset.key||'copy';navigator.clipboard?.writeText(button.dataset.copy).then(()=>{flash={[key]:true,[key==='copy'?'public':'team']:['ok','Enlace copiado al portapapeles.']};render();setTimeout(()=>{if(flash[key]){flash={};render();}},2400);}).catch(()=>{flash={[key==='copy'?'public':'team']:['bad','No pudimos copiarlo. Selecciona la dirección y cópiala a mano.']};render();});}
+    else if(a==='copy'){
+      const key=button.dataset.key||'copy', channel=key==='copy'?'public':'team';
+      if(!navigator.clipboard?.writeText){flash={[channel]:['bad','Selecciona la dirección y cópiala a mano.']};render();return;}
+      navigator.clipboard.writeText(button.dataset.copy).then(()=>{flash={[key]:true,[channel]:['ok','Enlace copiado al portapapeles.']};render();setTimeout(()=>{if(flash[key]){flash={};render();}},2400);})
+        .catch(()=>{flash={[channel]:['bad','No pudimos copiarlo. Selecciona la dirección y cópiala a mano.']};render();});
+    }
     else if(a==='invite')act('team',{action:'invite'},result=>{inviteUrl=result.inviteUrl;});
     else if(a==='remove'){if(confirm(`¿Quitar a ${button.dataset.name} de tus coorganizadores? Dejará de aparecer en tu top.`))act('team',{action:'removeMember',member:button.dataset.id});}
     else if(a==='leave'){if(confirm('¿Salir del equipo de este organizador? Dejarás de aparecer como coorganizador.'))act('team',{action:'leave'},()=>{organizer=null;});}
@@ -192,7 +209,7 @@ const SmashOrganizador = (() => {
     else if(a==='join')act('join',{action:'join',token:invitation,organizer:null},result=>{organizer=result.organizer;clearInvitation();});
     else if(a==='invite-dismiss'){clearInvitation();render();}
     else if(a==='resolve'){const approve=button.dataset.approve==='1', message=root().querySelector(`#o-why-${CSS.escape(button.dataset.id)}`)?.value||'';
-      if(!approve||confirm('¿Aprobar? El torneo contará para el top de esta cuenta.'))act('resolve',{action:'resolve',claim:button.dataset.id,approve,message});}
+      if(!approve||confirm('¿Confirmas que esta cuenta organizó el torneo? Solo contará si cumple las reglas y está admitido en el corte nacional.'))act('resolve',{action:'resolve',claim:button.dataset.id,approve,message});}
   }
   function onSubmit(event) {
     if(event.target.id==='o-login'){try{sessionStorage.setItem('smashgt.volver','torneos');if(invitation)sessionStorage.setItem('smashgt.invita',invitation);}catch{}return;}

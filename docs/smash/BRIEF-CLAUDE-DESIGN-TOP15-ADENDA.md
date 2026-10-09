@@ -28,16 +28,22 @@ Abre `cuenta.html?invita=…#torneos`.
 - Con sesión: aviso con «Unirme al equipo» y «Ahora no».
 - Invitación usada o vencida; invitación propia; ya es miembro.
 - Vista del coorganizador: igual que la del organizador pero **sin** interruptor del enlace, selector de tamaño ni caja de coorganizadores. Lleva «Eres coorganizador de {Organizador}» y «Salir del equipo».
-- Cada cuenta paga su premium. Coorganizador sin premium: pantalla de premium con «Eres coorganizador de {Organizador}. Tu nombre aparece en su top aunque no tengas premium.»
+- Cada cuenta paga su premium. Coorganizador sin premium: pantalla de premium con «Eres coorganizador de {Organizador}. Tu nombre aparece en su top aunque no tengas premium.» + «Salir del equipo», también sin premium.
 - Si la cuenta tiene sus propios torneos **y** es coorganizadora de otros: selector para cambiar de organizador (hoy son botones «Mis torneos / {Organizador}»).
 
 ## 4. Revisiones para el dueño del sitio
 
-Solo la cuenta del dueño. Lista de «Pedir revisión» en espera: quién la pide, torneo con enlace a start.gg, fecha, si el torneo está o no en el catálogo. Acciones «Aprobar» (con confirmación) y «Rechazar» (motivo obligatorio, máximo 255 caracteres). Estado vacío. Puede vivir en el panel privado o en esta pestaña; propón dónde.
+Solo la cuenta del dueño. Lista de «Pedir revisión» en espera: organizador y nombre de quien la envió, torneo con enlace a start.gg, fecha, si el torneo está o no en el catálogo. Acciones «Aprobar» (con confirmación) y «Rechazar» (motivo obligatorio, máximo 255 caracteres). Estado vacío. Puede vivir en el panel privado o en esta pestaña; propón dónde.
 
 ## 5. Motivos nuevos de «no cuenta»
 
 Además de los del paquete: «Menos de 20 activos», «Sin terminar» y «Fuera del ranking» (revisión manual). Mismo chip gris punteado; revisar que los textos largos no rompan la fila en 375 px.
+
+## 6. Adelanto gratis en «Mis torneos» (9/oct)
+
+Ya conectado con componentes existentes, pendiente de diseño definitivo. Un dato principal real: **el torneo más reciente admitido en el corte** (nombre, fecha y enlace). Dos tarjetas «También calculado»: jugadores con sets suficientes y sets válidos; debajo, torneos que cuentan frente a encontrados. Estado sin torneos: hallazgo ausente y ceros reales. Estado de fallo: no se pudo calcular el adelanto. Premium vencido conserva solo este adelanto y el aviso de pausa. Nada de tablas difuminadas: el servidor no envía puestos, puntos, jugadores, récords ni resultados de pago. Ver contrato en TOP-ORGANIZADOR.md.
+
+Mantener «Salir del equipo» para coorganizadores incluso gratis/vencidos. Confirmar que las tarjetas y el nombre largo caben en 375 px. Aprobar una revisión acredita organización; **no** admite por sí mismo el torneo al ranking ni al top. El mínimo de 20 activos no cambia.
 
 ## Entrega
 

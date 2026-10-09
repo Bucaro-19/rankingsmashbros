@@ -12,7 +12,7 @@ header('Content-Type: text/html; charset=utf-8');
 header('X-Robots-Tag: noindex, nofollow');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
-header('Cache-Control: private, max-age=60');
+header('Cache-Control: no-store, private');
 header("Content-Security-Policy: default-src 'none'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://raw.githubusercontent.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
 function top_e($value): string { return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 function top_day(?string $iso): string { return $iso !== null && preg_match('/\A(\d{4})-(\d{2})-(\d{2})/', $iso, $m) ? "$m[3]/$m[2]/$m[1]" : ''; }
