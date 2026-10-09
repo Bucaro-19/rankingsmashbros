@@ -3,6 +3,15 @@
 
 
 
+## Migración 006 aplicada y torneos pequeños encendidos (9/oct, 00:27 GT)
+
+Por orden explícita del dueño, antes del primer corte automático.
+
+- **006 aplicada en producción** (`organizer_event_context`, InnoDB, 0 filas). La base pasó de 42 a 43 tablas; `cuts` (1) y `events` (47) sin cambios; `public.json` con el mismo hash.
+- **`SMASH_ORGANIZER_SMALL_ENABLED=true`** en las variables del repositorio. La carga semanal capturará el contexto de los **2 eventos pequeños más recientes** (`--limit 2`, la muestra que propuso Codex). Si esa captura falla, el corte nacional se publica igual.
+- **Todavía no se ve nada en el sitio:** `organizador.php` no lee esa tabla. Falta conectar el top del organizador y mostrar en el perfil los torneos que no contaron (opción 1 elegida por el dueño), y decidir el mínimo (Codex propone 4 activos y 3 sets) y la cobertura.
+- **Revisar el lunes 12/oct:** que el corte nacional entró bien, el estado `organizer` del importador (`imported` esperado), filas en `organizer_event_context` y el tamaño del paquete. Para apagar: poner la variable en `false` (no borra lo guardado).
+
 ## Identidad nueva conectada y lados de los marcadores (9/oct, madrugada)
 
 - **Identidad de Claude Design** (paquete `marca-rsb`, monograma de podio): favicon (`favicon.svg`, PNG 16/32/48), `apple-touch-icon.png`, íconos 192/512/maskable y `site.webmanifest` en la raíz; `assets/rsb-logo-gt-oscuro.svg` y `assets/rsb-mark.svg`. El encabezado muestra el logo con etiqueta GT en escritorio y solo el monograma en móvil. Todos están en `FILES` de `deploy.py`. No lo llevan `opiniones.php` (su CSP no permite imágenes) ni el encabezado antiguo de los dos estudios.
