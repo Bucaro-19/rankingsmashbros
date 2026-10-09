@@ -21,6 +21,9 @@ MAX_SECONDS = 120
 class BudgetClient:
     def __init__(self, client, clock=time.monotonic):
         self.client=client; self.initial=client.calls; self.clock=clock; self.started=clock()
+    @property
+    def calls(self):
+        return self.client.calls
     def query(self, query, variables):
         # Client may retry up to three times. Reserve all three before starting a request.
         if self.client.calls-self.initial+3 > MAX_ATTEMPTS or self.clock()-self.started >= MAX_SECONDS:

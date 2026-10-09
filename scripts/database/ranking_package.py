@@ -232,21 +232,15 @@ def validate_game_context(c, ids, smap, links):
                     == {identifier(m['characterId']):m['games'] for m in p['mains']}, 'Games y mains publicados difieren.')
 
 
-def build_package(raw, public):
-    validate_public_data(public)
-    require('localRanking' in public and public.get('rankingCoverage') == 'all_eligible',
-            'Se requieren ambas vistas y todos los clasificados.')
-    require(raw.get('catalogComplete') is True and raw.get('eventsComplete') is True
-            and raw.get('internationalComplete') is True and raw.get('kind') == 'national_discovery',
-            'Captura privada incompleta.')
-    require(raw.get('generatedAt') == public['generatedAt'], 'Captura y corte no coinciden.')
+def normalize_capture_entities(raw, ranked=None):
+    """Normalize live set identities; no ranking calculation or published cut is required."""
     captured = instant(raw['generatedAt'])
     raw_events = {identifier(e['id']): e for e in raw['events']}
     require(len(raw_events) == len(raw['events']), 'Evento repetido.')
     entities = {k: {} for k in ('players', 'tournaments', 'events', 'entrants', 'sets')}
     ep, slots, observed, competitive_counts = {}, {}, defaultdict(set), Counter()
     set_counts, valid_counts, active = Counter(), Counter(), defaultdict(set)
-    ranked = {identifier(p['id']): p for p in public['players']}
+    ranked = ranked or {}
 
     for key, p in raw['players'].items():
         pid = identifier(key)
@@ -331,6 +325,21 @@ def build_package(raw, public):
         if placement is not None:
             entities['entrants'][next(iter(ids))]['final_placement'] = integer(placement, minimum=1)
 
+    return entities, ep, slots, raw_events, valid_counts, active
+
+
+def build_package(raw, public):
+    validate_public_data(public)
+    require('localRanking' in public and public.get('rankingCoverage') == 'all_eligible',
+            'Se requieren ambas vistas y todos los clasificados.')
+    require(raw.get('catalogComplete') is True and raw.get('eventsComplete') is True
+            and raw.get('internationalComplete') is True and raw.get('kind') == 'national_discovery',
+            'Captura privada incompleta.')
+    require(raw.get('generatedAt') == public['generatedAt'], 'Captura y corte no coinciden.')
+    captured = instant(raw['generatedAt'])
+    entities, ep, slots, raw_events, valid_counts, active = normalize_capture_entities(
+        raw, {identifier(p['id']): p for p in public['players']})
+
     for scope in (public, public['localRanking']):
         require(scope['rankingCoverage'] == 'all_eligible', 'Vista incompleta.')
         ids = {identifier(e['id']) for e in scope['events']}
@@ -381,27 +390,8 @@ def build_package(raw, public):
     return dict(content=content, sha256=digest(content))
 
 
-def validate_package(package):
-    """Validate normalized identities and published relationships before SQL writes."""
-    require(set(package) == {'content', 'sha256'} and package['sha256'] == digest(package['content']), 'Hash de paquete inválido.')
-    if package['content'].get('packageVersion') == 4:
-        from organizer_context import national_package, validate_context
-        core = national_package(package)
-        validate_package(core)
-        validate_context(package['content']['organizerContext'], core)
-        return package['content']
-    c = package['content']; public = c['public']; tables = c['entities']
-    require(type(c['packageVersion']) is int and c['packageVersion'] in (1,2,3) and c['capturedAt'] == public['generatedAt'], 'Versión/captura del paquete inválida.')
-    instant(c['capturedAt'])
-    validate_public_data(public)
-    require(public['schemaVersion'] == 3 and 'localRanking' in public, 'Se requieren mains y ambas vistas.')
-    expected_tables = {'players','tournaments','events','entrants','sets','entrant_players','set_slots'}
-    if c['packageVersion'] >= 2: expected_tables |= {'games','game_selections'}
-    if c['packageVersion'] == 3:
-        validate_tournament_catalog(c.get('tournamentCatalog'), c['capturedAt'])
-    else:
-        require('tournamentCatalog' not in c, 'Catálogo requiere paquete versión 3.')
-    require(set(tables) == expected_tables, 'Tablas de paquete inválidas.')
+def validate_entity_relations(tables):
+    """Same identity/slot checks for national packages and context-only backfills."""
     ids = {}
     for table in ('players','tournaments','events','entrants','sets'):
         ids[table] = {identifier(r['id']): r for r in tables[table]}
@@ -425,6 +415,31 @@ def validate_package(package):
         require(all(v and v['event_id'] == eid and (v['entrant_id'] is None or
                     ids['entrants'].get(v['entrant_id'], {}).get('event_id') == eid) for v in values), 'Slots de otro evento.')
         require(s['winner_entrant_id'] is None or s['winner_entrant_id'] in [v['entrant_id'] for v in values], 'Ganador ajeno al set.')
+    return ids, smap, links
+
+
+def validate_package(package):
+    """Validate normalized identities and published relationships before SQL writes."""
+    require(set(package) == {'content', 'sha256'} and package['sha256'] == digest(package['content']), 'Hash de paquete inválido.')
+    if package['content'].get('packageVersion') == 4:
+        from organizer_context import national_package, validate_context
+        core = national_package(package)
+        validate_package(core)
+        validate_context(package['content']['organizerContext'], core)
+        return package['content']
+    c = package['content']; public = c['public']; tables = c['entities']
+    require(type(c['packageVersion']) is int and c['packageVersion'] in (1,2,3) and c['capturedAt'] == public['generatedAt'], 'Versión/captura del paquete inválida.')
+    instant(c['capturedAt'])
+    validate_public_data(public)
+    require(public['schemaVersion'] == 3 and 'localRanking' in public, 'Se requieren mains y ambas vistas.')
+    expected_tables = {'players','tournaments','events','entrants','sets','entrant_players','set_slots'}
+    if c['packageVersion'] >= 2: expected_tables |= {'games','game_selections'}
+    if c['packageVersion'] == 3:
+        validate_tournament_catalog(c.get('tournamentCatalog'), c['capturedAt'])
+    else:
+        require('tournamentCatalog' not in c, 'Catálogo requiere paquete versión 3.')
+    require(set(tables) == expected_tables, 'Tablas de paquete inválidas.')
+    ids, smap, links = validate_entity_relations(tables)
     for scope in (public, public['localRanking']):
         require(scope['rankingCoverage'] == 'all_eligible', 'Vista incompleta.')
         for e in scope['events']:
