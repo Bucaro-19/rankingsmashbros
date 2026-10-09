@@ -165,6 +165,29 @@ def require_sql_survey(source):
             raise ValueError("Esta versión de " + page + " no usa la encuesta en SQL; no se publica.")
 
 
+def read_live_agenda(ftp):
+    """Optional SEO input only: never upload, delete or fall back to the agenda in Git."""
+    body = io.BytesIO()
+    oversized = False
+    def receive(chunk):
+        nonlocal oversized
+        if oversized:
+            return
+        if body.tell() + len(chunk) > 512 * 1024:
+            # Finish RETR without buffering more: an exception in the callback could
+            # leave its final FTP response pending and break subsequent asset uploads.
+            oversized = True
+            return
+        body.write(chunk)
+    try:
+        ftp.retrbinary('RETR data/agenda.json', receive)
+        if oversized:
+            return None
+        return json.loads(body.getvalue())
+    except ftplib.all_errors + (ValueError, RecursionError):
+        return None
+
+
 def deploy(ftp, source, *, assets_only=False, admin_hash=None):
     # FTP credentials must have the same root as the existing portfolio workflow.
     # No deletion or recursive synchronization of the site's root.
@@ -191,7 +214,9 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
         data = json.loads(body.getvalue())
     else:
         data = json.loads((source / 'data/public.json').read_text(encoding='utf-8'))
-    sitemap = build_sitemap(source, data)  # Fail before any upload if dates cannot be proved.
+    # The agenda belongs to its own workflow, even during a full ranking deployment.
+    # Its absence is optional; the ranking's required dates still fail before any upload.
+    sitemap = build_sitemap(source, data, agenda=read_live_agenda(ftp))
     try:
         ftp.cwd("data")
     except ftplib.error_perm as error:

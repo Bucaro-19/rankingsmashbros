@@ -70,7 +70,7 @@ const PanelModel = {
     return `${this.plural(item.visitors,'visitante','visitantes')}${item.weekly?' (semana)':''} · ${this.plural(item.pageviews,'vista','vistas')} · ${this.plural(item.registrations,'registro nuevo','registros nuevos')}${item.partial?' · parcial':''}`;
   },
   pages(period) {
-    const names={home:'Inicio / ranking',top20:'Análisis del top 20',torneos:'Análisis de torneos',metodologia:'Metodología',cuenta:'Cuenta'};
+    const names={home:'Inicio / ranking',top20:'Análisis del top 20',torneos:'Análisis de torneos',agendaTorneos:'Agenda de torneos',metodologia:'Metodología',cuenta:'Cuenta'};
     const rows=Object.entries(period.pages||{}).map(([key,views])=>({key,name:names[key]||key,views})).sort((a,b)=>b.views-a.views||a.name.localeCompare(b.name));
     const total=rows.reduce((n,r)=>n+r.views,0), top=rows[0]?.views||0;
     return rows.map((r,i)=>({...r,position:i+1,percent:total?Math.round(r.views/total*100):0,width:top?Math.round(r.views/top*100):0}));

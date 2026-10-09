@@ -5,6 +5,8 @@ require_once __DIR__ . '/../../ranking-smash-ultimate/database.php';
 require_once __DIR__ . '/../../ranking-smash-ultimate/stats.php';
 function check_stats($condition, string $description): void { if (!$condition) throw new RuntimeException($description); }
 check_stats(smash_stats_shift('2026-03-01', -1) === '2026-02-28' && smash_stats_shift('2026-12-31', 1) === '2027-01-01' && smash_stats_span('2026-10-01', '2026-10-07') === 7, 'Calendar arithmetic');
+check_stats(SMASH_STATS_PAGES['analisis-torneos'] === 'torneos' && SMASH_STATS_PAGES['torneos'] === 'agendaTorneos'
+    && count(array_unique(SMASH_STATS_PAGES)) === count(SMASH_STATS_PAGES), 'Additive panel keys preserve historical meaning without duplicate aliases');
 echo "Statistics calendar contracts passed.\n";
 $db = getenv('SMASH_SCHEMA_TEST_DB');
 if (!$db) { echo "SQL tests skipped: no disposable database configured.\n"; exit; }
@@ -42,7 +44,7 @@ try {
     $p7 = $r['periods']['7']; $p30 = $r['periods']['30'];
     check_stats([$p7['from'], $p7['to'], $p7['days'], $p7['daysWithData']] === ['2026-10-14', '2026-10-20', 7, 7], 'Seven complete days ending yesterday');
     check_stats([$p7['visitors'], $p7['loggedVisitors'], $p7['networks'], $p7['pageviews'], $p7['registrations']] === [2, 1, 2, 6, 2], 'Distinct visitors over the range, not a sum of days; today excluded');
-    check_stats($p7['pages'] === ['home' => 3, 'metodologia' => 0, 'cuenta' => 1, 'top20' => 2, 'torneos' => 0], 'Views per page with fixed names');
+    check_stats($p7['pages'] === ['home' => 3, 'metodologia' => 0, 'cuenta' => 1, 'top20' => 2, 'torneos' => 0, 'agendaTorneos' => 0], 'Views per page with fixed names; absent agenda remains zero');
     check_stats($p7['previous'] === null, 'No comparison: the previous seven days are not fully measured');
     check_stats([$p30['from'], $p30['days'], $p30['daysWithData'], $p30['visitors'], $p30['pageviews']] === ['2026-09-21', 30, 11, 2, 8] && $p30['previous'] === null, 'A period longer than the history says how many days have data');
     check_stats($r['periods']['season']['from'] === '2026-01-01' && $r['periods']['season']['daysWithData'] === 11 && $r['periods']['season']['registrations'] === 2, 'Season counts registrations only where visits are measured');
@@ -53,6 +55,16 @@ try {
     check_stats(count($weeks) === 2 && $weeks[1] === ['from' => '2026-10-14', 'to' => '2026-10-20', 'visitors' => 2, 'pageviews' => 6, 'registrations' => 2, 'partial' => false]
         && $weeks[0] === ['from' => '2026-10-10', 'to' => '2026-10-13', 'visitors' => 1, 'pageviews' => 2, 'registrations' => 0, 'partial' => true], 'Weeks counted back from yesterday; the oldest one is clipped and partial');
     check_stats($r['accounts'] === ['total' => $baseUsers + 4, 'linked' => $baseLinked + 1, 'premium' => 0], 'Accounts: total, still linked and premium');
+    // Historical analysis rows remain unchanged; new agenda rows are distinct and counted once.
+    $page->execute(['2026-10-20', 'analisis-torneos', 3]);
+    $page->execute(['2026-10-20', 'torneos', 5]);
+    $mixed = smash_stats_report($pdo, $now, 2026);
+    check_stats($mixed['periods']['7']['pages']['torneos'] === 3 && $mixed['periods']['7']['pages']['agendaTorneos'] === 5
+        && $mixed['periods']['7']['pageviews'] === 14 && $mixed['weekly']['90'][1]['pageviews'] === 14
+        && end($mixed['daily'])['pageviews'] === 10 && $mixed['periods']['7']['visitors'] === 2, 'Agenda/analysis split reconciles daily, weekly and period totals without aliases or added visitors');
+    $page->execute(['2026-10-21', 'torneos', 2]);
+    check_stats(smash_stats_report($pdo, $now, 2026)['today']['pageviews'] === 5
+        && smash_stats_report($pdo, $now, 2026)['periods']['7']['pageviews'] === 14, 'Today agenda views stay outside complete-day periods');
     $sub = $pdo->prepare("INSERT INTO premium_subscriptions (user_id, plan, live_mode, provider_checkout_id, status, current_period_end, created_at, updated_at) VALUES (?, 'annual', ?, ?, ?, ?, '2026-10-01', '2026-10-01')");
     foreach ([[8999301, 1, 'ch_stats1', 'active', '2027-10-01'], [8999301, 1, 'ch_stats2', 'canceled', '2026-12-01'], [8999302, 1, 'ch_stats3', 'canceled', '2026-10-20'], [8999303, 0, 'ch_stats4', 'active', '2027-10-01'], [8999304, 1, 'ch_stats5', 'pending', null]] as $row) $sub->execute([$id($row[0]), $row[1], $row[2], $row[3], $row[4]]);
     check_stats(smash_stats_report($pdo, $now, 2026)['accounts']['premium'] === 1, 'Premium counts accounts with a real paid period running: no tests, no ended, no pending, no double count');

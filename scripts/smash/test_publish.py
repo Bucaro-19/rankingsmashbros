@@ -26,13 +26,56 @@ def snapshot():
 
 class ExportTests(unittest.TestCase):
     def test_seo_artifacts_in_publication_allowlist_and_shared_publication_lock(self):
-        for name in ('robots.txt', 'sitemap.xml'):
+        for name in ('robots.txt', 'sitemap.xml', 'torneos.html', 'visita.js'):
             self.assertIn(name, FILES)
         root = Path(__file__).resolve().parents[2]
         for name in ('smash-publish.yml', 'smash-deploy-snapshot.yml', 'smash-characters.yml'):
             workflow = (root / '.github/workflows' / name).read_text()
             self.assertIn('group: smash-gt-publication', workflow)
             self.assertIn('cancel-in-progress: false', workflow)
+
+    def test_assets_only_preserves_live_agenda_bytes_in_success_and_failure(self):
+        from test_seo import fixture, locations
+        from seo import ORIGIN, timestamp
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder); fixture(source)
+            (source / 'data/agenda.json').write_text('{"generatedAt":"2026-01-01T00:00:00Z"}')
+            original = b'{"generatedAt":"2026-10-09T13:17:00Z","tournaments":[{"id":"test-only"}]}\n'
+            self.assertNotIn('data/agenda.json', FILES)
+            for failure in (False, True):
+                with self.subTest(failure=failure):
+                    files = {'data/agenda.json': original, 'data/public.json': (source / 'data/public.json').read_bytes()}
+                    ftp = Mock()
+                    ftp.retrbinary.side_effect = lambda command, callback: callback(files[command.removeprefix('RETR ')])
+                    def store(command, stream):
+                        name = command.removeprefix('STOR '); files[name] = stream.read()
+                        if failure: raise ftplib.error_temp('450 test-only upload interruption')
+                    ftp.storbinary.side_effect = store
+                    ftp.rename.side_effect = lambda temporary, destination: files.update({destination: files.pop(temporary)})
+                    ftp.delete.side_effect = lambda name: files.pop(name, None)
+                    if failure:
+                        with self.assertRaises(ftplib.error_temp): deploy(ftp, source, assets_only=True)
+                    else:
+                        deploy(ftp, source, assets_only=True)
+                        self.assertEqual(timestamp(locations(files['sitemap.xml'])[ORIGIN+'/torneos.html']), timestamp('2026-10-09T13:17:00Z'))
+                    self.assertEqual(files['data/agenda.json'], original)
+                    self.assertEqual(files['data/public.json'], (source / 'data/public.json').read_bytes())
+                    for call in ftp.storbinary.call_args_list:
+                        self.assertNotIn('agenda.json', call.args[0])
+                    for call in ftp.rename.call_args_list:
+                        self.assertFalse(any('agenda.json' in name for name in call.args))
+                    for call in ftp.delete.call_args_list:
+                        self.assertNotIn('agenda.json', call.args[0])
+
+    def test_tournaments_page_counts_one_view_with_its_own_stored_page(self):
+        import re
+        site = Path(__file__).resolve().parents[2] / 'ranking-smash-ultimate'
+        page = (site / 'torneos.html').read_text()
+        tags = re.findall(r'<script\b[^>]*visita\.js[^>]*>', page)
+        self.assertEqual(len(tags), 1)
+        self.assertIn('data-page="torneos"', tags[0])
+        historical = (site / 'analisis-torneos.html').read_text()
+        self.assertIn('data-page="analisis-torneos"', historical)
 
     def test_foreign_opponents_are_context_not_national_roster(self):
         result = export(snapshot())

@@ -104,6 +104,19 @@ class VisitHttpTests(unittest.TestCase):
         # Each forged value was replaced by a server-signed identifier, bounded per network.
         self.assertEqual(self.count('site_network_days', 'SUM(new_visitors)'), 2)
 
+    def test_agenda_and_analysis_are_counted_separately_with_the_same_cookie(self):
+        status, body, _, token, _ = self.visit('analisis-torneos')
+        self.assertEqual((status, body), (204, b''))
+        for _ in range(2):
+            self.assertEqual(self.visit('torneos', cookie=token)[:2], (204, b''))
+        with self.db.cursor() as q:
+            q.execute('SELECT page, SUM(views) FROM site_visit_days GROUP BY page ORDER BY page')
+            self.assertEqual(dict(q.fetchall()), {'analisis-torneos': 1, 'torneos': 2})
+        self.assertEqual((self.count('site_visitor_days'), self.count('site_network_days'), self.count('site_visit_days', 'SUM(views)')), (1, 1, 3))
+        self.assertEqual(self.visit('agendaTorneos', cookie=token)[0], 400)
+        self.assertEqual(self.count('site_visit_days', 'SUM(views)'), 3)
+        self.assertFalse(self.log.exists() and self.log.read_text().strip(), 'Counting must not log')
+
     def test_rejections_do_not_count(self):
         cases = [dict(method='GET'), dict(origin=False), dict(origin='https://evil.test'), dict(page='encuesta'), dict(page='opiniones'),
                  dict(body='{"page":"inicio"' + ' '*300 + '}'), dict(body='not json'), dict(content_type='text/plain'),

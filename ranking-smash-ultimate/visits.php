@@ -9,7 +9,7 @@ declare(strict_types=1);
 const SMASH_VISIT_COOKIE = 'smash_visita';
 const SMASH_VISIT_COOKIE_AGE = 34560000; // 400 days, renewed on every counted visit
 // The anonymous survey and the private panel are deliberately not counted.
-const SMASH_VISIT_PAGES = ['inicio', 'metodologia', 'cuenta', 'analisis-top20', 'analisis-torneos'];
+const SMASH_VISIT_PAGES = ['inicio', 'metodologia', 'cuenta', 'analisis-top20', 'analisis-torneos', 'torneos'];
 // Past these limits a browser or a network stops adding to the totals for that day.
 const SMASH_VISIT_DAILY_VIEWS = 300;
 const SMASH_VISIT_DAILY_NEW_PER_NETWORK = 50;
