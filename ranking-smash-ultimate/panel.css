@@ -101,3 +101,4 @@ section{display:flex;flex-direction:column;gap:12px}
 @keyframes panel-load{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
 @media(max-width:440px){.segmented button{font-size:12px;padding:0 4px}.bars,.strip{gap:2px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.panel-opinions{display:inline-flex;margin:0}
