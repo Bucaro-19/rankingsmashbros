@@ -230,7 +230,11 @@ def discover(client, start, end, *, max_events=None, include_small=False, organi
             "selectionNote": ("Estudio: todos los eventos presenciales singles con inscritos conocidos; aún requieren evaluación de DQ, puntos y exclusiones editoriales."
                               if include_small else "Provisional: eventos presenciales singles con al menos 20 inscritos; solo se admiten al cálculo los que tengan 20 jugadores activos; faltan DQ, excepciones por valor de jugadores y exclusiones editoriales de UltRank.")}
     if organizer_candidates:
-        result['organizerCandidates'] = small_organizer_candidates(tournaments, start, end)
+        try:
+            result['organizerCandidates'] = small_organizer_candidates(tournaments, start, end)
+        except (KeyError, TypeError, ValueError):
+            # An optional catalog defect must not invalidate the already captured national cut.
+            result['organizerCandidates'] = None
     return result
 
 

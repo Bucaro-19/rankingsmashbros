@@ -60,11 +60,23 @@ jobs:
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
           SMASH_START: ${{ vars.SMASH_START || '2026-01-01' }}
+          SMASH_ORGANIZER_SMALL_ENABLED: ${{ vars.SMASH_ORGANIZER_SMALL_ENABLED }}
         run: |
           end_date=$(date -u -d tomorrow +%F)
           season_end="$((${SMASH_START%%-*} + 1))-01-01"
           if [[ "$end_date" > "$season_end" ]]; then end_date="$season_end"; fi
-          python scripts/smash/discover.py --start "$SMASH_START" --end "$end_date"
+          flags=()
+          if [[ "$SMASH_ORGANIZER_SMALL_ENABLED" == 'true' ]]; then flags+=(--organizer-candidates); fi
+          python scripts/smash/discover.py --start "$SMASH_START" --end "$end_date" "${flags[@]}"
+      - name: Descartar complemento reanudado cuando la ampliación está apagada
+        if: vars.SMASH_ORGANIZER_SMALL_ENABLED != 'true'
+        run: rm -f scripts/smash/data/organizer-small.json
+      - name: Capturar contexto pequeño separado (opcional, sin alterar la captura nacional)
+        if: vars.SMASH_ORGANIZER_SMALL_ENABLED == 'true'
+        continue-on-error: true
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        run: python scripts/smash/organizer_small.py scripts/smash/data/national.json
       - name: Revisar y descargar torneos internacionales descubiertos
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
@@ -98,7 +110,7 @@ jobs:
         run: |
           # Una ejecución reanudada trae el paquete del corte anterior: nunca debe quedar como si fuera el de este.
           rm -f scripts/smash/data/database-package.json
-          python scripts/database/ranking_package.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json scripts/smash/data/database-package.json
+          python scripts/database/ranking_package.py scripts/smash/data/combined.json ranking-smash-ultimate/data/public.json scripts/smash/data/database-package.json --organizer-context scripts/smash/data/organizer-small.json
           python scripts/database/publish_sql.py check scripts/smash/data/database-package.json
       - name: Guardar auditoría para revisión
         uses: actions/upload-artifact@v4
@@ -136,6 +148,7 @@ jobs:
           name: smash-gt-capturas
           path: |
             scripts/smash/data/national.json
+            scripts/smash/data/organizer-small.json
             scripts/smash/data/abroad.json
             scripts/smash/data/combined.json
             scripts/smash/data/pilot-ranking.json

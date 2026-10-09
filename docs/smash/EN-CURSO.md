@@ -1,5 +1,16 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — contexto de torneos pequeños para organizadores (8/oct, sin activar)
+
+Rama `feat/organizer-small-events`, desde `origin/main` **224d413** (#74), remoto `Bucaro-19/rankingsmashbros`. Auditoría inicial sin cambios tracked (solo carpeta ajena `social/`, sin leer/tocar); CI main [37868181042](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37868181042) y despliegue [37868310842](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37868310842) correctos. Contrato, mediciones y siguientes pasos en [TORNEOS-PEQUENOS-ORGANIZADOR.md](TORNEOS-PEQUENOS-ORGANIZADOR.md).
+
+- Captura aparte de singles GT presenciales terminados con 1–19 inscritos; no se usa `--include-small` ni se mezclan players/sets/eventos/semillas internacionales. Candidatos del catálogo existente sin consultas adicionales; complemento privado opcional, **apagado por defecto**. No se cambió la variable de Actions. Techos de seguridad 10 eventos/30 intentos; presupuesto 120 s con la salvedad del timeout de la consulta ya iniciada. Propuesta para el dueño: primera prueba de dos eventos, decidir cobertura antes de activar.
+- Medición real solo lectura [37874502707](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37874502707): 19 candidatos, muestra de 2, 104 sets, 7 consultas adicionales; con 2 del catálogo, 9 consultas y 9,225 s. Año completo: **estimación mínima 57 consultas adicionales**, no captura completa medida. Runner temporal restaurado; sin FTP/SQL ni artefactos públicos.
+- Transporte V4 conserva un núcleo V1–V3 con su hash exacto. Receptor/cola/worker normal, Python/PHP con paridad por tabla. 006 propuesta añade `organizer_event_context`; grafo pequeño en tablas vivas, **sin pertenencia a cut_events ni filas de rankings/instantáneas nacionales**. Savepoint: 006 ausente/rota o fallo del complemento deja importar/publicar el corte nacional. Repetir: `already_imported`, sin reaplicar ni backfill; un corte nuevo puede actualizar contexto pequeño marcado sin cambiar cortes anteriores. Pruebas comparan cálculo/exportación/public y hashes nacionales con/sin ampliación.
+- Propuesta de admisión para el top de organizador: **4 activos y 3 sets válidos**, pendiente del dueño; no aplicada. Contrato para Claude: unir eventos nacionales y eventos marcados, deduplicar y filtrar temporada/organizador verificado, declarar cobertura y fecha del contexto. No se tocó organizador.*, top.php ni «Mis torneos».
+- Local: 90 pruebas del pipeline, 9 esquema, 8 del complemento/circuito en MariaDB 13.0.2 desechable; receptor HTTP real, paridad completa, corrección, repetición, migración ausente/rota y fallos SQL/paridad. Worker fixture pequeño 15.409 B/2.689 B gzip, 2 MiB; sintético 5.000 games, 1.339.067 B/59.236 B gzip, **54 MiB** y 0,988 s, por debajo de 4/32 MiB y 512M. No son medidas del paquete completo de producción. Verificar matriz CI final MySQL 8.0/MariaDB 10.11 en la PR.
+- **Sin producción SQL, migración, fusión ni despliegue.** Seguro antes del domingo solo con ampliación apagada y CI correcta; recomiendo activación/migración el lunes con orden del dueño y cobertura aprobada. Si no se activa, el corte del domingo funciona como hoy.
+
 
 
 

@@ -175,12 +175,161 @@ function sr_catalog(array $c): void {
         $tournaments[$row['tournament_id']] = $identity;
     }
 }
+// V4 is a transport extension. Project exactly the original V1-V3 package before SQL:
+// cuts.source_hash and all immutable national ledgers continue using its original hash.
+function sr_organizer_validate(stdClass $context, array $base, stdClass $coreObject): void {
+    $c = json_decode(sr_json($context), true, 512, JSON_THROW_ON_ERROR);
+    $keys = array_keys($c); sort($keys); sr_require($keys === ['capturedAt','eligibility','entities','schemaVersion']);
+    sr_require($c['schemaVersion'] === 1 && $c['capturedAt'] === $base['content']['capturedAt']);
+    $names = ['entrant_players','entrants','events','players','set_slots','sets','tournaments'];
+    $found = array_keys($c['entities']); sort($found); sr_require($found === $names);
+    $merged = json_decode(sr_json($coreObject), false, 512, JSON_THROW_ON_ERROR);
+    $tables = $c['entities']; $old = $base['content']['entities']; $eids = sr_index($tables['events']);
+    sr_require(is_array($context->eligibility) && count($c['eligibility']) === count($eids));
+    $evidence = []; foreach ($c['eligibility'] as $r) {
+        $keys = array_keys($r); sort($keys); sr_require($keys === ['entrant_size','event_id','is_online','state'] && isset($eids[$r['event_id']]) && !isset($evidence[$r['event_id']])
+            && $r['is_online'] === false && $r['state'] === 'COMPLETED' && $r['entrant_size'] === 1); $evidence[$r['event_id']] = true;
+    }
+    sr_require(count($eids) >= 1 && count($eids) <= 10 && !array_intersect_key($eids, sr_index($old['events'])));
+    foreach (['entrants','sets'] as $name) sr_require(!array_intersect_key(sr_index($tables[$name]), sr_index($old[$name])));
+    foreach ($names as $name) {
+        sr_require(is_array($context->entities->$name)); $indexed = []; $extra = [];
+        $key = static function ($r) use ($name) { return isset($r['id']) ? (string)$r['id'] : ($name === 'set_slots' ? $r['set_id'].':'.$r['slot_index'] : $r['entrant_id'].':'.$r['player_id']); };
+        foreach ($old[$name] as $r) $indexed[$key($r)] = $r;
+        foreach ($tables[$name] as $r) {
+            $id = $key($r); sr_require(!isset($extra[$id])); $extra[$id] = true;
+            if (isset($indexed[$id])) sr_require(in_array($name, ['players','tournaments'], true) && sr_json((object)$indexed[$id]) === sr_json((object)$r));
+        }
+        $merged->entities->$name = array_merge($merged->entities->$name, array_values(array_filter($context->entities->$name, static function ($r) use ($indexed,$key) { return !isset($indexed[$key((array)$r)]); })));
+    }
+    sr_package(sr_json((object)['content'=>$merged,'sha256'=>hash('sha256',sr_json($merged))]));
+    $tournaments = sr_index($tables['tournaments']); $players = sr_index($tables['players']); $entrants = sr_index($tables['entrants']); $sets = sr_index($tables['sets']); $links = []; $slots = [];
+    foreach ($tables['entrant_players'] as $r) { sr_require(!isset($links[$r['entrant_id']])); $links[$r['entrant_id']] = $r['player_id']; }
+    foreach ($tables['set_slots'] as $r) { sr_require(isset($sets[$r['set_id']])); $slots[$r['set_id']][] = $r['entrant_id']; }
+    foreach ($tables['events'] as $event) {
+        sr_require(($tournaments[$event['tournament_id']]['country_code'] ?? null) === 'GT' && $event['videogame_id'] === 1386 && $event['entrant_size'] === 1);
+        sr_int($event['registered_entrants'], 1, 19);
+        sr_require($event['starts_at'] !== null && $event['starts_at'] <= sr_at($c['capturedAt']));
+        $active = []; $valid = 0;
+        foreach ($tables['sets'] as $match) {
+            if ($match['event_id'] !== $event['id']) continue;
+            sr_require($match['status'] === 'completed' && $match['source_state'] === 3);
+            if ($match['outcome_type'] === 'competitive') {
+                $pair = $slots[$match['id']] ?? [];
+                sr_require(count($pair) === 2 && $pair[0] !== null && $pair[1] !== null && $pair[0] !== $pair[1] && isset($links[$pair[0]],$links[$pair[1]]));
+                $active[$links[$pair[0]]] = true; $active[$links[$pair[1]]] = true; $valid++;
+            }
+        }
+        sr_require($event['active_players'] === count($active) && $valid >= 1 && count($active) >= 2);
+    }
+    foreach (array_merge($tables['entrants'],$tables['sets']) as $r) sr_require(isset($eids[$r['event_id']]));
+    $wantedT = []; foreach ($tables['events'] as $e) $wantedT[$e['tournament_id']] = true;
+    $wantedP = []; foreach ($links as $p) $wantedP[$p] = true;
+    sr_require(!array_diff_key($tournaments,$wantedT) && !array_diff_key($wantedT,$tournaments) && !array_diff_key($players,$wantedP) && !array_diff_key($wantedP,$players));
+    sr_require(!array_diff_key($sets,$slots));
+    foreach (['players','tournaments','events','entrants','sets'] as $name) foreach ($tables[$name] as $r) sr_require($r['synced_at'] === sr_at($c['capturedAt']));
+}
+function sr_organizer_columns(): string { return 'event_id cut_id captured_at active_players valid_sets context_hash'; }
+function sr_organizer_plan(PDO $db, array $context): array {
+    $plan = ['status'=>'migration_missing','events'=>count($context['entities']['events'])];
+    if (!sr_query($db,"SELECT version FROM schema_migrations WHERE version='006_organizer_event_context'")) return $plan;
+    try {
+        sr_require(sr_query($db,"SELECT ENGINE FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='organizer_event_context'") === [['InnoDB']]);
+        $columns = array_column(sr_query($db,'SHOW COLUMNS FROM organizer_event_context'),0);
+        sr_require(!array_diff(explode(' ',sr_organizer_columns()),$columns));
+        $plan['status'] = 'ready';
+    } catch (Throwable $e) { $plan['status'] = 'schema_unavailable'; }
+    return $plan;
+}
+function sr_import_organizer(PDO $db, array $context, int $cut, array $plan, array $columns): array {
+    if ($plan['status'] !== 'ready') return $plan;
+    $db->exec('SAVEPOINT organizer_context');
+    try {
+        $t = $context['entities']; $eventIds = array_column($t['events'],'id');
+        foreach ($t['events'] as $event) {
+            $eid = $event['id']; sr_require(!sr_query($db,'SELECT 1 FROM cut_events WHERE event_id=? LIMIT 1',[$eid]));
+            $existing = sr_query($db,'SELECT tournament_id FROM events WHERE id=?',[$eid]);
+            sr_require(!$existing || (int)$existing[0][0] === $event['tournament_id']);
+            foreach (['entrants','sets'] as $name) {
+                $parents = array_column(sr_query($db,'SELECT id,event_id FROM '.$name),1,0);
+                foreach ($t[$name] as $r) sr_require(!isset($parents[$r['id']]) || (int)$parents[$r['id']] === $r['event_id']);
+            }
+            sr_require(!sr_query($db,'SELECT 1 FROM games g JOIN sets s ON s.id=g.set_id WHERE s.event_id=? LIMIT 1',[$eid]));
+            sr_require(!sr_query($db,'SELECT 1 FROM sets WHERE event_id=? LIMIT 1',[$eid]) || sr_query($db,'SELECT 1 FROM organizer_event_context WHERE event_id=?',[$eid]));
+        }
+        $expectedGlobal = [];
+        foreach (['players','tournaments'] as $name) {
+            $cols = explode(' ',$columns[$name]); $expectedGlobal[$name] = [];
+            foreach ($t[$name] as $r) {
+                $present = sr_query($db,'SELECT '.implode(',',$cols).' FROM '.$name.' WHERE id=? FOR UPDATE',[$r['id']]);
+                $expectedGlobal[$name][] = $present ? $present[0] : array_map(static function ($k) use ($r) { return $r[$k] ?? null; },$cols);
+            }
+            sr_insert($db,$name,$columns[$name],$t[$name],true);
+        }
+        foreach ($eventIds as $eid) {
+            sr_query($db,'DELETE FROM set_slots WHERE event_id=?',[$eid]); sr_query($db,'DELETE FROM sets WHERE event_id=?',[$eid]);
+            sr_query($db,'DELETE ep FROM entrant_players ep JOIN entrants e ON e.id=ep.entrant_id WHERE e.event_id=?',[$eid]);
+            sr_query($db,'DELETE FROM entrants WHERE event_id=?',[$eid]);
+        }
+        foreach ($t['events'] as $r) {
+            $cols = explode(' ',$columns['events']);
+            if (sr_query($db,'SELECT 1 FROM events WHERE id=?',[$r['id']])) {
+                $update = array_slice($cols,1); $values = array_map(static function ($k) use ($r) { return $r[$k] ?? null; },$update); $values[] = $r['id'];
+                sr_query($db,'UPDATE events SET '.implode(',',array_map(static function ($k) { return $k.'=?'; },$update)).' WHERE id=?',$values);
+            } else sr_insert($db,'events',$columns['events'],[$r]);
+        }
+        foreach (['entrants','entrant_players','sets','set_slots'] as $name) sr_insert($db,$name,$columns[$name],$t[$name]);
+        $markers = []; $hash = hash('sha256',sr_json(json_decode(json_encode($context,JSON_THROW_ON_ERROR),false,512,JSON_THROW_ON_ERROR)));
+        foreach ($t['events'] as $e) {
+            $valid = count(array_filter($t['sets'],static function ($s) use ($e) { return $s['event_id'] === $e['id'] && $s['outcome_type'] === 'competitive'; }));
+            $markers[] = ['event_id'=>$e['id'],'cut_id'=>$cut,'captured_at'=>sr_at($context['capturedAt']),'active_players'=>$e['active_players'],'valid_sets'=>$valid,'context_hash'=>$hash];
+            sr_query($db,'DELETE FROM organizer_event_context WHERE event_id=?',[$e['id']]);
+        }
+        sr_insert($db,'organizer_event_context',sr_organizer_columns(),$markers);
+        foreach ($columns as $name=>$col) {
+            if (!isset($t[$name])) continue;
+            if (in_array($name,['players','tournaments'],true)) {
+                $actual = []; foreach ($t[$name] as $r) $actual[] = sr_query($db,'SELECT '.str_replace(' ',',',$columns[$name]).' FROM '.$name.' WHERE id=?',[$r['id']])[0];
+                sr_equal_rows($actual,$expectedGlobal[$name]); continue;
+            }
+            $cols = explode(' ',$col); $rows = [];
+            foreach ($eventIds as $eid) {
+                if ($name === 'events') $rows = array_merge($rows,sr_query($db,'SELECT '.implode(',',$cols).' FROM events WHERE id=?',[$eid]));
+                elseif (in_array($name,['entrants','sets'],true)) $rows = array_merge($rows,sr_query($db,'SELECT '.implode(',',$cols).' FROM '.$name.' WHERE event_id=?',[$eid]));
+                else {
+                    $parent = $name === 'entrant_players' ? 'entrants' : 'sets'; $key = $name === 'entrant_players' ? 'entrant_id' : 'set_id';
+                    $rows = array_merge($rows,sr_query($db,'SELECT '.implode(',',array_map(static function ($k) { return 'r.'.$k; },$cols)).' FROM '.$name.' r JOIN '.$parent.' p ON p.id=r.'.$key.' WHERE p.event_id=?',[$eid]));
+                }
+            }
+            $wanted = array_map(static function ($r) use ($cols) { return array_map(static function ($k) use ($r) { return $r[$k] ?? null; },$cols); },$t[$name]);
+            sr_equal_rows($rows,$wanted);
+        }
+        $cols = explode(' ',sr_organizer_columns());
+        sr_equal_rows(sr_query($db,'SELECT '.implode(',',$cols).' FROM organizer_event_context WHERE cut_id=?',[$cut]),array_map(static function ($r) use ($cols) { return array_map(static function ($k) use ($r) { return $r[$k]; },$cols); },$markers));
+        $db->exec('RELEASE SAVEPOINT organizer_context'); $plan['status'] = 'imported';
+    } catch (Throwable $e) {
+        $db->exec('ROLLBACK TO SAVEPOINT organizer_context'); $db->exec('RELEASE SAVEPOINT organizer_context'); $plan['status'] = 'skipped_context_error';
+    }
+    return $plan;
+}
+
 function sr_package(string $raw): array {
     sr_require(strlen($raw) <= 32 * 1024 * 1024);
     $obj = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
     sr_require($obj instanceof stdClass && sr_json($obj) === $raw); // Reject duplicate keys, floats, lossy IDs and noncanonical encoding.
     sr_require(array_keys(get_object_vars($obj)) === ['content', 'sha256'] && is_string($obj->sha256)
         && hash_equals(hash('sha256', sr_json($obj->content)), $obj->sha256));
+    if (($obj->content->packageVersion ?? null) === 4) {
+        sr_require(in_array($obj->content->nationalPackageVersion ?? null, [1,2,3], true) && is_string($obj->content->nationalSha256 ?? null));
+        $core = clone $obj->content;
+        unset($core->nationalPackageVersion,$core->nationalSha256,$core->organizerContext);
+        $core->packageVersion = $obj->content->nationalPackageVersion;
+        $base = sr_package(sr_json((object)['content'=>$core,'sha256'=>$obj->content->nationalSha256]));
+        sr_require(($obj->content->organizerContext ?? null) instanceof stdClass);
+        sr_organizer_validate($obj->content->organizerContext,$base,$core);
+        $base['_organizer'] = json_decode(sr_json($obj->content->organizerContext),true,512,JSON_THROW_ON_ERROR);
+        return $base;
+    }
     $p = json_decode($raw, true, 512, JSON_THROW_ON_ERROR); $c = $p['content']; $v = $c['public']; $tables = $c['entities'];
     sr_require(in_array($c['packageVersion'], [1, 2, 3], true) && $c['capturedAt'] === $v['generatedAt']);
     if ($c['packageVersion'] === 3) {
@@ -340,12 +489,15 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
             sr_require(($engines[$t] ?? null) === 'InnoDB', 'schema_invalid');
         $db->exec("SET time_zone='+00:00'"); $db->exec("SET SESSION sql_mode=CONCAT(@@sql_mode,',STRICT_TRANS_TABLES')");
         $catalog = sr_catalog_plan($db, $c);
+        $organizer = isset($package['_organizer']) ? sr_organizer_plan($db,$package['_organizer']) : null;
         $existing = sr_query($db, 'SELECT id,source_hash,status FROM cuts WHERE generated_at=? AND season_year=? AND method_version=?', $identity);
         if ($existing) {
             sr_require($existing[0][1] === $package['sha256'] && $existing[0][2] === 'published', 'cut_conflict');
             sr_parity($db, $p, (int)$existing[0][0], $package['_public_json']);
             if ($catalog['status'] === 'ready') $catalog['status'] = 'not_reapplied';
-            return ['status' => 'already_imported', 'cutId' => (int)$existing[0][0], 'catalog' => $catalog];
+            $report = ['status' => 'already_imported', 'cutId' => (int)$existing[0][0], 'catalog' => $catalog];
+            if ($organizer !== null) { $organizer['status'] = 'not_reapplied'; $report['organizer'] = $organizer; }
+            return $report;
         }
         $cuts = sr_query($db, 'SELECT generated_at,status FROM cuts ORDER BY generated_at'); $moments = [];
         foreach ($cuts as $cut) { sr_require($cut[1] === 'published', 'unfinished_cut_present'); $moments[] = $cut[0]; }
@@ -356,7 +508,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         foreach (sr_scopes($p) as $view) foreach ($view['players'] as $r) foreach ($r['mains'] as $m)
             sr_require(isset($known[sr_id($m['characterId'])]), 'character_missing');
         foreach ($c['entities']['game_selections'] ?? [] as $r) sr_require(isset($known[sr_id($r['character_id'])]), 'character_missing');
-        if (!$apply) return ['status' => 'validated_no_writes', 'catalog' => $catalog];
+        if (!$apply) return ['status' => 'validated_no_writes', 'catalog' => $catalog] + ($organizer !== null ? ['organizer'=>$organizer] : []);
         $db->beginTransaction();
         $s = $db->prepare('INSERT INTO cuts(generated_at,season_year,method_version,season_label,schema_version,character_captured_at,public_snapshot,source_hash) VALUES (?,?,?,?,?,?,?,?)');
         $s->execute(array_merge($identity, [$p['seasonLabel'], $p['schemaVersion'], sr_at($p['characterCapturedAt']), $package['_public_json'], $package['sha256']]));
@@ -394,8 +546,10 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         sr_insert($db, 'cut_set_results', 'cut_id scope set_id event_id winner_id loser_id winner_tag loser_tag display_score source_hash', $results);
         sr_insert($db, 'rankings', 'cut_id scope player_id player_tag rank_position previous_rank previous_cut_at previous_cut_id rating wins losses events_count sets_queried sets_with_selections games_with_selections ambiguous_games', $rankings);
         sr_insert($db, 'player_characters', 'cut_id scope player_id character_id games', $mains);
-        sr_parity($db, $p, $cut, $package['_public_json']); sr_query($db, "UPDATE cuts SET status='published' WHERE id=?", [$cut]); $db->commit();
-        return ['status' => 'imported', 'cutId' => $cut, 'catalog' => $catalog];
+        sr_parity($db, $p, $cut, $package['_public_json']);
+        if ($organizer !== null) $organizer = sr_import_organizer($db,$package['_organizer'],$cut,$organizer,$columns);
+        sr_query($db, "UPDATE cuts SET status='published' WHERE id=?", [$cut]); $db->commit();
+        return ['status' => 'imported', 'cutId' => $cut, 'catalog' => $catalog] + ($organizer !== null ? ['organizer'=>$organizer] : []);
     } catch (Throwable $e) { if ($db->inTransaction()) $db->rollBack(); throw $e; }
     finally { sr_query($db, 'SELECT RELEASE_LOCK(?)', [$lock]); }
 }

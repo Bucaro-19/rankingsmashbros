@@ -71,6 +71,8 @@ def main():
     parser.add_argument('--start',default='2026-01-01'); parser.add_argument('--end')
     parser.add_argument('--limit',type=int,default=MAX_EVENTS)
     args=parser.parse_args()
+    if args.national is not None and args.output.resolve()==args.national.resolve():
+        parser.exit(1,'La salida de contexto no puede sustituir la captura nacional.\n')
     # Delete only our own old output: a failed optional capture must never reuse old context.
     args.output.unlink(missing_ok=True)
     client=Client(os.environ.get('STARTGG_TOKEN','').strip())

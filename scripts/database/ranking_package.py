@@ -384,6 +384,12 @@ def build_package(raw, public):
 def validate_package(package):
     """Validate normalized identities and published relationships before SQL writes."""
     require(set(package) == {'content', 'sha256'} and package['sha256'] == digest(package['content']), 'Hash de paquete inválido.')
+    if package['content'].get('packageVersion') == 4:
+        from organizer_context import national_package, validate_context
+        core = national_package(package)
+        validate_package(core)
+        validate_context(package['content']['organizerContext'], core)
+        return package['content']
     c = package['content']; public = c['public']; tables = c['entities']
     require(type(c['packageVersion']) is int and c['packageVersion'] in (1,2,3) and c['capturedAt'] == public['generatedAt'], 'Versión/captura del paquete inválida.')
     instant(c['capturedAt'])
@@ -444,10 +450,20 @@ def validate_package(package):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('capture', type=Path); parser.add_argument('public', type=Path); parser.add_argument('output', type=Path)
+    parser.add_argument('--organizer-context', type=Path, help='Complemento opcional; cualquier fallo conserva el paquete nacional V1–V3')
     args = parser.parse_args()
     try:
-        result = build_package(json.loads(args.capture.read_text()), json.loads(args.public.read_text()))
+        raw = json.loads(args.capture.read_text())
+        result = build_package(raw, json.loads(args.public.read_text()))
         validate_package(result)
+        if args.organizer_context and args.organizer_context.exists():
+            try:
+                from organizer_context import extend_package
+                extended = extend_package(result, raw, json.loads(args.organizer_context.read_text()))
+                validate_package(extended)
+                result = extended
+            except (ValueError, KeyError, TypeError, OSError, OverflowError):
+                print('Complemento de organizador omitido; paquete nacional intacto.')
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(canonical(result), encoding='utf-8')
         args.output.chmod(0o600)
