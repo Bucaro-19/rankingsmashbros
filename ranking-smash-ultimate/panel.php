@@ -41,6 +41,7 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
 <?php if ($state === 'owner'): ?>
   <script src="./panel-model.js?v=20261008-1" defer></script><script src="./panel.js?v=20261007-2" defer></script>
 <?php endif; ?>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
 <body data-state="<?= $state ?>">
   <a class="skip-link" href="#panel-content">Saltar al contenido</a>

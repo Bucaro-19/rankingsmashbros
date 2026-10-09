@@ -37,7 +37,7 @@
     const scene=sum(c.sceneGames)?row(`${escape(P)} contra ${escape(M)} en Guatemala`,rec(c.sceneGames),plural(sum(c.sceneGames),'game','games')):row(`${escape(P)} contra ${escape(M)} en Guatemala`,'—','Sin games registrados');
     return `<article class="pr-card ${good?'good':'avoid'}"><div class="pr-card-head"><span class="pr-icon big">${icon(c.slug,46)}</span><div><p class="pr-tags"><span>${good?'✓ Conviene':'× Mejor evita'}</span>${c.mine?'<span class="mine">★ Tu elegido</span>':''}</p><h3>${escape(P)}</h3></div>
         <span class="pr-conf ${conf[1]}"><span aria-hidden="true">${conf[0]}</span> ${c.confidence}</span></div>
-      ${mine}${his}${scene}
+      <p class="pr-cols" aria-hidden="true"><span>De quién es el récord</span><span>Ganados–Perdidos</span></p>${mine}${his}${scene}
       <p class="pr-basis">Confianza ${c.confidence} · basado en ${plural(sum(c.mySets),'set tuyo','sets tuyos')}, ${plural(sum(c.hisGames),'game suyo','games suyos')} y ${plural(sum(c.sceneGames),'game','games')} de la escena</p>
       <details class="pr-why"><summary>${good?'Por qué funciona':'Por qué cuesta'}</summary><div><p class="pr-guide-tag">Guía general del juego · no son datos del ranking</p>
         ${c.guide?`<p class="pr-guide">${escape(c.guide)}</p>`:`<p class="pr-guide none">— Todavía no tenemos guía para ${escape(P)} contra ${escape(M)}. Los datos de arriba siguen valiendo.</p>`}</div></details></article>`;
@@ -60,13 +60,14 @@
   function vsChars() {
     const d=data.deep, r=d.rival, rv=escape(data.rival.tag);
     const rows=list=>list.map(x=>{const n=x.won+x.lost, few=n<5;return `<li><span class="pr-icon">${icon(x.slug)}</span><span class="pr-row-main"><b>${escape(name(x.slug))}</b><span class="pr-meter" aria-hidden="true"><span style="width:${Math.round(100*x.won/n)}%"></span></span><small class="${few?'few':''}">${few?`≈ ${plural(n,'game','games')} · menos de 5`:`${n} games · gana el ${Math.round(100*x.won/n)}%`}</small></span><span class="pr-rec"><b>${x.won}–${x.lost}</b><small>games</small></span></li>`;}).join('');
+    const gp=`<p class="pr-cols" aria-hidden="true"><span>Personaje rival</span><span>${rv}: ganados–perdidos</span></p>`;
     const any=d.vsChars.hard.length||d.vsChars.good.length, few=[...d.vsChars.hard,...d.vsChars.good].some(x=>x.won+x.lost<5);
     const foot=`<p class="pr-note">Solo cuenta games con personaje registrado: ${r.coveredSets} de ${plural(r.totalSets,'set','sets')}.</p>`;
     if(!any)return `<section id="le-cuesta" class="pr-section">${head(4,`Récord de ${rv} en games`,'Le cuesta contra',`Personajes contra los que ${rv} tiene peor récord. Las cifras son sus games ganados–perdidos.`)}${empty(noChars())}</section>`;
     return `<section id="le-cuesta" class="pr-section">${head(4,`Récord de ${rv} en games`,'Le cuesta contra',`Personajes contra los que ${rv} tiene peor récord. Las cifras son sus games ganados–perdidos.`)}
       ${few?small('Algunas filas tienen menos de 5 games.','Un par de games más pueden cambiarlas; van marcadas con ≈.'):''}
-      ${d.vsChars.hard.length?`<ul class="pr-rows hard">${rows(d.vsChars.hard)}</ul>`:empty(`En este corte no tiene récord negativo contra ningún personaje registrado.`)}
-      <h3 class="pr-sub">Le va bien contra</h3>${d.vsChars.good.length?`<ul class="pr-rows good">${rows(d.vsChars.good)}</ul>`:empty('En este corte no tiene récord positivo contra ningún personaje registrado.')}${foot}</section>`;
+      ${d.vsChars.hard.length?`${gp}<ul class="pr-rows hard">${rows(d.vsChars.hard)}</ul>`:empty(`En este corte no tiene récord negativo contra ningún personaje registrado.`)}
+      <h3 class="pr-sub">Le va bien contra</h3>${d.vsChars.good.length?`${gp}<ul class="pr-rows good">${rows(d.vsChars.good)}</ul>`:empty('En este corte no tiene récord positivo contra ningún personaje registrado.')}${foot}</section>`;
   }
   function setPattern() {
     const p=data.deep.setPattern, rv=escape(data.rival.tag);
@@ -91,7 +92,7 @@
       const cell=(pair,who,win)=>`<span class="pr-cell ${win?'win':''}" aria-label="${who}: ${pair[0]} ganados, ${pair[1]} perdidos"><b>${rec(pair)}</b><small>${plural(sum(pair),'set','sets')}</small></span>`;
       return `<li><span class="pr-row-main"><b>${escape(x.alias)}</b><small class="v-${verdict[1]}">${verdict[0]}</small></span>${cell(x.me,'Tú',verdict[1]==='me')}${cell(x.him,data.rival.tag,verdict[1]==='him')}</li>`;}).join('');
     return `<section id="en-comun" class="pr-section">${head(6,'Sets en este corte','Rivales en común','Jugadores que ambos enfrentaron, con el récord en sets de cada uno.')}
-      ${list.length?`<div class="pr-common-head" aria-hidden="true"><span>Rival</span><span>Tú</span><span>${rv}</span></div><ul class="pr-rows common">${rows}</ul>
+      ${list.length?`<div class="pr-common-head" aria-hidden="true"><span>Rival · ganados–perdidos</span><span>Tú</span><span>${rv}</span></div><ul class="pr-rows common">${rows}</ul>
         ${data.deep.commonTotal>list.length?`<p class="pr-note">Se muestran los ${list.length} con más sets de ${data.deep.commonTotal} rivales en común.</p>`:''}
         <p class="pr-note">◀ Tú saliste mejor · Él salió mejor ▶ · = Parejo (menos de 10 puntos de diferencia en % de sets). El recuadro marcado es el mejor récord.</p>`
         :empty('No tienen rivales en común en este corte. Cuando ambos jueguen contra la misma persona, aparecerá aquí.')}</section>`;
@@ -99,7 +100,7 @@
   function tiers() {
     const t=data.deep.byTier;
     const block=(title,pair)=>`<div class="pr-block ${sum(pair)?'has':'none'}"><p>${title}</p>${sum(pair)?`<b>${rec(pair)}</b><small>Ganó ${pair[0]} de ${plural(sum(pair),'set','sets')}${sum(pair)<5?' · ≈ menos de 5 sets':''}</small>`:'<b>—</b><small>Sin sets en este tramo</small>'}</div>`;
-    return `<section id="nivel" class="pr-section">${head(7,'Sus sets por puesto del rival','Contra qué nivel rinde','')}
+    return `<section id="nivel" class="pr-section">${head(7,'Sus sets por puesto del rival','Contra qué nivel rinde',`Las cifras son los sets ganados–perdidos de ${escape(data.rival.tag)}.`)}
       ${t?`<div class="pr-grid3">${block('Top 10',t.top10)}${block('Top 11–30',t.t11_30)}${block('Resto',t.rest)}</div>`:empty('Aún no tiene sets contra rivales clasificados en este corte.')}
       <p class="pr-note">«Resto del ranking» son los clasificados del puesto 31 en adelante. Los sets contra rivales sin puesto no entran aquí, y un rival sin puesto no es un rival débil: puede ser extranjero o tener poca actividad en el corte.</p></section>`;
   }
@@ -147,7 +148,7 @@
     document.title=`Prepara el set contra ${data.rival.tag} — Ranking Smash Bros`;
     if(!data.deep){renderLocked();return;}
     const d=data.deep;
-    root.innerHTML=`${intro(false)}<div class="pr-columns"><div>${cards(1,'counters',d.counters,true)}${cards(2,'evita',d.avoid,false)}${toolkit()}</div><div>${vsChars()}${setPattern()}${common()}${tiers()}</div></div>${foot()}`;
+    root.innerHTML=`${intro(false)}<p class="pr-read" role="note"><strong>Cómo leer los marcadores.</strong> Siempre van ganados–perdidos: el primer número son las victorias de quien se nombra en esa fila o en ese título. Donde dice «Tú», es tu récord; donde dice ${escape(data.rival.tag)}, es el suyo.</p><div class="pr-columns"><div>${cards(1,'counters',d.counters,true)}${cards(2,'evita',d.avoid,false)}${toolkit()}</div><div>${vsChars()}${setPattern()}${common()}${tiers()}</div></div>${foot()}`;
   }
   async function load() {
     if(!rivalId){root.innerHTML=`<section class="pr-sober"><h1>Elige <span>un rival.</span></h1><p>Esta pantalla prepara el set contra un jugador concreto.</p><a class="pr-cta blue" href="./analisis.html"><span>Buscar rival</span></a></section>`;return;}

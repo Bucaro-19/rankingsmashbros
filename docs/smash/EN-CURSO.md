@@ -3,6 +3,12 @@
 
 
 
+## Identidad nueva conectada y lados de los marcadores (9/oct, madrugada)
+
+- **Identidad de Claude Design** (paquete `marca-rsb`, monograma de podio): favicon (`favicon.svg`, PNG 16/32/48), `apple-touch-icon.png`, íconos 192/512/maskable y `site.webmanifest` en la raíz; `assets/rsb-logo-gt-oscuro.svg` y `assets/rsb-mark.svg`. El encabezado muestra el logo con etiqueta GT en escritorio y solo el monograma en móvil. Todos están en `FILES` de `deploy.py`. No lo llevan `opiniones.php` (su CSP no permite imágenes) ni el encabezado antiguo de los dos estudios.
+- **Pendiente de la identidad:** la imagen para compartir sigue diciendo «Smash GT» (el paquete no trajo una nueva); `top.php` conserva su marca de texto.
+- **Marcadores con dueño:** en `analisis.html`, el récord entre ustedes se muestra como «Tú ganaste N – Ganó {rival} N»; cada lista lleva encabezado de columna («Tu récord» / «Récord de {rival}» · «Ganados–Perdidos»; en el historial, «Tus games – los suyos»). En `preparar.html` hay una nota «Cómo leer los marcadores» y encabezados en las tarjetas, en «Le cuesta contra» y en rivales en común. Regla: el primer número son las victorias de quien se nombra en la fila o el título. No cambia ningún dato ni la respuesta del servidor.
+
 ## El sitio pasa a llamarse «Ranking Smash Bros» (9/oct, madrugada)
 
 Decisión del dueño: la marca es el dominio, **Ranking Smash Bros**, para poder expandirse a otros países; «GT» queda como etiqueta de país.
