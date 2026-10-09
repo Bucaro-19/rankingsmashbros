@@ -1,5 +1,13 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Pagos de premium en pausa (9/oct, tarde)
+
+Recurrente avisó que, por políticas de riesgo de Visa, **ya no procesa tarjetas en la cuenta** (giro «CONTINUOUS SUBSCRIPTION»); las transferencias siguen. El dueño apeló y el caso está con una persona de su equipo.
+
+- Interruptor: `ranking-smash-ultimate/pagos-en-pausa.txt` con `1` pausa los pagos nuevos; con `0` los abre (cambiar el archivo y desplegar). `premium-api.php` devuelve `paused` y rechaza `checkout` con `premium_paused`; `premium.js` muestra «Pagos en pausa temporalmente» en lugar del botón. Leer el estado, cancelar y los periodos ya pagados siguen funcionando.
+- Conector de Recurrente disponible en Claude Code (solo lectura por decisión propia): cuenta activa, sin cuentas bancarias registradas, saldo 2,61 USD. El dueño registra su cuenta bancaria él mismo.
+- Si la respuesta final es no: cobrar por transferencia con activación manual, o cambiar de pasarela.
+
 ## Primer pago real y lista de premium en el panel (9/oct, tarde)
 
 - **Pago real confirmado** (solo lectura en producción): la suscripción mensual del dueño está `active` en modo real desde el 9/oct 14:15 GT, con periodo hasta el 9/nov; el aviso `subscription.create` de Recurrente quedó `synced`. Hay dos intentos `pending` sin pago (8 y 9/oct) que no dan acceso.
