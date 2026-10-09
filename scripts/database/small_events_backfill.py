@@ -67,7 +67,14 @@ def validate_inventory(data):
 
 
 def normalize_small(raw):
-    indexed, ep, slots, _, _, _ = normalize_capture_entities(dict(generatedAt=raw['capturedAt'], events=raw['events'], players=raw['players'], sets=raw['sets']))
+    # A completed start.gg event can still contain unplayed bracket slots. Do not turn
+    # those pending sets into history/results, or discard its completed played sets.
+    for m in raw['sets'].values():
+        state = integer(m.get('state'), maximum=255)
+        require(state == 3 or (state in (1,2) and m.get('winnerId') is None), 'Unfinished set has winner or unknown state.')
+    completed = {sid:m for sid,m in raw['sets'].items() if m['state'] == 3}
+    events = [dict(e,setsFetched=sum(identifier(m['event']['id']) == identifier(e['id']) for m in completed.values())) for e in raw['events']]
+    indexed, ep, slots, _, _, _ = normalize_capture_entities(dict(generatedAt=raw['capturedAt'], events=events, players=raw['players'], sets=completed))
     entities = {name:[rows[k] for k in sorted(rows)] for name,rows in indexed.items()}
     entities['entrant_players'] = [ep[k] for k in sorted(ep)]
     entities['set_slots'] = [slots[k] for k in sorted(slots)]
@@ -105,7 +112,8 @@ def capture_batch(client, inv, start, end, *, limit=6, catalog=None, clock=time.
     elapsed = round((clock()-started)*1000)
     require(elapsed <= MAX_SECONDS*1000 and client.calls-before <= MAX_ATTEMPTS, 'Capture budget.')
     context = normalize_small(raw)
-    audit = dict(summary,apiRequests=client.calls-before,contextRequests=raw['requests'],elapsedMilliseconds=elapsed)
+    audit = dict(summary,apiRequests=client.calls-before,contextRequests=raw['requests'],elapsedMilliseconds=elapsed,
+        ignoredUnfinishedSets=len(raw['sets'])-len(context['entities']['sets']))
     c = dict(backfillVersion=1,kind='small_events_backfill',anchor=inv['anchor'],season=source['season'],context=context,audit=audit)
     package = dict(content=c,sha256=digest(c)); validate_batch(package)
     body = canonical(package).encode()
@@ -119,7 +127,7 @@ def validate_batch(package):
     require(set(c) == {'backfillVersion','kind','anchor','season','context','audit'} and type(c['backfillVersion']) is int
         and c['backfillVersion'] == 1 and c['kind'] == 'small_events_backfill', 'Batch format.')
     validate_anchor(c['anchor']); validate_context(c['context'])
-    a = c['audit']; require(set(a) == {'candidateEvents','markedCandidates','protectedCandidates','missingEvents','selectedEvents','remainingEvents','catalogRequests','contextRequests','apiRequests','elapsedMilliseconds'}, 'Audit format.')
+    a = c['audit']; require(set(a) == {'candidateEvents','markedCandidates','protectedCandidates','missingEvents','selectedEvents','remainingEvents','catalogRequests','contextRequests','apiRequests','elapsedMilliseconds','ignoredUnfinishedSets'}, 'Audit format.')
     for n in a.values(): integer(n)
     require(a['selectedEvents'] == len(c['context']['entities']['events']) and a['selectedEvents'] <= MAX_EVENTS
         and a['catalogRequests']+a['contextRequests'] == a['apiRequests'] <= MAX_ATTEMPTS

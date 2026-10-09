@@ -55,6 +55,17 @@ def package(inv=None,count=2):
 
 
 class BackfillContracts(unittest.TestCase):
+    def test_unplayed_sets_in_completed_event_do_not_invent_results_or_change_source(self):
+        _,_,raw=captures();raw['capturedAt']=OBSERVED
+        pending=copy.deepcopy(raw['sets']['700']);pending.update(id=799,state=1,winnerId=None,displayScore=None)
+        raw['sets']['799']=pending;raw['events'][0]['setsFetched']+=1
+        before=copy.deepcopy(raw)
+        context=backfill.normalize_small(raw)
+        self.assertEqual(len(context['entities']['sets']),2);self.assertEqual(raw,before)
+        self.assertEqual(context['entities']['events'][0]['active_players'],3)
+        raw['sets']['799']['winnerId']=2001
+        with self.assertRaises(ValueError):backfill.normalize_small(raw)
+
     def test_oldest_missing_only_and_no_national_mutation_or_games(self):
         inv=fake_inventory();inv['markedEventIds']=[200,202];inv['protectedEventIds'] += [201]
         catalog=fake_catalog();before=copy.deepcopy((inv,catalog));client=Client()
