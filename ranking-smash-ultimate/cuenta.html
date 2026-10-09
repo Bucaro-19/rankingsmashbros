@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0B0F1A"><meta name="referrer" content="no-referrer">
-  <meta name="description" content="Tu cuenta de Smash GT: ranking nacional, historial disponible y personajes elegidos.">
+  <meta name="description" content="Tu cuenta de Ranking Smash Bros: ranking nacional, historial disponible y personajes elegidos.">
   <meta name="robots" content="noindex">
-  <title>Tu cuenta — Smash GT</title>
+  <title>Tu cuenta — Ranking Smash Bros</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./cuenta.css?v=20261009-4"><link rel="stylesheet" href="./organizador.css?v=20261008-2">
@@ -14,7 +14,7 @@
 </head>
 <body>
   <a class="skip-link" href="#account-content">Saltar al contenido</a>
-  <header class="account-header"><a class="account-brand" href="./"><span class="brand-mark">GT</span><span>SMASH GT<small>por ingporras</small></span></a>
+  <header class="account-header"><a class="account-brand" href="./"><span class="brand-mark">GT</span><span>RANKING SMASH BROS<small>por ingporras</small></span></a>
     <nav aria-label="Principal"><a href="./#ranking">Ranking</a><a href="./metodologia.html">Método</a><a href="./encuesta.php">Tu opinión</a></nav>
     <a id="header-account" href="./#ranking">Ver ranking ↗</a>
   </header>
@@ -32,7 +32,7 @@
         <p class="lead">Vincula tu cuenta de start.gg para ver tu perfil, elegir tus mains y seguir tu temporada.</p>
         <div id="login-notice" class="notice" role="status" hidden></div>
         <form id="oauth-form" action="./oauth.php" method="post"><input id="oauth-csrf" name="csrf" type="hidden"><button id="oauth-button" class="primary" type="submit"><span>Continuar con start.gg ↗</span></button></form>
-        <p class="note">La autorización ocurre en start.gg y luego regresas aquí. Tu contraseña se escribe allá: nunca pasa por Smash GT.</p>
+        <p class="note">La autorización ocurre en start.gg y luego regresas aquí. Tu contraseña se escribe allá: nunca pasa por Ranking Smash Bros.</p>
         <ul class="login-benefits"><li><strong>Recibimos</strong> tu alias, tu foto si existe y tu ID de start.gg.</li><li><strong>Te identificamos</strong> por ese ID, nunca solo por tu alias.</li><li><strong>No pedimos</strong> tu contraseña ni un token de API.</li><li>Puedes <strong>desvincular</strong> tu cuenta cuando quieras.</li></ul>
         <p class="login-foot">¿Solo quieres ver tu puesto? Es gratis y no necesitas cuenta. <a href="./#ranking">Buscar en el ranking ↗</a></p>
       </div>
@@ -69,7 +69,7 @@
             <div class="button-row"><button id="no-player-other" class="primary" type="button"><span>Usar otra cuenta</span></button><a class="outline" href="./#ranking">Ver ranking</a></div></section>
         </div>
       </div>
-      <details class="account-settings"><summary>Ajustes de cuenta</summary><div><button id="change-role" class="outline">Cambiar mis intereses</button><button id="logout" class="outline">Cerrar sesión</button><button id="disconnect" class="outline danger">Desvincular de Smash GT</button></div><p class="note">Desvincular cierra tus sesiones de Smash GT. Conserva tus preferencias y el ranking público; puedes volver a autorizar en start.gg.</p><p id="settings-error" role="alert" hidden></p></details>
+      <details class="account-settings"><summary>Ajustes de cuenta</summary><div><button id="change-role" class="outline">Cambiar mis intereses</button><button id="logout" class="outline">Cerrar sesión</button><button id="disconnect" class="outline danger">Desvincular de Ranking Smash Bros</button></div><p class="note">Desvincular cierra tus sesiones de Ranking Smash Bros. Conserva tus preferencias y el ranking público; puedes volver a autorizar en start.gg.</p><p id="settings-error" role="alert" hidden></p></details>
     </section>
     <section id="characters-screen" class="account-container" role="tabpanel" aria-labelledby="tab-characters" hidden><p class="kicker">Mis personajes</p><h1>Tu main<br><span>y dos más.</span></h1><p class="lead">Elegir personajes personaliza tu perfil. No cambia tus puntos, resultados ni los personajes detectados en el ranking público.</p>
       <p id="character-message" class="notice" role="status" hidden></p>

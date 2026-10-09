@@ -205,7 +205,7 @@
   $('discard-characters').addEventListener('click',()=>{chosen=[...saved];message('character-message','');renderCharacters();});
   $('save-characters').addEventListener('click',async()=>{saving=true;renderCharacters();try{await request({action:'characters',characters:chosen});saved=[...chosen];data.user.chosen=[...chosen];message('character-message','Personajes guardados. Ya se ven en tu perfil. El ranking público conserva sus personajes detectados.','success');}catch{message('character-message','No se guardaron tus cambios. Siguen aquí; intenta de nuevo.','error');}finally{saving=false;renderCharacters();}});
   async function closeAccount(action) {
-    if(action==='disconnect'&&!confirm('¿Desvincular tu cuenta de Smash GT? Se cerrarán tus sesiones. Puedes volver a autorizarla después.'))return;
+    if(action==='disconnect'&&!confirm('¿Desvincular tu cuenta de Ranking Smash Bros? Se cerrarán tus sesiones. Puedes volver a autorizarla después.'))return;
     try{await request({action});chosen=[...saved];await load();$('header-account').textContent='Ver ranking ↗';$('header-account').href='./#ranking';}catch{message('settings-error','No pudimos completar la operación. Intenta de nuevo.','error');}
   }
   $('logout').addEventListener('click',()=>closeAccount('logout'));$('disconnect').addEventListener('click',()=>closeAccount('disconnect'));

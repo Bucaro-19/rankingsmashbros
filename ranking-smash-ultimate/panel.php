@@ -34,7 +34,7 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Smash GT</title>
+  <title>Ranking Smash Bros</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./panel.css?v=20261009-1">
@@ -44,7 +44,7 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
 </head>
 <body data-state="<?= $state ?>">
   <a class="skip-link" href="#panel-content">Saltar al contenido</a>
-  <header class="panel-header"><a class="panel-brand" href="./"><span class="brand-mark">GT</span><span>SMASH GT</span></a>
+  <header class="panel-header"><a class="panel-brand" href="./"><span class="brand-mark">GT</span><span>RANKING SMASH BROS</span></a>
     <div><a href="./">Volver al sitio</a><?php if ($state === 'owner'): ?><form class="panel-opinions" action="./opiniones-acceso.php" method="post"><input type="hidden" name="csrf" value="<?= $csrf ?>"><button class="outline" type="submit">Opiniones ↗</button></form><button id="panel-logout" class="outline" type="button">Cerrar sesión</button><?php endif; ?></div>
   </header>
 <?php if ($state === 'denied'): ?>

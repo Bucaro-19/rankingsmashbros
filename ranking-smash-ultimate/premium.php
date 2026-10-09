@@ -9,8 +9,8 @@ declare(strict_types=1);
 const SMASH_PREMIUM_API = 'https://app.recurrente.com/api';
 const SMASH_PREMIUM_RETURN = 'https://rankingsmashbros.com/cuenta.html';
 const SMASH_PREMIUM_PLANS = [
-    'monthly' => ['name' => 'Smash GT Premium · mensual', 'cents' => 300, 'interval' => 'month'],
-    'annual' => ['name' => 'Smash GT Premium · anual', 'cents' => 2400, 'interval' => 'year'],
+    'monthly' => ['name' => 'Ranking Smash Bros Premium · mensual', 'cents' => 300, 'interval' => 'month'],
+    'annual' => ['name' => 'Ranking Smash Bros Premium · anual', 'cents' => 2400, 'interval' => 'year'],
 ];
 // A checkout nobody paid stops blocking a new attempt after this long.
 const SMASH_PREMIUM_PENDING_AGE = 3600;

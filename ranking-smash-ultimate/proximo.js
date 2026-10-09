@@ -13,7 +13,7 @@
     box.innerHTML=`${head}<div class="nt-body"><div class="nt-date" aria-hidden="true"><span>${b.dow}</span><b>${b.day}</b><span>${b.month}</span></div>
       <div class="nt-copy"><p class="nt-count">${c.text} · ${M.time(t.start)}</p><h3>${escape(t.name)}</h3><p>${escape([t.online?null:t.city,M.modeLabel(t)].filter(Boolean).join(' · '))}</p><p class="nt-reg ${r.kind}"><span aria-hidden="true">${r.glyph}</span> ${r.text}</p></div></div>
       <a class="nt-cta" href="./torneos.html#${escape(t.slug)}"><span>Ver el torneo →</span></a>
-      <p class="nt-note">${more>0?`Y ${M.plural(more,'torneo más','torneos más')} en la agenda. `:''}Smash GT no organiza estos torneos.</p>`;
+      <p class="nt-note">${more>0?`Y ${M.plural(more,'torneo más','torneos más')} en la agenda. `:''}Ranking Smash Bros no organiza estos torneos.</p>`;
     box.hidden=false;
   }).catch(()=>{});
 })();

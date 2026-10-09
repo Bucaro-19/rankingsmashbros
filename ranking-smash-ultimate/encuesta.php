@@ -168,7 +168,7 @@ function survey_text(string $name): string {
   <meta name="theme-color" content="#0B0F1A">
   <meta name="description" content="Opina sobre las reglas del ranking de Super Smash Bros. Ultimate de Guatemala, sin crear una cuenta.">
   <meta name="smash-survey-storage" content="sql">
-  <title>Cuestionario de la comunidad — Smash GT</title>
+  <title>Cuestionario de la comunidad — Ranking Smash Bros</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./arena.css?v=20261009-2">
@@ -180,7 +180,7 @@ function survey_text(string $name): string {
 <body class="smash-redesign page-read">
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="gt-header">
-    <a class="gt-brand" href="./" aria-label="Smash GT, inicio"><span class="gt-mark">GT</span><span>SMASH GT<small>por ingporras</small></span></a>
+    <a class="gt-brand" href="./" aria-label="Ranking Smash Bros, inicio"><span class="gt-mark">GT</span><span>RANKING SMASH BROS<small>por ingporras</small></span></a>
     <nav aria-label="Principal"><a href="./#ranking">Ranking</a><a href="./torneos.html">Torneos</a><a href="./metodologia.html">Método</a><a href="./encuesta.php" aria-current="page">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Iniciar sesión</a></nav>
   </header>
   <main id="contenido" class="survey-page">

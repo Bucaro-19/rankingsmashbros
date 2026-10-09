@@ -119,7 +119,7 @@ const SmashOrganizador = (() => {
     const shownUrl=(info.publicUrl||'').replace('https://','');
     const head=`<div class="p-hero small o-head"><p class="kicker yellow">Top del organizador · Temporada ${d.seasonYear}</p><h1>Top ${size}<br><span>${escape(name)}</span></h1>
       ${n?`<div class="o-chips"><span>${period}</span><span>${n===1?'1 torneo que cuenta':`${n} torneos que cuentan`}</span><span class="dim">${cut}</span></div>`:''}
-      <p class="o-info"><span aria-hidden="true">i</span><span><strong>No es el ranking nacional de Smash GT.</strong> Usa solo los torneos de ${escape(name)}, así que un jugador puede ser #3 aquí y #40 en el nacional.</span></p>
+      <p class="o-info"><span aria-hidden="true">i</span><span><strong>No es el ranking nacional de Ranking Smash Bros.</strong> Usa solo los torneos de ${escape(name)}, así que un jugador puede ser #3 aquí y #40 en el nacional.</span></p>
       ${d.coorganizers?.length?`<p class="o-coorg"><strong>Coorganizan:</strong> ${d.coorganizers.map(escape).join(', ')}</p>`:''}
       ${owner?'':`<p class="note">Eres coorganizador de ${escape(name)}. <button type="button" class="o-link" data-act="leave">Salir del equipo</button></p>`}</div>`;
     const stale=s.isStale?notice('muted','↻',`Actualizado con el corte del ${shortDay(s.cutDate)}.`,'El corte de esta semana aún no se procesa. Los torneos posteriores aparecerán cuando termine.'):'';
