@@ -39,12 +39,31 @@ jobs:
           (folder/'inventory.json').write_text(json.dumps(json.loads(os.environ['BACKFILL_INVENTORY'])))
           (folder/'recipient.pub').write_bytes(base64.b64decode(os.environ['BACKFILL_PUBLIC_KEY'],validate=True))
           PYINPUT
-          python scripts/database/small_events_backfill.py capture --inventory backfill-private/inventory.json --output backfill-private/batch.json --end 2026-10-10 --limit 6
+          python - <<'PYCAPTURE'
+          import json,sys
+          from collections import Counter
+          from pathlib import Path
+          sys.path.insert(0,'scripts/database')
+          import small_events_backfill as tool
+          original=tool.normalize_small
+          def observe(raw):
+              Path('backfill-private/raw.json').write_text(json.dumps(raw,ensure_ascii=False))
+              print(json.dumps({'capturedEvents':len(raw['events']),'sets':len(raw['sets']),'setStates':dict(Counter(str(m.get('state')) for m in raw['sets'].values()))}))
+              try: return original(raw)
+              except ValueError as e:
+                  # Only static validation messages from our own normalizer, never driver/provider bodies.
+                  print(json.dumps({'normalizerValidation':str(e)}));raise
+          tool.normalize_small=observe
+          sys.argv=['small_events_backfill.py','capture','--inventory','backfill-private/inventory.json','--output','backfill-private/batch.json','--end','2026-10-10','--limit','6']
+          result=tool.main()
+          if result and not Path('backfill-private/raw.json').exists(): raise SystemExit(result)
+          PYCAPTURE
+          if [[ ! -f backfill-private/batch.json ]]; then cp backfill-private/raw.json backfill-private/batch.json; fi
           # Only ciphertext leaves the runner; the private key stays on the owner's Mac.
           openssl rand -hex 32 > backfill-private/passphrase
           openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -pass file:backfill-private/passphrase -in backfill-private/batch.json -out backfill-private/batch.enc
           openssl pkeyutl -encrypt -pubin -inkey backfill-private/recipient.pub -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in backfill-private/passphrase -out backfill-private/key.enc
-          rm backfill-private/batch.json backfill-private/passphrase backfill-private/inventory.json backfill-private/recipient.pub
+          rm -f backfill-private/raw.json backfill-private/batch.json backfill-private/passphrase backfill-private/inventory.json backfill-private/recipient.pub
       - uses: actions/upload-artifact@v4
         with:
           name: small-backfill-sealed

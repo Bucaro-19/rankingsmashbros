@@ -62,7 +62,8 @@ def validate_inventory(data):
     require(set(data) == {'inventoryVersion','anchor','markedEventIds','protectedEventIds'} and type(data['inventoryVersion']) is int and data['inventoryVersion'] == 1, 'Inventory format.')
     validate_anchor(data['anchor'])
     for key in ('markedEventIds','protectedEventIds'):
-        require(isinstance(data[key], list) and len(data[key]) == len({identifier(v) for v in data[key]}), 'Inventory IDs.')
+        require(isinstance(data[key], list) and all(type(v) is int for v in data[key])
+            and len(data[key]) == len({identifier(v) for v in data[key]}), 'Inventory IDs.')
 
 
 def normalize_small(raw):
@@ -210,13 +211,14 @@ def main():
     load = sub.add_parser('load'); load.add_argument('package',type=Path); load.add_argument('--apply',action='store_true')
     for command in (inv,load):
         command.add_argument('--defaults-file',type=Path,default=Path.home()/'.my.cnf'); command.add_argument('--database',required=True)
-    args = parser.parse_args(); db = None; started = time.monotonic()
+    args = parser.parse_args(); db = None; client = None; started = time.monotonic()
     try:
         if args.command == 'capture':
             import os
             require(not args.output.exists() and not args.output.is_symlink(), 'Output exists.')
             token = os.environ.get('STARTGG_TOKEN','').strip(); require(bool(token),'Token missing.')
-            data,report = capture_batch(Client(token),read_json(args.inventory),season_timestamp(args.start),season_timestamp(args.end),limit=args.limit,catalog=read_json(args.catalog) if args.catalog else None)
+            client = Client(token)
+            data,report = capture_batch(client,read_json(args.inventory),season_timestamp(args.start),season_timestamp(args.end),limit=args.limit,catalog=read_json(args.catalog) if args.catalog else None)
             if data is not None: write_private(args.output,data)
         else:
             db = connect(args.defaults_file,args.database)
@@ -228,7 +230,8 @@ def main():
         print(json.dumps(report)); return 0
     except Exception:
         # Never log provider bodies, people, connection strings or driver errors.
-        print(json.dumps(dict(ok=False,reason='small_backfill_stopped',operationSeconds=round(time.monotonic()-started,3)))); return 1
+        print(json.dumps(dict(ok=False,reason='small_backfill_stopped',phase=args.command,
+            apiRequests=client.calls if client else 0,operationSeconds=round(time.monotonic()-started,3)))); return 1
     finally:
         if db is not None: db.close()
 

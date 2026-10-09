@@ -142,7 +142,8 @@ class BackfillSQL(unittest.TestCase):
         self.assertEqual(backfill.load_batch(self.db,self.p)['status'],'validated_no_writes')
         self.assertEqual(self.snapshot(compare_importers=True),original)
         with patch('small_events_backfill.organizer_plan',side_effect=lambda db,c: (sql(db,"INSERT INTO organizer_event_context(event_id,cut_id,captured_at,active_players,valid_sets,context_hash) VALUES (100,1,'2026-10-09',2,1,REPEAT('f',64))"),{})):
-            with self.assertRaises(Exception):backfill.load_batch(self.db,self.p)
+            with self.assertRaises(Exception) as blocked:backfill.load_batch(self.db,self.p)
+        self.assertEqual(blocked.exception.args[0],1792)  # SQL server enforces READ ONLY.
         self.assertEqual(self.snapshot(compare_importers=True),original)
         self.assertEqual(backfill.load_batch(self.db,self.p,apply=True)['status'],'context_imported')
         once=self.snapshot(compare_importers=True);markers=sql(self.db,'SELECT * FROM organizer_event_context ORDER BY event_id')
