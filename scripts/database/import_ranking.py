@@ -166,6 +166,12 @@ def replace_game_context(db, content):
 
 def import_package(db, package, *, apply=False):
     content = validate_package(package)
+    organizer = None
+    if content['packageVersion'] == 4:
+        organizer = content['organizerContext']
+        from organizer_context import national_package
+        package = national_package(package)
+        content = validate_package(package)
     p = content['public']; identity = (instant(p['generatedAt']),p['seasonYear'],p['methodVersion'])
     require(sql(db, 'SELECT GET_LOCK(%s,0)', (LOCK,))[0][0] == 1, 'Otro importador está ejecutándose.')
     try:
@@ -175,12 +181,16 @@ def import_package(db, package, *, apply=False):
             entities={k:len(v) for k,v in content['entities'].items()},
             views={s:dict(players=len(v['players']),events=len(v['events']),results=len(v['results'])) for s,v in scope_rows(content)},
             catalog=catalog_plan(db, content))
+        if organizer is not None:
+            from organizer_sql import organizer_plan, import_organizer_context
+            plan['organizer'] = organizer_plan(db, organizer)
         if existing:
             cut_id, old_hash, status = existing[0]
             require(old_hash==package['sha256'] and status=='published', 'Conflicto: identidad del corte ya existe con otro paquete o estado.')
             verify_parity(db,content,cut_id)
             if plan['catalog']['status'] == 'ready':
                 plan['catalog']['status'] = 'not_reapplied'
+            if organizer is not None: plan['organizer']['status'] = 'not_reapplied'
             db.rollback()
             return dict(plan,status='already_imported',cutId=cut_id)
         cuts = sql(db, 'SELECT generated_at,status FROM cuts')
@@ -225,6 +235,8 @@ def import_package(db, package, *, apply=False):
         insert_rows(db,'rankings','cut_id scope player_id player_tag rank_position previous_rank previous_cut_at previous_cut_id rating wins losses events_count sets_queried sets_with_selections games_with_selections ambiguous_games',ranking)
         insert_rows(db,'player_characters','cut_id scope player_id character_id games',mains)
         verify_parity(db,content,cut_id)
+        if organizer is not None:
+            plan['organizer'] = import_organizer_context(db, organizer, cut_id, plan['organizer'])
         sql(db,"UPDATE cuts SET status='published' WHERE id=%s",(cut_id,))
         db.commit()
         return dict(plan,status='imported',cutId=cut_id)
