@@ -29,7 +29,9 @@ const TorneosModel = {
       city:text(t.city),department:text(t.department),venue:text(t.venueName),address:text(t.venueAddress),
       lat:lat!==null&&lng!==null?lat:null,lng:lat!==null&&lng!==null?lng:null,kinds,
       registration:t.isRegistrationOpen===true?'open':t.isRegistrationOpen===false?'closed':null,closes:Number.isNaN(closes)?null:closes,
-      entrants:number(t.numAttendees),candidate:t.isOfflineSingles===true};
+      entrants:number(t.numAttendees),candidate:t.isOfflineSingles===true,
+      // Sign-ups of the in-person singles event: the closest thing to «players» before it is played.
+      singles:(Array.isArray(t.events)?t.events:[]).reduce((best,e)=>e?.competitionType==='singles'&&e.isOnline!==true&&number(e.numEntrants)!==null?Math.max(best??0,e.numEntrants):best,null)};
   },
   // Only what has not started; a static daily file inevitably keeps an announcement past its start.
   upcoming(agenda,nowMs) {
@@ -92,6 +94,14 @@ const TorneosModel = {
     if(t.online)return {ok:false,text:'No cuenta: el ranking solo usa torneos presenciales.'};
     if(t.candidate)return {ok:true,text:'Puede contar si llega a 20 jugadores activos en singles; eso se sabe hasta que termina.'};
     return t.kinds.length&&!t.kinds.includes('singles')?{ok:false,text:'No cuenta: el ranking solo usa singles.'}:null;
+  },
+  // Whether it can enter the ranking is only known when it ends (20 active players), so before that it is «possible».
+  NEEDED: 20,
+  rankingBadge(t) {
+    if(t.candidate){const have=t.singles;return {kind:'possible',text:'Posible torneo rankeado',have,need:this.NEEDED,percent:have===null?null:Math.min(100,Math.round(have/this.NEEDED*100)),
+      detail:have===null?'Necesita 20 jugadores activos en singles; start.gg no dice cuántos van inscritos':have>=this.NEEDED?`${have} inscritos en singles: ya pasa de los 20, falta que jueguen`:`${have} de 20 inscritos en singles · faltan ${this.NEEDED-have}`};}
+    const note=this.rankingNote(t);
+    return note&&!note.ok?{kind:'no',text:'No cuenta para el ranking',detail:note.text.replace('No cuenta: ','')}:null;
   },
   // Home block: the nearest in-person tournament with open registration; otherwise simply the nearest.
   next(list) { return list.find(t=>!t.online&&t.registration==='open')||list[0]||null; }

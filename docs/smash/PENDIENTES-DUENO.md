@@ -27,6 +27,10 @@ El prompt está en [BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md](BRIEF-CLAUDE-DESIGN-TOP
 
 1. Antes de las 2:00 a. m. del viernes 9/oct: dejar la Mac encendida, enchufada, con la tapa y la app abiertas, y dar **Run now** una vez a la tarea «Smash GT: medición de carga…» en «Scheduled» para aprobar los permisos (fuera de la ventana no mide nada).
 
+### 1.4 Agenda: «Posible torneo rankeado»
+
+Ya está programado con componentes existentes (recuadro con ◆, barra de inscritos en singles hacia 20 y «Se confirma cuando termine»; y «No cuenta para el ranking» con su motivo). Pedir a Claude Design que lo revise dentro de la tarjeta y del detalle de «Próximos torneos», a 375 px y escritorio.
+
 ## 4. Revisiones que solo el dueño puede hacer
 
 1. Ver «Prepara el set» con su sesión real, con un rival real y en pantalla grande.

@@ -9,6 +9,13 @@
 
 
 
+
+## Botones sin texto en móvil y «Posible torneo rankeado» (8/oct, noche)
+
+- **Error mío, visto por el dueño en su teléfono:** el botón «Inscribirme en start.gg» de la agenda quedaba en blanco. La regla compartida `.page-read a` (color de enlace) es más específica que la clase del botón: en reposo el texto salía celeste sobre celeste y, al tocar, claro sobre claro. No lo vi en mis revisiones porque medí geometría y texto, no el color calculado. **Mismo defecto corregido en otras dos pantallas mías:** el botón amarillo «Prepara el set contra…» del análisis y los botones e índice de «Prepara el set». Ahora las reglas van bajo el contenedor de cada página. Comprobado con el color calculado en navegador en las tres.
+- **«Posible torneo rankeado»** (pedido del dueño): la tarjeta y el detalle de cada torneo candidato muestran ese rótulo, una barra con los inscritos en singles hacia 20 y «Se confirma cuando termine». Nunca dice que ya cuenta: los 20 son jugadores activos y eso se sabe al terminar. Los que no pueden contar dicen «No cuenta para el ranking» y el motivo (online, o sin singles). Sin dato de inscritos, lo dice. Regla en `torneos-model.js` con su prueba. Sin diseño propio: anotado en PENDIENTES-DUENO.md para Claude Design.
+- **[Encargo para Codex](ENCARGO-CODEX-TORNEOS-PEQUENOS-ORGANIZADOR.md):** capturar los torneos presenciales de singles con menos de 20 inscritos para los tops de organizador, sin tocar el ranking nacional.
+
 ## #72 de Codex fusionado y desplegado (8/oct, noche)
 
 - Por orden del dueño («fusiona y despliega»): #72 (agenda en sitemap y contador) fusionado como `d53b1c9`, CI de main en verde, despliegue `assets_only` run `37865732254` correcto.
