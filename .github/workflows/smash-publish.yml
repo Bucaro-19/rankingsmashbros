@@ -76,7 +76,8 @@ jobs:
         continue-on-error: true
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/organizer_small.py scripts/smash/data/national.json
+        # Proposed first sample; still disabled until the owner approves coverage/activation.
+        run: python scripts/smash/organizer_small.py scripts/smash/data/national.json --limit 2
       - name: Revisar y descargar torneos internacionales descubiertos
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
