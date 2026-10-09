@@ -22,6 +22,10 @@ Claude Code completó encuesta en SQL y cargador semanal; Claude Design entregó
 
 **Encargo vigente del dueño (7/oct):** Claude Code continúa la transición de encuesta y, después, la automatización SQL. Leer primero RELEVO-CLAUDE-CODE-2026-10-07.md. PR #10 ya fusionada en main 972225d; no rehacer ese importador ni seguir el encargo limitado de tres archivos. Las pantallas de cuentas esperan el handoff solicitado con BRIEF-CLAUDE-DESIGN-CUENTAS.md.
 
+## Backfill de contexto pequeño — 9/oct (nuevo relevo)
+
+Leer [TORNEOS-PEQUENOS-ATRASADOS.md](TORNEOS-PEQUENOS-ATRASADOS.md) y el bloque de EN-CURSO antes de los pendientes históricos. Se entregó carga CLI de eventos sin marca, con simulación real readonly: primera tanda de seis preparada pero **no cargada**; quedan 13 fuera de esa tanda. Solo explica actividad que no cuenta, no cambia reglas. Pendientes revisión/orden de fusión y **autorización expresa de escritura**; informe conserva comandos exactos y flujo para nuevas tandas. No instalar 006 nuevamente ni añadir el backfill al semanal, ni reinterpretarlo como admisión de torneos pequeños.
+
 ## Punto de partida confirmado
 
 - Repo: Bucaro-19/rankingsmashbros. Sitio: https://rankingsmashbros.com/. No continuar sobre los cambios obsoletos de rsvp-graduacion.

@@ -15,7 +15,7 @@ def organizer_plan(db, context):
     return dict(status='ready',events=len(context['entities']['events']))
 
 
-def import_organizer_context(db, context, cut_id, plan):
+def import_organizer_context(db, context, cut_id, plan, *, marker_subset=False):
     from import_ranking import sql, insert_rows, COLUMNS
     if plan['status']!='ready':return plan
     sql(db,'SAVEPOINT organizer_context')
@@ -73,7 +73,10 @@ def import_organizer_context(db, context, cut_id, plan):
                 rows=tuple(row for eid in event_ids for row in sql(db,'SELECT '+','.join('r.'+c for c in cols)+' FROM '+name+' r JOIN '+parent+' p ON p.id=r.'+key+' WHERE p.event_id=%s',(eid,)))
             normalized=lambda row:tuple(instant(v.isoformat()+'+00:00') if hasattr(v,'isoformat') else v for v in row)
             require({normalized(r) for r in rows}=={tuple(r.get(c) for c in cols) for r in t[name]} and len(rows)==len(t[name]), 'Paridad de contexto pequeño falló.')
-        found=sql(db,'SELECT '+MARKER_COLUMNS.replace(' ', ',')+' FROM organizer_event_context WHERE cut_id=%s',(cut_id,))
+        if marker_subset:
+            found=tuple(row for eid in event_ids for row in sql(db,'SELECT '+MARKER_COLUMNS.replace(' ', ',')+' FROM organizer_event_context WHERE event_id=%s',(eid,)))
+        else:
+            found=sql(db,'SELECT '+MARKER_COLUMNS.replace(' ', ',')+' FROM organizer_event_context WHERE cut_id=%s',(cut_id,))
         require({tuple(instant(v.isoformat()+'+00:00') if hasattr(v,'isoformat') else v for v in r) for r in found}=={tuple(r[c] for c in MARKER_COLUMNS.split()) for r in markers}, 'Paridad de marcadores falló.')
         sql(db,'RELEASE SAVEPOINT organizer_context')
         return dict(plan,status='imported')

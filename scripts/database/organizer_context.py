@@ -8,13 +8,15 @@ TABLES=('players','tournaments','events','entrants','entrant_players','sets','se
 MARKER_COLUMNS='event_id cut_id captured_at active_players valid_sets context_hash'
 
 
-def validate_context(context, base):
-    from ranking_package import require, identifier, instant, digest, validate_package
+def validate_context(context, base=None):
+    from ranking_package import require, identifier, instant, digest, validate_package, validate_entity_relations
     require(isinstance(context,dict) and set(context)=={'schemaVersion','capturedAt','entities','eligibility'}, 'Complemento inválido.')
     require(type(context['schemaVersion']) is int and context['schemaVersion']==1, 'Versión de complemento inválida.')
-    require(context['capturedAt']==base['content']['capturedAt'], 'Complemento de otro corte.')
+    instant(context['capturedAt'])
+    require(base is None or context['capturedAt']==base['content']['capturedAt'], 'Complemento de otro corte.')
     tables=context['entities']; require(isinstance(tables,dict) and set(tables)==set(TABLES), 'Tablas de complemento inválidas.')
-    core=base['content']; old=core['entities']
+    core=base['content'] if base else dict(capturedAt=context['capturedAt'],entities={k:[] for k in TABLES})
+    old=core['entities']
     event_ids={identifier(e['id']) for e in tables['events']}
     require(isinstance(context['eligibility'],list) and len(context['eligibility'])==len(event_ids)
             and {r['event_id'] for r in context['eligibility']}==event_ids
@@ -34,7 +36,8 @@ def validate_context(context, base):
                 require(name in ('players','tournaments') and rows[key]==r, 'Identidad compartida contradictoria.')
             rows[key]=r
         merged['entities'][name]=list(rows.values())
-    validate_package(dict(content=merged,sha256=digest(merged)))
+    if base is None: validate_entity_relations(merged['entities'])
+    else: validate_package(dict(content=merged,sha256=digest(merged)))
     tournaments={r['id']:r for r in tables['tournaments']}
     slots={r['set_id']:[] for r in tables['set_slots']}
     links={r['entrant_id']:r['player_id'] for r in tables['entrant_players']}
