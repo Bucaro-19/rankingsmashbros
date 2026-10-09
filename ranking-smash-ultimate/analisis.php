@@ -348,6 +348,30 @@ function smash_analisis_deep(PDO $db, array $public, array $view, array $data, a
         // No reviewed guide and no licensed frame data yet: the screen shows their empty states.
         'toolkit' => null, 'punishable' => null];
 }
+// What a free account sees of «Prepara el set»: ONE measured finding about the rival, in full, and how much
+// more is already calculated. Counts only: no record, counter or opponent of the paid sections leaves the server.
+function smash_analisis_teaser(PDO $db, array $public, array $user, string $rival, string $scope): ?array {
+    try {
+        $me=$user['playerId']; $view=$scope==='gt' ? $public['localRanking'] : $public;
+        $catalog=smash_analisis_catalog($db); $data=smash_analisis_games($db,$public);
+        $chars=smash_analisis_set_characters($data['games'],$public['results'] ?? [],$catalog);
+        $main=smash_analisis_pool(smash_analisis_detection($public,$rival,$catalog)['detected'])[0] ?? null;
+        $deep=smash_analisis_deep($db,$public,$view,$data,$catalog,$chars,$me,$rival,[],$main);
+    } catch (Throwable $error) { return null; } // The teaser never breaks the free answer.
+    return smash_analisis_teaser_from($deep,$main);
+}
+function smash_analisis_teaser_from(array $deep, ?string $main): array {
+    $headline=null; $hard=null; $pattern=$deep['setPattern']; $tiers=$deep['byTier'];
+    foreach ($deep['vsChars']['hard'] as $row) if ($row['won']+$row['lost']>=5) { $hard=$row; break; }
+    // The most concrete thing that has a sample behind it; never a figure from one or two games.
+    if ($hard!==null) $headline=['kind'=>'hard','slug'=>$hard['slug'],'won'=>$hard['won'],'lost'=>$hard['lost']];
+    elseif ($pattern!==null && array_sum($pattern['game1'])>=5) $headline=['kind'=>'game1','won'=>$pattern['game1'][0],'lost'=>$pattern['game1'][1]];
+    elseif ($tiers!==null && array_sum($tiers['top10'])>=3) $headline=['kind'=>'top10','won'=>$tiers['top10'][0],'lost'=>$tiers['top10'][1]];
+    $characters=count($deep['vsChars']['hard'])+count($deep['vsChars']['good'])-($headline!==null && $headline['kind']==='hard' ? 1 : 0);
+    return ['headline'=>$headline,'main'=>$main,
+        'locked'=>['counters'=>count($deep['counters'])+count($deep['avoid']),'characters'=>max(0,$characters),'common'=>$deep['commonTotal'],
+            'sets'=>$pattern['setsScored'] ?? 0,'coveredSets'=>$deep['rival']['coveredSets'],'totalSets'=>$deep['rival']['totalSets']]];
+}
 function smash_analisis_full(PDO $db, array $public, array $base, array $user, string $rival, string $scope): array {
     $me=$user['playerId']; $views=['intl'=>$public,'gt'=>$public['localRanking']]; $view=$views[$scope];
     $catalog=smash_analisis_catalog($db); $data=smash_analisis_games($db,$public);
@@ -449,5 +473,5 @@ function smash_analisis_response(PDO $db, array $public, array $user, array $inp
     $base+=['state'=>$access['access']['full'] ? 'listo' : ($access['premium']['expiredAt']===null ? 'bloqueado' : 'vencido'),
         'me'=>$players[$me],'rival'=>$players[$rival],'record'=>$records[$scope],'records'=>$records];
     // Gate BEFORE reading characters/games or building ANY premium response field.
-    return $access['access']['full'] ? smash_analisis_full($db,$public,$base,$user,$rival,$scope) : $base;
+    return $access['access']['full'] ? smash_analisis_full($db,$public,$base,$user,$rival,$scope) : $base+['teaser'=>smash_analisis_teaser($db,$public,$user,$rival,$scope)];
 }

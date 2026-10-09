@@ -46,3 +46,12 @@
 .pr-principle{text-align:center;font-size:14px;font-weight:700}
 @media(max-width:480px){.pr-locked li{flex-wrap:wrap}.pr-star{margin-left:50px}.pr-src{align-items:flex-start;flex-direction:column;gap:4px}.pr-src>span:last-child{align-items:flex-start;text-align:left}.pr-block b{font-size:28px}.pr-grid3 .pr-block{padding:10px}}
 @media(prefers-reduced-motion:reduce){.pr-bar span{animation:none}}
+.pr-finding{display:flex;flex-direction:column;gap:12px;padding:clamp(18px,3vw,28px);background:var(--panel);border-left:4px solid var(--blue)}.pr-finding h2{font-size:clamp(30px,4.4vw,48px);line-height:.95;overflow-wrap:anywhere}.pr-finding>p:not(.pr-kicker):not(.pr-note){font-size:17px;line-height:1.55;color:var(--long);max-width:66ch}.pr-finding .pr-kicker{color:var(--blue)}.pr-finding.none{border-left-color:#7C869B}
+.pr-finding-head{display:flex;align-items:center;gap:14px}
+.pr-also{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.pr-also article{position:relative;display:flex;flex-direction:column;gap:8px;padding:18px;background:var(--panel);overflow:hidden}.pr-also h3{font-size:24px;line-height:1.05}
+.pr-also article>p:last-child{font-size:14px;line-height:1.55;color:var(--long);-webkit-mask-image:linear-gradient(#000 35%,transparent 100%);mask-image:linear-gradient(#000 35%,transparent 100%)}
+.pr-lock{position:relative;display:grid;place-items:center;padding:clamp(20px,4vw,44px) 0;background:var(--panel);overflow:hidden}
+.pr-lock-bars{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-evenly;padding:24px;opacity:.5}.pr-lock-bars span{height:22px;background:repeating-linear-gradient(90deg,#1A2236 0 60px,#0B0F1A 60px 76px)}.pr-lock-bars span:nth-child(2){width:72%}.pr-lock-bars span:nth-child(3){width:86%}.pr-lock-bars span:nth-child(4){width:58%}
+.pr-lock-box{position:relative;width:min(92%,520px);display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:clamp(18px,3vw,28px);background:#0B0F1A;border-top:4px solid var(--yellow)}.pr-lock-box h2{font-size:clamp(30px,4vw,40px);line-height:.95}.pr-lock-box>p:not(.pr-note){font-size:16px;line-height:1.55;color:var(--long)}
+.pr-lock-glyph{width:40px;height:40px;display:grid;place-items:center;background:var(--yellow);color:#0B0F1A;font-size:20px;font-weight:900;transform:skewX(-10deg)}
+.pr-locked-title{font-size:28px!important;line-height:1}

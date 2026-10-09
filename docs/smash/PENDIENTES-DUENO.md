@@ -31,6 +31,10 @@ El prompt está en [BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md](BRIEF-CLAUDE-DESIGN-TOP
 
 Ya está programado con componentes existentes (recuadro con ◆, barra de inscritos en singles hacia 20 y «Se confirma cuando termine»; y «No cuenta para el ranking» con su motivo). Pedir a Claude Design que lo revise dentro de la tarjeta y del detalle de «Próximos torneos», a 375 px y escritorio.
 
+### 1.5 Adelanto gratis de las funciones premium
+
+Ya está programado en «Prepara el set» con componentes existentes: «Hallazgo principal · gratis» (un dato real del rival), dos tarjetas «También calculado» con conteos y texto que se desvanece, y un bloque bloqueado con la invitación a premium. Pedir a Claude Design que lo diseñe bien (referencia: la captura de «Diagnóstico de Operación» que mandó el dueño) y que proponga el mismo patrón para la pestaña «Mis torneos». Regla fija: el adelanto es un dato real y las cifras de pago no se muestran ni difuminadas.
+
 ## 4. Revisiones que solo el dueño puede hacer
 
 1. Ver «Prepara el set» con su sesión real, con un rival real y en pantalla grande.

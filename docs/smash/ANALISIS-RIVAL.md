@@ -154,3 +154,7 @@ Pantalla `preparar.html?rival={id}&scope={gt|intl}` (handoff `design_handoff_sma
 
 Pruebas: `scripts/database/test_analisis.php` (bloque «Prepara el set») y `test_analisis_http.py`.
 
+### Adelanto gratis (`teaser`)
+
+Solo en la respuesta **sin** acceso completo: `{headline, main, locked}`. `headline` es `null` o un único hallazgo `{kind: "hard"|"game1"|"top10", slug?, won, lost}` con muestra mínima (5 games, 5 sets o 3 sets). `locked` son conteos enteros: `counters`, `characters`, `common`, `sets`, `coveredSets`, `totalSets`. No incluye ninguna lista de las secciones de pago.
+
