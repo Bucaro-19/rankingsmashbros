@@ -18,7 +18,7 @@ El prompt está en [BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md](BRIEF-CLAUDE-DESIGN-TOP
 
 ## 2. cPanel y cuentas externas
 
-1. **Cambiar la clave del panel de opiniones.** La actual quedó expuesta en un chat. Es la que pide `opiniones.php`.
+1. **Reemplazar o retirar la clave del panel de opiniones.** Ya no la necesitas: entras con tu cuenta desde «Opiniones ↗». Pero la clave vieja sigue funcionando y quedó expuesta en un chat. Decirle a Claude Code si se retira ese acceso o se cambia por una clave nueva.
 2. **Suscribirse a premium con la propia cuenta** (pestaña Premium, plan de 3 USD): es la prueba pendiente de un pago real de punta a punta. Avisar a Claude Code para que confirme en la base que quedó activa.
 3. **Enviar el correo a Ultimate Frame Data** (ultimateframedata@gmail.com) pidiendo permiso para mostrar datos de frames con crédito. El texto está en la conversación del 8/oct; si hace falta, Claude Code lo vuelve a dar.
 4. **Decidir si «Tu opinión» aparece en Google** (hoy está fuera del sitemap).

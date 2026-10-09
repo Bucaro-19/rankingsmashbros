@@ -13,6 +13,7 @@ import tempfile
 import time
 import unittest
 import urllib.error
+import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,9 +35,13 @@ class PanelHttpTests(unittest.TestCase):
         cls.site, cls.private, sessions = home/'site', home/'private-smash', home/'sessions'
         for path in (cls.site/'data', cls.private, sessions):
             path.mkdir(parents=True)
-        for filename in ('database.php', 'accounts.php', 'stats.php', 'account-api.php', 'panel-api.php', 'panel.php', 'panel.css', 'panel.js', 'panel-model.js'):
+        for filename in ('database.php', 'accounts.php', 'stats.php', 'account-api.php', 'panel-api.php', 'panel.php', 'panel.css', 'panel.js', 'panel-model.js', 'survey.php', 'opiniones.php', 'opiniones-acceso.php'):
             shutil.copyfile(SITE/filename, cls.site/filename)
         shutil.copyfile(SITE/'data/public.json', cls.site/'data/public.json')
+        # The opinions panel refuses to start without its password file; nobody in these tests knows that password.
+        (cls.site/'feedback-data').mkdir()
+        unknown = subprocess.run(['php', '-r', 'echo password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT);'], capture_output=True, text=True, check=True).stdout
+        (cls.site/'feedback-data/admin-auth.php').write_text("<?php return '" + unknown + "';")
         config = dict(database=dict(host='127.0.0.1', port=port, name=DATABASE, user='root', password=os.environ['SMASH_SCHEMA_TEST_PASSWORD']))
         (cls.private/'config.local.php').write_text('<?php return json_decode('+json.dumps(json.dumps(config))+', true);')
         (cls.site/'fixture-login.php').write_text('''<?php
@@ -100,7 +105,7 @@ class PanelHttpTests(unittest.TestCase):
         self.get('/fixture-login.php')
         status, headers, body = self.get('/panel.php')
         self.assertEqual(status, 403); self.assert_private(headers); self.assert_reveals_nothing(body)
-        self.assertIn('Sin acceso.', body); self.assertNotIn('Cerrar sesión', body); self.assertNotIn('opiniones.php', body)
+        self.assertIn('Sin acceso.', body); self.assertNotIn('Cerrar sesión', body); self.assertNotIn('opiniones', body)
         status, _, body = self.get('/panel-api.php')
         self.assertEqual((status, json.loads(body)), (403, {'ok': False, 'reason': 'forbidden'}))
         account = json.loads(self.get('/account-api.php')[2])
@@ -110,7 +115,7 @@ class PanelHttpTests(unittest.TestCase):
         self.get('/fixture-login.php?admin=1')
         status, headers, body = self.get('/panel.php')
         self.assertEqual(status, 200); self.assert_private(headers)
-        self.assertIn('Visitas y registros', body); self.assertIn('panel.js', body); self.assertIn('Cerrar sesión', body); self.assertIn('href="./opiniones.php"', body)
+        self.assertIn('Visitas y registros', body); self.assertIn('panel.js', body); self.assertIn('Cerrar sesión', body); self.assertIn('action="./opiniones-acceso.php"', body)
         status, headers, body = self.get('/panel-api.php')
         self.assertEqual(status, 200); self.assert_private(headers)
         data = json.loads(body)
@@ -133,6 +138,43 @@ class PanelHttpTests(unittest.TestCase):
         with self.db.cursor() as q:
             q.execute("UPDATE oauth_connections o JOIN users u ON u.id=o.user_id SET o.revoked_at=UTC_TIMESTAMP(6) WHERE u.startgg_user_id=8999401")
         self.assertEqual(self.get('/panel-api.php')[0], 401); self.assertEqual(self.get('/panel.php')[0], 401)
+
+
+    def enter(self, csrf=None, method='POST'):
+        """Posts the owner's form without following the redirect."""
+        class Stay(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, *args, **kwargs): return None
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.cookies), Stay)
+        data = None if method == 'GET' else urllib.parse.urlencode({'csrf': csrf} if csrf is not None else {}).encode()
+        try: response = opener.open(urllib.request.Request(self.base+'/opiniones-acceso.php', data=data, method=method), timeout=10)
+        except urllib.error.HTTPError as error: response = error
+        return response.status, response.headers, response.read().decode()
+
+    def csrf(self):
+        return json.loads(self.get('/account-api.php')[2])['csrf']
+
+    def test_only_the_owner_account_enters_the_opinions_panel_without_its_password(self):
+        # Nobody signed in, another account, a forged token and a plain link: none of them opens the panel.
+        self.assertEqual(self.enter(self.csrf())[0], 401)
+        self.assertEqual(self.enter(method='GET')[0], 405)
+        self.get('/fixture-login.php')
+        self.assertEqual(self.enter(self.csrf())[0], 403)
+        self.assertNotIn('SMASHGT_ADMIN', [c.name for c in self.cookies])
+        self.assertIn('Ingresa tu clave', self.get('/opiniones.php')[2])
+        self.setUp(); self.get('/fixture-login.php?admin=1')
+        self.assertEqual(self.enter('0' * 48)[0], 403); self.assertEqual(self.enter()[0], 403)
+        self.assertIn('Ingresa tu clave', self.get('/opiniones.php')[2])
+        status, headers, body = self.enter(self.csrf())
+        self.assertEqual((status, headers['Location'], body), (303, './opiniones.php', ''))
+        cookie = next(c for c in self.cookies if c.name == 'SMASHGT_ADMIN')
+        self.assertTrue(cookie.has_nonstandard_attr('HttpOnly')); self.assertEqual(cookie.get_nonstandard_attr('SameSite'), 'Strict')
+        status, headers, page = self.get('/opiniones.php')
+        self.assertEqual(status, 200); self.assertIn('LA COMUNIDAD', page); self.assertNotIn('Ingresa tu clave', page); self.assert_private(headers)
+        # The account session is still the owner's own; losing the role closes this door again.
+        self.assertEqual(self.get('/panel-api.php')[0], 200)
+        with self.db.cursor() as q:
+            q.execute("DELETE r FROM user_roles r JOIN users u ON u.id=r.user_id WHERE u.startgg_user_id=8999401 AND r.role='admin'")
+        self.assertEqual(self.enter(self.csrf())[0], 403)
 
 
 if __name__ == '__main__': unittest.main(verbosity=2)

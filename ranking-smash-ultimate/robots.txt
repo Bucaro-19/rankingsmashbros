@@ -1,6 +1,7 @@
 User-agent: *
 Disallow: /panel.php
 Disallow: /opiniones.php
+Disallow: /opiniones-acceso.php
 Disallow: /cuenta.html
 Disallow: /analisis.html
 Disallow: /preparar.html

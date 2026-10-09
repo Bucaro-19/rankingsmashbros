@@ -10,6 +10,14 @@
 
 
 
+
+## El dueño entra a las opiniones con su cuenta, sin la clave (8/oct, noche)
+
+- El dueño olvidó la clave del panel de opiniones (además, esa clave quedó expuesta en un chat). Nueva puerta `opiniones-acceso.php`: solo por POST, con el token de la sesión de la cuenta, y solo si la cuenta con sesión tiene rol `admin`; entonces abre la misma sesión privada que `opiniones.php` ya comprueba (mismas reglas de cookie: HttpOnly, SameSite Strict, 8 horas) y redirige. **`opiniones.php` y `survey.php` no se tocaron**, no se lee ninguna respuesta en esta puerta y nadie más recibe indicio de que existe.
+- El botón «Opiniones ↗» de la cuenta y del panel privado ahora envía ese formulario en vez de enlazar a la página de la clave.
+- Prueba HTTP nueva en `test_panel_http.py`: sin sesión 401; otra cuenta 403 y sin cookie; token falso o ausente 403; GET 405; la cuenta del dueño entra y ve el panel; al perder el rol la puerta se cierra. Las 14 pruebas de la encuesta siguen en verde.
+- La entrada con clave sigue existiendo como respaldo. **Pendiente del dueño:** reemplazar esa clave (secreto `SMASH_FEEDBACK_ADMIN_HASH`) por una nueva que no haya pasado por ningún chat, o pedir que se retire ese acceso.
+
 ## Botones sin texto en móvil y «Posible torneo rankeado» (8/oct, noche)
 
 - **Error mío, visto por el dueño en su teléfono:** el botón «Inscribirme en start.gg» de la agenda quedaba en blanco. La regla compartida `.page-read a` (color de enlace) es más específica que la clase del botón: en reposo el texto salía celeste sobre celeste y, al tocar, claro sobre claro. No lo vi en mis revisiones porque medí geometría y texto, no el color calculado. **Mismo defecto corregido en otras dos pantallas mías:** el botón amarillo «Prepara el set contra…» del análisis y los botones e índice de «Prepara el set». Ahora las reglas van bajo el contenedor de cada página. Comprobado con el color calculado en navegador en las tres.
