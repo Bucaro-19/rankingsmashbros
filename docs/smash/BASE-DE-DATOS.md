@@ -113,6 +113,8 @@ La columna UNIQUE guarda la huella de origen de cada respuesta: sha256 de la lí
 
 ## Acceso directo a la base (desde la Mac del dueño)
 
+Backfill de contexto pequeño (9/oct): herramienta independiente entregada con **simulación real READ ONLY**, sin carga/migración. 006 existente comprobada por lectura. Repetición omite marcas y no cambia cuts/ledger/rankings; contratos, evidencia agregada y comando `--apply` pendiente de orden en [TORNEOS-PEQUENOS-ATRASADOS.md](TORNEOS-PEQUENOS-ATRASADOS.md). No utilizar la repetición del importador de cortes para cargar estos eventos.
+
 Configurado y verificado por Claude Code el 7 de octubre de 2026. Detalle de lo consultado: `VERIFICACION-BASE-2026-10-07.md`.
 
 - **Cómo conectarse:** ejecutar `/opt/homebrew/opt/mysql-client/bin/mysql` sin argumentos de conexión (no está en el PATH). Lee `~/.my.cnf` del dueño: host `bh8932.banahosting.com`, puerto 3306, usuario `ivcjgjlk_admin`, base `ivcjgjlk_smash`, `utf8mb4`. Ejemplo: `/opt/homebrew/opt/mysql-client/bin/mysql -e "SELECT version FROM schema_migrations"`.

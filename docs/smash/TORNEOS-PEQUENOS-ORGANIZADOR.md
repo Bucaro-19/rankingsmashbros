@@ -1,5 +1,7 @@
 # Torneos pequeños: contexto SQL separado del ranking nacional
 
+**Decisión posterior del dueño (9/oct):** uso actual solo para explicar actividad que no contó en el historial; no aplicar la propuesta de admisión/mínimos de organizador de este documento histórico. 006 y la captura semanal ya están activas; backfill independiente en [TORNEOS-PEQUENOS-ATRASADOS.md](TORNEOS-PEQUENOS-ATRASADOS.md). Los estados de PR/activación siguientes son antecedentes del 8/oct.
+
 Estado: [PR #76](https://github.com/Bucaro-19/rankingsmashbros/pull/76), implementación en `feat/organizer-small-events`, desde main `224d413` (8/oct/2026). Sin fusionar, desplegar, aplicar 006 ni escribir en producción. No se modifica la pantalla/API del organizador. La ampliación semanal está **apagada por defecto**; necesita una decisión del dueño sobre cobertura y costo. No se cambió ninguna variable del repositorio.
 
 ## Captura y costo comprobado

@@ -15,7 +15,7 @@ import time
 
 from ranking_package import (canonical, digest, identifier, instant, integer, require,
                              normalize_capture_entities)
-from import_ranking import LOCK, sql, verify_schema
+from import_ranking import LOCK, sql, verify_schema, context_rows
 from organizer_context import TABLES, validate_context
 from organizer_sql import organizer_plan, import_organizer_context
 from weekly_ranking_load import connect
@@ -178,12 +178,10 @@ def load_batch(db, package, *, apply=False):
         context = subset(c['context'],selected)
         # Never refresh ANY existing unmarked live event: it may be national context even
         # if excluded from cut_events. The weekly loader retains its separate refresh policy.
-        for eid in selected:
-            require(not sql(db,'SELECT 1 FROM events WHERE id=%s',(eid,))
-                and not sql(db,'SELECT 1 FROM cut_events WHERE event_id=%s',(eid,)), 'Protected live event.')
+        require(not context_rows(db,'events','id',sorted(selected),id_column='id')
+            and not context_rows(db,'cut_events','event_id',sorted(selected),id_column='event_id'), 'Protected live event.')
         for name in ('sets','entrants'):
-            for row in context['entities'][name]:
-                require(not sql(db,'SELECT 1 FROM '+name+' WHERE id=%s',(row['id'],)), 'Existing live identity.')
+            require(not context_rows(db,name,'id',[r['id'] for r in context['entities'][name]],id_column='id'), 'Existing live identity.')
         if not apply:
             db.rollback(); return dict(report,status='validated_no_writes')
         outcome = import_organizer_context(db,context,a['cutId'],dict(status='ready',events=len(selected)),marker_subset=True)
@@ -207,7 +205,11 @@ def write_private(path, data):
     body = canonical(data).encode(); require(len(body) <= MAX_BYTES, 'Output too large.')
     import os
     fd = os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
-    with os.fdopen(fd,'wb') as out: out.write(body)
+    try:
+        with os.fdopen(fd,'wb') as out: out.write(body)
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
 
 
 def main():

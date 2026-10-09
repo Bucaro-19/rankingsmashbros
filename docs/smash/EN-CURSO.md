@@ -1,5 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — backfill de eventos pequeños atrasados (9/oct; simulación, sin cargar)
+
+Rama `feat/small-events-backfill` desde main **bbb08bb** (#83), remoto `Bucaro-19/rankingsmashbros`. Auditoría sin cambios tracked; carpetas ajenas `social/` y `marca-rsb/` sin leer/tocar. CI main [37894795531](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37894795531) y despliegue [37894818993](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37894818993) correctos. Encargo y decisión vigentes: pequeños solo para **explicar actividad que no cuenta**, sin regla nueva ni mínimo nuevo de organizador.
+
+- `small_events_backfill.py`: inventario SQL readonly → captura por tandas pendientes antiguas → carga CLI con simulación por defecto. 6 eventos por defecto, techos 10 eventos/30 intentos (incluye catálogo)/120 s con la salvedad de la última consulta del cliente. No tocar workflow semanal, cálculo, JSON ni ledger/hash/instantáneas nacionales. Toda marca existente se omite; todo evento vivo sin marca queda protegido, incluso si no pertenece a cut_events. Bloqueo del importador/transacción/paridad; errores revierten la tanda. Se conserva el contrato de `smash_account_small_events()` y se prueba la función PHP real con datos inventados.
+- **Simulación real solamente**, [37958722496](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37958722496): 19 candidatos/pendientes, tanda de 6 antiguos, otros 13; 21 consultas (2 catálogo+19 contexto), 20,624 s; 178 sets terminados, 15 pendientes omitidos sin inventar victorias/derrotas. SQL `validated_no_writes`/`readOnly=true`, 2,231 s tras agrupar lecturas. Paquete 138.953 B/18.945 B gzip; privado en `~/smash-small-backfill-private/2026-10-09-batch-1.json`, modo 600. Después: 0 marcas, 1 corte, 47 eventos en producción. **No se cargó la tanda**.
+- Dos intentos previos se detuvieron por sets sin jugar dentro de eventos terminados; costos y límites descritos en [TORNEOS-PEQUENOS-ATRASADOS.md](TORNEOS-PEQUENOS-ATRASADOS.md). Se diagnosticó con captura cifrada privada sin poner personas/IDs reales en pruebas/documentos. Runner temporal restaurado; el token permaneció en GitHub Secrets; solo cifrado salió del runner, sin SQL/FTP allí. La migración 006 y variable activa ya existentes solo se verificaron por lectura; no se modificaron.
+- 8 pruebas nuevas en base desechable y 90 del pipeline; hashes V1–V3 fijados/paridad semanal Python/PHP intactos. CI `eec653b` [37958722598](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37958722598) correcto en MySQL 8.0 y MariaDB 10.11; consultar checks finales tras la optimización/documentación. Se conserva el semanal de seis recientes: no dispone de marcas SQL en Actions; cambiar su selección exige otro protocolo. Motivo/alternativas en el informe.
+- **Pendiente revisión y orden de fusión; autorización aparte para escritura. Sin fusión, despliegue, migración ni escritura de producción.** Informe contiene comando de simulación y el `--apply` exacto, aún no autorizado/ejecutado, y cómo preparar las siguientes tandas sin recapturar los marcados.
+
 
 
 
