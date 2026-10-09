@@ -188,6 +188,6 @@ $groups = [
       <?php endif; ?>
     <?php endif; ?>
   </main>
-  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS ↗</a><p>Panel privado de Ranking Smash Bros.</p><span>RANKING SMASH BROS</span></footer>
+  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS ↗</a><p>Panel privado de Ranking Smash Bros.</p><span>RANKING SMASH BROS</span><nav aria-label="Condiciones del servicio"><a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
 </body>
 </html>
