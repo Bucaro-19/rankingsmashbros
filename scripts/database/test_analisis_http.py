@@ -165,6 +165,10 @@ class AnalysisHttpTests(unittest.TestCase):
         self.assertEqual(self.call('rival=2',method='POST')[0],405)
         self.login(); status,headers,data=self.call('rival=2')
         self.assertEqual(status,200); self.assertEqual(data['state'],'bloqueado'); self.assert_free(data)
+        # Free accounts get a teaser: one finding or none, and counts. Never the paid lists.
+        self.assertEqual(sorted(data['teaser']),['headline','locked','main']); self.assertEqual(sorted(data['teaser']['locked']),['characters','common','counters','coveredSets','sets','totalSets'])
+        self.assertTrue(all(type(v) is int for v in data['teaser']['locked'].values()))
+        self.assertTrue(data['teaser']['headline'] is None or set(data['teaser']['headline'])<= {'kind','slug','won','lost'})
         self.assertEqual(data['record'],dict(wins=2,losses=3,sets=5)); self.assertEqual(data['me']['playerId'],'1')
         for query in ('rival=1','rival=2&me=2','rival=2&active=true','rival=2&userId=1','rival[]=2','rival=2&buscar=Lu','rival=1%20OR%201=1','rival=2&scope[]=gt'):
             self.assertEqual(self.call(query)[0],400,query)

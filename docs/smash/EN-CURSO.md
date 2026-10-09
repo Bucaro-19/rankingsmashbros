@@ -2,6 +2,17 @@
 
 
 
+
+## Adelanto gratis de «Prepara el set» y portafolio (8/oct, 23:00)
+
+- **Pedido del dueño**, con una captura de referencia: que las funciones premium muestren un adelanto en vez de solo títulos bloqueados. Cambia una regla de los handoffs anteriores («la pantalla bloqueada no muestra cifras»): ahora muestra **un** hallazgo real.
+- **Servidor:** la respuesta gratis de `analisis-api.php` añade `teaser`: `headline` (un solo hallazgo medido del rival: el personaje contra el que peor le va con 5+ games; si no, su récord en el primer game con 5+ sets; si no, su récord contra el top 10 con 3+ sets; si no, `null`), `main` y `locked` con **solo conteos** (personajes evaluados, rivales en común, sets). Ningún récord, counter ni nombre de rival de las secciones de pago sale del servidor para una cuenta gratis; hay prueba de eso. Si el cálculo falla, `teaser` es `null` y la respuesta gratis sigue igual.
+- **Pantalla:** «Hallazgo principal · gratis», hasta dos tarjetas «También calculado» con el conteo real y una descripción fija que se desvanece, y un bloque con barras decorativas (sin datos) y la invitación a premium. Sin hallazgo con muestra suficiente, lo dice en vez de mostrar una cifra de uno o dos games.
+- Costo: una cuenta gratis ahora también dispara la lectura de games del corte. El límite de consultas por sesión sigue aplicando; conviene vigilarlo en la medición de carga.
+- Sin diseño propio: anotado en PENDIENTES-DUENO.md para Claude Design. Falta llevar el mismo patrón a la pestaña «Mis torneos».
+- **Portafolio:** Smash GT agregado como proyecto en ingporras.com (repo `rsvp-graduacion`, PR 27, desplegado): tarjeta, página del proyecto en español e inglés y enlace al sitio. Sin enlace al código.
+- Opinión pedida por el dueño sobre viabilidad económica: registrada en la conversación; resumen: probar barato en Guatemala antes de expandir, y mirar organizadores y patrocinios antes que más suscripciones de 3 USD.
+
 ## «Ver detalle» en escritorio (8/oct, 22:30)
 
 - El dueño aclaró con una captura que el botón que «no funcionaba» era el de la vista de escritorio. Ahí el detalle del torneo ya está abierto en el panel derecho, así que pulsar «Ver detalle» en esa misma tarjeta no cambiaba nada. El arreglo anterior (móvil) atendía otro caso, real pero distinto.

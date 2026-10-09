@@ -79,4 +79,16 @@ $tied=smash_analisis_deep($lite,$deepPublic,$deepView,['games'=>[$dg('S4',1,$R,$
 analysis_check($tied['counters']===[] && $tied['avoid']===[],'A tied record takes no side');
 analysis_check(smash_analisis_deep_confidence([4,0],[0,0],[0,0])==='alta' && smash_analisis_deep_confidence(null,[6,4],[0,0])==='alta' && smash_analisis_deep_confidence([1,1],[0,0],[0,0])==='media'
     && smash_analisis_deep_confidence(null,[0,0],[12,8])==='media' && smash_analisis_deep_confidence(null,[2,2],[5,5])==='baja','Confidence thresholds');
+// Free teaser: one measured finding in full, and only counts of the rest.
+$teaser=smash_analisis_teaser_from($deep,'link');
+analysis_check($teaser===['headline'=>['kind'=>'hard','slug'=>'pikachu','won'=>1,'lost'=>4],'main'=>'link',
+    'locked'=>['counters'=>3,'characters'=>2,'common'=>1,'sets'=>5,'coveredSets'=>5,'totalSets'=>6]],'Teaser: the first finding with a real sample (Pikachu, 5 games), not the two-game one; counts only');
+analysis_check(strpos(json_encode($teaser),'Pika')===false && strpos(json_encode($teaser),'mario')===false && strpos(json_encode($teaser),'fox')===false,'No opponent, counter or other character of the paid sections leaves in the teaser');
+$few=$deep; $few['vsChars']['hard']=[['slug'=>'mario','won'=>0,'lost'=>2]];
+analysis_check(smash_analisis_teaser_from($few,'link')['headline']===['kind'=>'game1','won'=>2,'lost'=>3],'Without a character sample, the first-game record (5 sets) is the finding');
+$few['setPattern']['game1']=[1,1];
+analysis_check(smash_analisis_teaser_from($few,'link')['headline']===null,'Two sets against the top 10 are not a finding: nothing is shown rather than a thin figure');
+$few['byTier']['top10']=[1,2];
+analysis_check(smash_analisis_teaser_from($few,'link')['headline']===['kind'=>'top10','won'=>1,'lost'=>2],'Three sets against the top 10 are');
+analysis_check(smash_analisis_teaser_from($none,null)===['headline'=>null,'main'=>null,'locked'=>['counters'=>0,'characters'=>0,'common'=>0,'sets'=>0,'coveredSets'=>0,'totalSets'=>0]],'No data: no finding and real zeros in the counts');
 echo "Analysis pure contracts: OK\n";

@@ -110,11 +110,34 @@
     return `<div class="pr-intro"><p class="pr-kicker yellow">Análisis de rival · Premium</p><h1>Prepara el set<br><span>contra ${rv}</span></h1>${main}</div>
       <nav class="pr-index" aria-label="Secciones">${SECTIONS.map((s,i)=>`<a href="#${s[0]}">${i+1} · ${s[1]}${locked?' ★':''}</a>`).join('')}</nav>`;
   }
+  // Free view: one real finding in full, how much more is calculated (counts only, sent as counts by the
+  // server) and the way in. The striped bars are decoration: no paid figure reaches this page.
+  function finding(rv) {
+    const t=data.teaser, h=t?.headline;
+    if(!h)return `<section class="pr-finding none"><p class="pr-kicker">Hallazgo principal · gratis</p><h2>Aún no hay un hallazgo con muestra suficiente</h2><p>Para adelantarte algo de ${rv} pedimos al menos 5 games o sets detrás del dato. En este corte todavía no los hay; no mostramos cifras de uno o dos games como si dijeran algo.</p></section>`;
+    const n=h.won+h.lost, P=h.slug?escape(name(h.slug)):'';
+    const F={hard:[`A ${rv} le cuesta contra ${P}`,`Ganó ${h.won} de ${n} games contra ${P} en este corte. Entre los personajes con muestra suficiente, es contra el que peor le va.`],
+      game1:[h.won<h.lost?`${rv} suele empezar perdiendo`:h.won>h.lost?`${rv} suele ganar el primer game`:`${rv} reparte el primer game`,`Ganó el primer game en ${h.won} de ${plural(n,'set','sets')} con marcador por game.`],
+      top10:[`Contra el top 10: ${h.won}–${h.lost}`,`Ganó ${h.won} de ${plural(n,'set','sets')} contra jugadores del top 10 de esta vista.`]}[h.kind];
+    return `<section class="pr-finding"><p class="pr-kicker">Hallazgo principal · gratis</p><div class="pr-finding-head">${h.slug?`<span class="pr-icon big">${icon(h.slug,46)}</span>`:''}<h2>${F[0]}</h2></div><p>${F[1]}</p><p class="pr-note">Es un dato medido en los sets y games del corte, no una opinión.</p></section>`;
+  }
+  function also(rv) {
+    const l=data.teaser?.locked; if(!l)return '';
+    const M=data.teaser.main?escape(name(data.teaser.main)):'main';
+    const cards=[l.counters>0&&[`${plural(l.counters,'personaje evaluado','personajes evaluados')} contra su ${M}`,'Cuáles te convienen y cuáles evitar, con tus sets contra él, sus games contra cada personaje y lo que pasa en la escena de Guatemala, cada uno con su muestra y su nivel de confianza.'],
+      l.common>0&&[`${plural(l.common,'rival','rivales')} en común contigo`,`Tu récord y el de ${rv} contra cada jugador que ambos enfrentaron, lado a lado, y quién salió mejor.`],
+      l.sets>0&&[`Cómo jugó ${plural(l.sets,'set','sets')}`,'Primer game, game decisivo, sets cerrados 2–1 y 3–2, y si mantiene o cambia de personaje después de perder un game.'],
+      l.characters>0&&[`${plural(l.characters,'personaje más','personajes más')} en su récord`,'Contra cuáles le va peor y contra cuáles mejor, en games ganados y perdidos.']].filter(Boolean).slice(0,2);
+    return cards.length?`<div class="pr-also">${cards.map(c=>`<article><p class="pr-kicker">También calculado</p><h3>${c[0]}</h3><p>${c[1]}</p></article>`).join('')}</div>`:'';
+  }
   function renderLocked() {
-    const expired=data.state==='vencido'&&data.premium?.expiredAt, rv=escape(data.rival.tag);
-    root.innerHTML=`${intro(true)}<ol class="pr-locked">${SECTIONS.map((s,i)=>`<li id="${s[0]}"><span class="pr-num" aria-hidden="true">${i+1}</span><div><h2>${s[1]}</h2><p>${s[2]}</p></div><span class="pr-star">★ Premium</span></li>`).join('')}</ol>
-      <section class="pr-invite"><h2>${expired?'Renueva para volver a verlo':'Disponible con premium'}</h2><p>Estas secciones usan los resultados de ${rv} y los tuyos para preparar el set. Lo gratis sigue igual: su puesto, sus puntos y el récord entre ustedes.</p>
-        <a class="pr-cta" href="./cuenta.html#premium"><span>Apoyar con 3 USD al mes o 24 USD al año</span></a><p class="pr-note">Se renueva solo hasta que lo canceles desde la pestaña Premium. El cobro ocurre en Recurrente; Smash GT nunca ve tu tarjeta.</p></section>${foot()}`;
+    const expired=data.state==='vencido'&&data.premium?.expiredAt, rv=escape(data.rival.tag), l=data.teaser?.locked;
+    const basis=l&&l.totalSets?`El análisis completo ya está calculado con ${plural(l.totalSets,'set','sets')} de ${rv} en este corte${l.coveredSets?` (${l.coveredSets} con personaje registrado)`:''}.`:`El análisis completo usa los resultados de ${rv} y los tuyos para preparar el set.`;
+    root.innerHTML=`${intro(true)}${finding(rv)}${also(rv)}
+      <section class="pr-lock"><div class="pr-lock-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div class="pr-lock-box"><span class="pr-lock-glyph" aria-hidden="true">★</span><h2>${expired?'Renueva para volver a verlo':'Disponible con premium'}</h2><p>${basis} Lo gratis sigue igual: su puesto, sus puntos y el récord entre ustedes.</p>
+          <a class="pr-cta" href="./cuenta.html#premium"><span>Apoyar con 3 USD al mes o 24 USD al año</span></a><p class="pr-note">Se renueva solo hasta que lo canceles desde la pestaña Premium. El cobro ocurre en Recurrente; Smash GT nunca ve tu tarjeta.</p></div></section>
+      <h2 class="pr-locked-title">Lo que incluye</h2><ol class="pr-locked">${SECTIONS.map((s,i)=>`<li id="${s[0]}"><span class="pr-num" aria-hidden="true">${i+1}</span><div><h2>${s[1]}</h2><p>${s[2]}</p></div><span class="pr-star">★ Premium</span></li>`).join('')}</ol>${foot()}`;
   }
   const foot=()=>`<p class="pr-principle">Pagar no da puntos ni cambia tu puesto.</p><p class="pr-note center">Datos de resultados: start.gg · Smash GT, ranking experimental.</p>`;
   function render() {
