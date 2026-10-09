@@ -171,16 +171,17 @@ function survey_text(string $name): string {
   <title>Cuestionario de la comunidad — Ranking Smash Bros</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./arena.css?v=20261009-2">
+  <link rel="stylesheet" href="./arena.css?v=20261009-marca">
   <link rel="stylesheet" href="./paginas.css?v=20261008-1">
   <link rel="stylesheet" href="./encuesta.css?v=20261009-1">
   <script src="./cabecera.js?v=20261009-1" defer></script>
   <script src="./encuesta.js?v=20261008-1" defer></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
 </head>
 <body class="smash-redesign page-read">
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="gt-header">
-    <a class="gt-brand" href="./" aria-label="Ranking Smash Bros, inicio"><span class="gt-mark">GT</span><span>RANKING SMASH BROS<small>por ingporras</small></span></a>
+    <a class="gt-brand" href="./" aria-label="Ranking Smash Bros, inicio"><img class="gt-mono" src="/assets/rsb-mark.svg" alt="" width="38" height="38"><span><img class="gt-logo" src="/assets/rsb-logo-gt-oscuro.svg" alt="" width="301" height="28"><small>por ingporras</small></span></a>
     <nav aria-label="Principal"><a href="./#ranking">Ranking</a><a href="./torneos.html">Torneos</a><a href="./metodologia.html">Método</a><a href="./encuesta.php" aria-current="page">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Iniciar sesión</a></nav>
   </header>
   <main id="contenido" class="survey-page">

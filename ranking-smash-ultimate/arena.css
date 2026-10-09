@@ -412,3 +412,5 @@ dialog > a { color: #ffe364; }
 .smash-redesign .next-tournament .nt-cta { align-self:flex-start; display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:0 22px; background:#49A6E9; color:#0B0F1A; transform:skewX(-10deg); font:800 14px 'Archivo',sans-serif; text-transform:uppercase; letter-spacing:.04em; text-decoration:none; }
 .nt-cta span { display:inline-block; transform:skewX(10deg); } .smash-redesign .next-tournament .nt-cta:hover { background:#F4F1EA; color:#0B0F1A; text-decoration:none; }
 .nt-note, .nt-none { margin:0; font-size:13px; line-height:1.5; color:#9AA3B5; }
+.smash-redesign .gt-brand .gt-mono{display:none}.smash-redesign .gt-brand .gt-logo{display:block;height:28px;width:auto}
+@media (max-width:700px){.smash-redesign .gt-brand .gt-mono{display:block}}
