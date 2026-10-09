@@ -26,7 +26,7 @@ def snapshot():
 
 class ExportTests(unittest.TestCase):
     def test_seo_artifacts_in_publication_allowlist_and_shared_publication_lock(self):
-        for name in ('robots.txt', 'sitemap.xml', 'torneos.html', 'visita.js'):
+        for name in ('robots.txt', 'sitemap.xml', 'torneos.html', 'terminos.html', 'reembolsos.html', 'visita.js'):
             self.assertIn(name, FILES)
         root = Path(__file__).resolve().parents[2]
         for name in ('smash-publish.yml', 'smash-deploy-snapshot.yml', 'smash-characters.yml'):

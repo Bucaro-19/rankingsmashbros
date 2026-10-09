@@ -111,5 +111,6 @@ $name = $closed ? '' : $view['organizer']['name'];
   </div>
 </main>
 <?php endif; ?>
+<footer class="foot closed"><nav aria-label="Condiciones del servicio"><a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
 </body>
 </html>

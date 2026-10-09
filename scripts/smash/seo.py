@@ -5,8 +5,10 @@ from xml.etree import ElementTree as ET
 
 ORIGIN = 'https://rankingsmashbros.com'
 SITEMAP_NS = 'http://www.sitemaps.org/schemas/sitemap/0.9'
-PUBLIC_PAGES = ('', 'metodologia.html', 'analisis-top20.html', 'analisis-torneos.html', 'torneos.html')
+PUBLIC_PAGES = ('', 'metodologia.html', 'analisis-top20.html', 'analisis-torneos.html', 'torneos.html', 'terminos.html', 'reembolsos.html')
 
+# Actual editorial revision, fixed until these texts change; never the deploy clock or cut.
+CONTENT_UPDATED_AT = {'terminos.html': '2026-10-09T21:25:00Z', 'reembolsos.html': '2026-10-09T21:25:00Z'}
 
 def timestamp(value):
     if not isinstance(value, str):
@@ -26,6 +28,7 @@ def build_sitemap(source, public, *, agenda=None):
     dates = {'': cut, 'metodologia.html': cut,
              'analisis-top20.html': max(cut, timestamp(top20['cut'])),
              'analisis-torneos.html': timestamp(tournaments['snapshotAt'])}
+    dates.update({page: timestamp(date) for page, date in CONTENT_UPDATED_AT.items()})
     # Agenda is independently published. Missing/unreadable metadata must not block a cut
     # or substitute its date with the ranking cut, a Git snapshot, or the deploy clock.
     if isinstance(agenda, dict):

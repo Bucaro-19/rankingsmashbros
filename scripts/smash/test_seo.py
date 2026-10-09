@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 from xml.etree import ElementTree as ET
 
 from deploy import FILES, deploy
-from seo import build_sitemap, timestamp, ORIGIN, PUBLIC_PAGES, SITEMAP_NS
+from seo import build_sitemap, timestamp, ORIGIN, PUBLIC_PAGES, SITEMAP_NS, CONTENT_UPDATED_AT
 
 SITE = Path(__file__).resolve().parents[2] / 'ranking-smash-ultimate'
 
@@ -113,6 +113,9 @@ class SEOTests(unittest.TestCase):
         archive = json.loads((SITE / 'data/analisis-torneos.json').read_text())
         self.assertEqual(timestamp(rows[ORIGIN + '/analisis-torneos.html']), timestamp(archive['snapshotAt']))
         self.assertEqual(timestamp(rows[ORIGIN + '/torneos.html']), timestamp(agenda['generatedAt']))
+        for page, date in CONTENT_UPDATED_AT.items():
+            self.assertEqual(timestamp(rows[ORIGIN+'/'+page]), timestamp(date))
+            self.assertEqual(Head((SITE/page).read_text()).meta['smash-content-updated-at'], date)
         self.assertEqual((SITE / 'sitemap.xml').read_bytes(), xml)
         self.assertNotIn('encuesta', xml.decode())
 

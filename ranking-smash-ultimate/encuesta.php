@@ -257,6 +257,6 @@ function survey_text(string $name): string {
       </form>
     <?php endif; ?>
   </main>
-  <footer class="gt-footer"><span>Hecho para la comunidad de Guatemala. <a href="https://ingporras.com/">INGPORRAS ↗</a></span><span>Datos: start.gg · <span id="footer-method">BT-PILOTO-3</span><br>Arte: Nintendo y titulares respectivos · Recursos: <a href="https://github.com/marcrd/smash-ultimate-assets" target="_blank" rel="noopener noreferrer">marcrd</a> / <a href="https://github.com/jonborg/ThumbnailGenerator" target="_blank" rel="noopener noreferrer">ThumbnailGenerator</a></span><p>Proyecto independiente, sin afiliación con Nintendo, start.gg ni UltRank. Ranking experimental.</p></footer>
+  <footer class="gt-footer"><span>Hecho para la comunidad de Guatemala. <a href="https://ingporras.com/">INGPORRAS ↗</a></span><span>Datos: start.gg · <span id="footer-method">BT-PILOTO-3</span><br>Arte: Nintendo y titulares respectivos · Recursos: <a href="https://github.com/marcrd/smash-ultimate-assets" target="_blank" rel="noopener noreferrer">marcrd</a> / <a href="https://github.com/jonborg/ThumbnailGenerator" target="_blank" rel="noopener noreferrer">ThumbnailGenerator</a></span><p>Proyecto independiente, sin afiliación con Nintendo, start.gg ni UltRank. Ranking experimental.</p><nav aria-label="Condiciones del servicio"><a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
 </body>
 </html>
