@@ -1,5 +1,10 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Primer pago real y lista de premium en el panel (9/oct, tarde)
+
+- **Pago real confirmado** (solo lectura en producción): la suscripción mensual del dueño está `active` en modo real desde el 9/oct 14:15 GT, con periodo hasta el 9/nov; el aviso `subscription.create` de Recurrente quedó `synced`. Hay dos intentos `pending` sin pago (8 y 9/oct) que no dan acceso.
+- **Panel privado:** `stats.php` agrega `accounts.premiumList` (tag, plan, si se renueva y fecha de fin en hora de Guatemala; solo cobros reales con periodo vigente) y `panel.js` la lista bajo el conteo. Solo la recibe el dueño, como el resto del panel.
+
 ## Codex — auditoría y adelanto del top por organizador (9/oct)
 
 Rama propia `feat/organizer-readiness` desde main actualizado **1a5d4d1** (PR #84 ya fusionado), remoto `Bucaro-19/rankingsmashbros`. Antes de editar: tracked limpio, `marca-rsb/` y `social/` ajenos sin tocar; CI main [37965239323](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37965239323) correcta. El run de publicación ajeno [37973087117](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/37973087117) terminó `skipped`; no lo lancé ni modifiqué. **Este encargo no autoriza producción:** no leí credenciales privadas ni escribí/consulté producción, no apliqué migraciones, no fusioné/desplegué.

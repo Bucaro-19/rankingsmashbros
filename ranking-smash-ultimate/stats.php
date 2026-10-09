@@ -88,6 +88,27 @@ function smash_stats_premium(PDO $pdo, int $now): ?int
     } catch (PDOException $error) { return null; }
 }
 
+// Who those premium accounts are, for the owner's panel only: tag, plan and the day the paid period ends.
+function smash_stats_premium_list(PDO $pdo, int $now): array
+{
+    try {
+        $q = $pdo->prepare("SELECT COALESCE(p.tag, u.display_name) AS tag, s.plan, s.status, s.current_period_end AS until
+            FROM premium_subscriptions s JOIN users u ON u.id = s.user_id LEFT JOIN players p ON p.id = u.player_id
+            WHERE s.live_mode = 1 AND s.status IN ('active', 'past_due', 'canceled') AND s.current_period_end > ?
+            ORDER BY s.current_period_end DESC LIMIT 200");
+        $q->execute([gmdate('Y-m-d H:i:s', $now)]);
+        $list = []; $seen = [];
+        foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $tag = is_string($row['tag']) && $row['tag'] !== '' ? $row['tag'] : 'Cuenta sin jugador';
+            if (isset($seen[$tag])) continue;
+            $seen[$tag] = true;
+            $list[] = ['tag' => $tag, 'plan' => $row['plan'], 'renews' => $row['status'] === 'active',
+                'until' => gmdate('Y-m-d', strtotime($row['until'] . ' UTC') - 21600)];
+        }
+        return $list;
+    } catch (PDOException $error) { return []; }
+}
+
 function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
 {
     try {
@@ -102,7 +123,7 @@ function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
             'yesterday' => null, 'daily' => [], 'periods' => [], 'weekly' => []];
         $total = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
         $linked = (int)$pdo->query('SELECT COUNT(*) FROM oauth_connections WHERE revoked_at IS NULL')->fetchColumn();
-        $report['accounts'] = ['total' => $total, 'linked' => $linked, 'premium' => smash_stats_premium($pdo, $now)];
+        $report['accounts'] = ['total' => $total, 'linked' => $linked, 'premium' => smash_stats_premium($pdo, $now), 'premiumList' => smash_stats_premium_list($pdo, $now)];
         $season = $seasonYear . '-01-01';
         foreach (['7' => 7, '30' => 30, '90' => 90, 'season' => null] as $name => $length) {
             $from = $length === null ? $season : smash_stats_shift($yesterday, -($length - 1));
