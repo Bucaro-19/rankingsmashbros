@@ -54,7 +54,7 @@ try {
     $weeks = $r['weekly']['90'];
     check_stats(count($weeks) === 2 && $weeks[1] === ['from' => '2026-10-14', 'to' => '2026-10-20', 'visitors' => 2, 'pageviews' => 6, 'registrations' => 2, 'partial' => false]
         && $weeks[0] === ['from' => '2026-10-10', 'to' => '2026-10-13', 'visitors' => 1, 'pageviews' => 2, 'registrations' => 0, 'partial' => true], 'Weeks counted back from yesterday; the oldest one is clipped and partial');
-    check_stats($r['accounts'] === ['total' => $baseUsers + 4, 'linked' => $baseLinked + 1, 'premium' => 0], 'Accounts: total, still linked and premium');
+    check_stats($r['accounts'] === ['total' => $baseUsers + 4, 'linked' => $baseLinked + 1, 'premium' => 0, 'premiumList' => []], 'Accounts: total, still linked and premium');
     // Historical analysis rows remain unchanged; new agenda rows are distinct and counted once.
     $page->execute(['2026-10-20', 'analisis-torneos', 3]);
     $page->execute(['2026-10-20', 'torneos', 5]);
@@ -68,6 +68,8 @@ try {
     $sub = $pdo->prepare("INSERT INTO premium_subscriptions (user_id, plan, live_mode, provider_checkout_id, status, current_period_end, created_at, updated_at) VALUES (?, 'annual', ?, ?, ?, ?, '2026-10-01', '2026-10-01')");
     foreach ([[8999301, 1, 'ch_stats1', 'active', '2027-10-01'], [8999301, 1, 'ch_stats2', 'canceled', '2026-12-01'], [8999302, 1, 'ch_stats3', 'canceled', '2026-10-20'], [8999303, 0, 'ch_stats4', 'active', '2027-10-01'], [8999304, 1, 'ch_stats5', 'pending', null]] as $row) $sub->execute([$id($row[0]), $row[1], $row[2], $row[3], $row[4]]);
     check_stats(smash_stats_report($pdo, $now, 2026)['accounts']['premium'] === 1, 'Premium counts accounts with a real paid period running: no tests, no ended, no pending, no double count');
+    $list = smash_stats_report($pdo, $now, 2026)['accounts']['premiumList'];
+    check_stats(count($list) === 1 && $list[0]['plan'] === 'annual' && array_keys($list[0]) === ['tag', 'plan', 'renews', 'until'], 'Premium list names each paying account once, with plan and period end only');
     // Once the previous window is fully measured, the comparison appears.
     $visitor->execute(['2026-10-02', $h('D'), 1, 0]); $visitor->execute(['2026-10-08', $h('A'), 1, 0]); $visitor->execute(['2026-10-08', $h('E'), 1, 0]);
     $again = smash_stats_report($pdo, $now, 2026);
