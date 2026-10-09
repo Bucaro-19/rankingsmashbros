@@ -37,7 +37,7 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
   <title>Smash GT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./panel.css?v=20261007-1">
+  <link rel="stylesheet" href="./panel.css?v=20261009-1">
 <?php if ($state === 'owner'): ?>
   <script src="./panel-model.js?v=20261008-1" defer></script><script src="./panel.js?v=20261007-2" defer></script>
 <?php endif; ?>
@@ -45,7 +45,7 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
 <body data-state="<?= $state ?>">
   <a class="skip-link" href="#panel-content">Saltar al contenido</a>
   <header class="panel-header"><a class="panel-brand" href="./"><span class="brand-mark">GT</span><span>SMASH GT</span></a>
-    <div><a href="./">Volver al sitio</a><?php if ($state === 'owner'): ?><a href="./opiniones.php">Opiniones ↗</a><button id="panel-logout" class="outline" type="button">Cerrar sesión</button><?php endif; ?></div>
+    <div><a href="./">Volver al sitio</a><?php if ($state === 'owner'): ?><form class="panel-opinions" action="./opiniones-acceso.php" method="post"><input type="hidden" name="csrf" value="<?= $csrf ?>"><button class="outline" type="submit">Opiniones ↗</button></form><button id="panel-logout" class="outline" type="button">Cerrar sesión</button><?php endif; ?></div>
   </header>
 <?php if ($state === 'denied'): ?>
   <main id="panel-content" class="sober" tabindex="-1"><div><h1>Sin acceso.</h1><p>Esta página no está disponible para tu cuenta.</p><a class="primary" href="./"><span>Volver al sitio</span></a></div></main>

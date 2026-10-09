@@ -66,7 +66,7 @@
       try{if(sessionStorage.getItem('smashgt.volver')==='torneos'){sessionStorage.removeItem('smashgt.volver');backToOrganizer=true;}}catch{}
       SmashOrganizador.setContext({csrf:data.csrf,authenticated:true,goTo:name=>{if(setScreen(name))$(`tab-${name}`).focus();}});
       saved=[...data.user.chosen];chosen=[...saved];roles=data.user.roles.length?[...data.user.roles]:['player'];
-      $('header-account').textContent=data.user.tag;$('header-account').href='./cuenta.html';$('tab-panel').hidden=data.panel!==true;$('tab-opinions').hidden=data.panel!==true;
+      $('header-account').textContent=data.user.tag;$('header-account').href='./cuenta.html';$('tab-panel').hidden=data.panel!==true;$('tab-opinions').hidden=data.panel!==true;$('opinions-csrf').value=data.csrf;
       SmashPremium.setContext({csrf:data.csrf,authenticated:true,onStatus:markPremium,admin:data.panel===true});
       if(!data.user.roles.length){renderOnboarding();setScreen('onboarding',true);}else if(location.hash.startsWith('#premium'))setScreen('premium',true);else if(backToOrganizer){setScreen('organizer',true);SmashPremium.peek();}else{setScreen('profile',true);SmashPremium.peek();}
       if(location.hash==='#vinculada')history.replaceState(null,'','./cuenta.html');

@@ -72,3 +72,4 @@
 @media(max-width:700px){.account-tabs{flex-wrap:wrap}.account-tabs>div[role=tablist]{flex:0 0 100%;min-width:0}.tab-links{width:100%;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;border-top:1px solid #f4f1ea14}.tab-links::-webkit-scrollbar{display:none}.tab-links .tab-link{height:44px;padding:0 10px;font-size:12px}}
 .analyze-entry{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;padding:18px;background:var(--panel);border-top:4px solid var(--yellow)}.analyze-entry>div{flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:6px}.analyze-entry h2{font-size:30px}.analyze-entry .analyze-cta{flex:1 1 200px;padding:0 20px;text-decoration:none}
 .p-go{display:inline-flex;align-items:center;min-height:44px;font-weight:800;color:var(--yellow)}
+.tab-form{display:flex;margin:0}.tab-form .tab-link{background:none;border:0;border-bottom:3px solid transparent;cursor:pointer}
