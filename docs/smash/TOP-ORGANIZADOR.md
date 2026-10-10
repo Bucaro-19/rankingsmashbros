@@ -113,7 +113,7 @@ Navegador local con cuentas y torneos inventados: escritorio 1280 px y móvil 37
 
 ## Directorio público «Tops de organizadores» (9/oct)
 
-Nueva pantalla `tops.html`, implementación provisional expresamente pedida por el dueño. Reutiliza `torneos.css`, cabecera y pie, con `tops.css` y `tops.js`; el prompt de diseño final está en PENDIENTES-DUENO. No requiere cuenta para consultar. Tiene enlaces en el menú/pies, FILES y sitemap; canonical, Open Graph y Twitter propios con imagen ya aprobada. No añade contador ni scripts de terceros nuevos.
+Pantalla pública `tops.html`, con diseño final aplicado el 10/oct desde `design_handoff_rsb_tops/README.md`. Reutiliza `torneos.css`, cabecera y pie, con `tops.css` y `tops.js`. No requiere cuenta para consultar. Tiene enlaces en el menú/pies, FILES y sitemap; canonical, Open Graph y Twitter propios con imagen ya aprobada. No añade contador ni scripts de terceros nuevos.
 
 `GET /tops-api.php` (también HEAD), biblioteca `tops.php` bloqueada para acceso HTTP en .htaccess. **Solo SELECT**, dentro de transacción READ ONLY y snapshot consistente. Sin llamadas a start.gg/proveedor, sesión ni cookies. Reutiliza `smash_org_public` y su cálculo, sin introducir un cálculo alterno ni guardar resultados.
 
@@ -143,3 +143,9 @@ Sin campos de pagos, contactos, cuenta, personajes/IDs, detalle privado, invitac
 - Query inválida 400 `invalid_query`; método distinto de GET/HEAD 405 `method_not_allowed`; fallo de lectura/configuración 503 `tops_unavailable`. Errores con `ok:false, reason` y `no-store`; sin detalles internos.
 
 Pruebas HTTP con datos inventados en DB desechable: público/privado, sin admitidos/19 activos, coorganizador, organización por revisión, premium y admin con paridad de la página completa, respuesta sin campos privados, GET/HEAD/304/sin cookies, tope 12 y segunda página de 3. Navegador móvil/escritorio y pendientes de publicación se registran en EN-CURSO. No exige migración nueva ni modifica producción/ranking.
+
+### Diseño final del directorio (10/oct)
+
+Rejilla y bloques diagonales TOP N del handoff; coorganizadores 1–3 en texto y 4–10 con lista desplegable; hasta tres puestos reales, sin rellenar. Carga inicial con seis esqueletos, carga adicional con tres, error que conserva tarjetas y cursor, reintento y foco en primera tarjeta nueva. Estado vacío y aviso nacional conservan su texto fijo. Accesibilidad y revisión a 375 px registradas en EN-CURSO.
+
+Mains/retratos, total global, botón/vista «en grande» y datos de puntos no están en el contrato público y **no se añaden**. El enlace `/top/{slug}` sigue abriendo el top completo existente. El contador indica lo recibido y si quedan páginas; nunca inventa N de M. El logo actual del podio y los archivos del top completo no cambian.
