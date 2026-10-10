@@ -1,5 +1,17 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — Tarea 1: diseño final del directorio de tops (10/oct)
+
+Rama `feat/organizer-tops-design` desde main **0be7508**, remoto `Bucaro-19/rankingsmashbros`; tracked limpio antes de editar. `laminas/`, `marca-rsb/` y `social/` ajenos conservados. #94 ya estaba fusionado y desplegado: CI main [38021889387](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38021889387) y assets-only [38021890571](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38021890571), ambos correctos. Esta entrega **no autoriza fusionar ni desplegar**, ni acceder a SQL productivo.
+
+- Aplicado `design_handoff_rsb_tops/README.md` a tops.html/css/js: diagonal TOP 5/10/15, colores y tipografías existentes, coorganizadores con disclosure, chips, adelanto real de 0–3 jugadores y CTA. Encabezado, navegación Tops, pie, logo actual y aviso fijo conservados.
+- Seis esqueletos en carga inicial; tres añadidos al cargar más; error con reintento que conserva tarjetas/cursor; foco en la primera tarjeta nueva; vacío honesto y estados de pocos jugadores. Animaciones desactivables y foco visible. Corrección detectada en navegador: `page-read a` ocultaba el texto del CTA con su mismo color de fondo; regla local más específica.
+- **Contrato público sin cambios**, tops-api.php/tops.php intactos. El handoff pide mains/retratos, total global y una vista ampliada con puntos/datos del top completo que el servicio no entrega: se omiten y se conserva `/top/{slug}`. El contador comunica solo tarjetas recibidas, sin inventar un total. No se portan support.js ni ejemplos.
+- Retirada la nota/prompt de pantalla provisional de PENDIENTES-DUENO; TOP-ORGANIZADOR documenta diseño final y omisiones. lastmod editorial real actualizado en SEO/sitemap, sin modificar public.json ni sus hashes.
+- Local: **7 Node de tops**, **93 Python del pipeline**, **9 de esquema** y **8 HTTP de tops**, en MariaDB 13.0.2 desechable con datos inventados. CI del PR debe validar MySQL 8.0 y MariaDB 10.11. Navegador local: escritorio 1280/1440 y 375 px, listado, 10 coorganizadores, tarjetas 0/1/2 jugadores, carga inicial y adicional, ambos errores/reintentos, vacío y fin de paginación. Sin desborde (360/360 móvil, 1265/1265 escritorio); 12 tarjetas conservadas al error y foco en tarjeta 13 al reintentar. Capturas locales en `/tmp/smash-org-laminas-20261010/tops-final-{desktop,mobile}.png`.
+- Sin SQL productivo, migraciones, cambios de cálculo/public.json, fusión o despliegue. PR y resultado CI se añaden al abrir la entrega.
+
+
 ## Codex — directorio público «Tops de organizadores» (9/oct, noche)
 
 Encargo único del dueño: pantalla pública provisional con componentes existentes, endpoint de lectura, pruebas y PR; **sin fusionar/desplegar**. Esta autorización específica permite la pantalla provisional aunque AGENTS.md pide handoff previo para pantallas nuevas. El diseño final se solicita con el prompt de [PENDIENTES-DUENO.md](PENDIENTES-DUENO.md), sin portar `support.js` ni datos de handoffs.
