@@ -9,7 +9,7 @@ Rama `feat/organizer-tops-design` desde main **0be7508**, remoto `Bucaro-19/rank
 - **Contrato público sin cambios**, tops-api.php/tops.php intactos. El handoff pide mains/retratos, total global y una vista ampliada con puntos/datos del top completo que el servicio no entrega: se omiten y se conserva `/top/{slug}`. El contador comunica solo tarjetas recibidas, sin inventar un total. No se portan support.js ni ejemplos.
 - Retirada la nota/prompt de pantalla provisional de PENDIENTES-DUENO; TOP-ORGANIZADOR documenta diseño final y omisiones. lastmod editorial real actualizado en SEO/sitemap, sin modificar public.json ni sus hashes.
 - Local: **7 Node de tops**, **93 Python del pipeline**, **9 de esquema** y **8 HTTP de tops**, en MariaDB 13.0.2 desechable con datos inventados. CI del PR debe validar MySQL 8.0 y MariaDB 10.11. Navegador local: escritorio 1280/1440 y 375 px, listado, 10 coorganizadores, tarjetas 0/1/2 jugadores, carga inicial y adicional, ambos errores/reintentos, vacío y fin de paginación. Sin desborde (360/360 móvil, 1265/1265 escritorio); 12 tarjetas conservadas al error y foco en tarjeta 13 al reintentar. Capturas locales en `/tmp/smash-org-laminas-20261010/tops-final-{desktop,mobile}.png`.
-- Sin SQL productivo, migraciones, cambios de cálculo/public.json, fusión o despliegue. PR y resultado CI se añaden al abrir la entrega.
+- Sin SQL productivo, migraciones, cambios de cálculo/public.json, fusión o despliegue. Entrega: [PR #95](https://github.com/Bucaro-19/rankingsmashbros/pull/95), sin fusionar/desplegar. CI del código fdc1c0b: [38066477506](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38066477506); comprobar su conclusión antes de integrar.
 
 
 ## Codex — directorio público «Tops de organizadores» (9/oct, noche)
