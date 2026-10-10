@@ -102,3 +102,13 @@ test('active and canceled subscription disclose price, date and identical refund
     else assert.match(u.root.innerHTML,/<dt>Próximo cobro<\/dt><dd>09\/11\/2026/);
   }
 });
+
+test('opening the paid organizer top requests only its API, not slide code or character assets',async()=>{
+ const data={...blocked(),state:'data',members:[],data:{organizer:{name:'Arena',slug:'arena',topSize:5,publicEnabled:false},seasonYear:2026,events:[],
+  top:[{rank:1,alias:'<tag inventado>',points:10,setsWon:2,setsLost:0,events:1}],rest:[],coorganizers:[],sizes:[5,10,15],
+  summary:{eventsCounted:1,distinctPlayers:20,validSets:19,cutDate:'2026-10-04'},minRule:'2 sets',
+  slides:{schemaVersion:1,organizer:{name:'Arena',topSize:5,coorganizers:[]},players:[{rank:1,tag:'<tag inventado>',mains:[],results:[]}]}}};
+ const u=ui('organizador.js',data);await u.app.show();assert.equal(u.requests.length,1);assert.match(u.requests[0].url,/organizador-api/);
+ assert.match(u.root.innerHTML,/data-slide-action="open"/);assert.match(u.root.innerHTML,/&lt;tag inventado&gt;/);assert.doesNotMatch(u.root.innerHTML,/<script|src=.*portrait/);
+ const free=ui('organizador.js',blocked());await free.app.show();assert.doesNotMatch(free.root.innerHTML,/data-slide-action/);
+});

@@ -107,16 +107,78 @@ const SmashLaminas = (() => {
     ctx.restore();return {canvas,bounds:bounds.map(b=>({...b,y:b.y+y0})),format};
   }
   const imageCache=new Map();
-  async function prepare(data,doc=document,ImageClass=Image) {
-    validate(data);
+  function resourceJobs(data,selected=[null,...data.players],format='h') {
+    validate(data);const jobs=new Map([['logo','./assets/rsb-logo-gt-oscuro.svg']]);
+    const add=(slug,kind)=>{if(/^[a-z0-9_]{1,80}$/.test(slug||''))jobs.set(slug+'-'+kind,`./assets/characters/${slug}-${kind}.png`);};
+    for(const player of selected) {
+      if(!player){data.players.forEach(p=>add(p.mains[0]?.slug,'icon'));continue;}
+      if(!data.players.includes(player))throw Error('Jugador ajeno a este top.');
+      add(player.mains[0]?.slug,'portrait');player.mains.slice(1,3).forEach(c=>add(c.slug,'icon'));
+      player.results.filter(r=>Number.isSafeInteger(r.placement)&&r.placement>0).slice(0,3)
+        .forEach(r=>r.wins.slice(0,format==='h'?4:3).forEach(w=>add(w.mainSlug,'icon')));
+    }
+    return [...jobs];
+  }
+  function abortError(){return new DOMException('Preparación cancelada','AbortError');}
+  function check(signal){if(signal?.aborted)throw abortError();}
+  function abortable(promise,signal) {
+    check(signal);return new Promise((resolve,reject)=>{
+      const abort=()=>reject(abortError());signal?.addEventListener('abort',abort,{once:true});
+      Promise.resolve(promise).then(resolve,reject).finally(()=>signal?.removeEventListener('abort',abort));
+    });
+  }
+  // Fetch is owned by this job: cancellation/timeout aborts the response body as well.
+  async function image(url,{signal,fetcher=fetch,decode=decodeImage,timeout=10000,cache=imageCache}={}) {
+    check(signal);if(cache.has(url))return cache.get(url);
+    const controller=new AbortController(),stop=()=>controller.abort();signal?.addEventListener('abort',stop,{once:true});
+    const timer=setTimeout(stop,timeout);
+    try {
+      const response=await fetcher(url,{signal:controller.signal,credentials:'same-origin',cache:'default'});
+      if(!response.ok)throw Error(`HTTP ${response.status}`);
+      const blob=await response.blob();check(controller.signal);
+      const value=await abortable(decode(blob,controller.signal),controller.signal);check(signal);
+      cache.set(url,value);return value;
+    } finally {clearTimeout(timer);signal?.removeEventListener('abort',stop);}
+  }
+  function decodeImage(blob,signal) {
+    return new Promise((resolve,reject)=>{
+      const img=new Image(),url=URL.createObjectURL(blob);
+      const cleanup=()=>{img.onload=img.onerror=null;signal?.removeEventListener('abort',abort);URL.revokeObjectURL(url);};
+      const abort=()=>{cleanup();img.src='';reject(abortError());};
+      img.onload=()=>{cleanup();resolve(img);};img.onerror=()=>{cleanup();reject(Error('Imagen no válida.'));};
+      signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted){abort();return;}img.src=url;
+    });
+  }
+  async function prepare(data,options={}) {
+    const {doc=document,signal,report=()=>{},selected=[null,...data.players],format='h'}=options;
+    validate(data);check(signal);
     const sample=[data.organizer.name,...data.organizer.coorganizers,...data.players.flatMap(p=>[p.tag,...p.mains.map(m=>m.name),...p.results.map(r=>r.name)])].join(' ');
-    const loaded=await Promise.all([doc.fonts.load('900 72px "Big Shoulders Display"',sample),doc.fonts.load('700 22px "Archivo"',sample)]);await doc.fonts.ready;
+    let fonts=0;report(1,0,3);
+    const loaded=await abortable(Promise.all(['900 72px "Big Shoulders Display"','700 22px "Archivo"'].map(async font=>{
+      const faces=await doc.fonts.load(font,sample);check(signal);report(1,++fonts,3);return faces;
+    })),signal);
+    await abortable(doc.fonts.ready,signal);
     if(loaded.some(faces=>!faces.length||faces.some(face=>face.status!=='loaded'))||!doc.fonts.check('900 72px "Big Shoulders Display"')||!doc.fonts.check('700 22px "Archivo"'))throw Error('No se cargaron las fuentes. Intenta de nuevo.');
-    const slugs=new Set();for(const p of data.players){p.mains.forEach(c=>slugs.add(c.slug));p.results.forEach(r=>r.wins.forEach(w=>{if(w.mainSlug)slugs.add(w.mainSlug);}));}
-    const jobs=[['logo','./assets/rsb-logo-gt-oscuro.svg']];
-    for(const slug of slugs)if(/^[a-z0-9_]{1,80}$/.test(slug))for(const kind of ['icon','portrait'])jobs.push([slug+'-'+kind,`./assets/characters/${slug}-${kind}.png`]);
-    const images=new Map();await Promise.all(jobs.map(([key,url])=>new Promise(resolve=>{if(ImageClass===globalThis.Image&&imageCache.has(url)){images.set(key,imageCache.get(url));resolve();return;}const img=new ImageClass(),timer=setTimeout(()=>resolve(),10000);img.onload=()=>{clearTimeout(timer);images.set(key,img);if(ImageClass===globalThis.Image)imageCache.set(url,img);resolve();};img.onerror=()=>{clearTimeout(timer);resolve();};img.src=url;})));
-    if(!images.has('logo'))throw Error('No se cargó el logo. Intenta de nuevo.');return images;
+    report(1,3,3);
+    const jobs=resourceJobs(data,selected,format),images=new Map(),warnings=[];
+    const controller=new AbortController(),stop=()=>controller.abort();signal?.addEventListener('abort',stop,{once:true});check(signal);
+    let done=0,next=0;const total=jobs.length;report(2,0,total);
+    try {
+      try{images.set('logo',await image(jobs[0][1],{...options,signal:controller.signal}));report(2,++done,total);}
+      catch(error){check(signal);throw Error('No se cargó el logo. Intenta de nuevo.');}
+      const worker=async()=>{while(next<jobs.length-1){const [key,url]=jobs[1+next++];check(controller.signal);
+        try{images.set(key,await image(url,{...options,signal:controller.signal}));}
+        catch(error){check(signal);check(controller.signal);
+          if(!key.endsWith('-portrait')){controller.abort();const slug=key.replace(/-icon$/,'');const name=data.players.flatMap(p=>p.mains).find(m=>m.slug===slug)?.name||slug;throw Error(`No se pudo cargar un personaje: falló el ícono de ${name} (${done+1} de ${total}). Reintenta; lo que ya cargó se conserva.`);}
+          warnings.push(`Retrato ${key.replace(/-portrait$/,'')} no disponible: se usaron iniciales.`);
+        }
+        check(signal);report(2,++done,total);
+      }};
+      const results=await Promise.allSettled(Array.from({length:Math.min(4,total-1)},worker));
+      const failure=results.find(r=>r.status==='rejected'&&r.reason.name!=='AbortError')||results.find(r=>r.status==='rejected');
+      if(failure)throw failure.reason;check(signal);report(2,total,total);
+      return {images,warnings};
+    } finally {controller.abort();signal?.removeEventListener('abort',stop);}
   }
   const png=canvas=>new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('No se pudo crear el PNG.')),'image/png'));
   const crcTable=Uint32Array.from({length:256},(_,n)=>{for(let k=0;k<8;k++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0;});
@@ -131,32 +193,7 @@ const SmashLaminas = (() => {
     }
     const end=new Uint8Array(22),e=new DataView(end.buffer);e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,centralSize,true);e.setUint32(16,offset,true);return new Blob([...parts,...central,end],{type:'application/zip'});
   }
-  function controls(data) {
-    if(!data||!data.players?.length)return '';
-    return `<details class="o-laminas"><summary>Descargar láminas <span aria-hidden="true">↓</span></summary><p class="note">PNG para tus redes, generados en este navegador. Solo tus torneos que cuentan. El ZIP incluye el top completo y una lámina por jugador en el formato elegido.</p><div class="o-lamina-controls"><div><label for="o-slide-format">Formato</label><select id="o-slide-format" data-slide-format><option value="h">Horizontal · 1920 × 1080</option><option value="v">Publicación · 1080 × 1350</option><option value="s">Historia · 1080 × 1920</option></select></div><div><label for="o-slide-player">Lámina</label><select id="o-slide-player" data-slide-player><option value="top">Top completo</option>${data.players.map(p=>`<option value="${p.rank}">${p.rank} · ${esc(short(p.tag,20))}</option>`).join('')}</select></div></div><div class="button-row"><button type="button" class="outline" data-slide-download="one">Descargar PNG</button><button type="button" class="p-cta blue o-inline" data-slide-download="all"><span>Descargar todas · ZIP</span></button></div><p class="note" data-slide-status role="status" aria-live="polite"></p><div data-slide-preview></div></details>`;
-  }
-  function save(blob,name) {
-    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
-  }
-  async function download(button,data) {
-    const root=button.closest('.o-laminas');if(!root||root.dataset.busy==='true')return;
-    root.dataset.busy='true';const controls=[...root.querySelectorAll('button,select')],status=root.querySelector('[data-slide-status]');controls.forEach(c=>c.disabled=true);
-    try {
-      validate(data);const format=root.querySelector('[data-slide-format]').value,choice=root.querySelector('[data-slide-player]').value;
-      const selected=button.dataset.slideDownload==='all'?[null,...data.players]:[choice==='top'?null:data.players.find(p=>p.rank===Number(choice))];
-      if(selected.some(p=>p===undefined))throw Error('Lámina no disponible.');
-      status.textContent='Cargando fuentes e imágenes…';const images=await prepare(data),files=[];let archiveBytes=0;
-      for(let i=0;i<selected.length;i++){
-        if(!root.isConnected)return;status.textContent=`Preparando ${i+1} de ${selected.length}…`;
-        const {canvas}=draw(data,format,selected[i],null,images),blob=await png(canvas);
-        if(selected.length===1){root.querySelector('[data-slide-preview]').replaceChildren(canvas);canvas.setAttribute('aria-label',selected[i]?`Lámina de ${selected[i].tag}`:'Lámina del top completo');canvas.setAttribute('role','img');files.push({name:filename(data,selected[i],format),blob});}
-        else {archiveBytes+=blob.size;if(archiveBytes>64*1024*1024)throw Error('El ZIP supera 64 MiB. Descarga las láminas por separado.');files.push({name:filename(data,selected[i],format),bytes:new Uint8Array(await blob.arrayBuffer())});canvas.width=canvas.height=1;}
-      }
-      if(!root.isConnected)return;
-      const all=button.dataset.slideDownload==='all';save(all?zip(files):files[0].blob,all?`top-${data.organizer.topSize}-${safeName(data.organizer.name)}-${{h:'horizontal',v:'vertical',s:'historia'}[format]}.zip`:files[0].name);status.textContent=all?`${files.length} láminas listas en el ZIP.`:'PNG listo. La vista previa está debajo.';
-    } catch(error){status.textContent=error.message||'No se pudieron crear las láminas. Intenta de nuevo.';}
-    finally {root.dataset.busy='false';controls.forEach(c=>c.disabled=false);}
-  }
-  return {FORMATS,validate,draw,prepare,png,zip,crc32,filename,controls,download};
+  return {FORMATS,validate,draw,prepare,png,zip,crc32,filename,resourceJobs,abortable};
 })();
+if(typeof globalThis!=='undefined')globalThis.SmashLaminas=SmashLaminas;
 if(typeof module!=='undefined')module.exports=SmashLaminas;

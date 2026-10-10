@@ -2,6 +2,20 @@
 
 Entrega del 10/oct/2026, rama `feat/organizer-download-slides`. Handoff local `laminas/README.md`, `LaminaJugador.dc.html` y `LaminaTop.dc.html`: referencia de composición, campos, límites y zonas seguras; no se porta support.js ni su dataset. Sin migración o cambio del ranking nacional. No requiere un servicio de imágenes, ZIP o render del servidor.
 
+## Carga bajo demanda y progreso — 10/oct (nuevo encargo)
+
+Referencia `design_handoff_rsb_generador_carga/README.md`; panel inline de cuatro pasos, estados preparando/listo/cancelado/error, accesibilidad y colores del handoff. Sin importar su runtime ni muestras. El contrato de datos del apartado siguiente **no cambia**.
+
+`cuenta.html` no incluye laminas.js. `organizador.js` solo muestra controles cuando el API entrega `state=data` y `data.slides`; la pulsación descarga el generador. Se usa fetch abortable de una URL fija del sitio y un script Blob temporal, revocado/retirado después de ejecutar; no se evalúan campos del DTO. A diferencia de import() directo, el fetch propio puede cancelarse durante la transferencia. Renderer y ZIP nativos, sin librería o servicio nuevo. La ilustración decorativa del login queda con su GT existente para no pedir Joker al entrar.
+
+Progreso por tareas realmente resueltas: módulo 0–10; dos fuentes y fonts.ready 10–25; imágenes 25–60 (logo e iconos/retratos necesarios, máximo cuatro fetch simultáneos); PNG codificados 60–100 (top + cada jugador real o uno individual). Se cuenta cada archivo, no cada personaje único. Tramos vacíos nunca inventan descargas; el logo común sigue siendo una tarea real. El máximo acumulado no baja al reintentar. Cancelar aborta cola y cuerpos; se corta la espera de FontFaceSet (no ofrece abortar sus recursos compartidos del navegador). No se guardan PNG automáticamente: al terminar aparecen los botones de descarga, indicando solo el formato que se preparó.
+
+Cada PNG pide únicamente las imágenes que dibuja: iconos de mains para top completo; retrato main, iconos secundarios y victorias destacadas visibles para jugador. No se descargan retratos secundarios ni de oponentes. Se conservan en memoria imágenes exitosas/módulo; retrato fallido o timeout de 10 s usa iniciales, muestra aviso y permite ZIP. Icono/logo que falla da error con reintento. Nueva preparación intenta otra vez los retratos fallidos. Cerrar, Escape y cambio de pestaña/contexto interrumpen el trabajo y liberan PNG; el foco vuelve al disparador al cerrar. Barras con ARIA, paso live polite sin anuncios repetidos del mismo texto, error alert y reduced motion sin animación.
+
+`assets/characters/.htaccess` restringe Cache-Control public/max-age=31536000/immutable a los PNG icon/portrait de esa carpeta y se incluye en FILES antes de imágenes. public.json conserva no-cache; páginas y otros assets no reciben esa regla. Cambios futuros de bytes requieren nombre nuevo. Verificación HTTP del hosting pendiente del despliegue autorizado.
+
+Medición local anónima de apertura fría: **610 915 → 192 209 bytes** para HTML/CSS/JS y marca del mismo origen (−68,5 %); cuenta y top premium inventado no piden renderer ni assets de exportación hasta pulsar. No incluye APIs simuladas, favicon, cabeceras/gzip o fuentes externas preexistentes. La carta visible del perfil autenticado y el picker siguen pidiendo solo sus imágenes mostradas, como antes. No significa que la página completa pese cero: incluye el controlador pequeño del panel. Pruebas y evidencia en EN-CURSO; la CI del PR ejecuta ambos motores SQL, sin tocar producción.
+
 ## Acceso y contrato privado
 
 `GET organizador-api.php`, `state=data`, agrega **`data.slides`**. Se construye **después** de comprobar sesión, contexto propio/membresía y premium vigente del visitante o rol admin. Cada coorganizador paga su propio premium. Los estados login, interest, premium, expired y forbidden no contienen las láminas ni sus datos. El enlace público /top/{slug} y tops-api.php **no agregan** este campo ni estas estadísticas. La respuesta privada conserva `Cache-Control: no-store, private`.
@@ -33,7 +47,7 @@ slides: {
 
 ## Generación y descarga
 
-En Mis torneos, detalle desplegable «Descargar láminas» junto al top. Componentes existentes de cuenta, sin pantalla nueva. Selecciona Horizontal, Publicación o Historia y Top completo o jugador. Un PNG individual muestra vista previa; «Descargar todas · ZIP» reúne **una del top + una por cada jugador real**, en el formato seleccionado (máximo 16). Nombres incluyen puesto/tag/formato o top/organizador/formato, sin rutas o caracteres de control.
+En Mis torneos, controles «Descargar láminas» junto al top y panel inline bajo demanda. Componentes existentes de cuenta, sin pantalla nueva. Selecciona Horizontal, Publicación o Historia y Top completo o jugador. Un PNG individual se prepara para descargar; «Descargar todas · ZIP» reúne **una del top + una por cada jugador real**, en el formato seleccionado (máximo 16). Nombres incluyen puesto/tag/formato o top/organizador/formato, sin rutas o caracteres de control.
 
 Canvas nativo a 1×, sin html-to-image, Puppeteer ni dependencia de ejecución. ZIP32 store-only con CRC32; no compresión adicional porque PNG ya está comprimido. Techo duro 64 MiB de imágenes y 16 entradas, comprobado también durante la generación; sobrepasarlo deja descargar PNG individuales. Generación secuencial, liberando cada canvas del ZIP. Cambiar de contexto o cerrar la pestaña descarta un trabajo cuya sección ya no está conectada. Controles deshabilitados y progreso accesible durante el trabajo; fallo permite reintentar. No se guardan estadísticas en localStorage ni se suben PNG al servidor.
 

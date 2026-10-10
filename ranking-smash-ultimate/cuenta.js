@@ -27,6 +27,7 @@
     if(saving&&!force)return false;
     if(!force&&screen==='characters'&&next!==screen&&dirty()&&!confirm('Tienes cambios sin guardar. ¿Quieres salir y descartarlos?'))return false;
     if(screen==='characters'&&next!=='characters'){chosen=[...saved];message('character-message','');}
+    if(screen==='organizer'&&next!==screen)SmashOrganizador.stopSlides();
     screen=next;
     for(const name of ['login','profile','characters','premium','organizer'])$(`${name}-screen`).hidden=name!==next;
     $('onboarding').hidden=next!=='onboarding';$('account-error').hidden=next!=='error';$('loading').hidden=true;

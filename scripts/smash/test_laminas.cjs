@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const {createCanvas}=require('@napi-rs/canvas');
 const S=require('../../ranking-smash-ultimate/laminas.js');
 function fixture(size=15){return {schemaVersion:1,organizer:{name:'Organización de pruebas con un nombre muy largo de veinte letras y más',topSize:size,coorganizers:Array.from({length:10},(_,i)=>`Colaborador inventado ${i}`),seasonYear:2026,cutDate:'2026-10-04'},players:Array.from({length:size},(_,i)=>({rank:i+1,tag:i===0?'TagDeVeinteCaracter1':`Participante ${i+1}`,mains:[],setsWon:i,setsLost:2,vsTop5:i===0?null:{won:1,lost:2},results:i===0?[{name:'Un único torneo con nombre largo de pruebas',placement:3,date:'2026-09-10',wins:[]}]:[]}))};}
-function render(data,format,player){const result=S.draw(data,format,player,createCanvas(1,1));const bytes=result.canvas.toBuffer('image/png');return {...result,bytes};}
+function render(data,format,player,images=new Map()){const result=S.draw(data,format,player,createCanvas(1,1),images);const bytes=result.canvas.toBuffer('image/png');return {...result,bytes};}
 function dimensions(bytes){assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');return [bytes.readUInt32BE(16),bytes.readUInt32BE(20)];}
 
 test('real PNG dimensions and safe text boxes in all six templates, missing mains/one tournament/no wins/20-character tag',()=>{
@@ -50,22 +50,54 @@ test('ZIP hard cap and names cannot produce traversal, duplicates or more than 1
  assert.equal(S.crc32(new TextEncoder().encode('123456789')),0xcbf43926);
 });
 
-test('fonts are loaded and checked before drawing, only same-origin project images are requested',async()=>{
+function options(extra={}) {
  const log=[],doc={fonts:{load:async v=>{log.push('font:'+v);return [{status:'loaded'}];},ready:Promise.resolve(),check:()=>true}};
- class Img{set src(v){log.push(v);this.width=10;this.height=10;this.onload();}}
+ return {log,doc,cache:new Map(),fetcher:async (url)=>{log.push(url);return {ok:true,blob:async()=>new Blob(['image'])};},decode:async()=>createCanvas(10,10),...extra};
+}
+test('fonts checked first and only resources actually drawn are requested',async()=>{
+ const data=fixture(5);data.players[0].mains=[{slug:'joker',name:'Joker',games:1},{slug:'mario',name:'Mario',games:1}];
+ const opt=options(),r=await S.prepare(data,opt);assert.ok(r.images.has('logo'));assert.ok(r.images.has('joker-icon'));assert.ok(r.images.has('joker-portrait'));assert.ok(r.images.has('mario-icon'));assert.ok(!r.images.has('mario-portrait'));
+ assert.ok(opt.log.slice(0,2).every(v=>v.startsWith('font:')));assert.ok(opt.log.slice(2).every(v=>v.startsWith('./assets/')));
+ assert.deepEqual(S.resourceJobs(data,[null]).map(j=>j[0]),['logo','joker-icon']);
+ assert.deepEqual(S.resourceJobs(data,[data.players[0]]).map(j=>j[0]),['logo','joker-portrait','mario-icon']);
+ await assert.rejects(S.prepare(data,options({doc:{fonts:{load:async()=>{throw Error('offline');}}}})),/offline/);
+ for(const doc of [{fonts:{load:async()=>[{status:'loaded'}],ready:Promise.resolve(),check:()=>false}},{fonts:{load:async()=>[],ready:Promise.resolve(),check:()=>true}}])await assert.rejects(S.prepare(data,options({doc})),/fuentes/);
+});
+test('portrait timeout uses initials and does not break a real ZIP; session resources reused',async()=>{
  const data=fixture(5);data.players[0].mains=[{slug:'joker',name:'Joker',games:1}];
- const images=await S.prepare(data,doc,Img);assert.ok(images.has('logo'));assert.ok(images.has('joker-icon'));
- assert.ok(log.slice(0,2).every(v=>v.startsWith('font:')));assert.ok(log.slice(2).every(v=>v.startsWith('./assets/')));
- await assert.rejects(S.prepare(data,{fonts:{load:async()=>{throw Error('offline');}}},Img),/offline/);
- await assert.rejects(S.prepare(data,{fonts:{load:async()=>[{status:'loaded'}],ready:Promise.resolve(),check:()=>false}},Img),/fuentes/);
- await assert.rejects(S.prepare(data,{fonts:{load:async()=>[],ready:Promise.resolve(),check:()=>true}},Img),/fuentes/);
+ const opt=options({timeout:20});let requests=0,active=0;
+ opt.fetcher=async(url,{signal})=>{requests++;if(url.endsWith('portrait.png'))return new Promise((resolve,reject)=>{active++;signal.addEventListener('abort',()=>{active--;reject(new DOMException('timeout','AbortError'));},{once:true});});return {ok:true,blob:async()=>new Blob(['image'])};};
+ const r=await S.prepare(data,opt);assert.equal(r.warnings.length,1);assert.equal(active,0);assert.ok(!r.images.has('joker-portrait'));assert.ok(r.images.has('joker-icon'));
+ const files=[null,...data.players].map(p=>({name:S.filename(data,p,'h'),bytes:render(data,'h',p,r.images).bytes}));assert.ok(S.zip(files).size>0);
+ assert.ok(S.draw(data,'h',data.players[0],createCanvas(1,1),r.images).bounds.some(b=>b.value==='TA'));
+ await S.prepare(data,opt);assert.equal(requests,4,'logo and icon reused; only missing portrait retried');
+});
+test('cancellation aborts all in-flight responses, schedules no pending character and retains completed images',async()=>{
+ const data=fixture(5);data.players.forEach((p,i)=>p.mains=[{slug:'char'+i,name:'Inventado',games:1}]);
+ const controller=new AbortController(),opt=options({signal:controller.signal});let active=0,requests=0;
+ opt.fetcher=async(url,{signal})=>{requests++;if(url.includes('logo'))return {ok:true,blob:async()=>new Blob(['image'])};return new Promise((resolve,reject)=>{active++;signal.addEventListener('abort',()=>{active--;reject(new DOMException('cancel','AbortError'));},{once:true});});};
+ const result=S.prepare(data,opt);setTimeout(()=>controller.abort(),20);await assert.rejects(result,{name:'AbortError'});
+ assert.equal(active,0);assert.equal(requests,5,'logo plus at most four downloads');assert.equal(opt.cache.size,1);
+});
+test('icon errors abort peer downloads; retry keeps the successful logo',async()=>{
+ const data=fixture(5);data.players[0].mains=[{slug:'joker',name:'Joker',games:1}];const opt=options();let fail=true;
+ opt.fetcher=async url=>{opt.log.push(url);return {ok:!fail||!url.endsWith('icon.png'),status:503,blob:async()=>new Blob(['image'])};};
+ await assert.rejects(S.prepare(data,opt),/ícono de Joker/);fail=false;await S.prepare(data,opt);
+ assert.equal(opt.log.filter(v=>v.includes('logo')).length,1);
+});
+test('no eager slide script or decorative portrait; access stays gated by the server payload',()=>{
+ const site=path.resolve(__dirname,'../../ranking-smash-ultimate');const account=fs.readFileSync(path.join(site,'cuenta.html'),'utf8');
+ assert.doesNotMatch(account,/<script[^>]*laminas\.js/);assert.doesNotMatch(account,/joker-portrait\.png/);
+ const source=fs.readFileSync(path.join(site,'organizador.js'),'utf8');assert.ok(source.includes("info?.state==='data'&&info.data?.slides"));
+ assert.ok(!source.slice(source.indexOf('function teaserBox'),source.indexOf('function invitationBox')).includes('slideControls'));
+ assert.throws(()=>S.draw(fixture(5),'x',null,createCanvas(1,1)));assert.throws(()=>S.draw(fixture(5),'h',{rank:1},createCanvas(1,1)),/ajeno/);
 });
 
-test('download controls require server-provided slides; labels escape markup and there is no export in the free teaser',()=>{
- assert.equal(S.controls(null),'');assert.equal(S.controls({...fixture(5),players:[]}), '');
- const data=fixture(5);data.players[0].tag='<script>inventado';assert.ok(!S.controls(data).includes('<script>'));
- const source=fs.readFileSync(path.resolve(__dirname,'../../ranking-smash-ultimate/organizador.js'),'utf8');
- assert.ok(source.includes("info?.state==='data'&&info.data?.slides"));
- assert.ok(!source.slice(source.indexOf('function teaserBox'),source.indexOf('function invitationBox')).includes('SmashLaminas'));
- assert.throws(()=>S.draw(fixture(5),'x',null,createCanvas(1,1)));assert.throws(()=>S.draw(fixture(5),'h',{rank:1},createCanvas(1,1)),/ajeno/);
+test('147 new mirrored assets are not referenced by any other page, style or script',()=>{
+ const root=path.resolve(__dirname,'../..'),site=path.join(root,'ranking-smash-ultimate');
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'docs/smash/LAMINAS-ASSETS.json'),'utf8'));
+ const mirrors=manifest.assets.filter(a=>a.source.startsWith('https://'));assert.equal(mirrors.length,147);
+ for(const name of fs.readdirSync(site).filter(n=>/\.(html|php|css|js)$/.test(n))) {
+  const source=fs.readFileSync(path.join(site,name),'utf8');for(const asset of mirrors)assert.ok(!source.includes(asset.file),`${name} eagerly references ${asset.file}`);
+ }
 });

@@ -1,0 +1,6 @@
+# Immutable, named character PNGs only. This directory contains no pages or cut JSON.
+<IfModule mod_headers.c>
+  <FilesMatch "^[a-z0-9_]+-(icon|portrait)\.png$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
