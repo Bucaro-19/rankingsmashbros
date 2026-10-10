@@ -11,7 +11,7 @@ Segundo encargo, independiente del diseño del directorio: rama `feat/organizer-
 - Local: **5 HTTP nuevos**, **6 Node de PNG reales/ZIP/fuentes/seguridad**, regresión 13 HTTP de organizador, 8 HTTP de tops, 8 Node de organizador y 93 Python del pipeline. Muestra SQL inventada de 15 jugadores: 2060 bytes de slides, vista con enriquecimiento 4,14 ms/2 MiB pico PHP; no representa capacidad de producción. CI debe comprobar MySQL 8.0 y MariaDB 10.11, PHP mínimo y hosting.
 - Navegador local 1280/375: sin desborde, PNG descargados y dimensiones verificadas, imagen de personaje y sustitución por iniciales, vista previa y ZIP de cuatro imágenes con tres jugadores; generación de 16 con quince. Pruebas ZIP verifican CRC y medidas de las 16 entradas. Capturas/PNGs de pruebas bajo `/tmp/smash-org-laminas-20261010/`. Nada se guardó en la base productiva, no se tocó cálculo/public.json o su versión.
 - Tarea 1 entregada en #95, CI del head ece50ed [38067168209](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38067168209) **correcta tras reintentar el pull PHP** (ECR también dio toomanyrequests temporal); ambos motores y todas las suites correctos, sin cambiar workflow para esos reintentos. No fusionada/desplegada. El presente PR solo es la Tarea 2; conservar ambos registros de EN-CURSO al integrar.
-- PR/CI de Tarea 2 se completan al abrir la entrega. **No fusionar ni desplegar sin orden del dueño.**
+- Entrega: [PR #96](https://github.com/Bucaro-19/rankingsmashbros/pull/96), código bd5f505. CI del head final se comprueba antes de cerrar el relevo. **No fusionar ni desplegar sin orden del dueño.**
 
 
 ## Codex — directorio público «Tops de organizadores» (9/oct, noche)
