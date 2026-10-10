@@ -1,3 +1,59 @@
+/* The lightweight controller loads Canvas code only on an explicit export click. */
+const SmashSlideProgress=(()=>{
+  const ranges=[[0,10],[10,25],[25,60],[60,100]];
+  const names=['Cargando el generador','Cargando fuentes','Cargando personajes','Dibujando láminas'];
+  let renderer=null;
+  const abortError=()=>new DOMException('Preparación cancelada','AbortError');
+  const check=signal=>{if(signal?.aborted)throw abortError();};
+  function progress(callback=()=>{}) {
+    let percent=0;return (stage,done,total)=>{
+      const [start,end]=ranges[stage];percent=Math.max(percent,Math.floor(start+(total?done/total:1)*(end-start)));
+      callback({stage,done,total,percent,text:names[stage]+(stage>=2?` (${done} de ${total})`:'')});
+    };
+  }
+  async function execute(source,signal) {
+    check(signal);
+    await new Promise((resolve,reject)=>{
+      const script=document.createElement('script'),url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
+      const cleanup=()=>{script.remove();URL.revokeObjectURL(url);signal?.removeEventListener('abort',stop);};
+      const stop=()=>{cleanup();reject(abortError());};
+      script.onload=()=>{cleanup();resolve();};script.onerror=()=>{cleanup();reject(Error('No se pudo iniciar el generador.'));};
+      signal?.addEventListener('abort',stop,{once:true});script.src=url;document.head.append(script);
+    });
+    check(signal);return globalThis.SmashLaminas;
+  }
+  async function load(signal,{fetcher=fetch,run=execute}={}) {
+    check(signal);if(renderer)return renderer;if(globalThis.SmashLaminas)return renderer=globalThis.SmashLaminas;
+    const controller=new AbortController(),stop=()=>controller.abort();signal?.addEventListener('abort',stop,{once:true});
+    const timer=setTimeout(stop,20000);
+    try {
+      const response=await fetcher('./laminas.js?v=20261010-progress',{signal:controller.signal,credentials:'same-origin',cache:'default'});
+      if(!response.ok)throw Error('No se pudo cargar el generador. Reintenta.');
+      const source=await response.text();check(signal);check(controller.signal);
+      renderer=await run(source,signal);if(!renderer)throw Error('Generador no disponible.');return renderer;
+    }finally{clearTimeout(timer);signal?.removeEventListener('abort',stop);}
+  }
+  async function generate(data,{signal,report=()=>{},format='h',selected=[null,...data.players],loader=load,environment={}}={}) {
+    check(signal);report(0,0,1);const S=await loader(signal);check(signal);report(0,1,1);
+    let prepared;
+    try{prepared=await S.prepare(data,{...environment,signal,report,selected,format});}
+    catch(error){check(signal);throw error;}
+    const files=[];let bytes=0;report(3,0,selected.length);
+    for(let i=0;i<selected.length;i++) {
+      check(signal);await S.abortable(new Promise(resolve=>setTimeout(resolve,0)),signal);
+      const {canvas}=S.draw(data,format,selected[i],null,prepared.images);
+      let blob;
+      try{blob=await S.abortable(S.png(canvas),signal);}
+      finally{canvas.width=canvas.height=1;}
+      check(signal);bytes+=blob.size;if(bytes>64*1024*1024)throw Error('El ZIP supera 64 MiB. Prepara una lámina individual.');
+      files.push({name:S.filename(data,selected[i],format),blob,bytes:new Uint8Array(await S.abortable(blob.arrayBuffer(),signal))});
+      check(signal);report(3,i+1,selected.length);
+    }
+    const archive=selected.length>1?S.zip(files):null;
+    return {files,archive,warnings:prepared.warnings,format};
+  }
+  return {progress,load,generate,names};
+})();
 /* «Mis torneos» tab of the account: the organizer's own top, its tournaments and its public link.
    Everything shown comes from organizador-api.php; nothing here decides whose tournament it is,
    who is premium or how many points anyone has. */
@@ -142,7 +198,7 @@ const SmashOrganizador = (() => {
     const small=n>0&&n<3?`<div class="p-notice warn o-small" role="note"><span aria-hidden="true">≈</span><div><strong>Muestra pequeña: este top sale de solo ${n===1?'1 torneo':'2 torneos'}.</strong><p>Con pocos torneos, un par de sets cambian mucho los puestos. Tómalo como una foto del momento; se vuelve más confiable con cada torneo que organices.</p></div></div>`:'';
     const sizes=owner?`<div class="o-sizes" role="group" aria-label="Tamaño del top">${d.sizes.map(v=>`<button type="button" data-act="size" data-size="${v}" aria-pressed="${v===size}" ${busy?'disabled':''}>Top ${v}</button>`).join('')}</div>`:'';
     const few=d.top.length<size&&d.top.length>0?`<p class="note">Hay ${plural(d.top.length,'jugador','jugadores')} con sets suficientes: el top muestra los que hay.</p>`:'';
-    const top=n?`${small}<div class="p-columns o-columns"><section class="o-top" aria-labelledby="o-top-title"><div class="o-top-head"><h2 id="o-top-title">Top ${size}</h2>${sizes}</div>${said('size')}${typeof SmashLaminas!=='undefined'?SmashLaminas.controls(d.slides):''}
+    const top=n?`${small}${slideControls(d.slides)}<div class="p-columns o-columns"><section class="o-top" aria-labelledby="o-top-title"><div class="o-top-head"><h2 id="o-top-title">Top ${size}</h2>${sizes}</div>${said('size')}
         <p class="o-min"><strong>Para aparecer:</strong> ${escape(d.minRule)}</p>
         ${d.top.length?`<p class="note">Toca un jugador para ver su detalle.</p><ol class="o-list">${d.top.map((r,i)=>topRow(r,i,name)).join('')}</ol>${few}`:'<p>Todavía ningún jugador tiene sets suficientes.</p>'}
         ${d.rest.length?`<details class="o-rest"><summary>Ver la lista completa · ${plural(d.rest.length,'jugador más','jugadores más')}<span aria-hidden="true">▾</span></summary><ol start="${size+1}">${d.rest.map(x=>`<li><span>${x.rank}</span><span><b>${escape(x.alias)}</b><small>${x.setsWon}–${x.setsLost} en sets · ${plural(x.events,'torneo','torneos')}</small></span><strong>${number(x.points)}</strong></li>`).join('')}</ol></details>`:''}</section>
@@ -170,7 +226,76 @@ const SmashOrganizador = (() => {
         :`<button type="button" class="outline" data-act="invite" ${busy?'disabled':''}>Crear invitación</button>`}${said('team')}</section>`;
   }
 
+  let slideJob=null;
+  function slideControls(data) {
+    if(!data?.players?.length)return '';
+    return `<section class="o-laminas"><p class="note">PNG en este navegador. El ZIP incluye el top y una lámina por jugador, en el formato elegido.</p><div class="o-lamina-controls"><div><label for="o-slide-format">Formato</label><select id="o-slide-format" data-slide-format><option value="h">Horizontal · 1920 × 1080</option><option value="v">Publicación · 1080 × 1350</option><option value="s">Historia · 1080 × 1920</option></select></div><div><label for="o-slide-player">Lámina individual</label><select id="o-slide-player" data-slide-player><option value="top">Top completo</option>${data.players.map(p=>`<option value="${p.rank}">${p.rank} · ${escape(p.tag)}</option>`).join('')}</select></div></div><div class="button-row"><button type="button" class="p-cta blue o-inline" data-slide-action="open" aria-controls="gen-panel" aria-expanded="false"><span>Descargar láminas ↓</span></button><button type="button" class="outline" data-slide-action="single" aria-controls="gen-panel" aria-expanded="false">Preparar PNG individual</button></div><section id="gen-panel" class="o-generator" hidden tabindex="-1" role="region" aria-labelledby="gen-title"></section></section>`;
+  }
+  function stopSlides(restore=true) {
+    const job=slideJob;if(!job)return;slideJob=null;job.controller?.abort();job.result=null;
+    job.panel.hidden=true;job.panel.replaceChildren();job.root.querySelectorAll('[aria-controls="gen-panel"]').forEach(b=>b.setAttribute('aria-expanded','false'));
+    job.root.querySelectorAll('select').forEach(s=>s.disabled=false);
+    if(restore&&job.opener.isConnected)job.opener.focus();
+  }
+  function panelShell(job) {
+    job.panel.innerHTML=`<div class="g-heading"><span class="g-kicker"></span><h2 id="gen-title"></h2></div><div class="g-number" aria-hidden="true"><span data-g-number>0</span><small>%</small></div><p class="g-step" aria-live="polite"></p><div class="g-bar" role="progressbar" aria-label="Preparación de láminas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span><i style="left:10%"></i><i style="left:25%"></i><i style="left:60%"></i></div><ol class="g-steps">${['Generador','Fuentes','Personajes','Láminas'].map((name,i)=>`<li data-g-stage="${i}"><b>·</b><span>${name}<small>Pendiente</small></span></li>`).join('')}</ol><div class="g-alert" role="alert" hidden></div><p class="g-note">Esto solo se carga cuando lo usas. Puedes seguir en esta pestaña.</p><div class="button-row g-actions"></div>`;
+  }
+  function updateSlidePanel(job,state='running',message='') {
+    if(slideJob!==job||!job.panel.isConnected)return;
+    const panel=job.panel,step=job.last?.stage??0,percent=job.last?.percent??0;
+    const labels={running:['▸ Preparando','Preparando tus láminas'],ready:['✓ Listo','Tus láminas están preparadas'],cancelled:['■ Cancelado','Preparación cancelada'],error:['× Error','No pudimos terminar']};
+    job.root.querySelectorAll('select').forEach(s=>s.disabled=state==='running');
+    panel.dataset.state=state;panel.querySelector('.g-kicker').textContent=labels[state][0];panel.querySelector('h2').textContent=labels[state][1];
+    panel.querySelector('[data-g-number]').textContent=percent;
+    const text=state==='ready'?'Listo: tus láminas están preparadas':state==='cancelled'?`Cancelado en «${job.last?.text||SmashSlideProgress.names[step]}»`:job.last?.text||SmashSlideProgress.names[step];
+    const current=panel.querySelector('.g-step');if(current.textContent!==text)current.textContent=text;
+    const bar=panel.querySelector('[role=progressbar]');bar.setAttribute('aria-valuenow',String(percent));bar.setAttribute('aria-valuetext',`${percent} %, ${text}`);bar.querySelector('span').style.width=percent+'%';
+    panel.querySelector('.g-steps').hidden=state==='ready';
+    panel.querySelectorAll('[data-g-stage]').forEach((row,i)=>{const done=i<step||(i===step&&job.last&&job.last.done===job.last.total&&state!=='error');const status=done?'Listo':i===step?({running:'En curso',error:'Falló',cancelled:'Detenido'}[state]||'Listo'):'Pendiente';row.dataset.status=status;row.querySelector('b').textContent=done?'✓':i===step?({running:'▸',error:'×',cancelled:'■'}[state]||'✓'):'·';row.querySelector('small').textContent=status;});
+    const alert=panel.querySelector('.g-alert');alert.hidden=state!=='error';if(state==='error')alert.textContent=message;
+    panel.querySelector('.g-note').textContent=state==='ready'?`${job.result.files.length} ${job.result.files.length===1?'lámina lista':'láminas listas'} · ${{h:'horizontal',v:'publicación',s:'historia'}[job.format]}. Las imágenes se generaron en tu navegador; no se subieron a ningún lado.${job.result.warnings.length?' '+job.result.warnings.join(' '):''}`:state==='cancelled'?'No se descargó nada. Lo que ya estaba cargado se guarda en esta pestaña: si vuelves a empezar, irá más rápido.':'Esto solo se carga cuando lo usas. Puedes seguir en esta pestaña.';
+    const actions=panel.querySelector('.g-actions');
+    if(job.state!==state) {
+      actions.innerHTML=state==='running'?'<button type="button" class="outline" data-slide-action="cancel">Cancelar</button>':state==='ready'?`${job.result.archive?`<button type="button" class="p-cta yellow o-inline" data-slide-action="zip"><span>Descargar las ${job.result.files.length} (.zip) ↓</span></button>`:''}<button type="button" class="outline" data-slide-action="png">${job.result.archive?'Solo la lámina del top ↓':'Descargar PNG ↓'}</button><button type="button" class="outline" data-slide-action="close">Cerrar</button>`:`<button type="button" class="p-cta blue o-inline" data-slide-action="retry"><span>${state==='error'?'Reintentar':'Volver a empezar'}</span></button><button type="button" class="outline" data-slide-action="close">Cerrar</button>`;
+      job.state=state;if(state==='ready')actions.querySelector('button')?.focus();
+    }
+  }
+  async function runSlides(job,data) {
+    job.controller=new AbortController();job.state=null;
+    // Retry keeps the meter at its previous maximum; successful resources are reused.
+    const report=SmashSlideProgress.progress(value=>{job.last={...value,percent:Math.max(job.last?.percent||0,value.percent)};updateSlidePanel(job);});
+    updateSlidePanel(job);
+    try {
+      job.result=await SmashSlideProgress.generate(data,{signal:job.controller.signal,report,selected:job.selected,format:job.format});
+      if(slideJob===job)updateSlidePanel(job,'ready');
+    }catch(error){
+      if(slideJob!==job)return;
+      if(error.name==='AbortError'&&job.controller.signal.aborted)updateSlidePanel(job,'cancelled');
+      else updateSlidePanel(job,'error',`${SmashSlideProgress.names[job.last?.stage??0]}: ${navigator.onLine===false?'Sin conexión. Revisa internet y reintenta.':error.message||'No se pudo terminar. Reintenta.'}`);
+    }
+  }
+  function saveSlide(blob,name) {
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }
+  function slideAction(button,data) {
+    const action=button.dataset.slideAction;
+    if(action==='open'||action==='single') {
+      stopSlides(false);const box=button.closest('.o-laminas'),panel=box.querySelector('#gen-panel'),format=box.querySelector('[data-slide-format]').value,choice=box.querySelector('[data-slide-player]').value;
+      const selected=action==='open'?[null,...data.players]:[choice==='top'?null:data.players.find(p=>p.rank===Number(choice))];if(selected.some(p=>p===undefined))return;
+      const job=slideJob={root:box,panel,opener:button,format,selected,last:null,result:null};
+      box.querySelectorAll('select').forEach(s=>s.disabled=true);panelShell(job);panel.hidden=false;button.setAttribute('aria-expanded','true');panel.focus();runSlides(job,data);return;
+    }
+    const job=slideJob;if(!job)return;
+    if(action==='close'){stopSlides();return;}
+    if(action==='cancel'){job.controller.abort();return;}
+    if(action==='retry'&&['error','cancelled'].includes(job.state)){runSlides(job,data);return;}
+    if(job.state!=='ready')return;
+    if(action==='png')saveSlide(job.result.files[0].blob,job.result.files[0].name);
+    if(action==='zip'&&job.result.archive)saveSlide(job.result.archive,job.result.files[0].name.replace(/\.png$/,'.zip'));
+  }
+
   function render() {
+    stopSlides(false);
     const node=root(); if(!node)return;
     if(!info){node.innerHTML='<div class="p-box p-wait" role="status" aria-live="polite"><div class="p-bar"><span></span></div><p class="note">Buscando tus torneos…</p></div>';return;}
     if(info==='error'){node.innerHTML=notice('error','×','No pudimos cargar tus torneos.','No cambiamos nada. Tu enlace público sigue como estaba. Vuelve a intentarlo en un momento.','<button type="button" class="outline" data-act="retry">Reintentar</button>');return;}
@@ -188,8 +313,8 @@ const SmashOrganizador = (() => {
   function clearInvitation(){invitation=null;const url=new URL(location.href);url.searchParams.delete('invita');history.replaceState(null,'',url.pathname+url.search+url.hash);}
 
   function onClick(event) {
-    const slide=event.target.closest('[data-slide-download]');
-    if(slide&&!slide.disabled&&info?.state==='data'&&info.data?.slides&&typeof SmashLaminas!=='undefined'){SmashLaminas.download(slide,info.data.slides);return;}
+    const slide=event.target.closest('[data-slide-action]');
+    if(slide?.dataset.slideAction&&!slide.disabled&&info?.state==='data'&&info.data?.slides){slideAction(slide,info.data.slides);return;}
     const button=event.target.closest('[data-act]'); if(!button||button.disabled)return;
     const a=button.dataset.act, d=info?.data;
     if(a==='retry')show();
@@ -223,11 +348,11 @@ const SmashOrganizador = (() => {
   }
   let wired=false;
   async function show() {
-    if(!wired&&root()){root().addEventListener('click',onClick);root().addEventListener('submit',onSubmit);wired=true;}
+    if(!wired&&root()){root().addEventListener('click',onClick);root().addEventListener('submit',onSubmit);root().addEventListener('keydown',event=>{if(event.key==='Escape'&&slideJob){event.preventDefault();stopSlides();}});wired=true;}
     const fromUrl=new URLSearchParams(location.search).get('invita');
     let kept=null; try{kept=sessionStorage.getItem('smashgt.invita');sessionStorage.removeItem('smashgt.invita');}catch{}
     const token=fromUrl||kept; if(/^[a-f0-9]{48}$/.test(token||''))invitation=token;
     info=null;render();await load();render();
   }
-  return {setContext,show};
+  return {setContext,show,stopSlides};
 })();

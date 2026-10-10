@@ -34,6 +34,16 @@ class ExportTests(unittest.TestCase):
             self.assertIn('group: smash-gt-publication', workflow)
             self.assertIn('cancel-in-progress: false', workflow)
 
+    def test_immutable_character_cache_is_scoped_and_published(self):
+        self.assertIn('assets/characters/.htaccess', FILES)
+        self.assertLess(FILES.index('assets/characters/.htaccess'), FILES.index('assets/characters/joker-icon.png'))
+        site = Path(__file__).resolve().parents[2] / 'ranking-smash-ultimate'
+        rules = (site / 'assets/characters/.htaccess').read_text()
+        self.assertIn('max-age=31536000, immutable', rules)
+        self.assertIn('-(icon|portrait)', rules)
+        self.assertNotIn('immutable', (site / '.htaccess').read_text())
+        self.assertIn('Header set Cache-Control "no-cache"', (site / '.htaccess').read_text())
+
     def test_assets_only_preserves_live_agenda_bytes_in_success_and_failure(self):
         from test_seo import fixture, locations
         from seo import ORIGIN, timestamp
