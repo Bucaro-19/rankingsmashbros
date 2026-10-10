@@ -8,7 +8,7 @@ SITEMAP_NS = 'http://www.sitemaps.org/schemas/sitemap/0.9'
 PUBLIC_PAGES = ('', 'metodologia.html', 'analisis-top20.html', 'analisis-torneos.html', 'torneos.html', 'tops.html', 'terminos.html', 'reembolsos.html')
 
 # Actual editorial revision, fixed until these texts change; never the deploy clock or cut.
-CONTENT_UPDATED_AT = {'tops.html': '2026-10-10T02:15:03Z', 'terminos.html': '2026-10-09T21:53:35Z', 'reembolsos.html': '2026-10-09T21:53:35Z'}
+CONTENT_UPDATED_AT = {'tops.html': '2026-10-10T16:01:58Z', 'terminos.html': '2026-10-09T21:53:35Z', 'reembolsos.html': '2026-10-09T21:53:35Z'}
 
 def timestamp(value):
     if not isinstance(value, str):
