@@ -14,7 +14,7 @@ Cada PNG pide únicamente las imágenes que dibuja: iconos de mains para top com
 
 `assets/characters/.htaccess` restringe Cache-Control public/max-age=31536000/immutable a los PNG icon/portrait de esa carpeta y se incluye en FILES antes de imágenes. public.json conserva no-cache; páginas y otros assets no reciben esa regla. Cambios futuros de bytes requieren nombre nuevo. Verificación HTTP del hosting pendiente del despliegue autorizado.
 
-Medición local anónima de apertura fría: **610 915 → 192 209 bytes** para HTML/CSS/JS y marca del mismo origen (−68,5 %); cuenta y top premium inventado no piden renderer ni assets de exportación hasta pulsar. No incluye APIs simuladas, favicon, cabeceras/gzip o fuentes externas preexistentes. La carta visible del perfil autenticado y el picker siguen pidiendo solo sus imágenes mostradas, como antes. No significa que la página completa pese cero: incluye el controlador pequeño del panel. Pruebas y evidencia en EN-CURSO; la CI del PR ejecuta ambos motores SQL, sin tocar producción.
+Medición local anónima de apertura fría: **610 915 → 192 217 bytes** para HTML/CSS/JS y marca del mismo origen (−68,5 %); cuenta y top premium inventado no piden renderer ni assets de exportación hasta pulsar. No incluye APIs simuladas, favicon, cabeceras/gzip o fuentes externas preexistentes. La carta visible del perfil autenticado y el picker siguen pidiendo solo sus imágenes mostradas, como antes. No significa que la página completa pese cero: incluye el controlador pequeño del panel. Pruebas y evidencia en EN-CURSO; la CI del PR ejecuta ambos motores SQL, sin tocar producción.
 
 ## Acceso y contrato privado
 
