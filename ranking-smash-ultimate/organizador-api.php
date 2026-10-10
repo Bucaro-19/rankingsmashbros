@@ -6,6 +6,7 @@ require_once __DIR__ . '/accounts.php';
 require_once __DIR__ . '/stats.php';
 require_once __DIR__ . '/premium.php';
 require_once __DIR__ . '/organizador.php';
+require_once __DIR__ . '/organizer-slides.php';
 smash_account_session_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, private');
@@ -108,7 +109,7 @@ try {
     }
     $public = null;
     try { $public = smash_account_public(__DIR__)['generatedAt']; } catch (SmashAccountError $error) {}
-    $view = smash_org_view($pdo, $context['id'], $public, $now, $owner);
+    $view = smash_org_view($pdo, $context['id'], $public, $now, $owner, true);
     org_response(200, $base + ['state' => 'data', 'data' => $view, 'members' => $owner ? smash_org_members($pdo, $context['id']) : null,
         'publicUrl' => $view['organizer']['slug'] === null ? null : 'https://rankingsmashbros.com/top/' . $view['organizer']['slug']]);
 } catch (SmashAccountError $error) {

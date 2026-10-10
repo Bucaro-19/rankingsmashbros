@@ -173,7 +173,7 @@ function smash_org_ledger(PDO $pdo, array $tournamentIds, ?array $cut, bool $wit
 }
 
 // The ranking itself: every player with enough sets, best first, with the detail of each one.
-function smash_org_ranking(array $ledger): array
+function smash_org_ranking(array $ledger, bool $withIds = false): array
 {
     $sets = []; $active = []; $stats = [];
     foreach ($ledger['sets'] as $set) {
@@ -209,7 +209,7 @@ function smash_org_ranking(array $ledger): array
     usort($rows, static function (array $a, array $b): int {
         return [$b['points'], $b['setsWon'], $b['events']] <=> [$a['points'], $a['setsWon'], $a['events']] ?: (strcasecmp($a['alias'], $b['alias']) ?: strcmp($a['id'], $b['id']));
     });
-    foreach ($rows as $index => &$row) { $row['rank'] = $index + 1; unset($row['id']); }
+    foreach ($rows as $index => &$row) { $row['rank'] = $index + 1; if (!$withIds) unset($row['id']); }
     unset($row);
     return ['rows' => $rows, 'distinctPlayers' => count($stats), 'validSets' => count($sets)];
 }
@@ -316,12 +316,12 @@ function smash_org_settings(PDO $pdo, string $organizerId, array $input, int $no
 }
 
 // The whole view of one organizer: tournaments, top, summary. $publicCut is public.json's generatedAt.
-function smash_org_view(PDO $pdo, string $organizerId, ?string $publicCut, int $now, bool $create): array
+function smash_org_view(PDO $pdo, string $organizerId, ?string $publicCut, int $now, bool $create, bool $withSlides = false): array
 {
     $cut = smash_org_cut($pdo);
     $owned = smash_org_tournament_ids($pdo, $organizerId);
     $ledger = smash_org_ledger($pdo, array_map('strval', array_keys($owned)), $cut);
-    $ranking = smash_org_ranking($ledger);
+    $ranking = smash_org_ranking($ledger, $withSlides);
     $season = $cut['seasonYear'] ?? (int)gmdate('Y', $now - 21600);
     $events = smash_org_events($pdo, $organizerId, $owned, $ledger, $season);
     $profile = smash_org_profile($pdo, $organizerId, $now, $create && (bool)$events);
@@ -329,11 +329,14 @@ function smash_org_view(PDO $pdo, string $organizerId, ?string $publicCut, int $
         $user = smash_org_rows($pdo, 'SELECT display_name FROM users WHERE id = ?', [$organizerId]);
         $profile = ['name' => $user[0]['display_name'] ?? 'Organizador', 'slug' => null, 'publicEnabled' => false, 'topSize' => 15];
     }
+    $slides = $withSlides ? smash_org_slides($pdo, $cut, $ledger, array_slice($ranking['rows'], 0, $profile['topSize']), $profile, array_column(smash_org_members($pdo, $organizerId), 'name'), $season) : null;
+    if ($withSlides) foreach ($ranking['rows'] as &$row) { unset($row['id']); }
+    unset($row);
     $dates = array_column($ledger['events'], 'date');
     $cutTime = $cut === null ? null : strtotime(substr($cut['generatedAt'], 0, 19) . ' UTC');
     $publicTime = $publicCut === null ? false : strtotime($publicCut);
     // Co-organizers are credited by name wherever the top is shown, whether or not they pay.
-    return ['organizer' => $profile, 'coorganizers' => array_column(smash_org_members($pdo, $organizerId), 'name'), 'seasonYear' => $season, 'events' => $events,
+    $view = ['organizer' => $profile, 'coorganizers' => array_column(smash_org_members($pdo, $organizerId), 'name'), 'seasonYear' => $season, 'events' => $events,
         'top' => array_slice($ranking['rows'], 0, $profile['topSize']),
         'rest' => array_map(static function (array $row): array { unset($row['detail']); return $row; }, array_slice($ranking['rows'], $profile['topSize'])),
         'summary' => ['eventsCounted' => count(array_unique(array_column($ledger['events'], 'tournamentId'))), 'distinctPlayers' => $ranking['distinctPlayers'],
@@ -344,6 +347,8 @@ function smash_org_view(PDO $pdo, string $organizerId, ?string $publicCut, int $
             'isStale' => $cutTime && $publicTime ? $publicTime - $cutTime > 60 : false],
         'sizes' => SMASH_ORG_SIZES,
         'minRule' => 'tener al menos ' . SMASH_ORG_MIN_SETS . ' sets válidos en los torneos que cuentan. Cuentan los torneos presenciales de singles que también entran al ranking nacional.'];
+    if ($withSlides) $view['slides'] = $slides;
+    return $view;
 }
 
 // Deliberate free projection: one tournament fact and aggregate counts only.

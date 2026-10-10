@@ -40,7 +40,7 @@ def build_site(home, port):
     site, private, sessions = home/'site', home/'private-smash', home/'sessions'
     for path in (site/'data', private, sessions):
         path.mkdir(parents=True)
-    for filename in ('database.php', 'accounts.php', 'stats.php', 'premium.php', 'organizador.php', 'organizador-api.php', 'top.php', 'top.css', 'characters.js', 'account-api.php', 'premium-api.php', 'cuenta.html', 'cuenta.css', 'cuenta.js', 'account-model.js', 'premium.js', 'organizador.js', 'organizador.css', 'tops.php', 'tops-api.php'):
+    for filename in ('database.php', 'accounts.php', 'stats.php', 'premium.php', 'organizador.php', 'organizer-slides.php', 'laminas.js', 'organizador-api.php', 'top.php', 'top.css', 'characters.js', 'account-api.php', 'premium-api.php', 'cuenta.html', 'cuenta.css', 'cuenta.js', 'account-model.js', 'premium.js', 'organizador.js', 'organizador.css', 'tops.php', 'tops-api.php'):
         shutil.copyfile(SITE/filename, site/filename)
     shutil.copyfile(ROOT/'scripts/database/organizer_fixture.php', site/'organizer_fixture.php')
     shutil.copyfile(SITE/'data/public.json', site/'data/public.json')

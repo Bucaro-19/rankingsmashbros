@@ -142,7 +142,7 @@ const SmashOrganizador = (() => {
     const small=n>0&&n<3?`<div class="p-notice warn o-small" role="note"><span aria-hidden="true">≈</span><div><strong>Muestra pequeña: este top sale de solo ${n===1?'1 torneo':'2 torneos'}.</strong><p>Con pocos torneos, un par de sets cambian mucho los puestos. Tómalo como una foto del momento; se vuelve más confiable con cada torneo que organices.</p></div></div>`:'';
     const sizes=owner?`<div class="o-sizes" role="group" aria-label="Tamaño del top">${d.sizes.map(v=>`<button type="button" data-act="size" data-size="${v}" aria-pressed="${v===size}" ${busy?'disabled':''}>Top ${v}</button>`).join('')}</div>`:'';
     const few=d.top.length<size&&d.top.length>0?`<p class="note">Hay ${plural(d.top.length,'jugador','jugadores')} con sets suficientes: el top muestra los que hay.</p>`:'';
-    const top=n?`${small}<div class="p-columns o-columns"><section class="o-top" aria-labelledby="o-top-title"><div class="o-top-head"><h2 id="o-top-title">Top ${size}</h2>${sizes}</div>${said('size')}
+    const top=n?`${small}<div class="p-columns o-columns"><section class="o-top" aria-labelledby="o-top-title"><div class="o-top-head"><h2 id="o-top-title">Top ${size}</h2>${sizes}</div>${said('size')}${typeof SmashLaminas!=='undefined'?SmashLaminas.controls(d.slides):''}
         <p class="o-min"><strong>Para aparecer:</strong> ${escape(d.minRule)}</p>
         ${d.top.length?`<p class="note">Toca un jugador para ver su detalle.</p><ol class="o-list">${d.top.map((r,i)=>topRow(r,i,name)).join('')}</ol>${few}`:'<p>Todavía ningún jugador tiene sets suficientes.</p>'}
         ${d.rest.length?`<details class="o-rest"><summary>Ver la lista completa · ${plural(d.rest.length,'jugador más','jugadores más')}<span aria-hidden="true">▾</span></summary><ol start="${size+1}">${d.rest.map(x=>`<li><span>${x.rank}</span><span><b>${escape(x.alias)}</b><small>${x.setsWon}–${x.setsLost} en sets · ${plural(x.events,'torneo','torneos')}</small></span><strong>${number(x.points)}</strong></li>`).join('')}</ol></details>`:''}</section>
@@ -188,6 +188,8 @@ const SmashOrganizador = (() => {
   function clearInvitation(){invitation=null;const url=new URL(location.href);url.searchParams.delete('invita');history.replaceState(null,'',url.pathname+url.search+url.hash);}
 
   function onClick(event) {
+    const slide=event.target.closest('[data-slide-download]');
+    if(slide&&!slide.disabled&&info?.state==='data'&&info.data?.slides&&typeof SmashLaminas!=='undefined'){SmashLaminas.download(slide,info.data.slides);return;}
     const button=event.target.closest('[data-act]'); if(!button||button.disabled)return;
     const a=button.dataset.act, d=info?.data;
     if(a==='retry')show();

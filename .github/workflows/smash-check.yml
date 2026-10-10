@@ -35,6 +35,7 @@ jobs:
           node --check ranking-smash-ultimate/cuenta.js
           node --check ranking-smash-ultimate/premium.js
           node --check ranking-smash-ultimate/organizador.js
+          node --check ranking-smash-ultimate/laminas.js
           node --check ranking-smash-ultimate/analisis-model.js
           node --check ranking-smash-ultimate/analisis.js
           node --check ranking-smash-ultimate/preparar.js
@@ -48,6 +49,10 @@ jobs:
           node --check ranking-smash-ultimate/panel-model.js
           node --check ranking-smash-ultimate/panel.js
           node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_organizador.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_torneos.cjs scripts/smash/test_tops.cjs
+      - name: Verify native slide rendering and ZIP with invented data
+        run: |
+          npm install --prefix "$RUNNER_TEMP/smash-canvas" --no-save --package-lock=false @napi-rs/canvas@0.1.80
+          NODE_PATH="$RUNNER_TEMP/smash-canvas/node_modules" node --test scripts/smash/test_laminas.cjs
       - name: Verificar PHP en la versión del hosting y en la mínima admitida
         run: |
           # El servidor usa PHP 8.1; el código publicado debe seguir siendo válido desde 7.4.
@@ -108,6 +113,7 @@ jobs:
           python scripts/database/test_premium_http.py
           php scripts/database/test_organizador.php
           python scripts/database/test_organizador_http.py
+          python scripts/database/test_organizer_slides_http.py
           python scripts/database/test_tops_http.py
           python scripts/database/test_panel_http.py
           php scripts/database/test_analisis.php

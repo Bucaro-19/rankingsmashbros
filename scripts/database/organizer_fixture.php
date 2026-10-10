@@ -10,7 +10,7 @@ function organizer_fixture_clean(PDO $pdo): void
     $pdo->exec("DELETE FROM cut_set_results WHERE event_id $r");
     $pdo->exec("DELETE FROM cut_events WHERE event_id $r");
     $pdo->exec("DELETE FROM cuts WHERE source_hash = '" . str_repeat('e', 64) . "'");
-    foreach (['set_slots' => 'set_id', 'sets' => 'id', 'entrant_players' => 'entrant_id', 'entrants' => 'id', 'events' => 'id', 'tournaments' => 'id', 'tournament_catalog' => 'tournament_id'] as $table => $column) $pdo->exec("DELETE FROM $table WHERE $column $r");
+    foreach (['game_selections' => 'set_id', 'games' => 'set_id', 'set_slots' => 'set_id', 'sets' => 'id', 'entrant_players' => 'entrant_id', 'entrants' => 'id', 'events' => 'id', 'tournaments' => 'id', 'tournament_catalog' => 'tournament_id'] as $table => $column) $pdo->exec("DELETE FROM $table WHERE $column $r");
     $pdo->exec("DELETE FROM users WHERE startgg_user_id $r");
     $pdo->exec("DELETE FROM players WHERE id $r");
 }
