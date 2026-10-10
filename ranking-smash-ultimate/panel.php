@@ -72,6 +72,6 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
     </div>
   </main>
 <?php endif; ?>
-<footer class="panel-header"><nav aria-label="Condiciones del servicio"><a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
+<footer class="panel-header"><nav aria-label="Condiciones del servicio"><a href="/tops.html">Tops de organizadores</a> · <a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
 </body>
 </html>

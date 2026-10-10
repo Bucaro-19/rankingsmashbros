@@ -39,6 +39,7 @@ jobs:
           node --check ranking-smash-ultimate/analisis.js
           node --check ranking-smash-ultimate/preparar.js
           node --check ranking-smash-ultimate/torneos-model.js
+          node --check ranking-smash-ultimate/tops.js
           node --check ranking-smash-ultimate/torneos.js
           node --check ranking-smash-ultimate/proximo.js
           node --check ranking-smash-ultimate/visita.js
@@ -46,7 +47,7 @@ jobs:
           node --check ranking-smash-ultimate/cabecera.js
           node --check ranking-smash-ultimate/panel-model.js
           node --check ranking-smash-ultimate/panel.js
-          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_organizador.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_torneos.cjs
+          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_organizador.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_torneos.cjs scripts/smash/test_tops.cjs
       - name: Verificar PHP en la versión del hosting y en la mínima admitida
         run: |
           # El servidor usa PHP 8.1; el código publicado debe seguir siendo válido desde 7.4.
@@ -107,6 +108,7 @@ jobs:
           python scripts/database/test_premium_http.py
           php scripts/database/test_organizador.php
           python scripts/database/test_organizador_http.py
+          python scripts/database/test_tops_http.py
           python scripts/database/test_panel_http.py
           php scripts/database/test_analisis.php
           python scripts/database/test_analisis_http.py

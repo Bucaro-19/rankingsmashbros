@@ -1,0 +1,11 @@
+/* Provisional directory: reuse tournament cards and the site's existing tokens. */
+.tops-page .t-intro h1{font-size:clamp(50px,8vw,104px)}
+.tops-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:20px}
+.tops-card{min-width:0}.tops-card .t-body{gap:14px}.tops-card h2{font-size:clamp(28px,3vw,36px);line-height:1;overflow-wrap:anywhere}
+.tops-card .t-date{align-self:stretch}.tops-card .t-cta{align-self:flex-start;margin-top:auto}
+.tops-preview{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.tops-preview li{display:flex;gap:10px;align-items:baseline;padding:9px 10px;background:var(--track);min-width:0}
+.tops-preview span{flex:none;font:900 25px/1 'Big Shoulders Display',sans-serif;color:var(--yellow)}
+.tops-preview strong{font-size:15px;overflow-wrap:anywhere;min-width:0}
+#tops-root{display:flex;flex-direction:column;gap:20px;min-width:0}.tops-notice{padding:14px 16px;background:var(--panel);border-left:3px solid var(--yellow);font-size:14px;line-height:1.6;color:var(--long)}
+.tops-notice strong{color:#F4F1EA}#tops-more{align-self:flex-start}#tops-more:disabled{cursor:progress;opacity:.7}

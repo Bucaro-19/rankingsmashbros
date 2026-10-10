@@ -156,7 +156,7 @@ $groups = [
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
-  <header class="site-header wrap"><a class="brand" href="./" aria-label="Ranking Smash Bros, inicio"><span class="brand-mark" aria-hidden="true">S<span>↗</span></span><span>SMASH<span class="brand-gt">GT</span><small>POR INGPORRAS</small></span></a><nav aria-label="Principal"><a href="./">Ranking público</a><a href="./encuesta.php">Cuestionario</a></nav><span class="country">ACCESO PRIVADO</span></header>
+  <header class="site-header wrap"><a class="brand" href="./" aria-label="Ranking Smash Bros, inicio"><span class="brand-mark" aria-hidden="true">S<span>↗</span></span><span>SMASH<span class="brand-gt">GT</span><small>POR INGPORRAS</small></span></a><nav aria-label="Principal"><a href="./tops.html">Tops</a><a href="./">Ranking público</a><a href="./encuesta.php">Cuestionario</a></nav><span class="country">ACCESO PRIVADO</span></header>
   <main id="contenido" class="wrap opinions-page">
     <?php if (!$authenticated): ?>
       <section class="login-panel"><p class="eyebrow"><span class="tiny-line"></span> SOLO PARA EL ORGANIZADOR</p><h1>OPINIONES<br><em>DE LA COMUNIDAD.</em></h1><p>Ingresa tu clave para consultar las respuestas del cuestionario 2026.</p>
@@ -188,6 +188,6 @@ $groups = [
       <?php endif; ?>
     <?php endif; ?>
   </main>
-  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS ↗</a><p>Panel privado de Ranking Smash Bros.</p><span>RANKING SMASH BROS</span><nav aria-label="Condiciones del servicio"><a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
+  <footer class="wrap"><a href="https://ingporras.com/">INGPORRAS ↗</a><p>Panel privado de Ranking Smash Bros.</p><span>RANKING SMASH BROS</span><nav aria-label="Condiciones del servicio"><a href="/tops.html">Tops de organizadores</a> · <a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
 </body>
 </html>

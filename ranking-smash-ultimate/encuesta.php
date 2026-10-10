@@ -182,7 +182,7 @@ function survey_text(string $name): string {
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
   <header class="gt-header">
     <a class="gt-brand" href="./" aria-label="Ranking Smash Bros, inicio"><img class="gt-mono" src="/assets/rsb-mark.svg" alt="" width="38" height="38"><span><img class="gt-logo" src="/assets/rsb-logo-gt-oscuro.svg" alt="" width="301" height="28"><small>por ingporras</small></span></a>
-    <nav aria-label="Principal"><a href="./#ranking">Ranking</a><a href="./torneos.html">Torneos</a><a href="./metodologia.html">Método</a><a href="./encuesta.php" aria-current="page">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Iniciar sesión</a></nav>
+    <nav aria-label="Principal"><a href="./#ranking">Ranking</a><a href="./torneos.html">Torneos</a><a href="./tops.html">Tops</a><a href="./metodologia.html">Método</a><a href="./encuesta.php" aria-current="page">Tu opinión</a><a id="panel-link" href="./panel.php" hidden>Panel</a><a id="account-link" class="account-link" href="./cuenta.html">Iniciar sesión</a></nav>
   </header>
   <main id="contenido" class="survey-page">
     <div class="survey-hero">
@@ -257,6 +257,6 @@ function survey_text(string $name): string {
       </form>
     <?php endif; ?>
   </main>
-  <footer class="gt-footer"><span>Hecho para la comunidad de Guatemala. <a href="https://ingporras.com/">INGPORRAS ↗</a></span><span>Datos: start.gg · <span id="footer-method">BT-PILOTO-3</span><br>Arte: Nintendo y titulares respectivos · Recursos: <a href="https://github.com/marcrd/smash-ultimate-assets" target="_blank" rel="noopener noreferrer">marcrd</a> / <a href="https://github.com/jonborg/ThumbnailGenerator" target="_blank" rel="noopener noreferrer">ThumbnailGenerator</a></span><p>Proyecto independiente, sin afiliación con Nintendo, start.gg ni UltRank. Ranking experimental.</p><nav aria-label="Condiciones del servicio"><a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
+  <footer class="gt-footer"><span>Hecho para la comunidad de Guatemala. <a href="https://ingporras.com/">INGPORRAS ↗</a></span><span>Datos: start.gg · <span id="footer-method">BT-PILOTO-3</span><br>Arte: Nintendo y titulares respectivos · Recursos: <a href="https://github.com/marcrd/smash-ultimate-assets" target="_blank" rel="noopener noreferrer">marcrd</a> / <a href="https://github.com/jonborg/ThumbnailGenerator" target="_blank" rel="noopener noreferrer">ThumbnailGenerator</a></span><p>Proyecto independiente, sin afiliación con Nintendo, start.gg ni UltRank. Ranking experimental.</p><nav aria-label="Condiciones del servicio"><a href="/tops.html">Tops de organizadores</a> · <a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
 </body>
 </html>

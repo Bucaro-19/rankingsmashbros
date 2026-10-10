@@ -8,7 +8,7 @@ from deploy import FILES
 SITE = Path(__file__).resolve().parents[2] / 'ranking-smash-ultimate'
 SCREENS = ('index.html','metodologia.html','encuesta.php','analisis.html','preparar.html','torneos.html',
            'cuenta.html','analisis-top20.html','analisis-torneos.html','opiniones.php','panel.php','top.php',
-           'terminos.html','reembolsos.html')
+           'terminos.html','reembolsos.html','tops.html')
 LEGAL = ('terminos.html','reembolsos.html')
 
 class Links(HTMLParser):
