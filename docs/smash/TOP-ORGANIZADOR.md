@@ -110,3 +110,36 @@ Navegador local con cuentas y torneos inventados: escritorio 1280 px y móvil 37
 2. **Dueño/Claude Code:** después del corte automático comprobar catálogo y visibilidad con una sesión real; esta auditoría no demuestra datos ni pagos reales en producción.
 3. **Claude Design:** [adenda](BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md) y adelanto gratis; controles existentes reutilizados, pendientes de diseño final. Detalle en PENDIENTES-DUENO.
 4. Los pequeños **siguen fuera** de este top. La captura de contexto sirve al historial y no cambia ninguna regla.
+
+## Directorio público «Tops de organizadores» (9/oct)
+
+Nueva pantalla `tops.html`, implementación provisional expresamente pedida por el dueño. Reutiliza `torneos.css`, cabecera y pie, con `tops.css` y `tops.js`; el prompt de diseño final está en PENDIENTES-DUENO. No requiere cuenta para consultar. Tiene enlaces en el menú/pies, FILES y sitemap; canonical, Open Graph y Twitter propios con imagen ya aprobada. No añade contador ni scripts de terceros nuevos.
+
+`GET /tops-api.php` (también HEAD), biblioteca `tops.php` bloqueada para acceso HTTP en .htaccess. **Solo SELECT**, dentro de transacción READ ONLY y snapshot consistente. Sin llamadas a start.gg/proveedor, sesión ni cookies. Reutiliza `smash_org_public` y su cálculo, sin introducir un cálculo alterno ni guardar resultados.
+
+Selección: `public_enabled=1`, usuario activo, mismo acceso premium/admin que `/top/{slug}`, y algún torneo del organizador en `cut_events` combinado del último corte publicado con **20+ activos**. Creador de catálogo o solicitud de organización aprobada. Membresía acredita coorganizadores, no concede otros torneos. Catálogo vacío/corte ausente/sin admitidos da lista vacía; error de base da 503, nunca un vacío falso. Contexto 006 no cuenta. Desactivar el enlace o vencer el premium excluye el top del servidor.
+
+### Contrato JSON versión 1
+
+Raíz de éxito: `ok:true`, `schemaVersion:1`, `items:[]`, `nextCursor:null|string`. Cada item tiene exclusivamente:
+
+| Campo | Tipo y origen público |
+| --- | --- |
+| `name` | Nombre del organizador mostrado por `/top/{slug}` |
+| `coorganizers` | Lista de nombres acreditados; no IDs ni estado premium |
+| `topSize` | 5, 10 o 15, elegido por el organizador |
+| `tournaments` | Número de torneos **distintos** admitidos, igual a `summary.eventsCounted` |
+| `cutDate` | Día `YYYY-MM-DD` del corte SQL en hora Guatemala, o null |
+| `top` | Hasta tres objetos `{rank, alias}` del top público; puede estar vacío si nadie alcanza sus sets mínimos |
+| `url` | `/top/{slug}` público, sin identificador de cuenta |
+
+Sin campos de pagos, contactos, cuenta, personajes/IDs, detalle privado, invitaciones o revisiones. Allowlist explícita también evita exponer futuros campos añadidos a la vista completa. El navegador valida el contrato, escapa nombres y rechaza enlaces externos/inseguros.
+
+### Límite, caché y paginación
+
+- `limit`: 1–12, defecto y tope duro **12**. No se amplía desde un argumento. Prefiltrado antes del límite para no generar páginas vacías por tops privados/vencidos. Orden estable por slug público.
+- `after`: slug público del último item devuelto, 1–60 caracteres minúsculos/dígitos/guiones. `nextCursor` solo se entrega si hay más; «Ver más tops» lo envía y conserva las tarjetas previas sin duplicados. No hay carga automática de todas las páginas ni conteo de organizadores privados.
+- Éxito: `Cache-Control: public, max-age=30, must-revalidate`, ETag del JSON, revalidación 304. No hay caché persistente en disco ni escritura SQL. El navegador omite credenciales. **Una copia ya cacheada puede mostrar hasta 30 s un adelanto recién desactivado/vencido**; el enlace completo sigue comprobando acceso inmediatamente y conserva su `no-store, private`. No se promete revocación instantánea de información ya pública/copiada.
+- Query inválida 400 `invalid_query`; método distinto de GET/HEAD 405 `method_not_allowed`; fallo de lectura/configuración 503 `tops_unavailable`. Errores con `ok:false, reason` y `no-store`; sin detalles internos.
+
+Pruebas HTTP con datos inventados en DB desechable: público/privado, sin admitidos/19 activos, coorganizador, organización por revisión, premium y admin con paridad de la página completa, respuesta sin campos privados, GET/HEAD/304/sin cookies, tope 12 y segunda página de 3. Navegador móvil/escritorio y pendientes de publicación se registran en EN-CURSO. No exige migración nueva ni modifica producción/ranking.

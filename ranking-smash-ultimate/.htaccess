@@ -45,6 +45,9 @@ Options -Indexes
 <Files "organizador.php">
   Require all denied
 </Files>
+<Files "tops.php">
+  Require all denied
+</Files>
 <Files "premium.php">
   Require all denied
 </Files>
