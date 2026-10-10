@@ -199,7 +199,7 @@ class ExportTests(unittest.TestCase):
                 libraries.add(library)
                 self.assertIn(library, FILES, f"{page} requires {library}")
                 self.assertLess(FILES.index(library), FILES.index(page), f"{library} must upload before {page}")
-        self.assertEqual(libraries, {"database.php", "survey.php", "accounts.php", "visits.php", "stats.php", "premium.php", "organizador.php", "tops.php", "analisis.php", "ranking-import.php", "ranking-sync-lib.php"})
+        self.assertEqual(libraries, {"database.php", "survey.php", "accounts.php", "visits.php", "stats.php", "premium.php", "organizador.php", "organizer-slides.php", "tops.php", "analisis.php", "ranking-import.php", "ranking-sync-lib.php"})
         for library in libraries:
             self.assertLess(FILES.index(".htaccess"), FILES.index(library))
             self.assertRegex(htaccess, r'<Files "%s">\s*Require all denied\s*</Files>' % re.escape(library))

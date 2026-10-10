@@ -1,0 +1,865 @@
+{
+  "note": "Local mirrors for Canvas export. Original catalog sources; existing DLC files preserved. Not player data.",
+  "assets": [
+    {
+      "file": "assets/characters/mario-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/mario.png",
+      "sha256": "70e492eca5e16d796d06bb44be2c32992ced90a227318ff6bc150dccf658cc5c"
+    },
+    {
+      "file": "assets/characters/mario-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/mario.png",
+      "sha256": "7505f86f8c6beb40ca539e51e84e06c5ffbeb8472c2819d2e7e84f1f4f356833"
+    },
+    {
+      "file": "assets/characters/donkey_kong-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/donkey_kong.png",
+      "sha256": "b8f4af41531b4dbb36180f6f8e0b9e2e434e2dbe0e9a890aa8d05b7b15d8e795"
+    },
+    {
+      "file": "assets/characters/donkey_kong-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/donkey_kong.png",
+      "sha256": "268fd99593c41ddc9a9fc0cdd0fb8fe63cb02e8026a34886c91111d4161b09cd"
+    },
+    {
+      "file": "assets/characters/link-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/link.png",
+      "sha256": "8dc0dad315fdc8f769a9294b1fd7e592f429833da51bc91835dc2ba682ebd4f0"
+    },
+    {
+      "file": "assets/characters/link-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/link.png",
+      "sha256": "c05f9a75a740069a5b6a93141abba221ef11f34d547e6caf22041d582bb9a222"
+    },
+    {
+      "file": "assets/characters/samus-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/samus.png",
+      "sha256": "cec29dde29e80bafc549fbc750ca9e0f392c08e6c4aa97c078ef4f60194574c1"
+    },
+    {
+      "file": "assets/characters/samus-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/samus.png",
+      "sha256": "895efa153ecdd397ddf2796acc1c2b92b487ab5d98e79f7405f13384bb315855"
+    },
+    {
+      "file": "assets/characters/yoshi-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/yoshi.png",
+      "sha256": "b3b2503fcdbac97dcda1ae8e8876cce8d14378eff09ed4070aa27c77bb888134"
+    },
+    {
+      "file": "assets/characters/yoshi-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/yoshi.png",
+      "sha256": "68c7f8665ada8cf5802d21fb8f3fcbcdee6d0bc97c1a5580740129c7f796d4ca"
+    },
+    {
+      "file": "assets/characters/kirby-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/kirby.png",
+      "sha256": "d54350ea9c657e056d1aa40a628a8f456c8eb475eee92588477d7e5550681165"
+    },
+    {
+      "file": "assets/characters/kirby-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/kirby.png",
+      "sha256": "db3484018c038fa0159658be4d41cd387a1b1f74972d7d6fa9c25299e7d28fa6"
+    },
+    {
+      "file": "assets/characters/fox-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/fox.png",
+      "sha256": "5bc7f6f25d4bcc55309569c1c12e113a6de873e214280af1a1fa004be18824dc"
+    },
+    {
+      "file": "assets/characters/fox-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/fox.png",
+      "sha256": "13c15986f6a31d997296ddde6d07ec8d1c86d9a5f900f2add7a26e36ae2d1054"
+    },
+    {
+      "file": "assets/characters/pikachu-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/pikachu.png",
+      "sha256": "5bc7b419b2129431693bd94fbc99169e0b34c177792f4550e586c08441da7a43"
+    },
+    {
+      "file": "assets/characters/pikachu-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/pikachu.png",
+      "sha256": "6b77b24a8432f797fe700cf3753338014e5bea6eef40f2e9a663d97bfa671a6a"
+    },
+    {
+      "file": "assets/characters/luigi-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/luigi.png",
+      "sha256": "93538d8ccfd111f9f5c96f52d62824aaf91be0593281561991f0555b651ab197"
+    },
+    {
+      "file": "assets/characters/luigi-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/luigi.png",
+      "sha256": "659e830443a07134ce5a7ead451e68ca32230e27737c9cb784839ec47d6a4370"
+    },
+    {
+      "file": "assets/characters/ness-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/ness.png",
+      "sha256": "2eb74ad20ed5b1a3734e4e50464e548894e4ed7439a09d16313ac45be753e806"
+    },
+    {
+      "file": "assets/characters/ness-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/ness.png",
+      "sha256": "902c25734a8e3e2691fa9e10c26f82a96092b877867dcbd6c729ab52499ce8ef"
+    },
+    {
+      "file": "assets/characters/captain_falcon-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/captain_falcon.png",
+      "sha256": "3b9eebecc92d98563889f2ddd7b8fd13abe430bba82d54d1c817fa36c2a5c6a1"
+    },
+    {
+      "file": "assets/characters/captain_falcon-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/captain_falcon.png",
+      "sha256": "6973bac2644c7571ca77a9acef6c84cf530b50bca5c7e6f7dd0b498e42cbc280"
+    },
+    {
+      "file": "assets/characters/jigglypuff-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/jigglypuff.png",
+      "sha256": "9306a99dee62ce8a115e296a8afb4a4b7a1dbd1cbe79c592b5a6fdf2ac75e0c2"
+    },
+    {
+      "file": "assets/characters/jigglypuff-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/jigglypuff.png",
+      "sha256": "a1a628f9a900741581c9d97ac776f495b993664197a0a67d31df3e4d7838458b"
+    },
+    {
+      "file": "assets/characters/peach-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/peach.png",
+      "sha256": "15b1091f12183c20723bb4a8fe89fdd033599b734aa53f9a775df05bff9fc3c9"
+    },
+    {
+      "file": "assets/characters/peach-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/peach.png",
+      "sha256": "92fb9091723fa62233dccc4cdf4d5067ae22a51e5d5185911a1a68fa42085dac"
+    },
+    {
+      "file": "assets/characters/bowser-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/bowser.png",
+      "sha256": "cdb5c1bb1210d78d8cfb857616807ba0368dbd124bbbfe6e7ec967f9d72e0254"
+    },
+    {
+      "file": "assets/characters/bowser-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/bowser.png",
+      "sha256": "dafc64a2ca210da84327858a1d553ee105ee1e7aaaabdb043082f04f0a629481"
+    },
+    {
+      "file": "assets/characters/ice_climbers-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/ice_climbers.png",
+      "sha256": "6e273e74b11fa1a89edfedcafbfee65f00fd0be3003a54b7465adac95ddedd3c"
+    },
+    {
+      "file": "assets/characters/ice_climbers-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/ice_climbers.png",
+      "sha256": "c03701b9163c67ff6326ab2c74a4e7e7bc525148c788e84388a8fb66d8973e0d"
+    },
+    {
+      "file": "assets/characters/sheik-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/sheik.png",
+      "sha256": "65392502a59f9de42f641c3a96b3d5ad3412444215bec07bc77803a231942ae8"
+    },
+    {
+      "file": "assets/characters/sheik-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/sheik.png",
+      "sha256": "b5c4a81ae09183192e71f8f8e78a70daab815e9c21f9c2af8663116772e0bc54"
+    },
+    {
+      "file": "assets/characters/zelda-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/zelda.png",
+      "sha256": "43ebcdd16e2c02318da5bc43d406548950641cec6e3abd96f5a3825f82592f20"
+    },
+    {
+      "file": "assets/characters/zelda-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/zelda.png",
+      "sha256": "0e97c31e67372b4d8d9228817138b6baa296c26b700ab4a81944d920107cf182"
+    },
+    {
+      "file": "assets/characters/dr_mario-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/dr_mario.png",
+      "sha256": "e1f947edee42c5e2bd6ca3c76cc1db953aef6017470e677b77406a38cf6142d1"
+    },
+    {
+      "file": "assets/characters/dr_mario-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/dr_mario.png",
+      "sha256": "06f7086f1474092675205fa1c09c8a65852d09bf77c70407d879b68b2e955d2e"
+    },
+    {
+      "file": "assets/characters/pichu-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/pichu.png",
+      "sha256": "6b28af65c2f1d5d062fae26903604cc7b166d46a5c755f6ce201fbaae546f38a"
+    },
+    {
+      "file": "assets/characters/pichu-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/pichu.png",
+      "sha256": "95ca66c897e910de7b6a76237bea2dbd2ae48fe116e2e6254343bccf6edd6f23"
+    },
+    {
+      "file": "assets/characters/falco-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/falco.png",
+      "sha256": "aaf7538dbfdb18bd5d675f102c2bb9f562f0da58756c9c90e737857450509332"
+    },
+    {
+      "file": "assets/characters/falco-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/falco.png",
+      "sha256": "0ce9d6bda1d69f04db06541017abb9588b82a33f7bf0f788f006061c412e5fae"
+    },
+    {
+      "file": "assets/characters/marth-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/marth.png",
+      "sha256": "0a568a4378e48aa14d4da166ef6f55661bdde8a6f35451eaa4411fc619da22f9"
+    },
+    {
+      "file": "assets/characters/marth-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/marth.png",
+      "sha256": "237db58c330f8fb39ad84bec1318ff61c00bc6e47e33978c2d6ad4f07425bdc0"
+    },
+    {
+      "file": "assets/characters/young_link-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/young_link.png",
+      "sha256": "cbc7c0be0e7cf3c6bd2f1eba5838d56b436e1c41bad5900c9ed1191eb3f09fb0"
+    },
+    {
+      "file": "assets/characters/young_link-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/young_link.png",
+      "sha256": "8d85812f43d402d82b70e5800f0f5c421043773b255f0a467e2c6a53a93ac7ed"
+    },
+    {
+      "file": "assets/characters/ganondorf-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/ganondorf.png",
+      "sha256": "4827c9fb80436d98a6687495c1e70f905bd12af3635e68a9fbbe2b037ee9b459"
+    },
+    {
+      "file": "assets/characters/ganondorf-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/ganondorf.png",
+      "sha256": "230f4d65f6f7a347e7d06c31319d9fd867b5cfe56c89e7b05c79a8381ee0d50a"
+    },
+    {
+      "file": "assets/characters/mewtwo-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/mewtwo.png",
+      "sha256": "9e1ff9bdd39fbc517d43f37336954508344fce7ecb6003b5bb297100e8ee405f"
+    },
+    {
+      "file": "assets/characters/mewtwo-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/mewtwo.png",
+      "sha256": "5556cad74004e8d760c90c15b0837aa8add68a3557cbea4c0bb4b6c37d5682d8"
+    },
+    {
+      "file": "assets/characters/roy-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/roy.png",
+      "sha256": "b7cc74c0bd163aae76b76b43344197b65177343bd8e2943b456f3f4672f35434"
+    },
+    {
+      "file": "assets/characters/roy-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/roy.png",
+      "sha256": "8f0c24d5aa560e6e223d3af6d954474a822086367c70464c38242728d7de8b04"
+    },
+    {
+      "file": "assets/characters/mr_game_and_watch-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/mr_game_and_watch.png",
+      "sha256": "6f4318a92c0b7c26db980ff6ef8e7ae52529f7ae0f48300d90e71c8ff8150093"
+    },
+    {
+      "file": "assets/characters/mr_game_and_watch-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/mr_game_and_watch.png",
+      "sha256": "7755d05c810370d5b3fa0d50615c4a4a370cbd188a1ed115faa7a93151368ca8"
+    },
+    {
+      "file": "assets/characters/meta_knight-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/meta_knight.png",
+      "sha256": "aac6179fa53856a22bbb6ef2730b6b4f69aeea8d6e0c487b93cb37b53ce57332"
+    },
+    {
+      "file": "assets/characters/meta_knight-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/meta_knight.png",
+      "sha256": "0919295f82f1a0ae4369263715eb8a15e3013637b691a085db5058d633b7cbb9"
+    },
+    {
+      "file": "assets/characters/pit-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/pit.png",
+      "sha256": "1619b2af9dd5d082bcb4f2fb9db69aa63900b2c75b1eaa42f8f7a8374c7c825a"
+    },
+    {
+      "file": "assets/characters/pit-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/pit.png",
+      "sha256": "923edd7c066aed84eb326ec1ad23f9c5d38a8d16d2a1d4ddf2a550bf702b9e97"
+    },
+    {
+      "file": "assets/characters/zero_suit_samus-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/zero_suit_samus.png",
+      "sha256": "fc988eff79732c5c90e26d4fc7f7744b0ab5eb85084861a746c54abec45ef441"
+    },
+    {
+      "file": "assets/characters/zero_suit_samus-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/zero_suit_samus.png",
+      "sha256": "1d350d57f4b9d6a408d6718ddf38f2200529a1e4d854a42b4c2310b749447862"
+    },
+    {
+      "file": "assets/characters/wario-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/wario.png",
+      "sha256": "a56baa5c0dfdd6a121dbfa809be9b1cda970e448a9f71cc736bdbb6d3476f220"
+    },
+    {
+      "file": "assets/characters/wario-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/wario.png",
+      "sha256": "8893ada2a103e0c41c1bf09f49a75c8d0912523a5d24ebcf377d431b3ca419bf"
+    },
+    {
+      "file": "assets/characters/snake-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/snake.png",
+      "sha256": "39c625fdac5be322bb6812ba21f9b87b971a2b79c5467ca4c0411e7b9dd2df26"
+    },
+    {
+      "file": "assets/characters/snake-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/snake.png",
+      "sha256": "221eb20d15edb9b1d5788d631fb5a009c0bd52172119e188abdb46385afea881"
+    },
+    {
+      "file": "assets/characters/ike-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/ike.png",
+      "sha256": "b78d9f1993e39adf5c1c09a39a95d0bcd204ede90c49915f842a516d4523c270"
+    },
+    {
+      "file": "assets/characters/ike-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/ike.png",
+      "sha256": "bdf5c772830b780b9f8e122062477c3c9e5a58b5477a9e5b315d64cc467f36a9"
+    },
+    {
+      "file": "assets/characters/pokemon_trainer-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/pokemon_trainer.png",
+      "sha256": "9ca31190cf1eadbf6c2c4103c34648fd314ec19e1de9ac35a7f2b099c68dd357"
+    },
+    {
+      "file": "assets/characters/pokemon_trainer-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/pokemon_trainer.png",
+      "sha256": "c6a835c840f98041fed275a82fda399c29b5022c8043d2e34d782fa7c4424a9d"
+    },
+    {
+      "file": "assets/characters/diddy_kong-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/diddy_kong.png",
+      "sha256": "bcdb8f6d48790a2f4d677969208ef5361308e316439ddade989b6cc5bc82654f"
+    },
+    {
+      "file": "assets/characters/diddy_kong-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/diddy_kong.png",
+      "sha256": "3b016bd56683005c762b03ddddb8600e84aba5bc9e3c9f637931a6793d0ff41f"
+    },
+    {
+      "file": "assets/characters/lucas-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/lucas.png",
+      "sha256": "eee67beb8b935356447c281c80b1166e997129853151c2f6fe8ad9c12efe2b61"
+    },
+    {
+      "file": "assets/characters/lucas-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/lucas.png",
+      "sha256": "48130e831682e0b5b712c19dd9fa0e0ad3fb80ef03bfcd3ed9f3a18a75e327ef"
+    },
+    {
+      "file": "assets/characters/sonic-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/sonic.png",
+      "sha256": "c442033dd3300fddda52e22c698855d65b28061e54187a85e162770c01d3a5f5"
+    },
+    {
+      "file": "assets/characters/sonic-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/sonic.png",
+      "sha256": "78a72588dd873a1a7503b794d03f59002ec3cf2efdc2eae1211dde9c22119587"
+    },
+    {
+      "file": "assets/characters/king_dedede-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/king_dedede.png",
+      "sha256": "dbe485e3a28c766c790e7d157204ca7a7d59468100292cb2a2ddb8a64e120569"
+    },
+    {
+      "file": "assets/characters/king_dedede-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/king_dedede.png",
+      "sha256": "e4b20dbbc4c0cff92a1ee5ba7a20a60b2c1d507312f515d46ee3b95d11c9453f"
+    },
+    {
+      "file": "assets/characters/olimar-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/olimar.png",
+      "sha256": "c9c2ab350bb95508118ff79360228670e2d70067379939fd5b7e4e1f43f1ee8b"
+    },
+    {
+      "file": "assets/characters/olimar-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/olimar.png",
+      "sha256": "f3b5017c5635bbc1b1832a397d9f241c2867ea8755ff88c124a8cd01ab334f02"
+    },
+    {
+      "file": "assets/characters/lucario-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/lucario.png",
+      "sha256": "f031e8fa4c5076cdc4ff4ea8c7a3278a6775356e08cf3df98af385df5d063bf1"
+    },
+    {
+      "file": "assets/characters/lucario-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/lucario.png",
+      "sha256": "7f01077058e44ea8b2fb86946c8159075e4631dcf477857a0ce1b9928442de7f"
+    },
+    {
+      "file": "assets/characters/rob-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/rob.png",
+      "sha256": "2a078295661a98e76c50c576fcc460115fc353cd9087a6e6524af05f2c2faadf"
+    },
+    {
+      "file": "assets/characters/rob-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/rob.png",
+      "sha256": "f10f55610b63a4906d8438ddb06eb6e70fbecc7cd4b0f17df28c1043eadffbc8"
+    },
+    {
+      "file": "assets/characters/toon_link-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/toon_link.png",
+      "sha256": "86ee247c453253d50f5cb89dd2d964914674d9242ded2bc89c4b21a100eaa957"
+    },
+    {
+      "file": "assets/characters/toon_link-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/toon_link.png",
+      "sha256": "0c3e002c1dbffefe8a3f8c61209525134e10d55df49311508153dac49b978daa"
+    },
+    {
+      "file": "assets/characters/wolf-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/wolf.png",
+      "sha256": "b753fd84d5eea7b7f6156699279588053e3ca65f6003a9df7099143b824d294d"
+    },
+    {
+      "file": "assets/characters/wolf-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/wolf.png",
+      "sha256": "71d3a6e9a6e28e3fc8416ec2f806a86dcc21b82cc7cd246508755c1d243abc35"
+    },
+    {
+      "file": "assets/characters/villager-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/villager.png",
+      "sha256": "c8fc01b8c89828dcfab840fd4021c5f2742648489a7fb164ee1f6db86cbfb581"
+    },
+    {
+      "file": "assets/characters/villager-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/villager.png",
+      "sha256": "b0d76c5e426ad7fb7e0fb2e204b5a57f2cc28f2f824de96a16a7463ffcc3b0ec"
+    },
+    {
+      "file": "assets/characters/mega_man-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/mega_man.png",
+      "sha256": "046b5e4a74221bc040b8521022347b01a5e084a4d715832b32c9a6cae352ac51"
+    },
+    {
+      "file": "assets/characters/mega_man-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/mega_man.png",
+      "sha256": "efb4c555a5fafb9b795506c33f59a42bc08fd9a2f0815e72d73f731f7eff8df1"
+    },
+    {
+      "file": "assets/characters/wii_fit_trainer-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/wii_fit_trainer.png",
+      "sha256": "24115dd0c5d69bcc2d1c639a5bb31bc0cf43efc2209f6c870aaa3dc7fdd65568"
+    },
+    {
+      "file": "assets/characters/wii_fit_trainer-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/wii_fit_trainer.png",
+      "sha256": "672251c1b5f3fb6f35554b71ee39cb44e4a107708a8b77987b3f635b2fa99ed1"
+    },
+    {
+      "file": "assets/characters/rosalina_and_luma-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/rosalina_and_luma.png",
+      "sha256": "fa6f5a09024f68768416510b519bc04e5568bee51d40d369b77461d1d6944e56"
+    },
+    {
+      "file": "assets/characters/rosalina_and_luma-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/rosalina_and_luma.png",
+      "sha256": "a413ed91d88368da6da0eac94df1ffc665fb514ab2dbbe0a4d0f41c4b7493f95"
+    },
+    {
+      "file": "assets/characters/little_mac-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/little_mac.png",
+      "sha256": "a3a5b8bdac0e271f7eebf2d76f938a22a8bb05e7feb426a5504e17c41bbaa401"
+    },
+    {
+      "file": "assets/characters/little_mac-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/little_mac.png",
+      "sha256": "7d076cc2e96caf7ab79b8e016fad981821d720ac657ff6267e74cceb29e8e4fe"
+    },
+    {
+      "file": "assets/characters/greninja-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/greninja.png",
+      "sha256": "e66303f3b3f0aa8aa8a59cce4bf10a89fc726e21ef7a5f60f4da40ccc5b920a9"
+    },
+    {
+      "file": "assets/characters/greninja-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/greninja.png",
+      "sha256": "540e25d7ac0d8ac2ff3f21292bc41724d5eff7a4bcf9b058a47a36a14a293949"
+    },
+    {
+      "file": "assets/characters/mii_brawler-icon.png",
+      "source": "./assets/characters/mii_brawler-icon.png",
+      "sha256": "0f37255111d942fa402e7deda13628bdab3738d22ca9891735b26d3c8bd7a23d"
+    },
+    {
+      "file": "assets/characters/mii_brawler-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/mii_brawler.png",
+      "sha256": "a2f28db73b0c44335d654a96575e0b373c8d9127bc5dc9f2f63818f5fa6557cd"
+    },
+    {
+      "file": "assets/characters/mii_swordfighter-icon.png",
+      "source": "./assets/characters/mii_swordfighter-icon.png",
+      "sha256": "4c8525302078d60df2a4c9dfc091d1551709aedb2a52a83720f30caa0897b0e3"
+    },
+    {
+      "file": "assets/characters/mii_swordfighter-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/mii_swordfighter.png",
+      "sha256": "8e98a2c582ed26b5a4788b8c946c86206d1c97b8801b5cec724b9a1a5ff0fd5f"
+    },
+    {
+      "file": "assets/characters/mii_gunner-icon.png",
+      "source": "./assets/characters/mii_gunner-icon.png",
+      "sha256": "a1a8f0d1b94dafe9a28e58d1ba67988a3f4be590e39ff451e4f60d25af0c1c19"
+    },
+    {
+      "file": "assets/characters/mii_gunner-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/mii_gunner.png",
+      "sha256": "1421498b5a687dc7fb5cc7eebd9eccdc1f0b8bdd5425825b712f193ad6731a88"
+    },
+    {
+      "file": "assets/characters/palutena-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/palutena.png",
+      "sha256": "c94dd1167aa3d0479ebf8bdefab2b1800800a822c92c4da1372f2b01169bb300"
+    },
+    {
+      "file": "assets/characters/palutena-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/palutena.png",
+      "sha256": "1eb574fc31b7ebf866d1d723aab745e924331c62c5efbe4cd4d853f5d3c71209"
+    },
+    {
+      "file": "assets/characters/pac_man-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/pac_man.png",
+      "sha256": "dfa1943215f2b973d9d06e37a2224dc47ab99af64b0e233c403af0706cb7c62f"
+    },
+    {
+      "file": "assets/characters/pac_man-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/pac_man.png",
+      "sha256": "3ffeb5c104dcdd444fa619352de33d4b16da92eff265af04145391632e7160bb"
+    },
+    {
+      "file": "assets/characters/robin-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/robin.png",
+      "sha256": "da92e0214c449ac97e9d0a637376f4806d3cfa927f64c9780c62c3c5948b8f22"
+    },
+    {
+      "file": "assets/characters/robin-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/robin.png",
+      "sha256": "f8d53af85e79f140acae879243645949a3b4f125f2bd93bb30aa447f3755a2e3"
+    },
+    {
+      "file": "assets/characters/shulk-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/shulk.png",
+      "sha256": "2dd8e764d5c10a905f4c9327778c29365b700f192ff7efadce62d941848e7b9e"
+    },
+    {
+      "file": "assets/characters/shulk-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/shulk.png",
+      "sha256": "3fd9bd3c008a07c4ed2feb591f112c65f2a91187febe74f98ba119f20eaf413d"
+    },
+    {
+      "file": "assets/characters/bowser_jr-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/bowser_jr.png",
+      "sha256": "6c9eb220397bb17d0adc247fc0eb85a6118156cf344b11a905809fce5868d996"
+    },
+    {
+      "file": "assets/characters/bowser_jr-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/bowser_jr.png",
+      "sha256": "c03a82eb37d68194242026d60bc5a57eadb00c7ea97e502d7002bec441d5e791"
+    },
+    {
+      "file": "assets/characters/duck_hunt-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/duck_hunt.png",
+      "sha256": "3777fec90838889c3db72296515b42e5865b7b0e2141946d92c613163d1b93c3"
+    },
+    {
+      "file": "assets/characters/duck_hunt-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/duck_hunt.png",
+      "sha256": "dc1693138371c0029f74bd7cdad63c5d355ede9e497aedf605b5d23fe16fd47f"
+    },
+    {
+      "file": "assets/characters/ryu-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/ryu.png",
+      "sha256": "0781af51a6b2802173d518b38bead8b3bd0999ee9c1a541093818b4fbcd1418e"
+    },
+    {
+      "file": "assets/characters/ryu-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/ryu.png",
+      "sha256": "1f1b0f327b221315af256f36c67d3c068d1b7da1d31c935657ca91e79ac6b03c"
+    },
+    {
+      "file": "assets/characters/cloud-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/cloud.png",
+      "sha256": "6a4deddbc02db326f39dc263345a506ef6ba753833e7716bfb09769b644b9c88"
+    },
+    {
+      "file": "assets/characters/cloud-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/cloud.png",
+      "sha256": "0ea5a198e7f9473a224d0ef9ab92afd856768270dd1b584335e2de9276ef1180"
+    },
+    {
+      "file": "assets/characters/corrin-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/corrin.png",
+      "sha256": "79eb90f5ac3ab43956b8936d35c688654b2ab3253cf6661375af3b2183d47f6f"
+    },
+    {
+      "file": "assets/characters/corrin-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/corrin.png",
+      "sha256": "76682f4093a55af6fce5f9a3aeb4f4c676176f0e8c93ac62e1bdddd16656797f"
+    },
+    {
+      "file": "assets/characters/bayonetta-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/bayonetta.png",
+      "sha256": "b278c5ab3cfd88aeecfd2fec1c3c1a35897ea4c1a0a560243864b5b1fc9a7d4b"
+    },
+    {
+      "file": "assets/characters/bayonetta-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/bayonetta.png",
+      "sha256": "3eb939d7cf0e3c116bbf431331610903848ff224991ea4988609f14f94f70cfe"
+    },
+    {
+      "file": "assets/characters/inkling-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/inkling.png",
+      "sha256": "fdab9b67c27bed7eee188b52129751fd9c8056179b39b21c06970536a01945a3"
+    },
+    {
+      "file": "assets/characters/inkling-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/inkling.png",
+      "sha256": "71f5e657676d9c87851b56f102004f9ec19b36c45f73d7960624a136b59c0907"
+    },
+    {
+      "file": "assets/characters/ridley-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/ridley.png",
+      "sha256": "1a877a0ebce3fe700e535ad8ef858b6aee6a03383ffdc47c8be466b435c1a280"
+    },
+    {
+      "file": "assets/characters/ridley-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/ridley.png",
+      "sha256": "99d30f51b883df06c99321f849a7a20ffa38d8e4eb311ca2dd6f0313ddf69c1f"
+    },
+    {
+      "file": "assets/characters/simon-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/simon.png",
+      "sha256": "e46b5dc1facdbd0fc353802f675b3a4ae6c813f7103f0214df3eca3fa0dac720"
+    },
+    {
+      "file": "assets/characters/simon-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/simon.png",
+      "sha256": "9f31f956c2df50c1bff95434a78921ee2e5e320e262934e2bc91cc07d7d56933"
+    },
+    {
+      "file": "assets/characters/king_k_rool-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/king_k_rool.png",
+      "sha256": "fd50cce18cb978dbebae3baf32d27f1e5bbb510995a40303ca8f81c6d0d4344b"
+    },
+    {
+      "file": "assets/characters/king_k_rool-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/king_k_rool.png",
+      "sha256": "f956597365db94d037550dd1c683e826eded0daba39d82f40c85395bdc08492a"
+    },
+    {
+      "file": "assets/characters/isabelle-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/isabelle.png",
+      "sha256": "2668f99f0c0ae624c3dfe4618c8eb87ec4003995e85b5b568a5c430aca9bb9e6"
+    },
+    {
+      "file": "assets/characters/isabelle-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/isabelle.png",
+      "sha256": "f5a0d06e2ffeeaefa994daec768ea9063705260f3665e911b73585622dc5c1ad"
+    },
+    {
+      "file": "assets/characters/incineroar-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/incineroar.png",
+      "sha256": "b356d39da2adfd0d870882e331d9279e5fbe983fe1400459662fc4bae65b0202"
+    },
+    {
+      "file": "assets/characters/incineroar-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/incineroar.png",
+      "sha256": "55c70ddba231051cf11b8142515aa5c7f60e9c339e042edd0d23fe3e6fedc1c2"
+    },
+    {
+      "file": "assets/characters/piranha_plant-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/piranha_plant.png",
+      "sha256": "164f018cda21b6cbdbc8555e9d0d212ae8556833be7475b7666dcda29cc89ea0"
+    },
+    {
+      "file": "assets/characters/piranha_plant-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/piranha_plant.png",
+      "sha256": "4e75bb2c9c7f7e2636e8f45b45d37e4ddcab45cff0567f5d7f107470a05015e8"
+    },
+    {
+      "file": "assets/characters/joker-icon.png",
+      "source": "./assets/characters/joker-icon.png",
+      "sha256": "a85e36cdf44af0c3949ce594466afe56863ba1bd230ee18d0d059370b826a936"
+    },
+    {
+      "file": "assets/characters/joker-portrait.png",
+      "source": "./assets/characters/joker-portrait.png",
+      "sha256": "2acadee47c5d8ee3bfecc685c9cf91638b3d51b7786882dd394b1c5157763cb7"
+    },
+    {
+      "file": "assets/characters/dq_hero-icon.png",
+      "source": "./assets/characters/dq_hero-icon.png",
+      "sha256": "bb5843e8ba1cf8f9caea1814999c5476bc4c62b787abbb003279e679c37ed2cd"
+    },
+    {
+      "file": "assets/characters/dq_hero-portrait.png",
+      "source": "./assets/characters/dq_hero-portrait.png",
+      "sha256": "f38801a58a8132c960b8e5e4eec6954401a0f769f40033cb0be28a138424289d"
+    },
+    {
+      "file": "assets/characters/banjo_and_kazooie-icon.png",
+      "source": "./assets/characters/banjo_and_kazooie-icon.png",
+      "sha256": "77434827248e3c36f5e55a5715432e62dba1f2096428708c54fa76e546bb20da"
+    },
+    {
+      "file": "assets/characters/banjo_and_kazooie-portrait.png",
+      "source": "./assets/characters/banjo_and_kazooie-portrait.png",
+      "sha256": "abe9b63068ed9af1aa279bc3be982a8e72eb0b9a28d7f9d0685bdff5e25324f1"
+    },
+    {
+      "file": "assets/characters/terry-icon.png",
+      "source": "./assets/characters/terry-icon.png",
+      "sha256": "db4fa8478bd7af2df58bf52dfba80fba98bbfaff98926ff8ec9542ea503c3775"
+    },
+    {
+      "file": "assets/characters/terry-portrait.png",
+      "source": "./assets/characters/terry-portrait.png",
+      "sha256": "9384f84604583f6a5f734e4e107a47e9b4bfe44f0c13d8075729109135fedcb9"
+    },
+    {
+      "file": "assets/characters/byleth-icon.png",
+      "source": "./assets/characters/byleth-icon.png",
+      "sha256": "e4e89466a6a6ded9fc6fe0ef3a2bd8d76829e1c9ada9cb4313f54fc074a38622"
+    },
+    {
+      "file": "assets/characters/byleth-portrait.png",
+      "source": "./assets/characters/byleth-portrait.png",
+      "sha256": "40115e9f18f41b516bc6918af316ae212cc0a454f79b0be789f63f7ad29a952a"
+    },
+    {
+      "file": "assets/characters/minmin-icon.png",
+      "source": "./assets/characters/minmin-icon.png",
+      "sha256": "1f99ce075a38d9df2b365e44afbbd13011ea5341f81ae120194c40a7771c5609"
+    },
+    {
+      "file": "assets/characters/minmin-portrait.png",
+      "source": "./assets/characters/minmin-portrait.png",
+      "sha256": "d77c7030e148f4e49528c6e28cda59bfd3c29a12d7e43eefdf547446c554efa8"
+    },
+    {
+      "file": "assets/characters/steve-icon.png",
+      "source": "./assets/characters/steve-icon.png",
+      "sha256": "7e8d5ddaef5e63670df446f36b21e868c68aa0291ef9544965f8a4f667983f97"
+    },
+    {
+      "file": "assets/characters/steve-portrait.png",
+      "source": "./assets/characters/steve-portrait.png",
+      "sha256": "a628d7c8134b364718146630713fe2b6a8b7c3aeb9b35bd96c631bdd1756eb92"
+    },
+    {
+      "file": "assets/characters/sephiroth-icon.png",
+      "source": "./assets/characters/sephiroth-icon.png",
+      "sha256": "b9da1a7800388ea47b89da4325006b4ca91c588b1b3b0fb9af32b8b73fadcf11"
+    },
+    {
+      "file": "assets/characters/sephiroth-portrait.png",
+      "source": "./assets/characters/sephiroth-portrait.png",
+      "sha256": "9e5d9cc06c67c05f0ecdf1107a7a4309b7036ca1d247708974f3d62ec86c87ba"
+    },
+    {
+      "file": "assets/characters/pyra-icon.png",
+      "source": "./assets/characters/pyra-icon.png",
+      "sha256": "3aa3b7561e0f1b613639d8582462b9de27946103a1967aba1d6a8747fd96edb5"
+    },
+    {
+      "file": "assets/characters/pyra-portrait.png",
+      "source": "./assets/characters/pyra-portrait.png",
+      "sha256": "fe9e126754df2f892867e28993be813980247b68e76060c0fe6117ce2bf7a55c"
+    },
+    {
+      "file": "assets/characters/kazuya-icon.png",
+      "source": "./assets/characters/kazuya-icon.png",
+      "sha256": "519edd4b7e033c095fd142fa0bc70341be780fd8a2429f12a3052afa82872f8a"
+    },
+    {
+      "file": "assets/characters/kazuya-portrait.png",
+      "source": "./assets/characters/kazuya-portrait.png",
+      "sha256": "ea27f753826de7271c0a0730d83a14f37e81db3b7b1417494874096ac609d71a"
+    },
+    {
+      "file": "assets/characters/sora-icon.png",
+      "source": "./assets/characters/sora-icon.png",
+      "sha256": "83ca06914b97cdba72f165d98e098335d081fcc415ecc43f1f8a8f64f6f6ff50"
+    },
+    {
+      "file": "assets/characters/sora-portrait.png",
+      "source": "./assets/characters/sora-portrait.png",
+      "sha256": "84d69735ccf7059089a53ba370f4daf30104e503f12f34272d3d2d6f87d3578a"
+    },
+    {
+      "file": "assets/characters/dark_pit-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/dark_pit.png",
+      "sha256": "16312068d566f8c8f3e28efaffc79fadad10173312b99a27cfaa1a614b9af71b"
+    },
+    {
+      "file": "assets/characters/dark_pit-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/dark_pit.png",
+      "sha256": "2ef34cba04634c283994ac7c8748ea11d00b943cda925fe60e1a5b0d9a5cdb07"
+    },
+    {
+      "file": "assets/characters/lucina-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/lucina.png",
+      "sha256": "3605f5ec018da642ac2fe6661f78cc5b558f0476660bd2123d75183fb8bd97d1"
+    },
+    {
+      "file": "assets/characters/lucina-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/lucina.png",
+      "sha256": "c4af1b3be3c9318cab67feca1c2c21632628ecb042308ebba9af17a34066fe5e"
+    },
+    {
+      "file": "assets/characters/daisy-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/daisy.png",
+      "sha256": "e4613cad4c4ee818d29e100861a45badb326584604d450619636ca035e6b9a12"
+    },
+    {
+      "file": "assets/characters/daisy-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/daisy.png",
+      "sha256": "7f99c6f067645d6cea43e5d878d65e4d3cd1020acf703b7b22a4895bb525bc97"
+    },
+    {
+      "file": "assets/characters/chrom-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/chrom.png",
+      "sha256": "e487b3f8086e0cce48446baeb50c5752cd73468fa2fbc2a1c230d1c095235c9c"
+    },
+    {
+      "file": "assets/characters/chrom-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/chrom.png",
+      "sha256": "f66fd4dd21f3f2dd2be0cfde79730b099129ef05ef299af71a6f50b1753eb7f7"
+    },
+    {
+      "file": "assets/characters/dark_samus-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/dark_samus.png",
+      "sha256": "e2ca29a1c04214987bdb8cd0181e863ce4cbf3f47e6ab875ef60544d8242c3e0"
+    },
+    {
+      "file": "assets/characters/dark_samus-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/dark_samus.png",
+      "sha256": "0efa92dcb45a313ea79d746c1e106af962dc9e16c72000955708eb6569c0380a"
+    },
+    {
+      "file": "assets/characters/richter-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/richter.png",
+      "sha256": "7960661596df7a260915a1171196e9ccdfbafb839f6bd83bc068b3be2f965462"
+    },
+    {
+      "file": "assets/characters/richter-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/richter.png",
+      "sha256": "2d5ec2a1532a18398c64f4e6f1525799a8879d14d772d400ffa4c792b0df8a53"
+    },
+    {
+      "file": "assets/characters/ken-icon.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/stock-icons/png/ken.png",
+      "sha256": "e9a14ffca8d4b95d3876133c459cd19715475e169a8b4f865ab76757ef2a41d9"
+    },
+    {
+      "file": "assets/characters/ken-portrait.png",
+      "source": "https://raw.githubusercontent.com/marcrd/smash-ultimate-assets/master/portraits/full/ken.png",
+      "sha256": "34882f49f341e506f35f7174683486a6abdef112228040c3b0eb94d631d586c1"
+    }
+  ]
+}
