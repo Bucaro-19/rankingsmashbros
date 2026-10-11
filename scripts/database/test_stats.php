@@ -40,7 +40,7 @@ try {
     $baseUsers = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn() - 4;
     $baseLinked = (int)$pdo->query('SELECT COUNT(*) FROM oauth_connections WHERE revoked_at IS NULL')->fetchColumn() - 1;
     $r = smash_stats_report($pdo, $now, 2026);
-    check_stats($r['counterStartedAt'] === '2026-10-10' && $r['today'] === ['date' => '2026-10-21', 'visitors' => 2, 'pageviews' => 3, 'registrations' => 1] && $r['yesterday'] === ['visitors' => 2], 'Today is partial and separate; yesterday is the last complete day');
+    check_stats($r['counterStartedAt'] === '2026-10-10' && $r['today'] === ['date' => '2026-10-21', 'visitors' => 2, 'pageviews' => 3, 'registrations' => 1] && $r['yesterday'] === ['visitors' => 2, 'registrations' => 0], 'Today is partial and separate; yesterday is the last complete day');
     $p7 = $r['periods']['7']; $p30 = $r['periods']['30'];
     check_stats([$p7['from'], $p7['to'], $p7['days'], $p7['daysWithData']] === ['2026-10-14', '2026-10-20', 7, 7], 'Seven complete days ending yesterday');
     check_stats([$p7['visitors'], $p7['loggedVisitors'], $p7['networks'], $p7['pageviews'], $p7['registrations']] === [2, 1, 2, 6, 2], 'Distinct visitors over the range, not a sum of days; today excluded');
@@ -55,6 +55,22 @@ try {
     check_stats(count($weeks) === 2 && $weeks[1] === ['from' => '2026-10-14', 'to' => '2026-10-20', 'visitors' => 2, 'pageviews' => 6, 'registrations' => 2, 'partial' => false]
         && $weeks[0] === ['from' => '2026-10-10', 'to' => '2026-10-13', 'visitors' => 1, 'pageviews' => 2, 'registrations' => 0, 'partial' => true], 'Weeks counted back from yesterday; the oldest one is clipped and partial');
     check_stats($r['accounts'] === ['total' => $baseUsers + 4, 'linked' => $baseLinked + 1, 'premium' => 0, 'premiumList' => []], 'Accounts: total, still linked and premium');
+    // Drilldowns use exactly the same clipped days, including UTC/Guatemala midnight.
+    foreach (['7', '30', '90', 'season'] as $scope) {
+        $list = smash_stats_registration_list($pdo, $scope, '2026-10-21', 2026);
+        check_stats($list['total'] === $r['periods'][$scope]['registrations'] && count($list['items']) === $list['total'], 'Period total/list parity: ' . $scope);
+    }
+    foreach ($r['weekly']['90'] as $week) check_stats(smash_stats_registration_list($pdo, $week['from'] . '_' . $week['to'], '2026-10-21', 2026)['total'] === $week['registrations'], 'Week/list parity');
+    foreach ($r['daily'] as $day) check_stats(smash_stats_registration_list($pdo, $day['date'] . '_' . $day['date'], '2026-10-21', 2026)['total'] === $day['registrations'], 'Day/list parity');
+    $todayList = smash_stats_registration_list($pdo, 'today', '2026-10-21', 2026);
+    check_stats($todayList['total'] === $r['today']['registrations'] && $todayList['items'][0] === ['tag' => 'Cuenta sin jugador vinculado', 'registeredAt' => '2026-10-21T14:00:00-06:00', 'linked' => false], 'No player: exact fallback, local datetime and closed projection');
+    check_stats(smash_stats_registration_list($pdo, 'yesterday', '2026-10-21', 2026) === ['total' => 0, 'items' => [], 'nextOffset' => null], 'Empty period');
+    $boundary = smash_stats_registration_list($pdo, '2026-10-15_2026-10-15', '2026-10-21', 2026);
+    check_stats($boundary['total'] === 1 && $boundary['items'][0]['registeredAt'] === '2026-10-15T23:59:59-06:00' && $boundary['items'][0]['linked'], 'Last second before Guatemala midnight');
+    $boundary = smash_stats_registration_list($pdo, '2026-10-16_2026-10-16', '2026-10-21', 2026);
+    check_stats($boundary['total'] === 1 && $boundary['items'][0]['registeredAt'] === '2026-10-16T00:00:00-06:00' && !$boundary['items'][0]['linked'], 'Revoked connection and first second after midnight');
+    try { smash_stats_registration_list($pdo, 'sql injection', '2026-10-21', 2026); throw new RuntimeException('Invalid scope accepted'); }
+    catch (SmashStatsError $error) { check_stats($error->reason === 'invalid_registration_query', 'Invalid scope rejected'); }
     // Historical analysis rows remain unchanged; new agenda rows are distinct and counted once.
     $page->execute(['2026-10-20', 'analisis-torneos', 3]);
     $page->execute(['2026-10-20', 'torneos', 5]);

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 // Library only. Apache blocks direct access; nothing is read or written on inclusion.
 // Read-only figures for the owner's private panel: visits (see visits.php) and registrations.
-// Aggregates only: no visitor, network or account is ever listed.
+// Visitors/networks are aggregates only. Account drilldowns are owner-only, never public.
 
 // Additive contract: legacy panel key "torneos" stays the historical analysis; no SQL
 // renames or duplicate aliases in totals. The new stored page "torneos" is the agenda.
@@ -42,6 +42,60 @@ function smash_stats_registrations(PDO $pdo, string $from, string $to): array
         WHERE created_at >= DATE_ADD(?, INTERVAL 6 HOUR) AND created_at < DATE_ADD(DATE_ADD(?, INTERVAL 1 DAY), INTERVAL 6 HOUR) GROUP BY day');
     $q->execute([$from, $to]);
     return array_map('intval', $q->fetchAll(PDO::FETCH_KEY_PAIR));
+}
+
+// The same clipped ranges as the report. An anchor keeps a panel opened before midnight
+// on its original Guatemala day. Scope keys carry dates, never account identifiers.
+function smash_stats_registration_scopes(PDO $pdo, string $today, int $seasonYear): array
+{
+    $started = $pdo->query('SELECT MIN(day) FROM site_visitor_days')->fetchColumn();
+    $yesterday = smash_stats_shift($today, -1);
+    $scopes = ['all' => null, 'today' => [$today, $today], 'yesterday' => [$yesterday, $yesterday]];
+    foreach (['7' => 7, '30' => 30, '90' => 90, 'season' => null] as $name => $length) {
+        $from = $length === null ? $seasonYear . '-01-01' : smash_stats_shift($yesterday, -($length - 1));
+        $from = is_string($started) ? max($from, $started) : null;
+        $scopes[$name] = $from !== null && $from <= $yesterday ? [$from, $yesterday] : [];
+        if ($from === null || $from > $yesterday) continue;
+        for ($day = $from; $day <= $yesterday; $day = smash_stats_shift($day, 1)) $scopes[$day . '_' . $day] = [$day, $day];
+        if ($name === '90' || $name === 'season') {
+            for ($end = $yesterday; $end >= $from; $end = smash_stats_shift($end, -7)) {
+                $start = max($from, smash_stats_shift($end, -6));
+                $scopes[$start . '_' . $end] = [$start, $end];
+            }
+        }
+    }
+    return $scopes;
+}
+
+// Only called after smash_stats_is_owner in panel-api. Explicit projection: no private IDs.
+// Read-only snapshot makes the total and this page agree even during a new registration.
+function smash_stats_registration_list(PDO $pdo, string $scope, string $today, int $seasonYear, int $offset = 0, ?string $maximumId = null, ?array $scopes = null): array
+{
+    $scopes = $scopes ?? smash_stats_registration_scopes($pdo, $today, $seasonYear);
+    if (!array_key_exists($scope, $scopes) || $offset < 0 || $offset > 10000000) throw new SmashStatsError('invalid_registration_query');
+    $range = $scopes[$scope];
+    if ($range === []) return ['total' => 0, 'items' => [], 'nextOffset' => null];
+    $where = $range === null ? '' : ' WHERE u.created_at >= DATE_ADD(?, INTERVAL 6 HOUR) AND u.created_at < DATE_ADD(DATE_ADD(?, INTERVAL 1 DAY), INTERVAL 6 HOUR)';
+    $params = $range ?? [];
+    if ($maximumId !== null) { $where .= ($where === '' ? ' WHERE ' : ' AND ') . 'u.id <= ?'; $params[] = $maximumId; }
+    try {
+        $pdo->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        $pdo->exec('START TRANSACTION READ ONLY');
+        $q = $pdo->prepare('SELECT COUNT(*) FROM users u' . $where); $q->execute($params);
+        $total = (int)$q->fetchColumn();
+        $q = $pdo->prepare('SELECT p.tag, u.created_at, EXISTS(SELECT 1 FROM oauth_connections o WHERE o.user_id = u.id AND o.revoked_at IS NULL) AS linked
+            FROM users u LEFT JOIN players p ON p.id = u.player_id' . $where . ' ORDER BY u.created_at DESC, u.id DESC LIMIT 50 OFFSET ' . $offset);
+        $q->execute($params); $items = [];
+        foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $items[] = ['tag' => is_string($row['tag']) && $row['tag'] !== '' ? $row['tag'] : 'Cuenta sin jugador vinculado',
+                'registeredAt' => gmdate('Y-m-d\TH:i:s', strtotime($row['created_at'] . ' UTC') - 21600) . '-06:00', 'linked' => (bool)$row['linked']];
+        }
+        $pdo->commit();
+        return ['total' => $total, 'items' => $items, 'nextOffset' => $offset + count($items) < $total ? $offset + count($items) : null];
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        throw new SmashStatsError('stats_read_failed');
+    }
 }
 
 // Totals of a range of complete days. Distinct visitors are counted over the whole range by the
@@ -117,6 +171,7 @@ function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
         $started = is_string($started) ? $started : null;
         $q = $pdo->prepare('SELECT COUNT(*) FROM site_visitor_days WHERE day = ?'); $q->execute([$today]); $todayVisitors = (int)$q->fetchColumn();
         $q = $pdo->prepare('SELECT COALESCE(SUM(views), 0) FROM site_visit_days WHERE day = ?'); $q->execute([$today]); $todayViews = (int)$q->fetchColumn();
+        $registrationScopes = smash_stats_registration_scopes($pdo, $today, $seasonYear);
         $report = ['updatedAt' => gmdate('Y-m-d\TH:i', $now - 21600) . '-06:00', 'counterStartedAt' => $started, 'seasonYear' => $seasonYear,
             'today' => ['date' => $today, 'visitors' => $todayVisitors, 'pageviews' => $todayViews,
                 'registrations' => array_sum(smash_stats_registrations($pdo, $today, $today))],
@@ -128,7 +183,7 @@ function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
         foreach (['7' => 7, '30' => 30, '90' => 90, 'season' => null] as $name => $length) {
             $from = $length === null ? $season : smash_stats_shift($yesterday, -($length - 1));
             // Days before the counter existed are «no data», never zero: the range starts where data starts.
-            $dataFrom = $started === null ? null : max($from, $started);
+            $dataFrom = $registrationScopes[$name][0] ?? null;
             $period = ['from' => $from, 'to' => $yesterday, 'days' => $yesterday >= $from ? smash_stats_span($from, $yesterday) : 0,
                 'daysWithData' => $dataFrom !== null && $dataFrom <= $yesterday ? smash_stats_span($dataFrom, $yesterday) : 0, 'previous' => null];
             if ($period['daysWithData'] > 0) {
@@ -157,7 +212,7 @@ function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
                 $report['daily'][] = ['date' => $day, 'visitors' => $visitors[$day][0] ?? 0, 'loggedVisitors' => $visitors[$day][1] ?? 0,
                     'networks' => (int)($networks[$day] ?? 0), 'pageviews' => (int)($views[$day] ?? 0), 'registrations' => $registered[$day] ?? 0];
             }
-            if ($started <= $yesterday) $report['yesterday'] = ['visitors' => $visitors[$yesterday][0] ?? 0];
+            if ($started <= $yesterday) $report['yesterday'] = ['visitors' => $visitors[$yesterday][0] ?? 0, 'registrations' => $registered[$yesterday] ?? 0];
         }
         return $report;
     } catch (PDOException $error) {

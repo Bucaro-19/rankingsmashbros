@@ -38,18 +38,19 @@ const PanelModel = {
     const period=report.periods[name];
     if (name==='90'||name==='season') {
       return (report.weekly[name]||[]).map(w=>({label:`Semana ${this.dm(w.from)} – ${this.dm(w.to)}${w.partial?` · ${this.span(w.from,w.to)} días (empieza el contador)`:''}`,short:this.dm(w.from),
-        visitors:w.visitors,pageviews:w.pageviews,registrations:w.registrations,partial:w.partial,weekly:true}));
+        scope:`${w.from}_${w.to}`,visitors:w.visitors,pageviews:w.pageviews,registrations:w.registrations,partial:w.partial,weekly:true}));
     }
     const byDate=new Map(report.daily.map(d=>[d.date,d])), items=[];
     for (let day=period.from; day<=period.to; day=this.shift(day,1)) {
       const row=byDate.get(day);
-      items.push(row?{label:`${this.DOW[this.parts(day).dow]} ${this.dm(day)}`,short:this.dm(day),visitors:row.visitors,pageviews:row.pageviews,registrations:row.registrations}
+      items.push(row?{label:`${this.DOW[this.parts(day).dow]} ${this.dm(day)}`,short:this.dm(day),scope:`${day}_${day}`,visitors:row.visitors,pageviews:row.pageviews,registrations:row.registrations}
         :{none:true,short:this.dm(day)});
     }
     const t=report.today;
-    items.push({label:`Hoy ${this.dm(t.date)} · en curso hasta ${report.updatedAt.slice(11,16)}`,short:'Hoy',visitors:t.visitors,pageviews:t.pageviews,registrations:t.registrations,partial:true,today:true});
+    items.push({label:`Hoy ${this.dm(t.date)} · en curso hasta ${report.updatedAt.slice(11,16)}`,short:'Hoy',scope:'today',visitors:t.visitors,pageviews:t.pageviews,registrations:t.registrations,partial:true,today:true});
     return items;
   },
+  registrationTime(at) { return `${this.dmy(at.slice(0,10))} · ${at.slice(11,19)} (Guatemala)`; },
   span(from,to) { let n=1; for (let day=from; day<to; day=this.shift(day,1)) n++; return n; },
   // The reading starts on the last complete day or week, never on the partial one.
   defaultIndex(items) {

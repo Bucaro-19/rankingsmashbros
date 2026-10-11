@@ -71,3 +71,11 @@ test('agenda adds a distinct label and historical torneos keeps its meaning and 
   ]);
   assert.equal(pages.reduce((n,p)=>n+p.views,0),20);
 });
+
+test('registration disclosures retain server day/week scopes and Guatemala time',()=>{
+  const items=m.items(report,'7');
+  assert.equal(items[4].scope,'2026-10-18_2026-10-18');
+  assert.equal(items.at(-1).scope,'today');
+  assert.equal(m.items(report,'90')[0].scope,'2026-10-18_2026-10-20');
+  assert.equal(m.registrationTime('2026-10-15T23:59:59-06:00'),'15/10/2026 · 23:59:59 (Guatemala)');
+});
