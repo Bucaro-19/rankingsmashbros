@@ -178,7 +178,7 @@ class PanelHttpTests(unittest.TestCase):
 
             empty=json.loads(self.get('/panel-api.php?registrations=today&day=2026-01-02')[2])['registrations']
             self.assertEqual(empty, {'total':0,'items':[],'nextOffset':None})
-            for query in ('registrations=unknown','registrations=all&offset=-1','registrations=all&offset=10000001','registrations=all&day=2026-02-30','registrations[]=all','registrations=all&day=9999-01-01','registrations=all&offset[]=0'):
+            for query in ('registrations=unknown','registrations=all&offset=-1','registrations=all&offset=10000001','registrations=all&day=2026-02-30','registrations=all&day=2026-10-10%00','registrations[]=all','registrations=all&day=9999-01-01','registrations=all&offset[]=0'):
                 self.assertEqual(self.get('/panel-api.php?'+query)[0],400,query)
         finally:
             with self.db.cursor() as q:

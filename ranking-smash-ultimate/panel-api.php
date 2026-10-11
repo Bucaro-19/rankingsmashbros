@@ -26,7 +26,7 @@ try {
     $season = (int)(smash_account_public(__DIR__)['seasonYear'] ?? gmdate('Y', time() - 21600));
     if (isset($_GET['registrations'])) {
         $scope = $_GET['registrations']; $anchor = $_GET['day'] ?? gmdate('Y-m-d', time() - 21600); $offset = $_GET['offset'] ?? '0';
-        $date = is_string($anchor) ? DateTimeImmutable::createFromFormat('!Y-m-d', $anchor, new DateTimeZone('UTC')) : false;
+        $date = is_string($anchor) && preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/D', $anchor) ? DateTimeImmutable::createFromFormat('!Y-m-d', $anchor, new DateTimeZone('UTC')) : false;
         if (!is_string($scope) || !$date || $date->format('Y-m-d') !== $anchor || $anchor > gmdate('Y-m-d', time() - 21600)
             || $anchor < '2000-01-01' || !is_string($offset) || !preg_match('/^(0|[1-9][0-9]{0,7})$/D', $offset) || (int)$offset > 10000000) {
             panel_response(400, ['ok' => false, 'reason' => 'invalid_registration_query']);
