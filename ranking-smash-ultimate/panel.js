@@ -95,7 +95,7 @@
   }
   let registrationTrigger=null, registrationRequest=null, registrationVersion=0, registrationData=[], registrationNext=null, registrationTotal=null, registrationScope='';
   function registrationButton(scope,label,classes='',context='') {
-    return `<button type="button" class="registration-toggle ${classes}" data-registration="${escape(scope)}" aria-expanded="false" aria-controls="registration-list" aria-label="${escape(`Ver cuentas: ${context||label}`)}">${escape(label)}<span class="fine"> · Ver cuentas</span></button>`;
+    return `<button type="button" class="registration-toggle ${classes}" data-registration="${escape(scope)}" aria-expanded="false" aria-controls="registration-list" aria-label="${escape(`Ver cuentas: ${context?`${context} · `:''}${label}`)}">${escape(label)}<span class="fine"> · Ver cuentas</span></button>`;
   }
   function closeRegistrations(focus=true) {
     registrationVersion++; registrationRequest?.abort(); registrationRequest=null;
