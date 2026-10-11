@@ -71,3 +71,69 @@ test('agenda adds a distinct label and historical torneos keeps its meaning and 
   ]);
   assert.equal(pages.reduce((n,p)=>n+p.views,0),20);
 });
+
+test('registration disclosures retain server day/week scopes and Guatemala time',()=>{
+  const items=m.items(report,'7');
+  assert.equal(items[4].scope,'2026-10-18_2026-10-18');
+  assert.equal(items.at(-1).scope,'today');
+  assert.equal(m.items(report,'90')[0].scope,'2026-10-18_2026-10-20');
+  assert.equal(m.registrationTime('2026-10-15T23:59:59-06:00'),'15/10/2026 · 23:59:59 (Guatemala)');
+});
+
+// Execute the actual controller in a minimal DOM. Only the startup call is replaced;
+// network/body timing and rendering remain the real panel code.
+function registrationController(fetch) {
+  const fs=require('node:fs'), vm=require('node:vm');
+  const nodes=new Map(), listeners=new Map(); let reloads=0;
+  const node=id=>{if(!nodes.has(id))nodes.set(id,{innerHTML:'',hidden:true,attrs:{},setAttribute(k,v){this.attrs[k]=v;},replaceChildren(){this.innerHTML='';},append(){},querySelector(){return {focus(){}};},addEventListener(){}});return nodes.get(id);};
+  const source=fs.readFileSync(require.resolve('../../ranking-smash-ultimate/panel.js'),'utf8');
+  const end='  load();\n})();'; assert.ok(source.endsWith(end+'\n'));
+  const code=source.slice(0,source.lastIndexOf(end))+`  module.exports={
+    open(scope){closeRegistrations(false);registrationScope=scope;registrationSnapshot='opaque-report-token';report={today:{date:'2026-10-10'}};return fetchRegistrations();},
+    more(){return fetchRegistrations(true);},close(){closeRegistrations(false);},
+    state(){return {items:registrationData,next:registrationNext,total:registrationTotal};}
+  };
+})();`;
+  const context={PanelModel:m,document:{getElementById:node,querySelectorAll:()=>[],addEventListener:(k,v)=>listeners.set(k,v)},localStorage:{getItem:()=>null},
+    fetch,AbortController,URLSearchParams,setTimeout,clearTimeout,module:{exports:{}},location:{reload(){reloads++;}}};
+  vm.runInNewContext(code,context);
+  return {api:context.module.exports,panel:node('registration-list'),reloads:()=>reloads};
+}
+const row=tag=>({tag,registeredAt:'2026-10-10T14:00:00-06:00',linked:true});
+const reply=(items,total=items.length,nextOffset=null)=>({status:200,ok:true,json:async()=>({ok:true,registrations:{items,total,nextOffset}})});
+
+test('closing/changing scope ignores a late JSON body even after headers arrived',{timeout:2000},async()=>{
+  let resolveBody, notifyBody, calls=0, firstSignal;
+  const bodyStarted=new Promise(resolve=>{notifyBody=resolve;});
+  const body=new Promise(resolve=>{resolveBody=resolve;});
+  const h=registrationController(async(url,options)=>{
+    if(++calls===1){firstSignal=options.signal;return {status:200,ok:true,json(){notifyBody();return body;}};}
+    return reply([row('Nuevo periodo')]);
+  });
+  const first=h.api.open('7'); await bodyStarted;
+  await h.api.open('30'); assert.equal(firstSignal.aborted,true);
+  resolveBody({ok:true,registrations:{items:[row('Respuesta antigua')],total:1,nextOffset:null}}); await first;
+  assert.equal(h.api.state().items[0].tag,'Nuevo periodo');
+  assert.match(h.panel.innerHTML,/Nuevo periodo/); assert.doesNotMatch(h.panel.innerHTML,/Respuesta antigua/);
+});
+test('loading-more errors preserve total/rows and retry the same bounded offset',async()=>{
+  const urls=[]; let calls=0;
+  const h=registrationController(async url=>{urls.push(url);calls++;
+    if(calls===1)return reply(Array.from({length:50},(_,i)=>row(i===0?'<Jugador QA>':`Fila ${i}`)),55,50);
+    if(calls===2)return {status:503,ok:false,json:async()=>({ok:false})};
+    return reply(Array.from({length:5},(_,i)=>row(`Segundo lote ${i}`)),55,null);
+  });
+  await h.api.open('all'); await h.api.more();
+  assert.equal(h.api.state().items.length,50); assert.equal(h.api.state().total,55); assert.equal(h.api.state().next,50);
+  assert.match(h.panel.innerHTML,/55 cuentas/); assert.match(h.panel.innerHTML,/Reintentar/); assert.match(h.panel.innerHTML,/&lt;Jugador QA&gt;/);
+  await h.api.more(); assert.equal(h.api.state().items.length,55); assert.equal(h.api.state().next,null);
+  for(const url of urls.slice(1)) {const q=new URL(url,'https://test.invalid').searchParams;assert.equal(q.get('offset'),'50');assert.equal(q.get('snapshot'),'opaque-report-token');}
+});
+test('access loss clears rows; expired report offers to refresh instead of looping',async()=>{
+  for(const status of [401,403]) {
+    const h=registrationController(async()=>({status})); await h.api.open('all');
+    assert.equal(h.reloads(),1); assert.equal(h.api.state().items.length,0); assert.equal(h.panel.hidden,true);
+  }
+  const h=registrationController(async()=>({status:400,ok:false,json:async()=>({ok:false,reason:'registration_snapshot_expired'})}));
+  await h.api.open('all'); assert.match(h.panel.innerHTML,/Actualizar datos/); assert.doesNotMatch(h.panel.innerHTML,/data-registration-retry/);
+});

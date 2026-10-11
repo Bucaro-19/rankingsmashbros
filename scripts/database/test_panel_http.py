@@ -46,7 +46,12 @@ class PanelHttpTests(unittest.TestCase):
         (cls.private/'config.local.php').write_text('<?php return json_decode('+json.dumps(json.dumps(config))+', true);')
         (cls.site/'fixture-login.php').write_text('''<?php
         require __DIR__.'/database.php'; require __DIR__.'/accounts.php';
-        smash_account_session_start(); $pdo=smash_account_connect(__DIR__);
+        smash_account_session_start();
+        if (isset($_GET['expire-snapshots'])) {
+            foreach ($_SESSION['smash_registration_snapshots'] as &$s) $s['at']=time()-1801;
+            echo 'ok'; exit;
+        }
+        $pdo=smash_account_connect(__DIR__);
         $admin=isset($_GET['admin']);
         $id=smash_account_login($pdo,['startggId'=>$admin?'8999401':'8999402','playerId'=>null,'tag'=>$admin?'Dueña QA':'Jugador QA','url'=>null],time());
         $pdo->exec("INSERT IGNORE INTO user_roles (user_id, role) VALUES ($id, 'player'), ($id, 'organizer')");
@@ -98,7 +103,7 @@ class PanelHttpTests(unittest.TestCase):
         self.assertEqual(status, 401); self.assert_private(headers); self.assert_reveals_nothing(body)
         self.assertIn('Tu sesión', body); self.assertIn('action="./oauth.php"', body); self.assertIn('name="csrf"', body)
         self.assertIn('<title>Ranking Smash Bros</title>', body); self.assertIn('name="robots" content="noindex', body)
-        status, headers, body = self.get('/panel-api.php')
+        status, headers, body = self.get('/panel-api.php?registrations=all')
         self.assertEqual((status, json.loads(body)), (401, {'ok': False, 'reason': 'login_required'})); self.assert_private(headers)
 
     def test_other_accounts_get_no_access_and_no_hint(self):
@@ -106,7 +111,8 @@ class PanelHttpTests(unittest.TestCase):
         status, headers, body = self.get('/panel.php')
         self.assertEqual(status, 403); self.assert_private(headers); self.assert_reveals_nothing(body)
         self.assertIn('Sin acceso.', body); self.assertNotIn('Cerrar sesión', body); self.assertNotIn('opiniones', body)
-        status, _, body = self.get('/panel-api.php')
+        status, headers, body = self.get('/panel-api.php?registrations=all')
+        self.assert_private(headers)
         self.assertEqual((status, json.loads(body)), (403, {'ok': False, 'reason': 'forbidden'}))
         account = json.loads(self.get('/account-api.php')[2])
         self.assertTrue(account['authenticated']); self.assertNotIn('panel', account)
@@ -127,6 +133,59 @@ class PanelHttpTests(unittest.TestCase):
         # Only the owner's account is told to show the link to the panel.
         self.assertIs(json.loads(self.get('/account-api.php')[2])['panel'], True)
 
+    def test_registration_drilldown_privacy_pagination_and_counts(self):
+        self.get('/fixture-login.php?admin=1')
+        # All rows are fabricated; 55 equal datetimes also exercise the internal ID tie-break.
+        with self.db.cursor() as q:
+            q.execute("DELETE FROM users WHERE startgg_user_id BETWEEN 8999450 AND 8999510")
+            q.execute("INSERT INTO players (id,tag) VALUES (8999450,%s),(8999451,%s)", ('Jugador <QA>', 'Desvinculado QA'))
+            for n in range(55):
+                q.execute("INSERT INTO users (startgg_user_id,player_id,display_name,created_at) VALUES (%s,%s,'PRIVATE DISPLAY NAME','2026-10-09 12:00:00')", (8999450+n, 8999450+n if n < 2 else None))
+                if n < 2:
+                    q.execute("INSERT INTO oauth_connections (user_id,scopes,revoked_at) VALUES (%s,'user.identity',%s)", (q.lastrowid, None if n == 0 else '2026-10-09 13:00:00'))
+            q.execute("INSERT INTO site_visitor_days (day,visitor_hash,views) VALUES ('2026-10-01',%s,1) ON DUPLICATE KEY UPDATE views=1", ('e'*64,))
+        try:
+            path='/panel-api.php?registrations=7&day=2026-10-10'
+            status, headers, body=self.get(path)
+            self.assertEqual(status, 200); self.assert_private(headers)
+            data=json.loads(body)['registrations']
+            self.assertEqual(data['total'], 55); self.assertEqual(len(data['items']), 50); self.assertEqual(data['nextOffset'], 50)
+            second=json.loads(self.get(path+'&offset=50')[2])['registrations']
+            self.assertEqual(second['total'], 55); self.assertEqual(len(second['items']), 5); self.assertIsNone(second['nextOffset'])
+            rows=data['items']+second['items']
+            self.assertEqual(rows[-1]['tag'], 'Jugador <QA>'); self.assertTrue(rows[-1]['linked'])
+            self.assertEqual(rows[-2]['tag'], 'Desvinculado QA'); self.assertFalse(rows[-2]['linked'])
+            self.assertEqual(rows[0]['tag'], 'Cuenta sin jugador vinculado')
+            for row in rows:
+                self.assertEqual(set(row), {'tag','registeredAt','linked'})
+                self.assertEqual(row['registeredAt'], '2026-10-09T06:00:00-06:00')
+            for private in ('8999450', 'PRIVATE DISPLAY NAME', 'startgg', 'email', 'payment', 'session', 'user_id'):
+                self.assertNotIn(private, body)
+            report=json.loads(self.get('/panel-api.php')[2])['report']
+            all_accounts=json.loads(self.get('/panel-api.php?registrations=all')[2])['registrations']
+            self.assertEqual(all_accounts['total'], report['accounts']['total'])
+            # A new registration after opening the report must not shift its totals/pages.
+            snapshot=json.loads(self.get('/panel-api.php')[2])['registrationSnapshot']
+            with self.db.cursor() as q:
+                q.execute("INSERT INTO users (startgg_user_id,created_at) VALUES (8999509,UTC_TIMESTAMP(6))")
+            stable=json.loads(self.get('/panel-api.php?registrations=all&snapshot='+snapshot)[2])['registrations']
+            self.assertEqual(stable['total'], report['accounts']['total'])
+            current=json.loads(self.get('/panel-api.php?registrations=all')[2])['registrations']
+            self.assertEqual(current['total'], stable['total']+1)
+            self.assertEqual(self.get('/panel-api.php?registrations=all&snapshot=forged')[0],400)
+            self.get('/fixture-login.php?expire-snapshots=1')
+            self.assertEqual(json.loads(self.get('/panel-api.php?registrations=all&snapshot='+snapshot)[2])['reason'], 'registration_snapshot_expired')
+
+            empty=json.loads(self.get('/panel-api.php?registrations=today&day=2026-01-02')[2])['registrations']
+            self.assertEqual(empty, {'total':0,'items':[],'nextOffset':None})
+            for query in ('registrations=unknown','registrations=all&offset=-1','registrations=all&offset=10000001','registrations=all&day=2026-02-30','registrations=all&day=2026-10-10%00','registrations[]=all','registrations=all&day=9999-01-01','registrations=all&offset[]=0'):
+                self.assertEqual(self.get('/panel-api.php?'+query)[0],400,query)
+        finally:
+            with self.db.cursor() as q:
+                q.execute("DELETE FROM users WHERE startgg_user_id BETWEEN 8999450 AND 8999510")
+                q.execute("DELETE FROM players WHERE id IN (8999450,8999451)")
+                q.execute("DELETE FROM site_visitor_days WHERE visitor_hash=%s", ('e'*64,))
+
     def test_remembered_owner_resumes_and_loses_access_when_the_role_is_removed(self):
         self.get('/fixture-login.php?admin=1&remember=1')
         session = next(c for c in self.cookies if c.name != 'smash_recordar')
@@ -134,10 +193,10 @@ class PanelHttpTests(unittest.TestCase):
         self.assertEqual(self.get('/panel.php')[0], 200); self.assertEqual(self.get('/panel-api.php')[0], 200)
         with self.db.cursor() as q:
             q.execute("DELETE r FROM user_roles r JOIN users u ON u.id=r.user_id WHERE u.startgg_user_id=8999401 AND r.role='admin'")
-        self.assertEqual(self.get('/panel-api.php')[0], 403); self.assertEqual(self.get('/panel.php')[0], 403)
+        self.assertEqual(self.get('/panel-api.php?registrations=all')[0], 403); self.assertEqual(self.get('/panel.php')[0], 403)
         with self.db.cursor() as q:
             q.execute("UPDATE oauth_connections o JOIN users u ON u.id=o.user_id SET o.revoked_at=UTC_TIMESTAMP(6) WHERE u.startgg_user_id=8999401")
-        self.assertEqual(self.get('/panel-api.php')[0], 401); self.assertEqual(self.get('/panel.php')[0], 401)
+        self.assertEqual(self.get('/panel-api.php?registrations=all')[0], 401); self.assertEqual(self.get('/panel.php')[0], 401)
 
 
     def enter(self, csrf=None, method='POST'):
