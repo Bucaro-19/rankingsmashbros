@@ -118,4 +118,4 @@ section{display:flex;flex-direction:column;gap:12px}
 .registration-list .outline{align-self:flex-start}
 .value-list>li:has(.registration-list){align-items:flex-start}
 @media(max-width:600px){.panel-header{flex-wrap:wrap}.panel-header>div{flex-wrap:wrap}.registration-list .premium-list li{flex-direction:column}}
-.card.today .registration-list{padding:14px;background:var(--panel);color:var(--text)}
+.registration-list{padding:16px;background:var(--panel);color:var(--text)}

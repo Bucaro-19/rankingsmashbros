@@ -148,7 +148,10 @@
       trigger.setAttribute('aria-expanded','true');
       const panel=$('registration-list');
       const host=trigger.closest('.card, .reading, li');
-      (host||trigger.parentElement).append(panel); panel.hidden=false;
+      if(host?.classList.contains('card'))host.parentElement.insertAdjacentElement('afterend',panel);
+      else if(host?.classList.contains('reading'))host.insertAdjacentElement('afterend',panel);
+      else (host||trigger.parentElement).append(panel);
+      panel.hidden=false;
       fetchRegistrations(); panel.querySelector('h3')?.focus();
     } else if(event.target.closest('[data-registration-close]'))closeRegistrations();
     else if(event.target.closest('[data-registration-refresh]')){closeRegistrations(false);load();}
