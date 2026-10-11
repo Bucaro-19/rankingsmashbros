@@ -63,3 +63,5 @@ Contrato privado de `panel-api.php`:
 - Solo SELECT en este módulo; sin migraciones, escrituras del contador/cuentas, consultas a start.gg ni listas en localStorage/caché compartida. La reanudación de sesión mantiene su comportamiento previo.
 
 Pruebas con filas inventadas: paridad cifra/lista en todos los periodos, días y semanas, medianoche GT 05:59:59/06:00 UTC, sin jugador, conexión revocada, vacío, 50+5, empate por fecha, proyección cerrada, parámetros inválidos, snapshot falsificado/vencido, y nueva cuenta posterior al reporte que no entra en su lista. Revisión local real PHP/SQL a 375 y 1280 px, lista completa/semanal/vacía, paginación, error/reintento y teclado.
+
+El controlador real tiene pruebas Node de respuestas tardías (incluido el cuerpo JSON tras recibir cabeceras), cambio/cierre de periodo, error al cargar más con conservación de 50 filas/total y reintento del offset 50, escape de tags, 401/403 y reporte vencido.

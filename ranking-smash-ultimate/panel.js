@@ -119,6 +119,7 @@
       if(version!==registrationVersion)return;
       if(response.status===401||response.status===403){closeRegistrations(false);report=null;location.reload();return;}
       const json=await response.json();
+      if(version!==registrationVersion)return;
       if(!response.ok||json.ok!==true)throw new Error(json.reason==='registration_snapshot_expired'?'expired':'unavailable');
       registrationData=more?registrationData.concat(json.registrations.items):json.registrations.items;
       registrationNext=json.registrations.nextOffset; registrationTotal=json.registrations.total;
