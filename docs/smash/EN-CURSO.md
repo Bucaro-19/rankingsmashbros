@@ -1,5 +1,9 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Pagos de premium reabiertos (13/oct)
+
+Recurrente confirmó al dueño que la cuenta vuelve a aceptar tarjetas. Por su orden, `pagos-en-pausa.txt` pasa a `0`: la pestaña Premium vuelve a mostrar el botón de pagar. Para pausar otra vez: poner `1` y desplegar. Falta comprobar un cobro real con tarjeta después de la reapertura.
+
 ## Codex — lista privada de cuentas registradas (10/oct)
 
 Encargo del dueño: solo el panel existente, PR y pruebas, **sin fusionar/desplegar ni escribir producción**. Rama `feat/owner-registration-lists` desde main remoto **e022f7f** (#97 ya fusionada por el dueño), origen Bucaro-19/rankingsmashbros; tracked limpio. `laminas/`, `marca-rsb/` y `social/` ajenos conservados. Actions iniciales: CI main **38074539695** y publicación **38074541070**, correctas. Leídos AGENTS, CONTEXTO, EN-CURSO, MIGRACION, BASE-DE-DATOS y SIGUIENTE-FASE; se reutilizan componentes existentes del panel por petición expresa, sin pantalla nueva/handoff.
