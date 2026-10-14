@@ -329,7 +329,7 @@ class HostingSQLTests(unittest.TestCase):
     def test_real_http_authentication_queue_deduplication_and_worker(self):
         site, private = self.folder / 'site', self.folder / 'private-smash'
         site.mkdir(); private.mkdir(); (site / 'data').mkdir()
-        for filename in ('database.php', 'ranking-import.php', 'ranking-sync-lib.php', 'ranking-sync.php', 'characters.js'):
+        for filename in ('database.php', 'ranking-import.php', 'rival-import.php', 'rival-sync-lib.php', 'ranking-sync-lib.php', 'ranking-sync.php', 'characters.js'):
             shutil.copy(ROOT / 'ranking-smash-ultimate' / filename, site)
         key = '1' * 64
         (private / 'sync.local.php').write_text("<?php return ['enabled'=>true,'key'=>'" + key + "'];")

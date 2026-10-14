@@ -66,6 +66,12 @@ Options -Indexes
 <Files "ranking-import.php">
   Require all denied
 </Files>
+<Files "rival-import.php">
+  Require all denied
+</Files>
+<Files "rival-sync-lib.php">
+  Require all denied
+</Files>
 <Files "ranking-sync-lib.php">
   Require all denied
 </Files>

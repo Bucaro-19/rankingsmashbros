@@ -12,10 +12,16 @@ try {
     $body = file_get_contents('php://input', false, null, 0, SR_COMPRESSED_MAX + 1); sr_require(strlen($body) <= SR_COMPRESSED_MAX, 'payload_invalid');
     $auth = sr_auth($config, $_SERVER, $body, time()); sr_nonce($config, $auth, time());
     $type = strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
-    sr_require(in_array($type, ['application/gzip', 'application/json'], true), 'content_type_invalid');
+    sr_require(in_array($type, ['application/gzip', 'application/json', 'application/vnd.smash.analysis+gzip'], true), 'content_type_invalid');
     $db = smash_database_connect(smash_database_config(__DIR__));
+    if ($type === 'application/vnd.smash.analysis+gzip') sr_response(200,rc_receive($db,$config,$body,$auth['hash'],time()));
     if ($type === 'application/gzip') sr_response(202, ['ok' => true] + sr_receive($db, $config, $body, $auth['hash']));
     sr_require(strlen($body) <= 1024, 'payload_invalid'); $request = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
+    if (($request['operation'] ?? null) === 'analysis_status') {
+        rc_keys($request,['operation','eventId','sha256']);rc_policy(sr_id($request['eventId']),time());rc_ready($db);
+        sr_require(is_string($request['sha256']) && preg_match('/^[a-f0-9]{64}$/D',$request['sha256']),'payload_invalid');
+        $job=rc_job($db,$request['sha256']);sr_response($job===null?404:200,$job===null?['ok'=>false,'reason'=>'job_not_found']:['ok'=>true]+$job);
+    }
     if (($request['operation'] ?? null) === 'diagnostic') {
         $last = $db->query("SELECT status,error_code FROM sync_jobs WHERE kind='ranking_import' ORDER BY id DESC LIMIT 1")->fetch();
         sr_response(200, ['ok' => true, 'phpVersion' => PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION, 'memoryLimit' => ini_get('memory_limit'),

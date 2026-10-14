@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/ranking-import.php';
+require_once __DIR__.'/rival-sync-lib.php';
 
 const SR_SYNC_PATH = '/ranking-sync.php';
 const SR_COMPRESSED_MAX = 4 * 1024 * 1024;
@@ -69,8 +70,8 @@ function sr_process(PDO $db, string $root, array $config): array {
     $lock = 'smash-ranking-worker-v1'; sr_require((int)sr_query($db, 'SELECT GET_LOCK(?,0)', [$lock])[0][0] === 1, 'worker_busy');
     try {
         // Holding the worker lock proves that no other live worker owns a running job.
-        $db->exec("UPDATE sync_jobs SET status='queued',error_code='worker_interrupted' WHERE kind='ranking_import' AND status='running'");
-        $s = $db->query("SELECT id,deduplication_key,requests_count FROM sync_jobs WHERE kind='ranking_import' AND status='queued' AND (next_attempt_at IS NULL OR next_attempt_at <= UTC_TIMESTAMP(6)) ORDER BY id LIMIT 1");
+        $db->exec("UPDATE sync_jobs SET status='queued',error_code='worker_interrupted' WHERE kind IN ('ranking_import','player_history') AND status='running'");
+        $s = $db->query("SELECT id,kind,deduplication_key,requests_count FROM sync_jobs WHERE kind IN ('ranking_import','player_history') AND status='queued' AND (next_attempt_at IS NULL OR next_attempt_at <= UTC_TIMESTAMP(6)) ORDER BY id LIMIT 1");
         $job = $s->fetch(); if ($job === false) return ['ok' => true, 'status' => 'idle'];
         $id = (int)$job['id']; $hash = $job['deduplication_key']; sr_require(preg_match('/\A[a-f0-9]{64}\z/D', $hash) === 1, 'job_invalid');
         $q = $db->prepare("UPDATE sync_jobs SET status='running',started_at=UTC_TIMESTAMP(6),requests_count=requests_count+1,error_code=NULL WHERE id=?"); $q->execute([$id]);
@@ -79,6 +80,12 @@ function sr_process(PDO $db, string $root, array $config): array {
             sr_require(is_file($path) && !is_link($path) && filesize($path) <= SR_COMPRESSED_MAX, 'package_missing');
             $body = file_get_contents($path); sr_require(hash_equals($hash, hash('sha256', $body)), 'transport_hash_invalid');
             $raw = gzdecode($body, 32 * 1024 * 1024 + 1); sr_require(is_string($raw) && strlen($raw) <= 32 * 1024 * 1024, 'package_invalid');
+            if($job['kind']==='player_history') {
+                unset($raw);
+                $report=rc_process($db,$config,$body,$hash,time());
+                $q=$db->prepare("UPDATE sync_jobs SET status='succeeded',finished_at=UTC_TIMESTAMP(6),next_attempt_at=NULL,error_code=NULL WHERE id=?");$q->execute([$id]);
+                unlink($path);return ['ok'=>true,'jobId'=>$id]+$report;
+            }
             $package = sr_package($raw); unset($raw, $body);
             $liveFile = $root . '/data/public.json'; sr_require(is_file($liveFile) && filesize($liveFile) <= 32 * 1024 * 1024, 'public_unavailable');
             $live = json_decode(file_get_contents($liveFile), false, 512, JSON_THROW_ON_ERROR);
@@ -90,7 +97,7 @@ function sr_process(PDO $db, string $root, array $config): array {
         } catch (Throwable $e) {
             if ($db->inTransaction()) $db->rollBack();
             $reason = $e instanceof SmashRankingError ? $e->reason : 'import_failed';
-            $retry = in_array($reason, ['import_busy', 'not_the_published_cut', 'public_unavailable'], true) && (int)$job['requests_count'] < 11;
+            $retry = (in_array($reason, ['import_busy', 'not_the_published_cut', 'public_unavailable'], true) || ($job['kind']==='player_history' && $reason==='inbox_unavailable')) && (int)$job['requests_count'] < 11;
             $q = $db->prepare('UPDATE sync_jobs SET status=?,finished_at=UTC_TIMESTAMP(6),next_attempt_at=DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 5 MINUTE),error_code=? WHERE id=?');
             $q->execute([$retry ? 'queued' : 'failed', $reason, $id]);
             return ['ok' => false, 'jobId' => $id, 'reason' => $reason, 'retry' => $retry];
