@@ -24,9 +24,15 @@ jobs:
           import os,json,time
           from collect import Client
           from organizer_small import BudgetClient
-          c=Client(os.environ['STARTGG_TOKEN']);b=BudgetClient(c)
-          s=b.query('''query{tournament:__type(name:"Tournament"){fields{name args{name type{kind name ofType{kind name}}}}} participant:__type(name:"Participant"){fields{name type{kind name ofType{kind name}}}} filters:__type(name:"SetFilters"){inputFields{name type{kind name ofType{kind name}}}}}''',{})
-          open('/tmp/result.json','w').write(json.dumps({'schema':s,'requests':c.calls}));print(json.dumps({'requests':c.calls,'schemaRead':True}))
+          c=Client(os.environ['STARTGG_TOKEN']);b=BudgetClient(c);start=time.monotonic();rows=[]
+          for page in range(1,9):
+           r=b.query('''query($page:Int!){tournament(slug:"legends7"){participants(query:{page:$page,perPage:50}){pageInfo{total totalPages}nodes{events{id}player{id gamerTag user{slug location{country}}}}}}}''',{'page':page})['tournament']['participants']
+           rows.extend(r['nodes'])
+           if page>=r['pageInfo']['totalPages']:break
+          if len(rows)!=r['pageInfo']['total']:raise RuntimeError('Incomplete participants')
+          selected=[x for x in rows if any(str(e['id'])=='1687524' for e in x['events'])]
+          open('/tmp/result.json','w').write(json.dumps({'participants':selected,'totalParticipants':len(rows),'eventParticipants':len(selected),'requests':c.calls,'seconds':round(time.monotonic()-start,3)}))
+          print(json.dumps({'participants':len(rows),'singlesRegistrants':len(selected),'requests':c.calls,'seconds':round(time.monotonic()-start,3)}))
           PY
       - name: Encrypt to local owner key
         run: |
