@@ -1,6 +1,6 @@
 # Legends 7: contexto de análisis, no ranking
 
-**Estado vigente 14/oct (orden posterior del dueño):** #102 fusionado/desplegado, altas de entidades aprobadas y constante en true; 007 aplicada según el dueño. El bloqueo de alcance mencionado abajo es histórico y queda resuelto. Incidente de lista oculta, sondas, corrección y activación: ver el primer bloque de EN-CURSO.md. No repetir migración ni pedir nuevamente autorización.
+**Estado vigente 14/oct (orden posterior del dueño):** #102 fusionado/desplegado, altas de entidades aprobadas y constante en true; 007 aplicada según el dueño. El bloqueo de alcance mencionado abajo es histórico y queda resuelto. Corrección #103 fusionada y desplegada: cron habilitado y run 38606150069 verde con registrations_unavailable, una consulta y cero agregados. Evidencia completa en el primer bloque de EN-CURSO.md. No repetir migración ni pedir nuevamente autorización.
 
 **Actualización 14/oct:** PR #100 fusionado y desplegado según el dueño. La sección siguiente describe la automatización nueva, todavía sin fusionar, activar ni desplegar. La comprobación de lista/esquema del 13/oct debajo es histórica; no se repitió contra producción en esta entrega.
 

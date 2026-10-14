@@ -88,7 +88,9 @@ jobs:
         image: ['mariadb:10.11', 'mysql:8.0']
     services:
       database:
-        image: public.ecr.aws/docker/library/${{ matrix.image }}
+        # Public Docker Official Images cache: ECR also hit its anonymous data limit.
+        # https://docs.cloud.google.com/artifact-registry/docs/pull-cached-dockerhub-images
+        image: mirror.gcr.io/library/${{ matrix.image }}
         env:
           MYSQL_ROOT_PASSWORD: disposable-test-only
           MYSQL_ROOT_HOST: '%'
