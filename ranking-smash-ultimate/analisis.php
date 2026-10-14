@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/frame-facts.php';
 // Library only. No I/O on inclusion. All analysis queries are SELECTs; no provider calls.
 const SMASH_ANALISIS_GAME_ROWS = 50000;
 final class SmashAnalisisError extends RuntimeException {
@@ -231,7 +232,7 @@ function smash_analisis_game_rows(array $games, array $catalog): array {
     }
     return $rows;
 }
-function smash_analisis_deep(PDO $db, array $public, array $view, array $data, array $catalog, array $chars, string $me, string $rival, array $chosen, ?string $main): array {
+function smash_analisis_deep(PDO $db, array $public, array $view, array $data, array $catalog, array $chars, string $me, string $rival, array $chosen, ?string $main, bool $withFrames = true): array {
     $rows = smash_analisis_game_rows($data['games'], $catalog);
     $add = static function (array &$table, string $key, bool $won): void { if (!isset($table[$key])) $table[$key] = [0, 0]; $table[$key][$won ? 0 : 1]++; };
     // Games of the rival against each character, his main against each character, and the whole scene against his main.
@@ -345,8 +346,8 @@ function smash_analisis_deep(PDO $db, array $public, array $view, array $data, a
         'vsChars' => ['hard' => $list($vs, true), 'good' => $list($vs, false)], 'counters' => $counters, 'avoid' => $avoid,
         'setPattern' => $scored > 0 ? $pattern : null, 'common' => $common, 'commonTotal' => $commonTotal,
         'byTier' => array_sum(array_map('array_sum', $tiers)) > 0 ? $tiers : null,
-        // No reviewed guide and no licensed frame data yet: the screen shows their empty states.
-        'toolkit' => null, 'punishable' => null];
+        // Numeric game facts only; independent of ranking and its confidence model.
+        ] + smash_frame_facts($chosen,$main,$withFrames);
 }
 // What a free account sees of «Prepara el set»: ONE measured finding about the rival, in full, and how much
 // more is already calculated. Counts only: no record, counter or opponent of the paid sections leaves the server.
@@ -356,7 +357,7 @@ function smash_analisis_teaser(PDO $db, array $public, array $user, string $riva
         $catalog=smash_analisis_catalog($db); $data=smash_analisis_games($db,$public);
         $chars=smash_analisis_set_characters($data['games'],$public['results'] ?? [],$catalog);
         $main=smash_analisis_pool(smash_analisis_detection($public,$rival,$catalog)['detected'])[0] ?? null;
-        $deep=smash_analisis_deep($db,$public,$view,$data,$catalog,$chars,$me,$rival,[],$main);
+        $deep=smash_analisis_deep($db,$public,$view,$data,$catalog,$chars,$me,$rival,[],$main,false);
     } catch (Throwable $error) { return null; } // The teaser never breaks the free answer.
     return smash_analisis_teaser_from($deep,$main);
 }

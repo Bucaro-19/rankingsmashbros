@@ -39,6 +39,7 @@ jobs:
           node --check ranking-smash-ultimate/analisis-model.js
           node --check ranking-smash-ultimate/analisis.js
           node --check ranking-smash-ultimate/preparar.js
+          node --check ranking-smash-ultimate/frame-tools.js
           node --check ranking-smash-ultimate/torneos-model.js
           node --check ranking-smash-ultimate/tops.js
           node --check ranking-smash-ultimate/torneos.js
@@ -48,7 +49,7 @@ jobs:
           node --check ranking-smash-ultimate/cabecera.js
           node --check ranking-smash-ultimate/panel-model.js
           node --check ranking-smash-ultimate/panel.js
-          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_organizador.cjs scripts/smash/test_slide_progress.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_torneos.cjs scripts/smash/test_tops.cjs
+          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_organizador.cjs scripts/smash/test_slide_progress.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_frame_tools.cjs scripts/smash/test_torneos.cjs scripts/smash/test_tops.cjs
       - name: Verify native slide rendering and ZIP with invented data
         run: |
           npm install --prefix "$RUNNER_TEMP/smash-canvas" --no-save --package-lock=false @napi-rs/canvas@0.1.80

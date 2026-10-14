@@ -20,7 +20,7 @@ El prompt está en [BRIEF-CLAUDE-DESIGN-TOP15-ADENDA.md](BRIEF-CLAUDE-DESIGN-TOP
 
 1. **Reemplazar o retirar la clave del panel de opiniones.** Ya no la necesitas: entras con tu cuenta desde «Opiniones ↗». Pero la clave vieja sigue funcionando y quedó expuesta en un chat. Decirle a Claude Code si se retira ese acceso o se cambia por una clave nueva.
 2. **Suscribirse a premium con la propia cuenta** (pestaña Premium, plan de 3 USD): es la prueba pendiente de un pago real de punta a punta. Avisar a Claude Code para que confirme en la base que quedó activa.
-3. **Enviar el correo a Ultimate Frame Data** (ultimateframedata@gmail.com) pidiendo permiso para mostrar datos de frames con crédito. El texto está en la conversación del 8/oct; si hace falta, Claude Code lo vuelve a dar.
+3. **Ultimate Frame Data:** el dueño informa (13/oct) que ya pidió permiso por correo, sin respuesta. Avisar si contestan o solicitan retirar; retirada inmediata del servicio con SMASH_FRAME_FACTS_ENABLED=false y despliegue autorizado. No presentar el silencio como permiso obtenido. Ver FRAMES-ANALISIS.md.
 4. **Decidir si «Tu opinión» aparece en Google** (hoy está fuera del sitemap).
 
 ## 3. En la app de Claude (la Mac)
