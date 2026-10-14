@@ -56,8 +56,19 @@ jobs:
       - name: Verificar PHP en la versión del hosting y en la mínima admitida
         run: |
           # El servidor usa PHP 8.1; el código publicado debe seguir siendo válido desde 7.4.
-          docker run --rm -v "$PWD":/app -w /app public.ecr.aws/docker/library/php:7.4-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/import_survey.php; do php -l "$f" || exit 1; done'
-          docker run --rm -v "$PWD":/app -w /app public.ecr.aws/docker/library/php:8.1-cli sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$f" || exit 1; done'
+          # ECR also throttles anonymous pulls. One bounded fallback to Docker Official Images.
+          for version in 7.4 8.1; do
+            php_image="public.ecr.aws/docker/library/php:${version}-cli"
+            if ! docker pull "$php_image"; then
+              php_image="docker.io/library/php:${version}-cli"
+              docker pull "$php_image"
+            fi
+            if [ "$version" = 7.4 ]; then
+              docker run --rm -v "$PWD":/app -w /app "$php_image" sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/import_survey.php; do php -l "$f" || exit 1; done'
+            else
+              docker run --rm -v "$PWD":/app -w /app "$php_image" sh -c 'for f in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$f" || exit 1; done'
+            fi
+          done
       - name: Verificar contratos estáticos de la encuesta
         run: |
           php scripts/database/test_analisis.php
