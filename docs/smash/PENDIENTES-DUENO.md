@@ -46,6 +46,10 @@ Ya está programado en «Prepara el set» con componentes existentes: «Hallazgo
 
 Handoff final recibido en `design_handoff_rsb_tops/`. Implementación en PR propio, ver EN-CURSO.md. Ya no hace falta solicitar este diseño. Se conserva el contrato público: el diseño pide mains, total de tops y una vista ampliada completa que este endpoint no entrega; se omiten, sin añadir datos ni adivinar cifras.
 
-## Legends 7 (13/oct): lista y contexto de análisis
+## Legends 7 (14/oct): automatización preparada, aún no activa
 
-La lista pública de Ultimate Singles no está disponible en las dos rutas de la API; el dueño tampoco la ve. Avisar cuando sea pública. Revisar propuesta 007_analysis_context antes de autorizar su aplicación y una carga real; no se aplicó en producción. Herramienta y comandos: LEGENDS7-ANALISIS.md. Nada de este contexto admite jugadores al ranking nacional.
+PR #100 fusionado/desplegado según el dueño. Nueva automatización en rama propia, sin activar ni escribir producción; ver [AUTOMATIZACION-ANALISIS.md](AUTOMATIZACION-ANALISIS.md). Ya no es necesario avisar manualmente cuando aparezca la lista **una vez autorizada, integrada, desplegada y activada**.
+
+1. Aclaración pendiente enviada en el chat: la orden permite solo tablas de 007, pero `rival_context.py --apply` también inserta identidades/resultados ausentes en nueve tablas base referenciadas por 007. Confirmar expresamente ese alcance o mantener la restricción; el receptor queda cerrado con `RC_ENTITY_INSERTS_AUTHORIZED=false` hasta respuesta, no asumirla.
+2. Claude Code aplica 007 únicamente por orden del dueño. Esta tarea no comprobó su estado productivo ni la aplicó; el receptor lo verificará antes de importar.
+3. Con CI y revisión: ordenar fusión/despliegue y activación de SMASH_RIVAL_SYNC_ENABLED=true para evento 1687524. No se cambiaron esas variables. La autorización temporal vence al finalizar el 25/oct/2026 GT aunque quede habilitada la variable.

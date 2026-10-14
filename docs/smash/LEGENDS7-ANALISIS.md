@@ -1,4 +1,15 @@
-# Legends 7: contexto de análisis, no ranking (13/oct/2026)
+# Legends 7: contexto de análisis, no ranking
+
+**Actualización 14/oct:** PR #100 fusionado y desplegado según el dueño. La sección siguiente describe la automatización nueva, todavía sin fusionar, activar ni desplegar. La comprobación de lista/esquema del 13/oct debajo es histórica; no se repitió contra producción en esta entrega.
+
+## Automatización de inscritos (14/oct)
+
+Implementación y operación en [AUTOMATIZACION-ANALISIS.md](AUTOMATIZACION-ANALISIS.md). Consulta cada seis horas, una sola petición si la lista sigue oculta, captura acotada de inscritos ausentes y reanudación privada en BanaHosting. Mismo receptor firmado/cola/cron; sin acceso MySQL desde Actions, capturas públicas ni cambios del ranking. Un inscrito nuevo se incorpora en la siguiente ejecución.
+
+**La autorización del dueño dice «solo en las tablas de 007», pero `rival_context.py --apply` también inserta las identidades/resultados ausentes en nueve tablas base referenciadas por 007.** Se solicitó aclaración en este chat; no se recibió respuesta al documentar. El receptor queda cerrado con `RC_ENTITY_INSERTS_AUTHORIZED=false` hasta confirmación explícita. No convertir ese interruptor en true por interpretación ni activar el workflow mientras falte. La migración 007 la aplica Claude Code únicamente por orden del dueño; esta entrega no comprueba ni altera la base productiva.
+
+La autorización temporal termina al finalizar el 25/oct/2026 GT (26/oct 06:00 UTC); tanto el capturador como el receptor/worker la hacen cumplir. La orden actual permite entregar el PR, **no fusionarlo, desplegarlo ni activar el cron en main**.
+
 
 ## Comprobación real
 

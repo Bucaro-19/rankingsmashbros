@@ -176,7 +176,7 @@ class OrganizerSQL(unittest.TestCase):
         import shutil,socket,subprocess,urllib.request,secrets
         import publish_sql as sender
         site=self.folder/'site';private=self.folder/'private-smash';site.mkdir();private.mkdir();(site/'data').mkdir()
-        for name in ('database.php','ranking-import.php','ranking-sync-lib.php','ranking-sync.php','characters.js'):
+        for name in ('database.php','ranking-import.php','rival-import.php','rival-sync-lib.php','ranking-sync-lib.php','ranking-sync.php','characters.js'):
             shutil.copy(fixtures.ROOT/'ranking-smash-ultimate'/name,site)
         key='1'*64
         (private/'sync.local.php').write_text("<?php return ['enabled'=>true,'key'=>'"+key+"'];")

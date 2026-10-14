@@ -27,6 +27,11 @@ class SyncStopped(Exception):
 
 def transport(package):
     validate_package(package)
+    return encode_transport(package)
+
+
+def encode_transport(package):
+    """Shared integer-only, bounded canonical HTTPS envelope; not a ranking validator."""
     def check(value):
         if isinstance(value, float) or (type(value) is int and not -9223372036854775808 <= value <= 9223372036854775807):
             raise SyncStopped('transport_type_unsupported')
@@ -54,7 +59,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def request(key, body, content_type):
+def request(key, body, content_type, *, response_limit=8192, safe_reasons=()):
     at, nonce = str(int(time.time())), secrets.token_hex(16)
     req = urllib.request.Request(URL, data=body, method='POST', headers={
         'Content-Type': content_type, 'X-Smash-Timestamp': at, 'X-Smash-Nonce': nonce,
@@ -62,11 +67,21 @@ def request(key, body, content_type):
     try:
         with urllib.request.build_opener(NoRedirect()).open(req, timeout=45) as r:
             if r.geturl() != URL: raise SyncStopped('receiver_unavailable')
-            value = json.loads(r.read(8193))
+            raw = r.read(response_limit+1)
+            if len(raw)>response_limit: raise SyncStopped('receiver_response_too_large')
+            value = json.loads(raw)
         if not isinstance(value, dict) or value.get('ok') is not True: raise SyncStopped('receiver_rejected')
         return value
     except SyncStopped:
         raise
+    except urllib.error.HTTPError as error:
+        # Opt-in, exact allowlist only. Never print arbitrary server/driver responses.
+        try:
+            raw=error.read(8193)
+            reason=json.loads(raw).get('reason') if len(raw)<=8192 else None
+        except Exception:
+            reason=None
+        raise SyncStopped(reason if reason in safe_reasons else 'receiver_unavailable') from None
     except Exception:
         # Never expose urllib messages, authenticated headers, body or driver output.
         raise SyncStopped('receiver_unavailable') from None
