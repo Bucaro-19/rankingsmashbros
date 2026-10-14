@@ -42,6 +42,12 @@ Options -Indexes
 <Files "analysis-context.php">
   Require all denied
 </Files>
+<Files "frame-facts.php">
+  Require all denied
+</Files>
+<Files "frame-facts-v1.json">
+  Require all denied
+</Files>
 <Files "analisis.php">
   Require all denied
 </Files>

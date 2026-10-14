@@ -26,7 +26,7 @@
   const head=(n,kicker,title,lead)=>`<header class="pr-head"><p class="pr-kicker">${n} · ${kicker}</p><h2>${title}</h2>${lead?`<p>${lead}</p>`:''}</header>`;
   const empty=text=>`<p class="pr-empty"><span aria-hidden="true">—</span> ${text}</p>`;
   const small=(strong,text)=>`<p class="pr-small" role="note"><span aria-hidden="true">≈</span><span><strong>${strong}</strong> ${text}</span></p>`;
-  const noChars=()=>{const r=data.deep.rival;return `start.gg no registró personajes en los sets de ${escape(data.rival.tag)} (${r.coveredSets} de ${r.totalSets}), así que no podemos saber contra qué personajes le va mejor o peor.`;};
+  const noChars=()=>{const r=data.deep.rival;return r.coveredSets>0?`No hay main detectado de ${escape(data.rival.tag)} para esta comparación. Hay personajes registrados en ${r.coveredSets} de ${r.totalSets} sets; no los usamos para adivinar su main.`:`Sin personaje verificable en los sets conocidos de ${escape(data.rival.tag)} (${r.coveredSets} de ${r.totalSets}). No podemos recomendar personajes contra su main.`;};
   const CONF={alta:['●●●','hi'],media:['●●○','mid'],baja:['●○○','low']};
 
   function card(c,good,main) {
@@ -53,10 +53,11 @@
   function toolkit() {
     const d=data.deep, chosen=data.me.chosen||[], M=d.rival.main?name(d.rival.main):'main';
     const glossary=`<details class="pr-fold"><summary>Glosario: frame, fuera del escudo, ventaja</summary><dl><dt>Frame:</dt><dd>la unidad de tiempo del juego; hay 60 por segundo, así que «frame 3» pega a los 3/60 de segundo.</dd><dt>Fuera del escudo:</dt><dd>lo que puedes sacar justo después de bloquear; el frame ya incluye saltar o soltar el escudo.</dd><dt>Ventaja en escudo:</dt><dd>«−12 en escudo» significa que, tras chocar con tu escudo, el rival queda 12 frames sin poder actuar.</dd></dl></details>`;
-    const sheets=chosen.length?chosen.map(slug=>`<article class="pr-sheet"><div class="pr-sheet-head"><span class="pr-icon">${icon(slug)}</span><h3>${escape(name(slug))} <small>contra su ${escape(M)}</small></h3></div>${empty(`Aún no hay ficha técnica de ${escape(name(slug))}. Sus resultados en las otras secciones siguen valiendo.`)}</article>`).join('')
+    const sheets=chosen.length?chosen.map(slug=>`<article class="pr-sheet"><div class="pr-sheet-head"><span class="pr-icon">${icon(slug)}</span><h3>${escape(name(slug))} <small>${d.rival.main?`contra su ${escape(M)}`:'sin main detectado del rival'}</small></h3></div>${SmashFrameTools.sheet({title:name(slug),main:d.rival.main,mainName:M,facts:d.toolkit?.[slug],moves:d.rival.main?d.punishable?.[d.rival.main]:null})}</article>`).join('')
       :empty('Elige tus personajes en <a href="./cuenta.html">tu cuenta</a> para ver aquí su ficha técnica.');
-    return `<section id="herramientas" class="pr-section">${head(3,'Ficha técnica','Tus herramientas contra él',`Por cada uno de tus personajes elegidos: lo más rápido que tienes, qué sacar desde el escudo y qué golpes de su ${escape(M)} puedes castigar.`)}${glossary}${sheets}</section>`;
+    return `<section id="herramientas" class="pr-section">${head(3,'Ficha técnica','Tus herramientas contra él',`Por cada uno de tus personajes elegidos: lo más rápido que tienes, qué sacar desde el escudo y qué golpes de su ${escape(M)} puedes castigar.`)}${glossary}${sheets}${data.deep.frameDataSource?'<p class="pr-note">Comparación de tiempos desde el escudo, a 60 fps. Que entre por frames no garantiza el golpe: también importan distancia, posición, invulnerabilidad y ejecución. Solo valores inequívocos; variantes y fichas compuestas se omiten.</p>':''}${SmashFrameTools.credit(d.frameDataSource)}</section>`;
   }
+
   function vsChars() {
     const d=data.deep, r=d.rival, rv=escape(data.rival.tag);
     const rows=list=>list.map(x=>{const n=x.won+x.lost, few=n<5;return `<li><span class="pr-icon">${icon(x.slug)}</span><span class="pr-row-main"><b>${escape(name(x.slug))}</b><span class="pr-meter" aria-hidden="true"><span style="width:${Math.round(100*x.won/n)}%"></span></span><small class="${few?'few':''}">${few?`≈ ${plural(n,'game','games')} · menos de 5`:`${n} games · gana el ${Math.round(100*x.won/n)}%`}</small></span><span class="pr-rec"><b>${x.won}–${x.lost}</b><small>games</small></span></li>`;}).join('');

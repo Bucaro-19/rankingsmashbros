@@ -63,8 +63,9 @@ class AnalysisHttpTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory(prefix='smash-analysis-http-')
         home = Path(cls.temp.name); cls.site=home/'site'; cls.private=home/'private-smash'; sessions=home/'sessions'
         for path in (cls.site/'data',cls.private,sessions): path.mkdir(parents=True)
-        for name in ('database.php','accounts.php','stats.php','premium.php','analysis-context.php','analisis.php','analisis-api.php'):
+        for name in ('database.php','accounts.php','stats.php','premium.php','analysis-context.php','frame-facts.php','analisis.php','analisis-api.php'):
             shutil.copyfile(SITE/name,cls.site/name)
+        shutil.copyfile(SITE/'data/frame-facts-v1.json',cls.site/'data/frame-facts-v1.json')
         config = dict(database=dict(host='127.0.0.1',port=port,name=DATABASE,user='root',password=os.environ['SMASH_SCHEMA_TEST_PASSWORD']))
         (cls.private/'config.local.php').write_text('<?php return json_decode('+json.dumps(json.dumps(config))+',true);')
         (cls.private/'recurrente.local.php').write_text("<?php return ['enabled'=>true,'secret_key'=>'sk_test_"+'a'*40+"','webhook_secret'=>'whsec_a2tra2tra2tra2tra2tra2tra2tra2tr'];")
@@ -198,6 +199,27 @@ class AnalysisHttpTests(unittest.TestCase):
         self.sql('UPDATE oauth_connections SET revoked_at=UTC_TIMESTAMP(6) WHERE user_id=%s',(admin,))
         self.assertEqual(self.call('rival=2')[0],401)
 
+    def test_frames_gate_missing_character_and_no_rival_main(self):
+        self.login('free'); free=self.call('rival=2')[2]; self.assert_free(free)
+        for key in ('toolkit','punishable','frameDataSource'):
+            self.assertNotIn('"'+key+'"',json.dumps(free))
+        uid=self.login('paid');self.premium(uid)
+        paid=self.call('rival=2')[2]
+        self.assertEqual(paid['deep']['toolkit']['mario']['fastest']['damage'],2.2)
+        self.assertEqual(paid['deep']['frameDataSource']['name'],'Ultimate Frame Data')
+        self.sql('DELETE FROM user_characters WHERE user_id=%s',(uid,))
+        self.sql('INSERT INTO user_characters(user_id,position,character_id) VALUES (%s,1,1321)',(uid,))
+        self.assertIsNone(self.call('rival=2')[2]['deep']['toolkit']['pokemon_trainer'])
+        p=copy.deepcopy(self.public)
+        for view in (p,p['localRanking']):
+            player=next(x for x in view['players'] if x['id']=='2');player['mains']=[]
+            player['mainCoverage'].update(setsWithSelections=0,gamesWithSelections=0)
+        self.publish(p)
+        missing=self.call('rival=2')[2]
+        self.assertIsNone(missing['deep']['rival']['main']);self.assertIsNone(missing['deep']['punishable'])
+        self.premium(uid,end='2026-01-01 00:00:00')
+        self.assert_free(self.call('rival=2')[2])
+
     def test_scope_game_matrix_scores_and_read_only_tables(self):
         self.login('admin'); self.games()
         before={t:self.sql('SELECT * FROM `'+t+'` ORDER BY 1') for t in ('games','game_selections','cuts','rankings','users','user_characters','premium_subscriptions')}
@@ -206,8 +228,8 @@ class AnalysisHttpTests(unittest.TestCase):
         self.assertEqual(intl['gameMatrix']['mario|link']['him'],[6,4]); self.assertEqual(intl['meVsChar'],{'link':[2,3]})
         self.assertEqual(intl['himVsChar'],{'mario':[3,2]}); self.assertEqual(intl['recommendations'][0]['confidence'],'media')
         deep=intl['deep']
-        self.assertEqual(sorted(deep),['avoid','byTier','common','commonTotal','counters','punishable','rival','setPattern','toolkit','vsChars'])
-        self.assertEqual(deep['rival']['main'],'link'); self.assertIsNone(deep['toolkit']); self.assertIsNone(deep['punishable'])
+        self.assertEqual(sorted(deep),['avoid','byTier','common','commonTotal','counters','frameDataSource','punishable','rival','setPattern','toolkit','vsChars'])
+        self.assertEqual(deep['rival']['main'],'link'); self.assertEqual(deep['toolkit']['mario']['fastest']['frame'],2); self.assertEqual(deep['punishable']['link'][0]['onShield'],-28)
         for card in deep['counters']+deep['avoid']:
             self.assertEqual(sorted(card),['confidence','guide','hisGames','mine','mySets','sceneGames','slug']); self.assertIsNone(card['guide'])
         self.assertNotIn('"id"',json.dumps(deep['common']))
