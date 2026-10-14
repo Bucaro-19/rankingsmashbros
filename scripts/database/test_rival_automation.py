@@ -214,6 +214,23 @@ class SqlTests(fixtures.SqlTests):
             c=Source([9])
             with self.assertRaisesRegex(sender.SyncStopped,'analysis_authorization_expired'):auto.run(c,host,1687524,now=NOW)
         self.assertEqual(c.calls,1);self.assertEqual(self.dump(),before);self.assertEqual(sql(self.db,"SELECT COUNT(*) FROM sync_jobs WHERE kind='player_history'")[0][0],0)
+    def test_unclarified_scope_rejects_without_history_queue_or_graph_write(self):
+        lib=self.site/'rival-sync-lib.php';lib.write_text(lib.read_text().replace('RC_ENTITY_INSERTS_AUTHORIZED=true','RC_ENTITY_INSERTS_AUTHORIZED=false'))
+        before=self.dump()
+        with self.serving() as host,contextlib.redirect_stdout(io.StringIO()):
+            c=Source([9])
+            with self.assertRaisesRegex(sender.SyncStopped,'analysis_entity_authorization_required'):auto.run(c,host,1687524,now=NOW)
+        self.assertEqual(c.calls,1);self.assertEqual(self.dump(),before);self.assertEqual(sql(self.db,"SELECT COUNT(*) FROM sync_jobs WHERE kind='player_history'")[0][0],0)
+    def test_registrant_without_history_has_no_invented_sets(self):
+        class NoHistory(Source):
+            def query(self,q,v):
+                result=super().query(q,v)
+                if q!=auto.EVENT_ROSTER:result['player']['sets']=dict(pageInfo=dict(total=0,totalPages=0),nodes=[])
+                return result
+        before=sql(self.db,'SELECT COUNT(*) FROM sets')[0][0]
+        with self.serving() as host:
+            result,_=quiet_run(NoHistory([9]),host,1687524,now=NOW)
+        self.assertEqual((result['added'],result['pending']),(1,0));self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM sets')[0][0],before)
     def test_dense_bounded_batch_size_memory_and_existing_graph_unchanged(self):
         with self.serving() as host:
             client=DenseSource([9],pages=28);roster=auto.event_roster(client,1687524);initial=host.inventory(roster)
