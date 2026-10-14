@@ -102,9 +102,9 @@
     const form=data.rivalForm||[], tiers=data.rivalTiers?.[scope];
     if(!form.length)return `<section class="a-box"><h2>Forma reciente de ${escape(data.rival.tag)}</h2><p class="a-empty">Sin torneos de ${escape(data.rival.tag)} en ${M.SCOPES[scope]} dentro de este corte. Prueba con ${scope==='gt'?'+ Internacional':'Solo Guatemala'}.</p></section>`;
     return `<section class="a-box"><h2>Forma reciente de ${escape(data.rival.tag)}</h2><ul class="a-sets">${form.map(e=>{const link=safeLink(e.url);return `<li><div><strong>${link?`<a href="${escape(link)}" target="_blank" rel="noopener noreferrer">${escape(e.event)} ↗</a>`:escape(e.event)}</strong><small>${M.date(e.date)}${e.countryCode?` · ${escape(e.countryCode)}`:''}</small></div><b>${e.setsWon}–${e.setsLost}</b></li>`;}).join('')}</ul>
-      ${data.rivalFormTotal>form.length?`<p class="a-note">Últimos ${form.length} de ${data.rivalFormTotal} torneos conocidos en este corte.</p>`:''}
+      ${data.rivalFormTotal>form.length?`<p class="a-note">Últimos ${form.length} de ${data.rivalFormTotal} torneos conocidos.</p>`:''}
       ${tiers?`<h3>Contra qué nivel gana y pierde</h3><div class="a-tiers">${M.TIERS.map(([key,label])=>{const t=tiers[key]||[0,0];return `<div><span>${label}</span><b>${t[0]+t[1]?`${t[0]}–${t[1]}`:'—'}</b></div>`;}).join('')}</div><p class="a-note">Según el puesto de cada rival en este corte y vista. «Sin puesto» no significa rival débil: puede jugar fuera del país o tener poca actividad.</p>`:''}
-      <p class="a-note">Sets conocidos en este corte; no es el historial completo de start.gg.</p></section>`;
+      <p class="a-note">Sets conocidos; no es el historial completo de start.gg.</p></section>`;
   }
   function renderFull() {
     root.innerHTML=`<div class="a-columns"><div class="a-left">${vsCard()}${deepLink()}${probabilityBox()}${recommendationBox()}</div><div class="a-right">${matchupBox()}${historyBox()}${formBox()}</div></div>`;
@@ -116,7 +116,7 @@
   function renderResults(list,truncated) {
     const box=document.getElementById('a-results');if(!box)return;
     box.innerHTML=list.length?list.map(p=>`<li><button type="button" data-pick="${escape(p.playerId)}"><span class="a-initials small" aria-hidden="true">${escape(M.initials(p.tag))}</span><span class="a-pick-main"><strong>${escape(p.tag)}</strong><small>${p.rank?.[scope]!=null?`#${p.rank[scope]} · ${M.number(p.points[scope])} pts`:'Sin puesto en esta vista'}${p.country?` · ${escape(p.country)}`:''}</small></span><span class="a-pick-record">${p.record?.sets?`${p.record.wins}–${p.record.losses} contigo`:'Sin sets contigo'}</span></button></li>`).join('')+(truncated?'<li class="a-note">Hay más resultados: escribe más letras.</li>':'')
-      :`<li class="a-empty">${query?'Nadie con ese alias en el corte.':'Aún no tienes rivales con sets en este corte. Busca por alias.'}</li>`;
+      :`<li class="a-empty">${query?'Nadie con ese alias en los datos conocidos.':'Aún no tienes rivales con sets en este corte. Busca por alias.'}</li>`;
     box.querySelectorAll('[data-pick]').forEach(button=>button.addEventListener('click',()=>{rivalId=button.dataset.pick;searching=false;pair=null;address();load();}));
   }
   async function runSearch() {
@@ -139,6 +139,7 @@
     if(searching){openSearch();return;}
     if(data.state==='sinJugador'){scopeBar.hidden=true;root.innerHTML=`<section class="a-sober"><h1>Primero, <span>tu jugador.</span></h1><p>Tu cuenta todavía no tiene un jugador de start.gg vinculado, así que no hay con qué comparar. En tu perfil te explicamos cómo resolverlo.</p><a class="cta blue" href="./cuenta.html"><span>Ir a mi perfil →</span></a></section>`;return;}
     if(data.access?.full)renderFull();else renderLocked();
+    if(data.dataNotice)root.insertAdjacentHTML('afterbegin',`<p class="a-note" role="note">${escape(data.dataNotice)}</p>`);
   }
   async function load() {
     if(!rivalId){openSearch();return;}

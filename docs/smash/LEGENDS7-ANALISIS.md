@@ -1,0 +1,60 @@
+# Legends 7: contexto de análisis, no ranking (13/oct/2026)
+
+## Comprobación real
+
+Único candidato verificado por slug exacto: [LEGENDS7](https://www.start.gg/tournament/legends7/details), torneo **942547**, país **SV**, zona **America/El_Salvador**. Del **24/oct/2026 09:00** al **25/oct 22:00**, hora de El Salvador (UTC−6). Evento **ULTIMATE Singles**, **1687524**, `tournament/legends7/event/ultimate-singles`, inicia 24/oct 10:00 local; Ultimate 1386, singles, presencial.
+
+La API devuelve `numEntrants: null`, entrants vacío y participants vacío también filtrando membresía del evento. **No significa cero inscritos**: inscritos, conocidos y faltantes son desconocidos. El dueño confirmó que tampoco puede ver la lista. No hay nombres verificables que capturar; no se inventó una carga real ni se consultaron historiales. **Cero jugadores añadidos a producción y cero escrituras**. SQL productivo se consultó solo para comprobar esquema e inventario agregado (3527 jugadores; 007 ausente).
+
+Sondas oficiales de solo lectura, serializadas con el grupo de publicación, sin secretos FTP/SQL en el runner y con artefacto cifrado para la Mac:
+
+- [38511287391](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38511287391): metadatos, entrants y esquema; **3 consultas, 2,144 s**.
+- [38511501070](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38511501070): esquema de Participants/SetFilters; **1 consulta**, sin cronometraje registrado.
+- [38511604583](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38511604583): participants/eventos; **1 consulta, 0,527 s**.
+
+Total **5 consultas** de investigación; las duraciones anteriores no incluyen colas de Actions. El workflow temporal de sonda se restauró idéntico a main: no queda una ampliación de sus permisos en el diff final. No queda tarea automática ni token nuevo. El token se usó en GitHub Secrets, no se descargó a la Mac.
+
+## Herramienta lista para una lista pública verificable
+
+`scripts/database/rival_context.py`: roster → inventory → capture → load. Usa `collect.Client` y el normalizador relacional existente; es un paquete independiente del corte, sin `public`, cuts, rankings ni instantáneas. Guarda IDs reales de players, torneos, eventos, sets, games y selecciones; stocks por game en campos nullable separados (no son el marcador del set). DQ/byes no generan matchups. Selecciones desconocidas, ambiguas o sin ganador/orden real se omiten; no se infieren personajes.
+
+- Solo se solicita historial de los inscritos que no existen todavía en players. Los rivales encontrados en esos sets se guardan como contexto necesario, sin volver a consultar sus historiales.
+- Temporada por inicio del evento en calendario GT; singles Ultimate terminados, incluyendo fuera del país y online para análisis. Esto **no es admisión al ranking**.
+- start.gg no ofrece filtro de temporada para Player.sets ni orden contractual por fecha: se recorren páginas y se filtra después. No se corta al encontrar un evento antiguo. PerPage 5 para no desbordar complejidad de games.
+- Cada tanda: **30 intentos HTTP máximo incluyendo reintentos, 120 s, una petición/segundo**, techos fijos del proyecto. Con tres intentos reservados por consulta normalmente caben 28 páginas sin reintentos. Se reanuda desde páginas guardadas; una tanda fallida conserva el checkpoint anterior y se detiene (no reiniciar a ciegas).
+- Archivos privados fuera del repositorio/publicación, JSON ≤32 MiB, paquete comprimido ≤4 MiB; atómicos, permisos 0600. La salida no sobrescribe un archivo existente salvo el estado privado explícito. No se publican las capturas.
+
+Comandos futuros, **no ejecutados para historiales reales por falta de lista** (STARTGG_TOKEN ya configurado en entorno privado; no pegarlo en comandos/chat):
+
+```sh
+python3 scripts/database/rival_context.py roster --slug legends7 --output /ruta/privada/legends7/roster.json
+python3 scripts/database/rival_context.py inventory /ruta/privada/legends7/roster.json --year 2026 --output /ruta/privada/legends7/state.json
+python3 scripts/database/rival_context.py capture /ruta/privada/legends7/state.json --output /ruta/privada/legends7/batch-01.json
+python3 scripts/database/rival_context.py load /ruta/privada/legends7/batch-01.json
+```
+
+Repetir capture con siguiente nombre de tanda hasta coverage completa; no borrar state. `inventory` y `load` usan la conexión privada normal, aceptan `--defaults-file` y `--database` sin imprimir credenciales. Sin 007 la simulación responde `migration_required_no_writes` con conteos; con 007 `validated_no_writes`. **Solo tras orden expresa del dueño y simulación correcta:** repetir load con `--apply`. Ningún comando aplica migraciones. Si roster responde `registrations_unavailable`, detenerse: un vacío no es lista válida.
+
+## Migración propuesta, nunca aplicada en producción
+
+[007_analysis_context.sql](migrations/007_analysis_context.sql), solo instalada en base desechable de pruebas:
+
+- analysis_context_batches: hash de paquete/contexto, evento fuente y temporada; repetición `already_imported`.
+- analysis_context_players: marca de los inscritos disponibles para búsqueda sin inventar clasificación.
+- analysis_game_scores: stocks de ambos lados nullable. El esquema previo no tiene esos campos.
+
+Necesaria para no confundir contexto con admisión y para conservar marcador por game. SQL apply transaccional InnoDB, mismo advisory lock del importador, verificación de relaciones y paridad de sets/games/selecciones/stocks. Inserta identidades ausentes; **no reemplaza resultados, slots ni games de sets existentes**, tampoco los de un corte. Una corrección posterior no se revierte al repetir el paquete. Un cambio de identidad/relación se rechaza. Refrescar sets existentes deliberadamente requeriría otro encargo y política de correcciones.
+
+## Contrato de lectura para Claude Code
+
+Biblioteca privada `analysis-context.php`, negada por .htaccess y publicada antes del endpoint. Sin 007 devuelve contexto vacío y la respuesta de hoy sigue funcionando. Sin start.gg por visita. Análisis admite búsquedas por los inscritos marcados; sus perfiles llevan `rank/points: {gt:null,intl:null}` cuando no están clasificados. No se añaden a arrays del ranking.
+
+Gratis sigue limitado a perfiles y récord entre ambos; premium/admin obtiene métricas adicionales. `dataNotice` advierte que se incluye historial parcial de temporada sin cambiar ranking; ambas pantallas existentes lo muestran. `setDataScope=published_ledger_and_analysis_context` cuando se usa historial extra. `coverage.source=analysis_context` identifica mains detectados solo para jugadores sin ficha publicada. No se alteran mains publicados. El corte/su generatedAt siguen indicando la referencia nacional, no la fecha completa de todo el historial extra.
+
+Resultados publicados tienen precedencia por ID: el contexto no cambia su ganador/metadata ni agrega games posteriores al corte a esos sets. El filtro GT toma solo eventos de país GT. Forma reciente carece de puesto final e inscritos por rival: siguen null, sin estimaciones. Tramos de puesto usan únicamente los puestos reales del corte; sin puesto no equivale a débil. Contexto máximo 1000 inscritos, 5000 sets por lectura y 50000 filas de games combinado; se rechaza exceso en lugar de devolver estadísticas parciales sin aviso. Las estadísticas de escena siguen sobre el grafo nacional, no sobre una muestra arbitraria de extranjeros: los games adicionales cuentan para el jugador y su rival, pero se excluyen explícitamente de scene/sceneGames y de la confianza de escena, con prueba SQL.
+
+## Verificación y pendiente
+
+Local: 7 pruebas nuevas (5 contratos y 2 SQL), 13 HTTP de análisis, 94 Python de pipeline, 5 Node y contratos PHP de análisis correctos; MariaDB 13.0.2/PHP 8.5.3 desechables. Incluye importación/repetición, migración ausente, conflicto de identidad, ranking/instantáneas inmutables, stocks, rival solo contexto, cuenta gratis y modo GT. CI del código 590d82c [38515107772](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38515107772) correcta en MySQL 8.0, MariaDB 10.11 y suite general. Fallback de imagen PHP ECR a Docker Official Images acotado a un intento alterno por throttling observado; no se omite ninguna comprobación. Consultar checks del head final en PR #100.
+
+SHA-256 versionado public.json sin cambios: `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`. Pendientes reales: publicación de inscritos, autorización/aplicación de 007 por el dueño y medición de captura/importación reales cuando haya lista. No se fusiona ni despliega.
