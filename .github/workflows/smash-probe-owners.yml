@@ -23,20 +23,10 @@ jobs:
           python - <<'PY'
           import os,json,time
           from collect import Client
-          c=Client(os.environ['STARTGG_TOKEN']);start=time.monotonic()
-          meta=c.query('''query {tournament(slug:"legends7"){id name slug countryCode startAt endAt timezone events {id name slug type numEntrants startAt isOnline videogame{id name}}}}''',{})
-          t=meta['tournament']; events=[e for e in t['events'] if str(e['videogame']['id'])=='1386' and e['type']==1]
-          if t['slug']!='tournament/legends7' or t['countryCode']!='SV' or len(events)!=1: raise RuntimeError('Tournament/event requires owner review')
-          e=events[0];rows=[]
-          for page in range(1,11):
-              r=c.query('''query($id:ID!,$page:Int!){event(id:$id){entrants(query:{page:$page,perPage:100}){pageInfo{total totalPages}nodes{id participants{player{id gamerTag user{slug location{country}}}}}}}}''',{'id':e['id'],'page':page})['event']['entrants']
-              rows.extend(r['nodes'])
-              if page>=r['pageInfo']['totalPages']:break
-          if len(rows)!=r['pageInfo']['total']:raise RuntimeError('Incomplete roster')
-          schema=c.query('''query { player:__type(name:"Player"){fields{name args{name type{kind name ofType{kind name ofType{kind name}}}}}} game:__type(name:"Game"){fields{name type{kind name ofType{kind name}}}} set:__type(name:"Set"){fields{name type{kind name ofType{kind name}}}}}''',{})
-          result={'tournament':t,'event':e,'entrants':rows,'schema':schema,'requests':c.calls,'seconds':round(time.monotonic()-start,3)}
-          open('/tmp/result.json','w').write(json.dumps(result))
-          print(json.dumps({'tournamentSlug':t['slug'],'country':t['countryCode'],'startAt':t['startAt'],'endAt':t['endAt'],'eventId':e['id'],'eventSlug':e['slug'],'entrants':len(rows),'requests':c.calls,'seconds':result['seconds']}))
+          from organizer_small import BudgetClient
+          c=Client(os.environ['STARTGG_TOKEN']);b=BudgetClient(c)
+          s=b.query('''query{tournament:__type(name:"Tournament"){fields{name args{name type{kind name ofType{kind name}}}}} participant:__type(name:"Participant"){fields{name type{kind name ofType{kind name}}}} filters:__type(name:"SetFilters"){inputFields{name type{kind name ofType{kind name}}}}}''',{})
+          open('/tmp/result.json','w').write(json.dumps({'schema':s,'requests':c.calls}));print(json.dumps({'requests':c.calls,'schemaRead':True}))
           PY
       - name: Encrypt to local owner key
         run: |
