@@ -1,5 +1,7 @@
 # Automatización del contexto de inscritos — Legends 7
 
+**Estado vigente 14/oct (orden posterior del dueño):** #102 fusionado/desplegado, altas de entidades aprobadas y constante en true; 007 aplicada según el dueño. El bloqueo de alcance mencionado abajo es histórico y queda resuelto. Incidente de lista oculta, sondas, corrección y activación: ver el primer bloque de EN-CURSO.md. No repetir migración ni pedir nuevamente autorización.
+
 Entrega del 14/oct/2026. Sin pantalla, migración nueva, credenciales nuevas ni servicio adicional. No fusionar, desplegar o activar sin orden. No se ejecutó captura real ni escritura/consulta SQL productiva en esta tarea.
 
 ## Alcance y bloqueo de autorización

@@ -46,10 +46,6 @@ Ya está programado en «Prepara el set» con componentes existentes: «Hallazgo
 
 Handoff final recibido en `design_handoff_rsb_tops/`. Implementación en PR propio, ver EN-CURSO.md. Ya no hace falta solicitar este diseño. Se conserva el contrato público: el diseño pide mains, total de tops y una vista ampliada completa que este endpoint no entrega; se omiten, sin añadir datos ni adivinar cifras.
 
-## Legends 7 (14/oct): automatización preparada, aún no activa
+## Legends 7 (14/oct): aprobación y esquema resueltos
 
-PR #100 fusionado/desplegado según el dueño. Nueva automatización en rama propia, sin activar ni escribir producción; ver [AUTOMATIZACION-ANALISIS.md](AUTOMATIZACION-ANALISIS.md). Ya no es necesario avisar manualmente cuando aparezca la lista **una vez autorizada, integrada, desplegada y activada**.
-
-1. Aclaración pendiente enviada en el chat: la orden permite solo tablas de 007, pero `rival_context.py --apply` también inserta identidades/resultados ausentes en nueve tablas base referenciadas por 007. Confirmar expresamente ese alcance o mantener la restricción; el receptor queda cerrado con `RC_ENTITY_INSERTS_AUTHORIZED=false` hasta respuesta, no asumirla.
-2. Claude Code aplica 007 únicamente por orden del dueño. Esta tarea no comprobó su estado productivo ni la aplicó; el receptor lo verificará antes de importar.
-3. Con CI y revisión: ordenar fusión/despliegue y activación de SMASH_RIVAL_SYNC_ENABLED=true para evento 1687524. No se cambiaron esas variables. La autorización temporal vence al finalizar el 25/oct/2026 GT aunque quede habilitada la variable.
+El dueño confirma #102 fusionado/desplegado, inserciones de entidades autorizadas (constante true) y 007 aplicada. Ya no hay una autorización o migración pendiente para este alcance. La corrección del fallo por lista oculta y la activación/prueba están autorizadas; estado y evidencia en el primer bloque de [EN-CURSO.md](EN-CURSO.md). Sigue vigente el vencimiento al finalizar el 25/oct GT. No extenderlo ni incorporar otro evento sin nueva orden.
