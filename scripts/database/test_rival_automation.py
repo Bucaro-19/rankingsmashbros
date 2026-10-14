@@ -19,6 +19,7 @@ from unittest import mock
 import rival_automation as auto
 import test_rival_context as fixtures
 import publish_sql as sender
+from probe_rival_roster import shape
 from ranking_package import canonical,digest,build_package
 from rival_context import package,load,validate,COLUMNS as CONTEXT_COLUMNS
 from import_ranking import sql,import_package
@@ -79,6 +80,74 @@ def php(mode,p):
 
 
 class Contracts(unittest.TestCase):
+    def test_real_graphql_parser_accepts_roster_and_rejects_original_missing_brace(self):
+        from graphql import parse,GraphQLSyntaxError
+        document=parse(auto.EVENT_ROSTER)
+        self.assertEqual(document.definitions[0].selection_set.selections[0].name.value,'event')
+        with self.assertRaises(GraphQLSyntaxError):parse(auto.EVENT_ROSTER.rstrip()[:-1])
+    def test_probe_observed_shapes_and_output_cannot_contain_personal_values(self):
+        # First real probe: HTTP 200, errors array, no data (invalid GraphQL operation).
+        error=shape(dict(errors=[dict(message='NEVER LOG THIS',extensions={'secret':'PRIVATE'})]))
+        self.assertTrue(error['hasGraphQLErrors']);self.assertEqual(error['data'],dict(present=False,type='missing'))
+        # Corrected real probe: data/event/tournament/entrants/pageInfo objects,
+        # integer counts, nodes empty, errors absent. No production body saved.
+        observed=shape(dict(data=Source().query(auto.EVENT_ROSTER,{})))
+        for key in ('data','event','tournament','entrants','pageInfo'):self.assertEqual(observed[key]['type'],'object')
+        for key in ('total','totalPages'):self.assertEqual(observed[key]['type'],'integer')
+        self.assertEqual(observed['nodes']['type'],'array');self.assertTrue(observed['nodesEmpty']);self.assertFalse(observed['hasGraphQLErrors'])
+        private=dict(data=Source([9]).query(auto.EVENT_ROSTER,{}),errors=[dict(message='NEVER LOG THIS')])
+        output=json.dumps(shape(private));self.assertNotIn('Inventado',output);self.assertNotIn('NEVER LOG THIS',output);self.assertNotIn('gamerTag',output)
+        self.assertNotIn('PRIVATE',json.dumps(error))
+    def test_hidden_null_missing_and_empty_connections_stop_after_one_query(self):
+        missing=object()
+        forms=[missing,None,{},dict(nodes=None,pageInfo=None),dict(nodes=[],pageInfo=None),dict(nodes=[]),dict(pageInfo=None),
+               dict(nodes=[],pageInfo={}),dict(nodes=[],pageInfo=dict(total=0,totalPages=0)),
+               dict(nodes=[],pageInfo=dict(total=32,totalPages=1)),dict(nodes=None,pageInfo=dict(total=32,totalPages=1)),
+               dict(nodes=[],pageInfo=dict(total=None,totalPages=None))]
+        valid=Source([9]).query(auto.EVENT_ROSTER,{})['event']['entrants']
+        forms+=[dict(nodes=valid['nodes'],pageInfo=None),dict(nodes=valid['nodes'],pageInfo=dict(total=None,totalPages=1)),
+                dict(nodes=valid['nodes'],pageInfo=dict(total=1,totalPages=None))]
+        for form in forms:
+            class Hidden(Source):
+                def query(self,q,v):
+                    data=super().query(q,v)
+                    if form is missing:data['event'].pop('entrants')
+                    else:data['event']['entrants']=copy.deepcopy(form)
+                    return data
+            with self.subTest(form=form):
+                client=Hidden();host=mock.Mock();report,log=quiet_run(client,host,1687524,now=NOW)
+                self.assertEqual(report['status'],'registrations_unavailable');self.assertEqual(client.calls,1)
+                self.assertIsNone(report['registered']);self.assertEqual(report['added'],0);self.assertNotIn('Inventado',log)
+                host.inventory.assert_not_called();host.deliver.assert_not_called()
+    def test_unexpected_shapes_fail_with_specific_safe_reason(self):
+        changes=[lambda d:d.update(event=None),lambda d:d['event'].update(tournament=None),
+                 lambda d:d['event'].update(entrants=[]),lambda d:d['event']['entrants'].update(pageInfo=[]),
+                 lambda d:d['event']['entrants'].update(nodes='unexpected'),
+                 lambda d:d['event']['entrants']['pageInfo'].update(total='0'),
+                 lambda d:d['event']['entrants']['pageInfo'].update(total=-1),
+                 lambda d:d['event']['entrants']['pageInfo'].update(totalPages=True),
+                 lambda d:d['event'].update(id=999),lambda d:d['event']['tournament'].update(countryCode='GT')]
+        for change in changes:
+            class Broken(Source):
+                def query(self,q,v):
+                    data=super().query(q,v);change(data);return data
+            with self.subTest(change=changes.index(change)),contextlib.redirect_stdout(io.StringIO()):
+                client=Broken();host=mock.Mock()
+                with self.assertRaisesRegex(sender.SyncStopped,'analysis_source_shape_unexpected'):auto.run(client,host,1687524,now=NOW)
+                self.assertEqual(client.calls,1);host.inventory.assert_not_called()
+    def test_main_hidden_succeeds_and_source_errors_are_specific_without_raw_messages(self):
+        class Rejected(Source):
+            def query(self,q,v):self.calls+=1;raise auto.APIError('NEVER LOG SOURCE CONTENT')
+        class Unexpected(Source):
+            def query(self,q,v):self.calls+=1;return []
+        for source,code,reason in ((Source(),0,None),(Rejected(),1,'analysis_source_query_failed'),(Unexpected(),1,'analysis_source_shape_unexpected')):
+            with mock.patch.dict(os.environ,dict(STARTGG_TOKEN='invented',SMASH_SQL_SYNC_KEY='1'*64,SMASH_RIVAL_EVENT_ID='1687524')),mock.patch.object(auto,'active',return_value=True),mock.patch.object(auto,'Client',return_value=source),mock.patch.object(auto,'Hosting') as host,contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(auto.main(),code)
+            lines=[json.loads(line) for line in out.getvalue().splitlines()]
+            self.assertEqual(lines[0]['queries'],1);host.return_value.inventory.assert_not_called()
+            if reason:self.assertEqual(lines[-1]['reason'],reason);self.assertIn(reason,auto.SAFE_REASONS)
+            else:self.assertEqual(lines[0]['status'],'registrations_unavailable')
+            self.assertNotIn('NEVER LOG',out.getvalue());self.assertNotIn('analysis_automation_stopped',out.getvalue())
     def test_hidden_is_one_query_no_hosting_and_no_names_in_log(self):
         client=Source();host=mock.Mock();report,log=quiet_run(client,host,1687524,now=NOW)
         self.assertEqual(client.calls,1);host.inventory.assert_not_called();host.deliver.assert_not_called()
@@ -117,9 +186,9 @@ class Contracts(unittest.TestCase):
             with self.subTest(kind=kind):
                 with self.assertRaises((ValueError,KeyError)):validate(v)
                 self.assertFalse(php('validate',v)['ok'])
-    def test_auth_scope_stays_closed_without_owner_clarification(self):
-        # Deliberately not assumed from a narrower authorization. Temporary SQL test copy enables it only in the fixture.
-        self.assertIn('const RC_ENTITY_INSERTS_AUTHORIZED=true;',(SITE/'rival-sync-lib.php').read_text())  # owner approved base-entity inserts on 14 Oct
+    def test_owner_approved_base_entity_inserts(self):
+        # Explicit owner approval on 14 Oct; keep the server policy and its test consistent.
+        self.assertIn('const RC_ENTITY_INSERTS_AUTHORIZED=true;',(SITE/'rival-sync-lib.php').read_text())
 
 
 @unittest.skipUnless(os.getenv('SMASH_SCHEMA_TEST_DB'),'Disposable SQL service required')
@@ -132,8 +201,8 @@ class SqlTests(fixtures.SqlTests):
         self.folder=Path(self.temp.name).resolve();self.site=self.folder/'site';self.private=self.folder/'private-smash';self.site.mkdir();self.private.mkdir();(self.site/'data').mkdir()
         for filename in ('database.php','ranking-import.php','rival-import.php','rival-sync-lib.php','ranking-sync-lib.php','ranking-sync.php','ranking-worker.php','characters.js'):
             shutil.copyfile(SITE/filename,self.site/filename)
-        # Test-only copy; production source remains closed pending the owner's response.
-        lib=self.site/'rival-sync-lib.php';lib.write_text(lib.read_text().replace('RC_ENTITY_INSERTS_AUTHORIZED=false','RC_ENTITY_INSERTS_AUTHORIZED=true').replace("const RC_UNTIL='2026-10-26T06:00:00Z'","const RC_UNTIL='2099-10-26T06:00:00Z'"))
+        # Only the disposable fixture extends the deadline, keeping these tests usable after October.
+        lib=self.site/'rival-sync-lib.php';lib.write_text(lib.read_text().replace("const RC_UNTIL='2026-10-26T06:00:00Z'","const RC_UNTIL='2099-10-26T06:00:00Z'"))
         config=dict(database=dict(host='127.0.0.1',port=int(os.getenv('SMASH_SCHEMA_TEST_PORT','3306')),name=os.environ['SMASH_SCHEMA_TEST_DB'],user='root',password=os.environ['SMASH_SCHEMA_TEST_PASSWORD']))
         (self.private/'config.local.php').write_text('<?php return json_decode('+json.dumps(json.dumps(config))+',true);')
         (self.private/'sync.local.php').write_text("<?php return ['enabled'=>true,'key'=>'"+'1'*64+"'];")

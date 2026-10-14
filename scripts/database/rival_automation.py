@@ -17,7 +17,7 @@ import time
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'smash'))
 from collect import APIError,Client
 from organizer_small import BudgetClient
-from rival_history import connection,new_state,capture_batch,MAX_PLAYERS
+from rival_history import new_state,capture_batch,MAX_PLAYERS
 from rival_context import package
 from publish_sql import request,encode_transport,SyncStopped
 
@@ -25,10 +25,18 @@ UNTIL=datetime(2026,10,26,6,tzinfo=timezone.utc) # End of 25/oct, Guatemala/El S
 MAX_BATCHES=2
 SAFE_REASONS=frozenset(('analysis_migration_required','analysis_schema_invalid','analysis_entity_authorization_required',
     'analysis_authorization_expired','analysis_event_not_authorized','analysis_checkpoint_conflict',
-    'analysis_failed_job_requires_review','analysis_queue_limit','analysis_batch_limit'))
-EVENT_ROSTER='''query($id:ID!,$page:Int!){event(id:$id){id name slug type numEntrants startAt isOnline videogame{id name}
- tournament{id name slug countryCode startAt endAt timezone}
- entrants(query:{page:$page,perPage:50}){pageInfo{total totalPages}nodes{participants{player{id gamerTag user{slug location{country}}}}}}}'''
+    'analysis_failed_job_requires_review','analysis_queue_limit','analysis_batch_limit',
+    'analysis_source_shape_unexpected','analysis_source_query_failed'))
+EVENT_ROSTER='''query($id:ID!,$page:Int!){
+ event(id:$id){
+  id name slug type numEntrants startAt isOnline videogame{id name}
+  tournament{id name slug countryCode startAt endAt timezone}
+  entrants(query:{page:$page,perPage:50}){
+   pageInfo{total totalPages}
+   nodes{participants{player{id gamerTag user{slug location{country}}}}}
+  }
+ }
+}'''
 
 
 def active(now=None):return (now or datetime.now(timezone.utc))<UNTIL
@@ -44,27 +52,60 @@ def emit_summary(summary):
         with open(target,'a') as out:out.write('\n'.join(lines)+'\n')
 
 
+def source_require(condition):
+    if not condition:raise SyncStopped('analysis_source_shape_unexpected')
+
+
+def roster_page(conn):
+    """Null/missing/empty roster data is unavailable, never a verified zero roster.
+
+    Wrong types and contradictory nonempty pagination are still errors. Stop at
+    the first unavailable page without alternate queries or a partial inventory.
+    """
+    if conn is None:return None
+    source_require(isinstance(conn,dict))
+    nodes=conn.get('nodes');info=conn.get('pageInfo')
+    source_require(nodes is None or isinstance(nodes,list))
+    source_require(info is None or isinstance(info,dict))
+    total=info.get('total') if info is not None else None
+    pages=info.get('totalPages') if info is not None else None
+    for number in (total,pages):source_require(number is None or (type(number) is int and number>=0))
+    if not nodes or total is None or pages is None:return None
+    source_require(total>0 and pages>0 and total<=MAX_PLAYERS and pages<=MAX_PLAYERS//50)
+    return nodes,total,pages
+
+
 def event_roster(client,event_id):
     """One request if hidden. No alternate participant route or schema/metadata probe."""
-    b=BudgetClient(client);players={};count=0;event=None
+    b=BudgetClient(client);players={};expected=None
     for page in range(1,MAX_PLAYERS//50+1):
-        node=b.query(EVENT_ROSTER,dict(id=event_id,page=page)).get('event')
-        if not isinstance(node,dict) or str(node.get('id'))!=str(event_id):raise APIError('event_unavailable')
-        if node.get('type')!=1 or str((node.get('videogame') or {}).get('id'))!='1386':raise APIError('event_not_ultimate_singles')
-        event={k:v for k,v in node.items() if k not in ('entrants','tournament')};t=node['tournament']
-        if event_id==1687524 and (str(t['id'])!='942547' or t['countryCode']!='SV' or t['slug']!='tournament/legends7'):raise APIError('event_identity_changed')
-        conn=node['entrants'];info=connection(conn)
-        if page==1 and not conn['nodes'] and info['total']==0:return None
-        for entrant in conn['nodes']:
-            people=entrant.get('participants') or []
-            if len(people)!=1 or not people[0].get('player'):raise APIError('registration_identity_unavailable')
-            p=people[0]['player'];pid=str(p['id'])
-            if not re.fullmatch('[1-9][0-9]*',pid) or pid in players:raise APIError('registration_identity_ambiguous')
-            players[pid]=p;count+=1
-        if page>=info['totalPages']:break
-    if count!=info['total'] or count>MAX_PLAYERS or not count:raise APIError('registration_list_incomplete')
+        try:data=b.query(EVENT_ROSTER,dict(id=event_id,page=page))
+        except APIError:raise SyncStopped('analysis_source_query_failed') from None
+        except (AttributeError,KeyError,TypeError,ValueError):raise SyncStopped('analysis_source_shape_unexpected') from None
+        source_require(isinstance(data,dict))
+        node=data.get('event');source_require(isinstance(node,dict))
+        vg=node.get('videogame');t=node.get('tournament')
+        source_require(str(node.get('id'))==str(event_id) and type(node.get('type')) is int and node['type']==1)
+        source_require(isinstance(vg,dict) and str(vg.get('id'))=='1386' and isinstance(t,dict))
+        if event_id==1687524:
+            source_require(str(t.get('id'))=='942547' and t.get('countryCode')=='SV' and t.get('slug')=='tournament/legends7')
+        result=roster_page(node.get('entrants'))
+        if result is None:return None
+        nodes,total,pages=result
+        source_require(expected is None or expected==(total,pages));expected=(total,pages)
+        for entrant in nodes:
+            source_require(isinstance(entrant,dict));people=entrant.get('participants')
+            source_require(isinstance(people,list) and len(people)==1 and isinstance(people[0],dict))
+            p=people[0].get('player');source_require(isinstance(p,dict))
+            pid=str(p.get('id'));tag=p.get('gamerTag')
+            source_require(re.fullmatch('[1-9][0-9]*',pid) is not None and pid not in players)
+            source_require(isinstance(tag,str) and 0<len(tag)<=100)
+            players[pid]=p
+        if page>=pages:break
+    source_require(expected is not None and len(players)==expected[0])
+    event={k:v for k,v in node.items() if k not in ('entrants','tournament')}
     return dict(schemaVersion=1,kind='analysis_roster',capturedAt=datetime.now(timezone.utc).isoformat(),
-                event=event,tournament=t,players=players,source='entrants',registrations=count)
+                event=event,tournament=t,players=players,source='entrants',registrations=len(players))
 
 
 def merge_state(roster,checkpoint,known):
