@@ -12,7 +12,7 @@
 .pr-icon{flex:none;width:44px;height:44px;display:grid;place-items:center;background:#0B0F1A;overflow:hidden;color:#7C869B}.pr-icon img{width:36px;height:36px;object-fit:contain}.pr-icon.big{width:56px;height:56px}.pr-icon.big img{width:46px;height:46px}
 .pr-index{display:flex;flex-wrap:wrap;gap:6px}.prep .pr-index a{display:flex;align-items:center;min-height:44px;padding:0 12px;background:var(--panel);color:#F4F1EA;font-size:13px;font-weight:700;text-decoration:none}.prep .pr-index a:hover{background:#1A2236;color:var(--blue);text-decoration:none}
 .pr-columns{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}.pr-columns>div{flex:1 1 440px;min-width:0;display:flex;flex-direction:column;gap:44px}
-.pr-section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}.pr-head{display:flex;flex-direction:column;gap:8px}.pr-head h2{font-size:clamp(34px,4vw,44px);line-height:.95}.pr-head>p:last-child{font-size:14px;line-height:1.5;color:var(--long)}
+.pr-section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:80px}.pr-head{display:flex;flex-direction:column;gap:8px}.pr-head h2{font-size:clamp(34px,4vw,44px);line-height:.95}.pr-head>p:last-child{font-size:14px;line-height:1.5;color:var(--long)}
 .pr-sub{font-size:26px!important;line-height:1;margin-top:10px!important}
 .pr-empty{padding:16px;border:1px dashed #f4f1ea47;font-size:14px;line-height:1.5;color:var(--long)}.pr-empty a{color:var(--blue)}
 .pr-small{display:flex;gap:10px;align-items:flex-start;padding:12px;border:2px solid var(--yellow);font-size:14px;line-height:1.5;color:var(--long)}.pr-small>span:first-child{flex:none;width:24px;height:24px;display:grid;place-items:center;background:var(--yellow);color:#0B0F1A;font-weight:900}.pr-small strong{color:#F4F1EA}
@@ -57,3 +57,8 @@
 .pr-locked-title{font-size:28px!important;line-height:1}
 .prep .pr-cols{display:flex;justify-content:space-between;gap:12px;margin:8px 0 4px;padding:0 10px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.prep .pr-cols span:last-child{text-align:right}
 .prep .pr-read{margin:0 0 28px;padding:12px 14px;border-left:3px solid #49A6E9;background:#121829;font-size:14px;line-height:1.5;color:var(--long)}.prep .pr-read strong{color:var(--text)}
+
+/* Technical sheets: same handoff components, no frame data hidden in public HTML. */
+.pr-fast{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 14px;font-size:14px}.pr-fast b{font:900 26px 'Big Shoulders Display',sans-serif;color:var(--blue)}.pr-fast span{color:var(--long)}
+.pr-frame-rows,.pr-punishes{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}.pr-frame-rows li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;background:#0B0F1A;padding:6px 12px;font-size:14px}.pr-frame-rows b{font:800 22px 'Big Shoulders Display',sans-serif;white-space:nowrap}
+.pr-punishes li{padding:12px;background:#0B0F1A;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.5}.pr-punishes li>div{display:flex;flex-direction:column;gap:4px}.pr-punishes li>div span{font-size:13px;color:var(--long)}.pr-fits{color:var(--green);font-size:13px}.pr-sheet{overflow-wrap:anywhere}.pr-sheet-head h3{min-width:0}.prep .pr-note a{color:var(--blue)}

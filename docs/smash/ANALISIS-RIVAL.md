@@ -158,3 +158,7 @@ Pruebas: `scripts/database/test_analisis.php` (bloque «Prepara el set») y `tes
 
 Solo en la respuesta **sin** acceso completo: `{headline, main, locked}`. `headline` es `null` o un único hallazgo `{kind: "hard"|"game1"|"top10", slug?, won, lost}` con muestra mínima (5 games, 5 sets o 3 sets). `locked` son conteos enteros: `counters`, `characters`, `common`, `sets`, `coveredSets`, `totalSets`. No incluye ninguna lista de las secciones de pago.
 
+
+## Actualización 13/oct: ficha técnica numérica premium
+
+`deep.toolkit` y `deep.punishable` dejan de ser siempre null; se conectan a un snapshot local privado de hechos de UFD autorizado por el dueño. Nuevo `deep.frameDataSource` con crédito y gameVersion nullable (la fuente no declara versión). Fuente, limitaciones, contrato completo, acceso/retirada y pruebas en [FRAMES-ANALISIS.md](FRAMES-ANALISIS.md). Una ficha ausente sigue null, no se infieren variantes ni formas; sin main rival no hay castigables, sí golpes propios cuando existen. Gratis/vencido no recibe ninguno de estos campos. El resto del análisis/cálculo mantiene sus reglas.
