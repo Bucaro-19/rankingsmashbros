@@ -26,9 +26,16 @@ MAX_BATCHES=2
 SAFE_REASONS=frozenset(('analysis_migration_required','analysis_schema_invalid','analysis_entity_authorization_required',
     'analysis_authorization_expired','analysis_event_not_authorized','analysis_checkpoint_conflict',
     'analysis_failed_job_requires_review','analysis_queue_limit','analysis_batch_limit'))
-EVENT_ROSTER='''query($id:ID!,$page:Int!){event(id:$id){id name slug type numEntrants startAt isOnline videogame{id name}
- tournament{id name slug countryCode startAt endAt timezone}
- entrants(query:{page:$page,perPage:50}){pageInfo{total totalPages}nodes{participants{player{id gamerTag user{slug location{country}}}}}}}'''
+EVENT_ROSTER='''query($id:ID!,$page:Int!){
+ event(id:$id){
+  id name slug type numEntrants startAt isOnline videogame{id name}
+  tournament{id name slug countryCode startAt endAt timezone}
+  entrants(query:{page:$page,perPage:50}){
+   pageInfo{total totalPages}
+   nodes{participants{player{id gamerTag user{slug location{country}}}}}
+  }
+ }
+}'''
 
 
 def active(now=None):return (now or datetime.now(timezone.utc))<UNTIL
