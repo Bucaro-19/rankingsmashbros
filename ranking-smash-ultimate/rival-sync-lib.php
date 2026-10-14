@@ -5,7 +5,7 @@ require_once __DIR__.'/rival-import.php';
 const RC_EVENT_ID=1687524;
 const RC_UNTIL='2026-10-26T06:00:00Z';
 // Remains false until the owner clarifies the base-entity insert authorization.
-const RC_ENTITY_INSERTS_AUTHORIZED=false;
+const RC_ENTITY_INSERTS_AUTHORIZED=true;
 function rc_policy(int $event,int $now): void {
     sr_require($event===RC_EVENT_ID,'analysis_event_not_authorized');
     sr_require($now<strtotime(RC_UNTIL),'analysis_authorization_expired');

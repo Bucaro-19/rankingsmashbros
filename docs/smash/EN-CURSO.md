@@ -1,5 +1,9 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Legends 7: altas aprobadas y automatización activada (14/oct)
+
+El dueño aprobó que la importación de contexto de análisis inserte las entidades ausentes (jugadores, torneos, eventos, inscritos, sets y games) en las tablas base, además de las tablas de 007: solo filas nuevas, sin modificar ni borrar existentes, y sin tocar cortes, rankings ni public.json. `RC_ENTITY_INSERTS_AUTHORIZED=true`. 007 aplicada en producción el 13/oct. Con el despliegue, `SMASH_RIVAL_SYNC_ENABLED=true`: el workflow consulta cada 6 horas; vence el 25/oct GT. Las notas de «bloqueo de autorización pendiente» más abajo quedan resueltas.
+
 ## Codex — automatización acotada de inscritos de Legends 7 (14/oct)
 
 Rama `feat/legends-context-automation` desde main remoto **3b5d1e0** (#100 fusionado), Bucaro-19/rankingsmashbros; tracked limpio al empezar, carpetas ajenas laminas/, marca-rsb/ y social/ conservadas. Actions iniciales main **38517151226** y deploy **38517155223**, correctas. Leídos AGENTS, CONTEXTO, EN-CURSO, MIGRACION, BASE-DE-DATOS, SIGUIENTE-FASE y LEGENDS7-ANALISIS. **Entrega en PR; no fusionar, desplegar, activar variables ni escribir/aplicar migraciones productivas.**

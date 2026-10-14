@@ -119,7 +119,7 @@ class Contracts(unittest.TestCase):
                 self.assertFalse(php('validate',v)['ok'])
     def test_auth_scope_stays_closed_without_owner_clarification(self):
         # Deliberately not assumed from a narrower authorization. Temporary SQL test copy enables it only in the fixture.
-        self.assertIn('const RC_ENTITY_INSERTS_AUTHORIZED=false;',(SITE/'rival-sync-lib.php').read_text())
+        self.assertIn('const RC_ENTITY_INSERTS_AUTHORIZED=true;',(SITE/'rival-sync-lib.php').read_text())  # owner approved base-entity inserts on 14 Oct
 
 
 @unittest.skipUnless(os.getenv('SMASH_SCHEMA_TEST_DB'),'Disposable SQL service required')
