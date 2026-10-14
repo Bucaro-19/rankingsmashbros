@@ -1,20 +1,49 @@
 name: Comprobar dueños de torneos en start.gg
-# Consulta de un solo uso, solo lectura. Imprime conteos agregados, sin identificadores.
 on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
 jobs:
   probe:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probar la consulta de dueños que usa la captura semanal
+      - name: Read-only Legends roster and schema, capped at 30 attempts
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/probe_owners.py
+          PYTHONPATH: scripts/smash
+        run: |
+          python - <<'PY'
+          import os,json,time
+          from collect import Client
+          c=Client(os.environ['STARTGG_TOKEN']);start=time.monotonic()
+          meta=c.query('''query {tournament(slug:"legends7"){id name slug countryCode startAt endAt timezone events {id name slug type numEntrants startAt isOnline videogame{id name}}}}''',{})
+          t=meta['tournament']; events=[e for e in t['events'] if str(e['videogame']['id'])=='1386' and e['type']==1]
+          if t['slug']!='tournament/legends7' or t['countryCode']!='SV' or len(events)!=1: raise RuntimeError('Tournament/event requires owner review')
+          e=events[0];rows=[]
+          for page in range(1,11):
+              r=c.query('''query($id:ID!,$page:Int!){event(id:$id){entrants(query:{page:$page,perPage:100}){pageInfo{total totalPages}nodes{id participants{player{id gamerTag user{slug location{country}}}}}}}}''',{'id':e['id'],'page':page})['event']['entrants']
+              rows.extend(r['nodes'])
+              if page>=r['pageInfo']['totalPages']:break
+          if len(rows)!=r['pageInfo']['total']:raise RuntimeError('Incomplete roster')
+          schema=c.query('''query { player:__type(name:"Player"){fields{name args{name type{kind name ofType{kind name ofType{kind name}}}}}} game:__type(name:"Game"){fields{name type{kind name ofType{kind name}}}} set:__type(name:"Set"){fields{name type{kind name ofType{kind name}}}}}''',{})
+          result={'tournament':t,'event':e,'entrants':rows,'schema':schema,'requests':c.calls,'seconds':round(time.monotonic()-start,3)}
+          open('/tmp/result.json','w').write(json.dumps(result))
+          print(json.dumps({'tournamentSlug':t['slug'],'country':t['countryCode'],'startAt':t['startAt'],'endAt':t['endAt'],'eventId':e['id'],'eventSlug':e['slug'],'entrants':len(rows),'requests':c.calls,'seconds':result['seconds']}))
+          PY
+      - name: Encrypt to local owner key
+        run: |
+          echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVNekNDQXB1Z0F3SUJBZ0lVS0JwdFZkVDJZTUd3VENHd29TQ1h2eHdndVIwd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0tURW5NQ1VHQTFVRUF3d2VVMjFoYzJoSFZDMXNiMk5oYkMxeVpXRmtiMjVzZVMxallYQjBkWEpsTUI0WApEVEkyTVRBeE5EQTBNalV4TVZvWERUSTJNVEF4TmpBME1qVXhNVm93S1RFbk1DVUdBMVVFQXd3ZVUyMWhjMmhIClZDMXNiMk5oYkMxeVpXRmtiMjVzZVMxallYQjBkWEpsTUlJQm9qQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FZOEEKTUlJQmlnS0NBWUVBcWhjVVFsV2djRnJxOHVMd1RhaDRqU0tqZHVkNmZzOWRFZWI3SThsclR2VVBBVFFsS1hmeApWTmxyeFBBanlSYTA1NEhFZVdIY2NuSm9Xb291TFlzOWlBRktjZDRNZ1RERVN5ak1CTnUrcWdIdFY3MVdobHk5Cjc2ZXl0U3B5YjZxYVhrNDg2aXZkcXk5dlh1NWRrYlo5cUNydUNIdjFhbUFhaFJaMnAwbTZGeHRvd09uSDQ1eUwKaFpubEd3VG1kZGVMbno1L2hQaklBdTNCYnA0TmV3MmVsVFUzcStWQUZqVE5nRmRlUENkV0tBL0YwY01nZ05DVQpzOFAwdUlrd2NEdmNwa0lyQjV5em9TUU45QjJDVGRpeHlNZmZneXMwRThQeHJ0S20rUWM4OTdUbTBkYzV2UWpaCjAvVXlNUjJhaUhwaThFdVh0N1ozN2RLbUptZ2tGeGQwVmt6WXVpa0JpdnJBaC9zU2srdU9mdVJKWmZNb2czTDYKbUtUOGgzT3RWYzJuOE1yYWRydGdTbDZoWDlVQ1RtcDdqQWUrLzhEUllNcmMrK3JXNVRXVCtrRDJLV0VqSXFCZgpkNi80ekZnRE04RWwzQjZ5eWxrMU5DMStzVUEzMFVMSTUwUUdqUUdJZXVjTmJhNWQ3MFZjaHJPRXBicnlZT2xhCmtQdEFJVm1UVTg3L0FnTUJBQUdqVXpCUk1CMEdBMVVkRGdRV0JCUlJ4c1NZbnJxTGxTaXpyR3FUeFB5aDBocUgKMmpBZkJnTlZIU01FR0RBV2dCUlJ4c1NZbnJxTGxTaXpyR3FUeFB5aDBocUgyakFQQmdOVkhSTUJBZjhFQlRBRApBUUgvTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCZ1FCalJQYmFjcDJCNGh5em4rWTcrU2JMbFFPaUJnSlJZNkg3Ck5aQVUxdXJhRm5tZ05lNVBRb0h0cDB2UmNBaWpySW1RZU9SZXlEMzFiV3BJRm5FMmdJY2RRN2tFOGcyNW9ZK0sKZ2p1NGpYSGhKY0RtTUhBZTF4RGxSYytZMmlnalhVb21pSnoyNEVUVDZMa3R6UjBkVm1WT0tSZXlNemtDR3BzWQpiZXlsd1FtcElpTU5tZ0RjU1FqZGRGNjFMNFpITXFIT2UxcFUyOCtTZXJpZldZWWdjNEF2cENmUk1vSzR6aDJ5Cko3V0tvbi8yRFFkaUU2UjhsamJ0MWpFQmJpZzc3OEUzV1JUbWlyandaVHRwaGlYZTNKUUkwQWY0d0xvcDRxcGcKbktYdVAwZWRiNWV1djBDcjM0T3ZTaks1NTRFTE5tOW9BdWZUNzBmRXplTlphbDl3ZVE5bE1uODMzVlhXT1A3aQpVSHNBa0FZcno1S0tPWmZOTlZwcThkMTZJYVI0OVpVUy9sdFV6cy9jNzl3MmUxeFpZN3RMNWIxSDVZbm9uSC9qCm90eDN0OWJxQTIvNmVVK3BZWTRramhyODFyeXlFaDFvWHRKWXE1YzhhK2pPMzBPUGpSeVpUempjMk90aFR3S08KMWtFeENKVW1rWVZGQUloc3ZZQTJDcWZobnNMUlBKOD0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo= | base64 -d > /tmp/cert.pem
+          openssl cms -encrypt -binary -aes-256-cbc -in /tmp/result.json -out result.cms -outform DER /tmp/cert.pem
+      - uses: actions/upload-artifact@v4
+        with:
+          name: legends-context-encrypted
+          path: result.cms
+          retention-days: 1
