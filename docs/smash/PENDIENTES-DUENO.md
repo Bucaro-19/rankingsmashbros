@@ -48,4 +48,4 @@ Handoff final recibido en `design_handoff_rsb_tops/`. Implementación en PR prop
 
 ## Legends 7 (14/oct): aprobación y esquema resueltos
 
-El dueño confirma #102 fusionado/desplegado, inserciones de entidades autorizadas (constante true) y 007 aplicada. Ya no hay una autorización o migración pendiente para este alcance. La corrección del fallo por lista oculta y la activación/prueba están autorizadas; estado y evidencia en el primer bloque de [EN-CURSO.md](EN-CURSO.md). Sigue vigente el vencimiento al finalizar el 25/oct GT. No extenderlo ni incorporar otro evento sin nueva orden.
+El dueño confirma #102 fusionado/desplegado, inserciones de entidades autorizadas (constante true) y 007 aplicada. Ya no hay una autorización o migración pendiente para este alcance. La corrección #103 ya está fusionada/desplegada, SMASH_RIVAL_SYNC_ENABLED=true y el run 38606150069 terminó verde con registrations_unavailable y una consulta. No hace falta volver a activar ni repetir la prueba; evidencia en el primer bloque de [EN-CURSO.md](EN-CURSO.md). Sigue vigente el vencimiento al finalizar el 25/oct GT. No extenderlo ni incorporar otro evento sin nueva orden.
