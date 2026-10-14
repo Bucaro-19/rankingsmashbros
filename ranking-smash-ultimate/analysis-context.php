@@ -71,6 +71,8 @@ function smash_analysis_overlay(array $public, array $context): array {
 function smash_analysis_merge_games(array $data, array $context, array $original): array {
     if (($data['rowCount'] ?? 0)+$context['rowCount']>SMASH_ANALISIS_GAME_ROWS) throw new SmashAnalisisError('game_limit_exceeded');
     $published=[];foreach ($original['results'] ?? [] as $r) $published[(string)$r['id']]=true;
+    $data['analysisOnlySets']=[];
+    foreach ($context['results'] as $id=>$r) if (!isset($published[(string)$id])) $data['analysisOnlySets'][(string)$id]=true;
     foreach ($context['games'] as $id=>$g) if (!isset($published[$g['setId']])) $data['games'][$id]=$g;
     foreach ($context['completed'] as $id=>$at) if (!isset($published[(string)$id])) $data['completed'][$id]=$at;
     if ($data['games']) $data['status']='available';

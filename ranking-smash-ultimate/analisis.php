@@ -160,7 +160,7 @@ function smash_analisis_set_characters(array $games, array $results, array $cata
 function smash_analisis_pool(array $detected): array {
     return array_slice(array_column(array_values(array_filter($detected,static fn($d)=>$d['usableForMatchups'])),'slug'),0,3);
 }
-function smash_analisis_matrix(array $games, array $catalog, array $mine, array $his, string $me, string $rival): array {
+function smash_analisis_matrix(array $games, array $catalog, array $mine, array $his, string $me, string $rival, array $analysisOnlySets = []): array {
     $out=[];
     foreach ($mine as $a) foreach ($his as $b) $out[$a.'|'.$b]=['me'=>[0,0],'him'=>[0,0],'scene'=>[0,0],'sceneGames'=>0,'mirror'=>$a===$b];
     foreach ($games as $g) {
@@ -179,7 +179,7 @@ function smash_analisis_matrix(array $games, array $catalog, array $mine, array 
             foreach ($picks as $i=>$pick) {
                 $other=$picks[1-$i]; $result=$pick['won'] ? 0 : 1;
                 if ($pick['slug']===$a && $other['slug']===$b) {
-                    $record['scene'][$result]++; $matched=true;
+                    if (!isset($analysisOnlySets[(string)($g['setId'] ?? '')])) { $record['scene'][$result]++; $matched=true; }
                     if ($pick['pid']===$me) $record['me'][$result]++;
                 }
                 if ($pick['pid']===$rival && $pick['slug']===$b && $other['slug']===$a) $record['him'][$result]++;
@@ -239,7 +239,7 @@ function smash_analisis_deep(PDO $db, array $public, array $view, array $data, a
     $vs = []; $mainVs = []; $scene = []; $hisChars = []; $bySet = []; $coveredSets = [];
     foreach ($rows as $row) foreach ([0, 1] as $i) {
         $side = $row['sides'][$i]; $other = $row['sides'][1 - $i];
-        if ($main !== null && $other['slug'] === $main && $side['slug'] !== null && $side['slug'] !== $main) $add($scene, $side['slug'], $side['won']);
+        if (!isset($data['analysisOnlySets'][$row['setId']]) && $main !== null && $other['slug'] === $main && $side['slug'] !== null && $side['slug'] !== $main) $add($scene, $side['slug'], $side['won']);
         if ($side['player'] !== $rival) continue;
         $bySet[$row['setId']][$row['number']] = ['won' => $side['won'], 'slug' => $side['slug']];
         if ($side['slug'] !== null) $hisChars[$side['slug']] = ($hisChars[$side['slug']] ?? 0) + 1;
@@ -436,7 +436,7 @@ function smash_analisis_full(PDO $db, array $public, array $base, array $user, s
         if ($kind==='me') { if (!isset($meVs[$slug])) $meVs[$slug]=[0,0]; $meVs[$slug][$pos===0 ? 0 : 1]++; }
         else { if (!isset($himVs[$slug])) $himVs[$slug]=[0,0]; $himVs[$slug][$pos===0 ? 0 : 1]++; }
     }
-    $matrix=(array)smash_analisis_matrix($data['games'],$catalog,$mine,$his,$me,$rival);
+    $matrix=(array)smash_analisis_matrix($data['games'],$catalog,$mine,$his,$me,$rival,$data['analysisOnlySets'] ?? []);
     // Character records deliberately use the combined cut in BOTH views, as requested by design.
     $allH2h=array_values(array_filter($public['results'] ?? [],static fn($r)=>in_array($me,$r['playerIds'],true) && in_array($rival,$r['playerIds'],true)));
     $base+=['h2h'=>$history,'h2hTruncated'=>count($h2h)>200,'streak'=>$streak,'rivalForm'=>array_slice($form,0,5),'rivalFormTotal'=>count($form),

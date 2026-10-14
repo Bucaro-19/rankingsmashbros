@@ -98,7 +98,7 @@ class SqlTests(unittest.TestCase):
         p=package(sample()[0]);before=self.protected();r=load(self.db,p);self.assertEqual(r['status'],'validated_no_writes');self.assertEqual(sql(self.db,'SELECT id FROM players WHERE id=9'),())
         self.assertEqual(load(self.db,p,apply=True)['status'],'imported');self.assertEqual(load(self.db,p,apply=True)['status'],'already_imported')
         self.assertEqual(self.protected(),before);self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM analysis_game_scores')[0][0],2)
-        php='''require $argv[1].'/database.php';require $argv[1].'/accounts.php';require $argv[1].'/stats.php';require $argv[1].'/premium.php';require $argv[1].'/analisis.php';$cfg=json_decode(stream_get_contents(STDIN),true);$db=smash_database_connect($cfg['database']);$p=$cfg['public'];$u=['id'=>'1','playerId'=>'1','tag'=>'Yo','url'=>null,'country'=>'GT','chosen'=>[]];$r=smash_analisis_response($db,$p,$u,$cfg['input']??['rival'=>'9'],null,time());echo json_encode($r);'''
+        php='''require $argv[1].'/database.php';require $argv[1].'/accounts.php';require $argv[1].'/stats.php';require $argv[1].'/premium.php';require $argv[1].'/analisis.php';$cfg=json_decode(stream_get_contents(STDIN),true);$db=smash_database_connect($cfg['database']);$p=$cfg['public'];$u=['id'=>'1','playerId'=>'1','tag'=>'Yo','url'=>null,'country'=>'GT','chosen'=>['1302']];$r=smash_analisis_response($db,$p,$u,$cfg['input']??['rival'=>'9'],null,time());echo json_encode($r);'''
         # An invented admin row authorizes the paid projection; no real accounts/providers.
         sql(self.db,'INSERT INTO users(id,startgg_user_id,player_id) VALUES (1,8999901,1)');sql(self.db,"INSERT INTO user_roles(user_id,role) VALUES (1,'admin')")
         import subprocess
@@ -106,6 +106,8 @@ class SqlTests(unittest.TestCase):
         try:
             r=json.loads(subprocess.check_output(['php','-r',php,str(ROOT/'ranking-smash-ultimate')],input=json.dumps(cfg).encode()))
             self.assertIsNone(r['rival']['rank']['intl']);self.assertEqual(r['record']['losses'],1);self.assertEqual(r['rival']['detected'][0]['slug'],'link');self.assertEqual(r['deep']['rival']['main'],'link')
+            self.assertEqual(r['gameMatrix']['mario|link']['sceneGames'],0);self.assertEqual(r['gameMatrix']['mario|link']['me'],[0,2])
+            self.assertEqual(r['deep']['avoid'][0]['sceneGames'],[0,0])
             self.assertEqual(self.protected(),before)
             cfg['input']={'rival':'9','scope':'gt'}
             empty=json.loads(subprocess.check_output(['php','-r',php,str(ROOT/'ranking-smash-ultimate')],input=json.dumps(cfg).encode()))
