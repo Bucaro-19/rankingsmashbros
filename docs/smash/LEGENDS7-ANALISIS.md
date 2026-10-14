@@ -55,6 +55,6 @@ Resultados publicados tienen precedencia por ID: el contexto no cambia su ganado
 
 ## Verificación y pendiente
 
-Local: 7 pruebas nuevas (5 contratos y 2 SQL), 13 HTTP de análisis, 94 Python de pipeline, 5 Node y contratos PHP de análisis correctos; MariaDB 13.0.2/PHP 8.5.3 desechables. Incluye importación/repetición, migración ausente, conflicto de identidad, ranking/instantáneas inmutables, stocks, rival solo contexto, cuenta gratis y modo GT. CI prueba MySQL 8.0 y MariaDB 10.11.
+Local: 7 pruebas nuevas (5 contratos y 2 SQL), 13 HTTP de análisis, 94 Python de pipeline, 5 Node y contratos PHP de análisis correctos; MariaDB 13.0.2/PHP 8.5.3 desechables. Incluye importación/repetición, migración ausente, conflicto de identidad, ranking/instantáneas inmutables, stocks, rival solo contexto, cuenta gratis y modo GT. CI del código 590d82c [38515107772](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/38515107772) correcta en MySQL 8.0, MariaDB 10.11 y suite general. Fallback de imagen PHP ECR a Docker Official Images acotado a un intento alterno por throttling observado; no se omite ninguna comprobación. Consultar checks del head final en PR #100.
 
 SHA-256 versionado public.json sin cambios: `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`. Pendientes reales: publicación de inscritos, autorización/aplicación de 007 por el dueño y medición de captura/importación reales cuando haya lista. No se fusiona ni despliega.
