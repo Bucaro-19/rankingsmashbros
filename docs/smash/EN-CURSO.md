@@ -1,5 +1,14 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — Legends 7: herramienta de contexto; lista aún no publicada (13/oct)
+
+Rama `feat/legends-analysis-context` desde origin/main **a1865fe**, remoto Bucaro-19/rankingsmashbros, tracked limpio al empezar; carpetas ajenas laminas/, marca-rsb/ y social/ conservadas. Actions iniciales: deploy main 38458958122 correcto; CI main 38458951697 falla al pull PHP, PR99 anterior verde. Sin fusión, despliegue ni escritura/migración productiva autorizados.
+
+- Torneo único verificado **942547**, `legends7`, SV, 24–25/oct; evento singles Ultimate **1687524**. Ambas rutas oficiales de inscritos vacías con numEntrants null; el dueño tampoco ve la lista. Inscritos/conocidos/faltantes **desconocidos**, no cero; **0 añadidos**, sin captura histórica real. Investigación: **5 consultas** con token en Secrets y artefactos cifrados; workflow de sonda restaurado idéntico a main.
+- Nueva herramienta acotada roster/inventory/capture/load, caché reanudable, solo contexto, simulación por defecto; propuesta **007** no aplicada en producción. Lectura de análisis admite esos rivales sin dar clasificación/puntos, conserva resultados y mains publicados, y avisa historial parcial. Gratis/premium siguen separados en servidor; sin consultas API por visita.
+- 7 pruebas nuevas y regresión de análisis/pipeline correctas en local desechable; CI MySQL 8.0 y MariaDB 10.11 exigida en el PR. public.json SHA **1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1** intacto. Contrato, comandos, pruebas, métricas reales y pendientes en [LEGENDS7-ANALISIS.md](LEGENDS7-ANALISIS.md). No presentar la carga real como completada: falta lista pública y orden para 007/apply.
+
+
 ## Pagos de premium reabiertos (13/oct)
 
 Recurrente confirmó al dueño que la cuenta vuelve a aceptar tarjetas. Por su orden, `pagos-en-pausa.txt` pasa a `0`: la pestaña Premium vuelve a mostrar el botón de pagar. Para pausar otra vez: poner `1` y desplegar. Falta comprobar un cobro real con tarjeta después de la reapertura.

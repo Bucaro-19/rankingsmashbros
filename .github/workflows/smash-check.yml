@@ -22,6 +22,7 @@ jobs:
           python scripts/database/test_import_ranking.py
           python scripts/database/test_tournament_catalog.py
           python scripts/database/test_organizer_context.py
+          python scripts/database/test_rival_context.py
           python scripts/database/test_small_events_backfill.py
           python scripts/database/test_game_context.py
           python scripts/database/test_weekly_ranking_load.py
@@ -122,6 +123,7 @@ jobs:
           python scripts/database/test_import_ranking.py
           python scripts/database/test_tournament_catalog.py
           python scripts/database/test_organizer_context.py
+          python scripts/database/test_rival_context.py
           python scripts/database/test_small_events_backfill.py
           python scripts/database/test_game_context.py
           python scripts/database/test_weekly_ranking_load.py

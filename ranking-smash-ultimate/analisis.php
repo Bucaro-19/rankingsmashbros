@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/analysis-context.php';
 // Library only. No I/O on inclusion. All analysis queries are SELECTs; no provider calls.
 const SMASH_ANALISIS_GAME_ROWS = 50000;
 final class SmashAnalisisError extends RuntimeException {
@@ -101,7 +102,7 @@ function smash_analisis_detection(array $public, string $id, array $catalog): ar
 function smash_analisis_games(PDO $db, array $public): array {
     $at=(new DateTimeImmutable($public['generatedAt']))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
     $cuts=smash_analisis_query($db,"SELECT id,public_snapshot FROM cuts WHERE generated_at=? AND season_year=? AND method_version=? AND status='published'",[$at,$public['seasonYear'],$public['methodVersion']]);
-    if (count($cuts)!==1 || json_decode($cuts[0]['public_snapshot'],true) != $public) return ['status'=>'cut_not_synced','games'=>[],'completed'=>[]];
+    if (count($cuts)!==1 || json_decode($cuts[0]['public_snapshot'],true) != $public) return ['status'=>'cut_not_synced','games'=>[],'completed'=>[],'rowCount'=>0];
     $cut=$cuts[0]['id'];
     $completed=[]; foreach (smash_analisis_query($db,"SELECT r.set_id,s.completed_at FROM cut_set_results r JOIN sets s ON s.id=r.set_id WHERE r.cut_id=? AND r.scope='combined'",[$cut]) as $r) $completed[(string)$r['set_id']]=$r['completed_at'];
     $captured=(new DateTimeImmutable($public['characterCapturedAt']))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
@@ -120,7 +121,7 @@ function smash_analisis_games(PDO $db, array $public): array {
         $games[$gid]['picks'][$en]['players'][(string)$r['player_id']]=true;
         if ($r['character_id']!==null) $games[$gid]['picks'][$en]['characters'][(string)$r['character_id']]=true;
     }
-    return ['status'=>$games ? 'available' : 'empty','games'=>$games,'completed'=>$completed];
+    return ['status'=>$games ? 'available' : 'empty','games'=>$games,'completed'=>$completed,'rowCount'=>$rows];
 }
 function smash_analisis_set_characters(array $games, array $results, array $catalog): array {
     $sets=[]; $invalid=[]; $ledger=[]; $numbers=[];
@@ -372,11 +373,20 @@ function smash_analisis_teaser_from(array $deep, ?string $main): array {
         'locked'=>['counters'=>count($deep['counters'])+count($deep['avoid']),'characters'=>max(0,$characters),'common'=>$deep['commonTotal'],
             'sets'=>$pattern['setsScored'] ?? 0,'coveredSets'=>$deep['rival']['coveredSets'],'totalSets'=>$deep['rival']['totalSets']]];
 }
-function smash_analisis_full(PDO $db, array $public, array $base, array $user, string $rival, string $scope): array {
+function smash_analisis_full(PDO $db, array $public, array $base, array $user, string $rival, string $scope, ?array $context = null): array {
+    $original=$public;
     $me=$user['playerId']; $views=['intl'=>$public,'gt'=>$public['localRanking']]; $view=$views[$scope];
     $catalog=smash_analisis_catalog($db); $data=smash_analisis_games($db,$public);
+    if ($context !== null) { $data=smash_analysis_merge_games($data,$context,$public); $public=smash_analysis_overlay($public,$context); $views=['intl'=>$public,'gt'=>$public['localRanking']]; $view=$views[$scope]; }
     $chars=smash_analisis_set_characters($data['games'],$public['results'] ?? [],$catalog);
     foreach (['me'=>$me,'rival'=>$rival] as $key=>$id) $base[$key]+=smash_analisis_detection($public,$id,$catalog);
+    if ($context !== null) foreach (['me'=>$me,'rival'=>$rival] as $key=>$id) {
+        if ($base[$key]['coverage']['source'] === 'unavailable' && isset($context['players'][$id])) {
+            $total=0; foreach ($public['results'] ?? [] as $r) if (in_array($id,$r['playerIds'],true)) $total++;
+            $extra=smash_analysis_context_detection($data['games'],$catalog,$id,$total);
+            $base[$key]['detected']=$extra['detected'];$base[$key]['coverage']=$extra['coverage'];
+        }
+    }
     $chosen=[]; foreach ($user['chosen'] as $id) if ((string)$id!=='1746' && isset($catalog[$id])) $chosen[]=$catalog[$id]['slug'];
     $base['me']['chosen']=$chosen;
     $mine=$chosen ?: smash_analisis_pool($base['me']['detected']); $his=smash_analisis_pool($base['rival']['detected']);
@@ -430,7 +440,7 @@ function smash_analisis_full(PDO $db, array $public, array $base, array $user, s
     // Character records deliberately use the combined cut in BOTH views, as requested by design.
     $allH2h=array_values(array_filter($public['results'] ?? [],static fn($r)=>in_array($me,$r['playerIds'],true) && in_array($rival,$r['playerIds'],true)));
     $base+=['h2h'=>$history,'h2hTruncated'=>count($h2h)>200,'streak'=>$streak,'rivalForm'=>array_slice($form,0,5),'rivalFormTotal'=>count($form),
-        'rivalTiers'=>$tiers,'meVsChar'=>(object)$meVs,'himVsChar'=>(object)$himVs,'gameMatrix'=>(object)$matrix,'gameDataStatus'=>$data['status'],'setDataScope'=>'published_ledger',
+        'rivalTiers'=>$tiers,'meVsChar'=>(object)$meVs,'himVsChar'=>(object)$himVs,'gameMatrix'=>(object)$matrix,'gameDataStatus'=>$data['status'],'setDataScope'=>$context !== null && $context['results'] ? 'published_ledger_and_analysis_context' : 'published_ledger',
         'recommendations'=>smash_analisis_recommendations($chosen,$his,$allH2h,$chars,$matrix,$me),
         'deep'=>smash_analisis_deep($db,$public,$view,$data,$catalog,$chars,$me,$rival,$chosen,$his[0] ?? null),
         'probability'=>['p'=>smash_analisis_probability($base['me']['points'][$scope],$base['rival']['points'][$scope],$public['methodVersion']),'scale'=>400,'methodVersion'=>$public['methodVersion']]];
@@ -442,7 +452,12 @@ function smash_analisis_response(PDO $db, array $public, array $user, array $inp
     $base=['ok'=>true,'scope'=>$scope,'generatedAt'=>$public['generatedAt'],'seasonYear'=>$public['seasonYear']]+$access;
     if ($user['playerId']===null) return $base+['state'=>'sinJugador','me'=>null,'rival'=>null,'record'=>null];
     if (isset($input['rival'])===isset($input['buscar'])) throw new SmashAnalisisError('invalid_parameters');
-    $index=smash_analisis_index($public); $me=$user['playerId'];
+    $original=$public; $me=$user['playerId'];
+    $candidate=isset($input['rival']) ? smash_account_external_id($input['rival']) : null;
+    $context=smash_analysis_context($db,(int)$public['seasonYear'],$me,$candidate,$access['access']['full'],array_column($public['results'] ?? [],'id'));
+    $public=smash_analysis_overlay($public,$context);
+    if ($context['players']) $base['dataNotice']='Este análisis incluye historial público adicional de la temporada. Puede ser parcial; no cambia puestos, puntos ni elegibilidad del ranking.';
+    $index=smash_analisis_index($public)+$context['players'];
     if (!isset($index[$me])) $index[$me]=['playerId'=>$me,'tag'=>$user['tag'],'avatarUrl'=>null,'country'=>$user['country'],'url'=>$user['url'],'rank'=>['gt'=>null,'intl'=>null],'points'=>['gt'=>null,'intl'=>null]];
     if (isset($input['buscar'])) {
         $query=$input['buscar'];
@@ -473,5 +488,5 @@ function smash_analisis_response(PDO $db, array $public, array $user, array $inp
     $base+=['state'=>$access['access']['full'] ? 'listo' : ($access['premium']['expiredAt']===null ? 'bloqueado' : 'vencido'),
         'me'=>$players[$me],'rival'=>$players[$rival],'record'=>$records[$scope],'records'=>$records];
     // Gate BEFORE reading characters/games or building ANY premium response field.
-    return $access['access']['full'] ? smash_analisis_full($db,$public,$base,$user,$rival,$scope) : $base+['teaser'=>smash_analisis_teaser($db,$public,$user,$rival,$scope)];
+    return $access['access']['full'] ? smash_analisis_full($db,$original,$base,$user,$rival,$scope,$context) : $base+['teaser'=>$context['results'] ? null : smash_analisis_teaser($db,$original,$user,$rival,$scope)];
 }

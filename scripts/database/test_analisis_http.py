@@ -63,7 +63,7 @@ class AnalysisHttpTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory(prefix='smash-analysis-http-')
         home = Path(cls.temp.name); cls.site=home/'site'; cls.private=home/'private-smash'; sessions=home/'sessions'
         for path in (cls.site/'data',cls.private,sessions): path.mkdir(parents=True)
-        for name in ('database.php','accounts.php','stats.php','premium.php','analisis.php','analisis-api.php'):
+        for name in ('database.php','accounts.php','stats.php','premium.php','analysis-context.php','analisis.php','analisis-api.php'):
             shutil.copyfile(SITE/name,cls.site/name)
         config = dict(database=dict(host='127.0.0.1',port=port,name=DATABASE,user='root',password=os.environ['SMASH_SCHEMA_TEST_PASSWORD']))
         (cls.private/'config.local.php').write_text('<?php return json_decode('+json.dumps(json.dumps(config))+',true);')

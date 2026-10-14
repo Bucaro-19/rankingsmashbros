@@ -91,11 +91,11 @@
     const rows=list.map(x=>{const diff=rate(x.me)-rate(x.him), verdict=Math.abs(diff)<.1?['= Parejo','even']:diff>0?['◀ Tú saliste mejor','me']:['Él salió mejor ▶','him'];
       const cell=(pair,who,win)=>`<span class="pr-cell ${win?'win':''}" aria-label="${who}: ${pair[0]} ganados, ${pair[1]} perdidos"><b>${rec(pair)}</b><small>${plural(sum(pair),'set','sets')}</small></span>`;
       return `<li><span class="pr-row-main"><b>${escape(x.alias)}</b><small class="v-${verdict[1]}">${verdict[0]}</small></span>${cell(x.me,'Tú',verdict[1]==='me')}${cell(x.him,data.rival.tag,verdict[1]==='him')}</li>`;}).join('');
-    return `<section id="en-comun" class="pr-section">${head(6,'Sets en este corte','Rivales en común','Jugadores que ambos enfrentaron, con el récord en sets de cada uno.')}
+    return `<section id="en-comun" class="pr-section">${head(6,'Sets conocidos','Rivales en común','Jugadores que ambos enfrentaron, con el récord en sets de cada uno.')}
       ${list.length?`<div class="pr-common-head" aria-hidden="true"><span>Rival · ganados–perdidos</span><span>Tú</span><span>${rv}</span></div><ul class="pr-rows common">${rows}</ul>
         ${data.deep.commonTotal>list.length?`<p class="pr-note">Se muestran los ${list.length} con más sets de ${data.deep.commonTotal} rivales en común.</p>`:''}
         <p class="pr-note">◀ Tú saliste mejor · Él salió mejor ▶ · = Parejo (menos de 10 puntos de diferencia en % de sets). El recuadro marcado es el mejor récord.</p>`
-        :empty('No tienen rivales en común en este corte. Cuando ambos jueguen contra la misma persona, aparecerá aquí.')}</section>`;
+        :empty('No tienen rivales en común en los datos conocidos. Cuando ambos jueguen contra la misma persona, aparecerá aquí.')}</section>`;
   }
   function tiers() {
     const t=data.deep.byTier;
@@ -117,7 +117,7 @@
     const t=data.teaser, h=t?.headline;
     if(!h)return `<section class="pr-finding none"><p class="pr-kicker">Hallazgo principal · gratis</p><h2>Aún no hay un hallazgo con muestra suficiente</h2><p>Para adelantarte algo de ${rv} pedimos al menos 5 games o sets detrás del dato. En este corte todavía no los hay; no mostramos cifras de uno o dos games como si dijeran algo.</p></section>`;
     const n=h.won+h.lost, P=h.slug?escape(name(h.slug)):'';
-    const F={hard:[`A ${rv} le cuesta contra ${P}`,`Ganó ${h.won} de ${n} games contra ${P} en este corte. Entre los personajes con muestra suficiente, es contra el que peor le va.`],
+    const F={hard:[`A ${rv} le cuesta contra ${P}`,`Ganó ${h.won} de ${n} games contra ${P} en los datos conocidos. Entre los personajes con muestra suficiente, es contra el que peor le va.`],
       game1:[h.won<h.lost?`${rv} suele empezar perdiendo`:h.won>h.lost?`${rv} suele ganar el primer game`:`${rv} reparte el primer game`,`Ganó el primer game en ${h.won} de ${plural(n,'set','sets')} con marcador por game.`],
       top10:[`Contra el top 10: ${h.won}–${h.lost}`,`Ganó ${h.won} de ${plural(n,'set','sets')} contra jugadores del top 10 de esta vista.`]}[h.kind];
     return `<section class="pr-finding"><p class="pr-kicker">Hallazgo principal · gratis</p><div class="pr-finding-head">${h.slug?`<span class="pr-icon big">${icon(h.slug,46)}</span>`:''}<h2>${F[0]}</h2></div><p>${F[1]}</p><p class="pr-note">Es un dato medido en los sets y games del corte, no una opinión.</p></section>`;
@@ -134,7 +134,7 @@
   function renderLocked() {
     const expired=data.state==='vencido'&&data.premium?.expiredAt, rv=escape(data.rival.tag), l=data.teaser?.locked;
     const basis=l&&l.totalSets?`El análisis completo ya está calculado con ${plural(l.totalSets,'set','sets')} de ${rv} en este corte${l.coveredSets?` (${l.coveredSets} con personaje registrado)`:''}.`:`El análisis completo usa los resultados de ${rv} y los tuyos para preparar el set.`;
-    root.innerHTML=`${intro(true)}${finding(rv)}${also(rv)}
+    root.innerHTML=`${data.dataNotice?`<p class="pr-read" role="note">${escape(data.dataNotice)}</p>`:''}${intro(true)}${finding(rv)}${also(rv)}
       <section class="pr-lock"><div class="pr-lock-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
         <div class="pr-lock-box"><span class="pr-lock-glyph" aria-hidden="true">★</span><h2>${expired?'Renueva para volver a verlo':'Disponible con premium'}</h2><p>${basis} Lo gratis sigue igual: su puesto, sus puntos y el récord entre ustedes.</p>
           <a class="pr-cta" href="./cuenta.html#premium"><span>Apoyar con 3 USD al mes o 24 USD al año</span></a><p class="pr-note">Se renueva solo hasta que lo canceles desde la pestaña Premium. El cobro ocurre en Recurrente; Ranking Smash Bros nunca ve tu tarjeta.</p></div></section>
@@ -148,7 +148,7 @@
     document.title=`Prepara el set contra ${data.rival.tag} — Ranking Smash Bros`;
     if(!data.deep){renderLocked();return;}
     const d=data.deep;
-    root.innerHTML=`${intro(false)}<p class="pr-read" role="note"><strong>Cómo leer los marcadores.</strong> Siempre van ganados–perdidos: el primer número son las victorias de quien se nombra en esa fila o en ese título. Donde dice «Tú», es tu récord; donde dice ${escape(data.rival.tag)}, es el suyo.</p><div class="pr-columns"><div>${cards(1,'counters',d.counters,true)}${cards(2,'evita',d.avoid,false)}${toolkit()}</div><div>${vsChars()}${setPattern()}${common()}${tiers()}</div></div>${foot()}`;
+    root.innerHTML=`${data.dataNotice?`<p class="pr-read" role="note">${escape(data.dataNotice)}</p>`:''}${intro(false)}<p class="pr-read" role="note"><strong>Cómo leer los marcadores.</strong> Siempre van ganados–perdidos: el primer número son las victorias de quien se nombra en esa fila o en ese título. Donde dice «Tú», es tu récord; donde dice ${escape(data.rival.tag)}, es el suyo.</p><div class="pr-columns"><div>${cards(1,'counters',d.counters,true)}${cards(2,'evita',d.avoid,false)}${toolkit()}</div><div>${vsChars()}${setPattern()}${common()}${tiers()}</div></div>${foot()}`;
   }
   async function load() {
     if(!rivalId){root.innerHTML=`<section class="pr-sober"><h1>Elige <span>un rival.</span></h1><p>Esta pantalla prepara el set contra un jugador concreto.</p><a class="pr-cta blue" href="./analisis.html"><span>Buscar rival</span></a></section>`;return;}
@@ -160,7 +160,7 @@
       data=json;render();
     } catch(error) {
       root.innerHTML=error.status===401?`<section class="pr-sober"><h1>Primero, <span>tu cuenta.</span></h1><p>Preparar el set usa tu jugador vinculado. Entra con start.gg y vuelve aquí.</p><a class="pr-cta blue" href="./cuenta.html"><span>Entrar a tu cuenta</span></a></section>`
-        :`<section class="pr-sober"><h1>No pudimos <span>cargarlo.</span></h1><p>${error.status===404?'No encontramos a ese jugador en este corte.':error.status===429?'Demasiadas consultas seguidas. Espera un momento.':'Vuelve a intentarlo en un momento.'}</p><button type="button" class="pr-cta blue" id="pr-retry"><span>Reintentar</span></button></section>`;
+        :`<section class="pr-sober"><h1>No pudimos <span>cargarlo.</span></h1><p>${error.status===404?'No encontramos a ese jugador en los datos conocidos.':error.status===429?'Demasiadas consultas seguidas. Espera un momento.':'Vuelve a intentarlo en un momento.'}</p><button type="button" class="pr-cta blue" id="pr-retry"><span>Reintentar</span></button></section>`;
       document.getElementById('pr-retry')?.addEventListener('click',()=>{root.innerHTML='<div class="pr-loading" role="status"><div class="pr-bar"><span></span></div><p>Preparando el set…</p></div>';load();});
     } finally {clearTimeout(stop);}
   }

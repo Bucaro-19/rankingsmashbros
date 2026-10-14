@@ -45,3 +45,7 @@ Ya está programado en «Prepara el set» con componentes existentes: «Hallazgo
 ## 5. Diseño del directorio de tops
 
 Handoff final recibido en `design_handoff_rsb_tops/`. Implementación en PR propio, ver EN-CURSO.md. Ya no hace falta solicitar este diseño. Se conserva el contrato público: el diseño pide mains, total de tops y una vista ampliada completa que este endpoint no entrega; se omiten, sin añadir datos ni adivinar cifras.
+
+## Legends 7 (13/oct): lista y contexto de análisis
+
+La lista pública de Ultimate Singles no está disponible en las dos rutas de la API; el dueño tampoco la ve. Avisar cuando sea pública. Revisar propuesta 007_analysis_context antes de autorizar su aplicación y una carga real; no se aplicó en producción. Herramienta y comandos: LEGENDS7-ANALISIS.md. Nada de este contexto admite jugadores al ranking nacional.
