@@ -20,8 +20,8 @@ function smash_frame_facts_document(): ?array {
         $f=$sheet['fastest'];
         if ($f!==null && (!is_array($f) || count($f)!==3 || !$name($f['name'] ?? null) || !$frame($f['frame'] ?? null)
             || (!is_int($f['damage'] ?? null) && !is_float($f['damage'] ?? null)) || $f['damage']<=0 || $f['damage']>200)) return null;
-        foreach ($sheet['oos'] as $move) if (count($move)!==2 || !$name($move['name'] ?? null) || !$frame($move['frame'] ?? null)) return null;
-        foreach ($sheet['punishable'] as $move) if (count($move)!==2 || !$name($move['name'] ?? null) || !is_int($move['onShield'] ?? null) || $move['onShield']>=0 || $move['onShield'] < -200) return null;
+        foreach ($sheet['oos'] as $move) if (!is_array($move) || count($move)!==2 || !$name($move['name'] ?? null) || !$frame($move['frame'] ?? null)) return null;
+        foreach ($sheet['punishable'] as $move) if (!is_array($move) || count($move)!==2 || !$name($move['name'] ?? null) || !is_int($move['onShield'] ?? null) || $move['onShield']>=0 || $move['onShield'] < -200) return null;
     }
     // Source does not declare a game build. Null is honest; never assume the handoff's example version.
     if (($data['source']['gameVersion'] ?? null)!==null && (!is_string($data['source']['gameVersion']) || !preg_match('/^\d+\.\d+\.\d+$/D',$data['source']['gameVersion']))) return null;

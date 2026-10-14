@@ -85,6 +85,9 @@ class FrameFactsTests(unittest.TestCase):
             self.assertEqual(read(),empty)
             snapshot.write_bytes((SITE/'data/frame-facts-v1.json').read_bytes())
             self.assertEqual(read()['toolkit']['mario']['fastest']['frame'],2)
+            malformed=json.loads(snapshot.read_text());malformed['characters']['mario']['oos']=['bad row'];snapshot.write_text(json.dumps(malformed))
+            self.assertEqual(read(),empty)
+            snapshot.write_bytes((SITE/'data/frame-facts-v1.json').read_bytes())
             lib.write_text(source.replace('const SMASH_FRAME_FACTS_ENABLED = true;','const SMASH_FRAME_FACTS_ENABLED = false;'))
             self.assertEqual(read(),empty)
 
