@@ -35,6 +35,13 @@ def main():
         checked=subprocess.run(['php','-r',php],input=body,capture_output=True,check=True)
         print(checked.stdout.decode())
         print(json.dumps(dict(stage='validated_no_writes',queries=client.calls,sets=len(p['content']['entities']['sets']),games=len(p['content']['entities']['games']),bytes=len(body))))
+        from publish_sql import request,SyncStopped
+        safe=('package_invalid','payload_invalid','analysis_checkpoint_progress_invalid','analysis_checkpoint_regression','analysis_identity_conflict','analysis_unrelated_set','receiver_busy','inbox_unavailable','analysis_job_pending','receiver_unavailable','analysis_batch_limit','analysis_checkpoint_conflict')
+        try:
+            result=request(os.environ['SMASH_SQL_SYNC_KEY'],body,'application/vnd.smash.analysis+gzip',safe_reasons=safe)
+            print(json.dumps(dict(stage='single_authorized_delivery',status=result.get('status') if result.get('status') in ('queued','running','succeeded','failed') else 'unexpected')))
+        except SyncStopped as error:print(json.dumps(dict(stage='single_authorized_delivery',reason=str(error) if str(error) in safe else 'unclassified')))
+
     except Exception as error:
         trace=[dict(file=Path(x.filename).name,function=x.name,line=x.lineno) for x in traceback.extract_tb(error.__traceback__)]
         print(json.dumps(dict(stage=stage,queries=client.calls,errorType=type(error).__name__,trace=trace)))
