@@ -284,6 +284,21 @@ class SqlTests(fixtures.SqlTests):
             c=Source([9],pages=60);report,_=quiet_run(c,host,1687524,now=NOW)
             self.assertEqual((report['pending'],report['queries'],report['added']),(0,5,0))
             self.assertEqual(host.inventory(auto.event_roster(Source([9]),1687524))['checkpoint']['coverage']['9']['nextPage'],61)
+    def test_partial_large_roster_keeps_unqueried_roots_after_canonical_key_sort(self):
+        # Real source: one long history uses the whole batch, other registrants
+        # retain the default coverage object. JSON key order is not progress.
+        with self.serving() as host:
+            c=Source([9,10],pages=60);report,_=quiet_run(c,host,1687524,now=NOW)
+            self.assertEqual((report['pending'],report['queries'],report['added']),(2,57,1))
+            saved=host.inventory(auto.event_roster(Source([9,10]),1687524))
+            self.assertEqual(saved['checkpoint']['coverage']['9']['nextPage'],57)
+            self.assertEqual(saved['checkpoint']['coverage']['10'],dict(nextPage=1,totalPages=None,complete=False))
+            c=Source([9,10],pages=60);report,_=quiet_run(c,host,1687524,now=NOW)
+            self.assertEqual(report['added'],1)
+            saved=host.inventory(auto.event_roster(Source([9,10]),1687524))
+            self.assertTrue(saved['checkpoint']['coverage']['9']['complete'])
+            self.assertEqual(saved['checkpoint']['coverage']['10']['nextPage'],53)
+
     def test_source_failure_does_not_queue_partial_capture(self):
         class Broken(Source):
             def query(self,q,v):

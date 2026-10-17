@@ -1,5 +1,13 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — segundo prerrequisito de Mi torneo: avance parcial (17/oct)
+
+#105 fusionado por rama, CI 39075850364 verde en los dos motores y suite general; quitó el campo no admitido slots.stats. Prueba normal en main [39076233680](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39076233680): 309 inscritos, 68 conocidos, 241 pendientes, 35 consultas; falló antes de confirmar importación. No afirmar historiales completos.
+
+Rama independiente `fix/legends-context-delivery` desde 9aad1de. La sonda sin escrituras 39076532669 normalizó una tanda real (35 consultas, cero sets de temporada en esas primeras páginas); 39076609488 confirmó además validación PHP en el runner. El defecto reproducido con datos inventados: la serialización canónica ordena las claves de coverage, pero PHP comparaba arrays con `===` incluyendo su orden contra el estado inicial escrito en otro orden. Con más de un inscrito pendiente y el primero ocupando la tanda, los no consultados parecían haber cambiado y se rechazaba el paquete.
+
+Se comparan explícitamente los tres valores tipados (nextPage, totalPages, complete), sin relajar avance ni permitir retrocesos. Una prueba firmada HTTP/SQL reproduce el error original y pasa tras el cambio con dos inscritos, 60 páginas y reanudación. Motivos seguros adicionales para no ocultar fallos de avance/identidad; nunca mensajes originales. Workflow y sonda restaurados idénticos a main antes del PR definitivo. Solo corrección de contexto ya autorizado: sin cambio de ranking, public.json, permisos, migraciones o cuotas. CI, despliegue y comprobación normal se registrarán al terminar. Mi torneo se entrega en otro PR.
+
 ## Codex — prerrequisito: historial de inscritos ya públicos (17/oct)
 
 Antes de «Mi torneo», en PR independiente por orden del dueño. Main **7743c99**, remoto Bucaro-19/rankingsmashbros, tracked limpio; laminas/, marca-rsb/, social/ ajenos conservados. Último run 39054029637 detectó **304 inscritos, 67 conocidos, 237 pendientes**, falló después de **8 consultas** al primer historial. Los anteriores todavía devolvían lista oculta. No confundir este fallo con el de la llave de #103.
