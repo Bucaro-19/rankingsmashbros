@@ -1,5 +1,17 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — Mi torneo (17/oct), separado de los prerrequisitos
+
+Rama feat/my-tournament desde 9aad1de, incorporado main a177d7c (#106). Leidos AGENTS/CONTEXTO/EN-CURSO/LEGENDS7-ANALISIS/AUTOMATIZACION-ANALISIS. Tracked limpio al empezar; laminas/, marca-rsb/, social/ ajenos conservados. Main abierto en otro worktree: no se forzo su checkout. Orden expresa permite seccion provisional, fusion por rama con CI verde, assets-only y activar solo Legends 7.
+
+Prerrequisito #106 fusionado por rama; CI 39076802825/39076781945 verdes (general, MySQL 8.0 y MariaDB 10.11); deploy assets-only 39076976491 correcto. Hash productivo posterior identico: 77f44f6f6659b3926765f3f51110607fadc52b8f3982a42af83e51c490489d96, 2184697 B. Comprobacion normal de contexto 39077331633 en curso al redactar; no repetir fallos a ciegas ni afirmar historial completo. Sonda 39076706482 confirmo analysis_checkpoint_progress_invalid sin insertar job; regresion reproduce el fallo y pasa con el arreglo.
+
+Mi torneo: resumen completo de bracket por receptor firmado a archivo privado atomico y repetible, antes de PDO, sin SQL/migracion. API gratis de sesion, users.player_id vigente, sin parametros ni pool ajeno. Horarios GT/local honestos; primer set y rival confirmado/probable; camino por conexiones/seeds, sin bracket inventado; rival de referencia por mejor puesto conocido o seed; lista propia y enlaces a analisis con premium existente intacto. UI provisional con componentes actuales y prompt en PENDIENTES-DUENO.md. Contrato/operacion en MI-TORNEO.md.
+
+Esquema vigente inspeccionado en Actions: Event.phaseGroups lista sin argumentos. Sonda completa de solo lectura 39077207149: 309 inscritos / 12 grupos / 617 sets, 17 consultas, 37,186 s, 21969 B gzip / 309729 B JSON con espacios, 12 MiB de pico PHP; proyecciones propias validas para 309. Sin datos de personas en logs, artefactos ni escrituras de esa sonda. Primera captura 39076815671 detecto paginaciones agotadas independientes; corregido/probado antes de publicar. Workflow temporal restaurado identico a main antes del PR.
+
+Pruebas inventadas Python/PHP/HTTP firmado/sesion SQL, Node y 100 pipeline. Navegador escritorio/375 px sin desborde; no inscrito/oculto/pools ausentes/error/reintento/horarios null y publicados/tag largo. QA visual en base separada de regresion, no produccion. Sin cambiar ranking, public.json, mains, elegibilidad, puntos ni esquema. CI final/PR/fusion/despliegue/activacion se registran al completarse.
+
 ## Codex — segundo prerrequisito de Mi torneo: avance parcial (17/oct)
 
 #105 fusionado por rama, CI 39075850364 verde en los dos motores y suite general; quitó el campo no admitido slots.stats. Prueba normal en main [39076233680](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39076233680): 309 inscritos, 68 conocidos, 241 pendientes, 35 consultas; falló antes de confirmar importación. No afirmar historiales completos.

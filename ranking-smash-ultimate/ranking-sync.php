@@ -2,6 +2,7 @@
 declare(strict_types=1);
 ini_set('display_errors', '0');
 require_once __DIR__ . '/ranking-sync-lib.php';
+require_once __DIR__.'/bracket-store.php';
 header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store, private');
 header('X-Content-Type-Options: nosniff'); header('Referrer-Policy: no-referrer');
 function sr_response(int $status, array $data): void { http_response_code($status); echo json_encode($data, JSON_THROW_ON_ERROR); exit; }
@@ -12,7 +13,9 @@ try {
     $body = file_get_contents('php://input', false, null, 0, SR_COMPRESSED_MAX + 1); sr_require(strlen($body) <= SR_COMPRESSED_MAX, 'payload_invalid');
     $auth = sr_auth($config, $_SERVER, $body, time()); sr_nonce($config, $auth, time());
     $type = strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
-    sr_require(in_array($type, ['application/gzip', 'application/json', 'application/vnd.smash.analysis+gzip'], true), 'content_type_invalid');
+    sr_require(in_array($type, ['application/gzip', 'application/json', 'application/vnd.smash.analysis+gzip', 'application/vnd.smash.bracket+gzip'], true), 'content_type_invalid');
+    // Signed private file capture needs no database connection or SQL job.
+    if ($type === 'application/vnd.smash.bracket+gzip') sr_response(200,mt_receive(__DIR__,$body,time()));
     $db = smash_database_connect(smash_database_config(__DIR__));
     if ($type === 'application/vnd.smash.analysis+gzip') sr_response(200,rc_receive($db,$config,$body,$auth['hash'],time()));
     if ($type === 'application/gzip') sr_response(202, ['ok' => true] + sr_receive($db, $config, $body, $auth['hash']));

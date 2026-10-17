@@ -246,7 +246,7 @@ class CatalogSQLTests(unittest.TestCase):
                 with tempfile.TemporaryDirectory() as directory:
                     root = Path(directory).resolve(); site = root / 'site'; private = root / 'private-smash'
                     site.mkdir(); private.mkdir(); (site / 'data').mkdir()
-                    for name in ('database.php', 'ranking-import.php', 'rival-import.php', 'rival-sync-lib.php', 'ranking-sync-lib.php', 'ranking-sync.php', 'characters.js'):
+                    for name in ('database.php', 'ranking-import.php', 'rival-import.php', 'rival-sync-lib.php', 'ranking-sync-lib.php', 'ranking-sync.php','bracket-store.php', 'characters.js'):
                         shutil.copy(fixtures.ROOT / 'ranking-smash-ultimate' / name, site)
                     key = '1' * 64
                     (private / 'sync.local.php').write_text("<?php return ['enabled'=>true,'key'=>'" + key + "'];")

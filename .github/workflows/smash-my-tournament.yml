@@ -1,0 +1,29 @@
+name: Mi torneo · bracket privado
+on:
+  workflow_dispatch:
+  schedule:
+    # El capturador decide si toca: cada 3 h antes, cada 30 min durante el torneo.
+    - cron: '19,49 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
+jobs:
+  bracket:
+    if: >-
+      github.repository == 'Bucaro-19/rankingsmashbros' &&
+      github.ref == 'refs/heads/main' && vars.SMASH_MY_TOURNAMENT_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Capturar y guardar bracket privado por receptor firmado
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+          SMASH_SQL_SYNC_KEY: ${{ secrets.SMASH_SQL_SYNC_KEY }}
+          SMASH_MY_TOURNAMENT_EVENT_ID: ${{ vars.SMASH_MY_TOURNAMENT_EVENT_ID || '1687524' }}
+        run: python scripts/database/my_tournament_sync.py --publish

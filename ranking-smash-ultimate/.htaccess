@@ -82,3 +82,10 @@ Options -Indexes
 <Files "error_log">
   Require all denied
 </Files>
+
+<Files "bracket-store.php">
+  Require all denied
+</Files>
+<Files "mi-torneo.php">
+  Require all denied
+</Files>
