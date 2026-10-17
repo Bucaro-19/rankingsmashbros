@@ -91,8 +91,11 @@ function rc_progress(array $saved,array $v): void {
     $roots=array_fill_keys($v['package']['content']['rootPlayerIds'],true);
     foreach($next as $pid=>$cov) {
         $before=$old[$pid] ?? ['nextPage'=>1,'totalPages'=>null,'complete'=>false];
-        sr_require($cov['nextPage']>=$before['nextPage'] && (!$before['complete'] || $cov===$before),'analysis_checkpoint_regression');
-        sr_require(isset($roots[$pid]) ? $cov['nextPage']>$before['nextPage'] : $cov===$before,'analysis_checkpoint_progress_invalid');
+        // Canonical JSON sorts object keys. PHP's strict array equality also compares
+        // key order, unlike object equality; compare the validated values explicitly.
+        $same=$cov['nextPage']===$before['nextPage'] && $cov['totalPages']===$before['totalPages'] && $cov['complete']===$before['complete'];
+        sr_require($cov['nextPage']>=$before['nextPage'] && (!$before['complete'] || $same),'analysis_checkpoint_regression');
+        sr_require(isset($roots[$pid]) ? $cov['nextPage']>$before['nextPage'] : $same,'analysis_checkpoint_progress_invalid');
         if($cov['complete'])sr_require($cov['totalPages']!==null && $cov['nextPage']>$cov['totalPages'],'analysis_checkpoint_progress_invalid');
     }
 }
