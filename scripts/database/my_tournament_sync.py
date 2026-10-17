@@ -129,6 +129,14 @@ def capture(client,event_id,*,clock=time.monotonic):
                 groups[gid].update(dataAvailable=False,seeds=[],sets=[],setsAvailable=False);continue
             if sets is None:groups[gid]['setsAvailable']=False;sets=([],0,0)
             seedrows,ns,np=seeds;setrows,ms,mp=sets
+            if gid in counts:
+                oldns,oldms,oldnp,oldmp=counts[gid]
+                if n>oldnp:
+                    require(not seedrows);ns,np=oldns,oldnp
+                if n>oldmp:
+                    require(not setrows);ms,mp=oldms,oldmp
+                if counts[gid]!=(ns,ms,np,mp) and os.environ.get('GITHUB_EVENT_NAME')=='workflow_dispatch':
+                    print(json.dumps(dict(status='pagination_changed',page=n,before=counts[gid],after=[ns,ms,np,mp])))
             require(gid not in counts or counts[gid]==(ns,ms,np,mp));counts[gid]=(ns,ms,np,mp)
             for seed in seedrows:
                 en=identifier(seed['entrant']['id']) if seed.get('entrant') else None
