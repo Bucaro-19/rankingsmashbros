@@ -24,7 +24,7 @@ from publish_sql import request,encode_transport,SyncStopped
 UNTIL=datetime(2026,10,26,6,tzinfo=timezone.utc) # End of 25/oct, Guatemala/El Salvador.
 MAX_BATCHES=2
 SAFE_REASONS=frozenset(('analysis_migration_required','analysis_schema_invalid','analysis_entity_authorization_required',
-    'analysis_authorization_expired','analysis_event_not_authorized','analysis_checkpoint_conflict',
+    'analysis_authorization_expired','analysis_event_not_authorized','analysis_checkpoint_conflict','analysis_checkpoint_progress_invalid','analysis_checkpoint_regression','analysis_identity_conflict',
     'analysis_failed_job_requires_review','analysis_queue_limit','analysis_batch_limit',
     'analysis_source_shape_unexpected','analysis_source_query_failed','analysis_history_source_failed'))
 EVENT_ROSTER='''query($id:ID!,$page:Int!){
