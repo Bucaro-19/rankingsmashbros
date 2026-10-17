@@ -1,9 +1,6 @@
 name: Contexto de análisis de inscritos (Legends 7)
 on:
   workflow_dispatch:
-  schedule:
-    # Cada seis horas. UTC; minutos separados del cron local de cinco minutos.
-    - cron: '37 2,8,14,20 * * *'
 permissions:
   contents: read
 concurrency:
@@ -12,9 +9,7 @@ concurrency:
 jobs:
   context:
     # No se activa al añadir el archivo ni desde ramas/forks.
-    if: >-
-      github.repository == 'Bucaro-19/rankingsmashbros' &&
-      github.ref == 'refs/heads/main' && vars.SMASH_RIVAL_SYNC_ENABLED == 'true'
+    if: github.ref == 'refs/heads/fix/legends-context-delivery'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -27,5 +22,5 @@ jobs:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
           SMASH_SQL_SYNC_KEY: ${{ secrets.SMASH_SQL_SYNC_KEY }}
           SMASH_RIVAL_EVENT_ID: ${{ vars.SMASH_RIVAL_EVENT_ID || '1687524' }}
-        run: python scripts/database/rival_automation.py
+        run: python scripts/database/probe_rival_history.py
       # Sin FTP, MySQL, subida de artefactos, caché compartida o cambios en public.json.
