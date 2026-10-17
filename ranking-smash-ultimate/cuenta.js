@@ -48,8 +48,10 @@
   }
   async function load() {
     $('loading').hidden=false;$('account-error').hidden=true;
+    window.SmashMyTournament?.setContext({authenticated:false});
     try {
       data=await request();
+      window.SmashMyTournament?.setContext({authenticated:data.authenticated===true});
       SmashPremium.setContext({csrf:data.csrf,authenticated:data.authenticated===true,admin:data.panel===true,organizerReady:data.organizerReady===true});
       // Display hint for the home page header only; never proof of a session.
       try{if(data.authenticated)localStorage.setItem('smashgt.cuenta',data.user.tag);else localStorage.removeItem('smashgt.cuenta');}catch{}
@@ -73,6 +75,7 @@
       if(!data.user.roles.length){renderOnboarding();setScreen('onboarding',true);}else if(location.hash.startsWith('#premium'))setScreen('premium',true);else if(backToOrganizer){setScreen('organizer',true);SmashPremium.peek();}else{setScreen('profile',true);SmashPremium.peek();}
       if(location.hash==='#vinculada')history.replaceState(null,'','./cuenta.html');
     }catch(error){
+      window.SmashMyTournament?.setContext({authenticated:false});
       if(error.status===401){try{data=await request();renderLogin();}catch{setScreen('error',true);}}else setScreen('error',true);
     }
   }

@@ -76,7 +76,7 @@ def schedule(event_id,now,manual):
     local=datetime.fromtimestamp(now,ZoneInfo(p['timezone']))
     start=datetime.fromtimestamp(p['start'],ZoneInfo(p['timezone'])).date()
     if manual or local.date()>=start:return 'due'
-    return 'due' if local.hour%3==0 and local.minute==19 else 'not_due'
+    return 'due' if local.hour%3==0 and 19<=local.minute<49 else 'not_due'
 
 
 def capture(client,event_id,*,clock=time.monotonic):
@@ -209,9 +209,10 @@ def main(argv=None):
         event_id=int(os.environ.get('SMASH_MY_TOURNAMENT_EVENT_ID','1687524'));due=schedule(event_id,time.time(),os.environ.get('GITHUB_EVENT_NAME')=='workflow_dispatch' or not opts.publish)
         if due!='due':summary['status']=due;return 0
         client=Client(os.environ['STARTGG_TOKEN']);snap=capture(client,event_id)
-        summary.update(status='validated_no_writes',groups=len(snap['groups']),entrants=len(snap['entrants']),sets=sum(len(g['sets']) for g in snap['groups']))
+        body=encode_transport(snap)
+        summary.update(status='validated_no_writes',registrationState=snap['registrationState'],groups=len(snap['groups']),entrants=len(snap['entrants']),sets=sum(len(g['sets']) for g in snap['groups']),compressedBytes=len(body),rawBytes=len(json.dumps(snap).encode()))
         if opts.publish:
-            outcome=request(os.environ['SMASH_SQL_SYNC_KEY'],encode_transport(snap),'application/vnd.smash.bracket+gzip')
+            outcome=request(os.environ['SMASH_SQL_SYNC_KEY'],body,'application/vnd.smash.bracket+gzip')
             require(outcome.get('status') in ('stored','already_stored'));summary['status']=outcome['status']
         return 0
     except Exception as error:

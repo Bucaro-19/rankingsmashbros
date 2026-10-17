@@ -219,7 +219,7 @@ class SqlTests(fixtures.SqlTests):
     def setUp(self):
         super().setUp();self.temp=tempfile.TemporaryDirectory(prefix='smash-auto-');self.addCleanup(self.temp.cleanup)
         self.folder=Path(self.temp.name).resolve();self.site=self.folder/'site';self.private=self.folder/'private-smash';self.site.mkdir();self.private.mkdir();(self.site/'data').mkdir()
-        for filename in ('database.php','ranking-import.php','rival-import.php','rival-sync-lib.php','ranking-sync-lib.php','ranking-sync.php','ranking-worker.php','characters.js'):
+        for filename in ('database.php','ranking-import.php','rival-import.php','rival-sync-lib.php','ranking-sync-lib.php','ranking-sync.php','bracket-store.php','ranking-worker.php','characters.js'):
             shutil.copyfile(SITE/filename,self.site/filename)
         # Only the disposable fixture extends the deadline, keeping these tests usable after October.
         lib=self.site/'rival-sync-lib.php';lib.write_text(lib.read_text().replace("const RC_UNTIL='2026-10-26T06:00:00Z'","const RC_UNTIL='2099-10-26T06:00:00Z'"))

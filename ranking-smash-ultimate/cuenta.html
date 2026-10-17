@@ -9,8 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./cuenta.css?v=20261009-4"><link rel="stylesheet" href="./organizador.css?v=20261010-progress">
+  <link rel="stylesheet" href="./mi-torneo.css?v=20261017">
   <script src="./characters.js?v=20261006-design2" defer></script>
-  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./premium.js?v=20261009-reembolsos" defer></script><script src="./organizador.js?v=20261010-progress" defer></script><script src="./cuenta.js?v=20261010-progress" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
+  <script src="./account-model.js?v=20261007-v2" defer></script><script src="./premium.js?v=20261009-reembolsos" defer></script><script src="./organizador.js?v=20261010-progress" defer></script><script src="./mi-torneo.js?v=20261017" defer></script><script src="./cuenta.js?v=20261017-torneo" defer></script><script src="./visita.js?v=20261007" data-page="cuenta" defer></script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
 </head>
 <body>
@@ -26,6 +27,7 @@
     <button id="tab-organizer" role="tab" aria-selected="false" aria-controls="organizer-screen" tabindex="-1" hidden>Mis torneos</button>
   </div><span class="tab-links"><a id="tab-analysis" class="tab-link" href="./analisis.html">Análisis de rival →</a><form id="tab-opinions" class="tab-form" action="./opiniones-acceso.php" method="post" hidden><input id="opinions-csrf" type="hidden" name="csrf"><button class="tab-link" type="submit">Opiniones ↗</button></form><a id="tab-panel" class="tab-link" href="./panel.php" hidden>Panel privado ↗</a></span></div>
   <main id="account-content" tabindex="-1">
+    <aside id="my-tournament-banner" class="mt-banner" hidden><strong id="my-tournament-banner-text"></strong><br><a id="my-tournament-banner-link" href="#my-tournament">Ver Mi torneo →</a></aside>
     <p id="loading" class="account-loading" role="status">Cargando tu cuenta…</p>
     <section id="login-screen" class="login-layout" aria-labelledby="login-title" hidden>
       <div class="login-art" aria-hidden="true"><span>GT</span><b>Tu carta te espera</b></div>
@@ -70,6 +72,7 @@
             <div class="button-row"><button id="no-player-other" class="primary" type="button"><span>Usar otra cuenta</span></button><a class="outline" href="./#ranking">Ver ranking</a></div></section>
         </div>
       </div>
+      <section id="my-tournament" class="my-tournament" tabindex="-1" aria-labelledby="my-tournament-title" hidden><p class="kicker">Para jugadores · gratis</p><h2 id="my-tournament-title">Mi torneo</h2><p id="my-tournament-updated" class="note"></p><div id="my-tournament-body" aria-live="polite"></div><button id="my-tournament-retry" class="outline" type="button" hidden>Reintentar</button></section>
       <details class="account-settings"><summary>Ajustes de cuenta</summary><div><button id="change-role" class="outline">Cambiar mis intereses</button><button id="logout" class="outline">Cerrar sesión</button><button id="disconnect" class="outline danger">Desvincular de Ranking Smash Bros</button></div><p class="note">Desvincular cierra tus sesiones de Ranking Smash Bros. Conserva tus preferencias y el ranking público; puedes volver a autorizar en start.gg.</p><p id="settings-error" role="alert" hidden></p></details>
     </section>
     <section id="characters-screen" class="account-container" role="tabpanel" aria-labelledby="tab-characters" hidden><p class="kicker">Mis personajes</p><h1>Tu main<br><span>y dos más.</span></h1><p class="lead">Elegir personajes personaliza tu perfil. No cambia tus puntos, resultados ni los personajes detectados en el ranking público.</p>
