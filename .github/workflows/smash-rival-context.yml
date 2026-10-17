@@ -7,16 +7,19 @@ concurrency:
   group: smash-gt-publication
   cancel-in-progress: false
 jobs:
-  probe:
-    if: github.repository == 'Bucaro-19/rankingsmashbros' && github.ref == 'refs/heads/feat/my-tournament'
+  context:
+    # No se activa al añadir el archivo ni desde ramas/forks.
+    if: github.ref == 'refs/heads/feat/my-tournament'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Esquema y metadatos de bracket, sin datos de personas ni escrituras
+      - name: Consultar lista y cargar contexto por el canal firmado
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/database/probe_bracket_schema.py
+          SMASH_RIVAL_EVENT_ID: ${{ vars.SMASH_RIVAL_EVENT_ID || '1687524' }}
+        run: python scripts/database/my_tournament_sync.py
+      # Sin FTP, MySQL, subida de artefactos, caché compartida o cambios en public.json.
