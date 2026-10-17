@@ -1,5 +1,13 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — prerrequisito: historial de inscritos ya públicos (17/oct)
+
+Antes de «Mi torneo», en PR independiente por orden del dueño. Main **7743c99**, remoto Bucaro-19/rankingsmashbros, tracked limpio; laminas/, marca-rsb/, social/ ajenos conservados. Último run 39054029637 detectó **304 inscritos, 67 conocidos, 237 pendientes**, falló después de **8 consultas** al primer historial. Los anteriores todavía devolvían lista oculta. No confundir este fallo con el de la llave de #103.
+
+Sonda de solo lectura [39075610947](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39075610947): **8 consultas**, 309 inscritos al momento de la sonda, 68 conocidos; GraphQL rechaza el campo **stats** de slots, sin imprimir mensajes originales, IDs, tags o capturas. Se quitó únicamente ese campo no utilizado: los marcadores siguen en displayScore y los scores de game no cambian. Segunda sonda [39075732150](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39075732150), también 8 consultas, responde sin errores con cinco sets (games null/array); normalización privada de esta página sin sets de temporada, **sin escrituras**. El historial sin filtro contractual por temporada debe seguir paginándose con los techos vigentes; no se promete que todos los historiales ya estén completos.
+
+Se añade motivo seguro `analysis_history_source_failed`, sin copiar errores originales. Pruebas de selección de campos en AST GraphQL y motivo seguro, más la regresión existente. El workflow temporal de sonda vuelve idéntico a main. Sin cálculo, public.json, elegibilidad, mains, migraciones o ampliación de permisos. CI/PR y verificación automática pendientes al redactar. «Mi torneo» se entrega aparte, después de esta reparación.
+
 ## Codex — corregir lista oculta de Legends 7 (14/oct)
 
 Orden vigente del dueño: PR #102 ya fusionado/desplegado, altas de entidades aprobadas (`RC_ENTITY_INSERTS_AUTHORIZED=true`) y 007 aplicada según confirmación del dueño. Autoriza esta corrección, fusión por rama con CI verde, despliegue assets-only y activación/prueba única del workflow. No repetir permisos ni migración; conserva expiración 25/oct GT y todo el aislamiento del ranking.
