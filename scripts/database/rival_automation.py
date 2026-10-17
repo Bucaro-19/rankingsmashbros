@@ -26,7 +26,7 @@ MAX_BATCHES=2
 SAFE_REASONS=frozenset(('analysis_migration_required','analysis_schema_invalid','analysis_entity_authorization_required',
     'analysis_authorization_expired','analysis_event_not_authorized','analysis_checkpoint_conflict',
     'analysis_failed_job_requires_review','analysis_queue_limit','analysis_batch_limit',
-    'analysis_source_shape_unexpected','analysis_source_query_failed'))
+    'analysis_source_shape_unexpected','analysis_source_query_failed','analysis_history_source_failed'))
 EVENT_ROSTER='''query($id:ID!,$page:Int!){
  event(id:$id){
   id name slug type numEntrants startAt isOnline videogame{id name}
@@ -198,6 +198,6 @@ def main():
         started=True;run(Client(token),Hosting(key),event_id);return 0
     except Exception as error:
         if not started:emit_summary(dict(status='configuration_invalid',eventId=event_id,registered=None,known=None,added=0,pending=None,queries=0,seconds=0))
-        reason=str(error) if isinstance(error,SyncStopped) and str(error) in SAFE_REASONS else 'analysis_automation_stopped_check_source_schema_queue_and_authorization'
+        reason=('analysis_history_source_failed' if isinstance(error,APIError) else str(error) if isinstance(error,SyncStopped) and str(error) in SAFE_REASONS else 'analysis_automation_stopped_check_source_schema_queue_and_authorization')
         print(json.dumps(dict(ok=False,reason=reason)));return 1
 if __name__=='__main__':sys.exit(main())

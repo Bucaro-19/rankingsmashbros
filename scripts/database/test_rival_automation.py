@@ -148,6 +148,26 @@ class Contracts(unittest.TestCase):
             if reason:self.assertEqual(lines[-1]['reason'],reason);self.assertIn(reason,auto.SAFE_REASONS)
             else:self.assertEqual(lines[0]['status'],'registrations_unavailable')
             self.assertNotIn('NEVER LOG',out.getvalue());self.assertNotIn('analysis_automation_stopped',out.getvalue())
+    def test_history_slots_request_only_supported_entrant_field(self):
+        from graphql import parse
+        from rival_history import HISTORY
+        tree=parse(HISTORY)
+        def walk(node):
+            for child in getattr(getattr(node,'selection_set',None),'selections',()):
+                if child.name.value=='slots':
+                    # Confirmed by the real API validation error on 17/oct: stats
+                    # belongs to standing, not SetSlot; no typed score is consumed here.
+                    self.assertEqual([x.name.value for x in child.selection_set.selections],['entrant'])
+                walk(child)
+        walk(tree.definitions[0])
+    def test_history_provider_failure_is_specific_and_never_logs_raw_error(self):
+        def fail(*args,**kwargs):raise auto.APIError('PRIVATE PROVIDER ERROR')
+        client=Source([9]);host=mock.Mock()
+        host.inventory.return_value=dict(knownIds=[],checkpoint=None,revision=None)
+        with mock.patch.dict(os.environ,dict(STARTGG_TOKEN='invented',SMASH_SQL_SYNC_KEY='1'*64,SMASH_RIVAL_EVENT_ID='1687524')),mock.patch.object(auto,'active',return_value=True),mock.patch.object(auto,'Client',return_value=client),mock.patch.object(auto,'Hosting',return_value=host),mock.patch.object(auto,'capture_batch',side_effect=fail),contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(auto.main(),1)
+        self.assertEqual(json.loads(out.getvalue().splitlines()[-1])['reason'],'analysis_history_source_failed')
+        self.assertNotIn('PRIVATE',out.getvalue());host.deliver.assert_not_called()
     def test_hidden_is_one_query_no_hosting_and_no_names_in_log(self):
         client=Source();host=mock.Mock();report,log=quiet_run(client,host,1687524,now=NOW)
         self.assertEqual(client.calls,1);host.inventory.assert_not_called();host.deliver.assert_not_called()
