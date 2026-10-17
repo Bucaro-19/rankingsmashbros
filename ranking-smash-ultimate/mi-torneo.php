@@ -11,9 +11,10 @@ function mt_member(array $en,array $seed,array $ranks): array {
 }
 // Follow only published slot prerequisites. Never manufacture a standard bracket.
 function mt_bracket(array $g,string $me,array $members,?string $zone): array {
-    $sets=[];$seeds=[];foreach($g['sets'] as $s)$sets[$s['id']]=$s;foreach($g['seeds'] as $s)$seeds[$s['id']]=$s['entrantId'];
+    $sets=[];$seeds=[];$byeSeeds=[];foreach($g['sets'] as $s)$sets[$s['id']]=$s;foreach($g['seeds'] as $s){$seeds[$s['id']]=$s['entrantId'];if($s['isBye']===true)$byeSeeds[$s['id']]=true;}
+    $bye=static function(array $s)use($byeSeeds): bool {foreach($s['slots'] as $v)if($v['seedId']!==null&&isset($byeSeeds[$v['seedId']]))return true;return false;};
     $choose=static function(array $ids)use($members): ?string {
-        $ids=array_values(array_unique(array_filter($ids,static fn($id)=>$id!==null)));if(count($ids)===1)return $ids[0];if(count($ids)!==2)return null;
+        $ids=array_values(array_unique(array_filter($ids,static fn($id)=>$id!==null)));if(count($ids)!==2)return null;
         $a=$members[$ids[0]]['seed']??null;$b=$members[$ids[1]]['seed']??null;return $a===null||$b===null||$a===$b?null:($a<$b?$ids[0]:$ids[1]);
     };
     $resolve=null;$slot=null;$memo=[];$visiting=[];
@@ -23,15 +24,28 @@ function mt_bracket(array $g,string $me,array $members,?string $zone): array {
         // A seed is direct only when no unresolved set prerequisite exists.
         return $v['prereqType']!=='set'&&$v['seedId']!==null?($seeds[$v['seedId']]??null):null;
     };
-    $resolve=static function(string $id,int $depth)use(&$resolve,&$slot,&$memo,&$visiting,$sets,$choose): array {
+    $resolve=static function(string $id,int $depth)use(&$resolve,&$slot,&$memo,&$visiting,$sets,$choose,$bye): array {
         if(isset($memo[$id]))return $memo[$id];if($depth>64||isset($visiting[$id])||!isset($sets[$id]))return [null,null];$visiting[$id]=true;$s=$sets[$id];$ids=[];
-        foreach($s['slots'] as $v)$ids[]=$slot($v,$depth);$winner=$s['winnerId']??$choose($ids);$loser=null;
+        foreach($s['slots'] as $v)$ids[]=$slot($v,$depth);$known=array_values(array_filter($ids,static fn($v)=>$v!==null));$winner=$s['winnerId']??($bye($s)&&count($known)===1?$known[0]:$choose($ids));$loser=null;
         if(count($ids)===2&&$ids[0]!==null&&$ids[1]!==null&&$winner!==null)$loser=$winner===$ids[0]?$ids[1]:$ids[0];
         unset($visiting[$id]);return $memo[$id]=[$winner,$loser];
     };
+    // Only confirmed advancement identifies the player's next actual set. A
+    // predicted win never makes a later round become their first match.
+    $confirmed=null;$confirmedMemo=[];$confirming=[];
+    $confirmed=static function(array $v,int $depth=0)use(&$confirmed,$sets,$seeds,$bye,&$confirmedMemo,&$confirming): ?string {
+        if($v['entrantId']!==null)return $v['entrantId'];
+        if($v['prereqType']!=='set')return $v['seedId']===null?null:($seeds[$v['seedId']]??null);
+        $key=($v['prereqId']??'').':'.($v['prereqPlacement']??'');
+        if(array_key_exists($key,$confirmedMemo))return $confirmedMemo[$key];
+        if($depth>64||isset($confirming[$key])||!isset($sets[$v['prereqId']??'']))return null;$confirming[$key]=true;$prior=$sets[$v['prereqId']];$ids=[];foreach($prior['slots'] as $part)$ids[]=$confirmed($part,$depth+1);
+        $known=array_values(array_filter($ids,static fn($id)=>$id!==null));$winner=$prior['winnerId']??($bye($prior)&&count($known)===1?$known[0]:null);
+        $result=null;if($v['prereqPlacement']===1)$result=$winner;
+        if($v['prereqPlacement']===2&&count($known)===2&&$winner!==null)$result=$known[0]===$winner?$known[1]:$known[0];unset($confirming[$key]);return $confirmedMemo[$key]=$result;
+    };
     $candidates=[];
-    foreach($sets as $s){if($s['state']===3||$s['winnerId']!==null)continue;$direct=array_column($s['slots'],'entrantId');$seeded=[];foreach($s['slots'] as $v)if($v['prereqType']!=='set')$seeded[]=$seeds[$v['seedId']??'']??null;
-        if(in_array($me,$direct,true)||in_array($me,$seeded,true))$candidates[]=$s;
+    foreach($sets as $s){if($s['state']===3||$s['winnerId']!==null||$bye($s))continue;$ids=[];foreach($s['slots'] as $v)$ids[]=$confirmed($v);
+        if(in_array($me,$ids,true))$candidates[]=$s;
     }
     usort($candidates,static function($a,$b){return [abs($a['round']??99999),$a['id']]<=>[abs($b['round']??99999),$b['id']];});
     $first=null;

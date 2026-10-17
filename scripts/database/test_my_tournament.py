@@ -52,6 +52,59 @@ class Contracts(unittest.TestCase):
         c=Source();p=sync.capture(c,1687524);self.assertEqual((c.calls,len(p['groups'])),(2,2));self.assertTrue(bridge(dict(mode='validate',p=p))['ok'])
         c=Source(hidden=True);p=sync.capture(c,1687524);self.assertEqual(c.calls,1);self.assertEqual(p['registrationState'],'unavailable');self.assertEqual(p['groups'],[])
         with self.assertRaises(sync.APIError):sync.capture(Source(fail=True),1687524)
+    def test_independent_pagination_ignores_exhausted_connection_without_losing_rows(self):
+        class Pages(Source):
+            def query(self,q,v):
+                d=super().query(q,v)
+                if q==sync.META:return d
+                for i in range(3):
+                    k='g'+str(i)
+                    if k not in d or v['id'+str(i)]!='301':continue
+                    if v['page'+str(i)]==1:
+                        d[k]['sets']['pageInfo']=dict(total=3,totalPages=2)
+                        d[k]['sets']['nodes']=d[k]['sets']['nodes'][:2]
+                    else:
+                        d[k]['seeds']=dict(pageInfo=dict(total=0,totalPages=0),nodes=[])
+                        d[k]['sets']['pageInfo']=dict(total=3,totalPages=2)
+                        d[k]['sets']['nodes']=d[k]['sets']['nodes'][2:]
+                return d
+        p=sync.capture(Pages(),1687524);self.assertEqual((len(p['groups'][0]['seeds']),len(p['groups'][0]['sets'])),(4,3))
+    def test_signed_receiver_stores_private_file_without_database_configuration(self):
+        import socket,shutil,time,urllib.request,urllib.error
+        from publish_sql import signature
+        with tempfile.TemporaryDirectory() as d:
+            home=Path(d);site=home/'site';site.mkdir();private=home/'private-smash';private.mkdir()
+            for name in ('database.php','ranking-import.php','rival-import.php','rival-sync-lib.php','ranking-sync-lib.php','ranking-sync.php','bracket-store.php','characters.js'):shutil.copyfile(SITE/name,site/name)
+            (private/'sync.local.php').write_text("<?php return ['enabled'=>true,'key'=>'"+'1'*64+"'];")
+            # Future-proof ONLY the disposable fixture: production deadlines remain fixed.
+            f=site/'bracket-store.php';f.write_text(f.read_text().replace('const MT_END=1792987200','const MT_END=4102444800').replace('^2026-',r'^\d{4}-'))
+            with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
+            server=subprocess.Popen(['php','-d','display_errors=0','-S',f'127.0.0.1:{port}','-t',str(site)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            try:
+                url=f'http://127.0.0.1:{port}/ranking-sync.php'
+                for _ in range(60):
+                    try:urllib.request.urlopen(url,timeout=.2)
+                    except urllib.error.HTTPError:break
+                    except OSError:time.sleep(.05)
+                p=sample();p['capturedAt']=datetime.now(timezone.utc).isoformat();body=gzip.compress(json.dumps(p).encode());stamp=str(int(time.time()))
+                def send(nonce,signed=True):
+                    headers={'Content-Type':'application/vnd.smash.bracket+gzip','X-Smash-Timestamp':stamp,'X-Smash-Nonce':nonce,'X-Smash-Signature':signature('1'*64,stamp,nonce,body) if signed else '0'*64}
+                    try:r=urllib.request.urlopen(urllib.request.Request(url,data=body,headers=headers),timeout=10)
+                    except urllib.error.HTTPError as error:r=error
+                    return r.status,json.loads(r.read())
+                self.assertEqual(send('a'*32,False)[0],401)
+                self.assertEqual(send('b'*32)[1]['status'],'stored');path=private/'brackets/1687524.json';before=path.read_bytes()
+                self.assertEqual(send('c'*32)[1]['status'],'already_stored');self.assertEqual(send('b'*32)[0],409);self.assertEqual(path.read_bytes(),before)
+                self.assertFalse((private/'config.local.php').exists());self.assertFalse((site/'data/public.json').exists())
+            finally:server.terminate();server.wait(timeout=5)
+    def test_workflow_limited_main_flag_and_no_public_or_sql_transport(self):
+        text=(ROOT/'.github/workflows/smash-my-tournament.yml').read_text()
+        for expected in ('19,49 * * * *','SMASH_MY_TOURNAMENT_ENABLED','SMASH_MY_TOURNAMENT_EVENT_ID','refs/heads/main','smash-gt-publication'):self.assertIn(expected,text)
+        for forbidden in ('secrets.FTP','MYSQL','upload-artifact','actions/cache'):self.assertNotIn(forbidden,text)
+        for f in ('bracket-store.php','mi-torneo.php'):
+            text=(SITE/f).read_text()
+            for forbidden in ('curl_','UPDATE ','INSERT ','DELETE ','start.gg/gql'):self.assertNotIn(forbidden,text)
+
     def test_two_validators_reject_foreign_relations_and_unknown_fields(self):
         for mutation in (lambda p:p.update(secret='private'),lambda p:p['groups'][0]['sets'][0]['slots'][1].update(entrantId='105'),lambda p:p['groups'][0]['seeds'][0].update(seed=-1),lambda p:p['groups'][0]['sets'][0]['slots'][0].update(seedId='405'),lambda p:p['audit'].update(requests=61)):
             p=sample();mutation(p)

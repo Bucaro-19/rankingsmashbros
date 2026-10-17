@@ -1,9 +1,6 @@
 name: Contexto de análisis de inscritos (Legends 7)
 on:
   workflow_dispatch:
-  schedule:
-    # Cada seis horas. UTC; minutos separados del cron local de cinco minutos.
-    - cron: '37 2,8,14,20 * * *'
 permissions:
   contents: read
 concurrency:
@@ -12,9 +9,7 @@ concurrency:
 jobs:
   context:
     # No se activa al añadir el archivo ni desde ramas/forks.
-    if: >-
-      github.repository == 'Bucaro-19/rankingsmashbros' &&
-      github.ref == 'refs/heads/main' && vars.SMASH_RIVAL_SYNC_ENABLED == 'true'
+    if: github.ref == 'refs/heads/feat/my-tournament'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -25,7 +20,20 @@ jobs:
       - name: Consultar lista y cargar contexto por el canal firmado
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-          SMASH_SQL_SYNC_KEY: ${{ secrets.SMASH_SQL_SYNC_KEY }}
           SMASH_RIVAL_EVENT_ID: ${{ vars.SMASH_RIVAL_EVENT_ID || '1687524' }}
-        run: python scripts/database/rival_automation.py
+        run: |
+          python - <<'PYTHON'
+          import sys,os,json,time,subprocess,traceback
+          from pathlib import Path
+          sys.path.insert(0,'scripts/database')
+          import my_tournament_sync as sync
+          c=sync.Client(os.environ['STARTGG_TOKEN']);start=time.monotonic()
+          try:
+              p=sync.capture(c,1687524)
+              php="require 'ranking-smash-ultimate/mi-torneo.php';$p=json_decode(stream_get_contents(STDIN),true);try{mt_validate($p);$counts=[];foreach($p['entrants'] as $en){$r=mt_response($p,$en['playerId'],[],time());$k=$r['status'];$counts[$k]=($counts[$k]??0)+1;}echo json_encode(['status'=>'validated_no_writes','states'=>$counts,'peakMemoryBytes'=>memory_get_peak_usage(true)]);}catch(Throwable $e){echo json_encode(['status'=>'validation_failed','trace'=>array_map(static function($x){return ['file'=>basename($x['file']??''),'line'=>$x['line']??null,'function'=>$x['function']??''];},$e->getTrace())]);exit(1);}"
+              r=subprocess.run(['php','-d','memory_limit=512M','-r',php],input=json.dumps(p).encode(),capture_output=True)
+              print(r.stdout.decode());print(json.dumps(dict(queries=c.calls,seconds=round(time.monotonic()-start,3),groups=len(p['groups']),entrants=len(p['entrants']),sets=sum(len(g['sets']) for g in p['groups']),compressedBytes=len(sync.encode_transport(p)),rawBytes=len(json.dumps(p).encode()))));sys.exit(r.returncode)
+          except Exception as error:
+              print(json.dumps(dict(status='probe_failed_no_writes',queries=c.calls,trace=[dict(file=Path(x.filename).name,function=x.name,line=x.lineno) for x in traceback.extract_tb(error.__traceback__)])));sys.exit(1)
+          PYTHON
       # Sin FTP, MySQL, subida de artefactos, caché compartida o cambios en public.json.
