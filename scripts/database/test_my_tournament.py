@@ -114,6 +114,24 @@ class Contracts(unittest.TestCase):
         p=sample();r=bridge(dict(mode='response',p=p,player='184005',public=dict(players=[dict(id='8999003',rank=3),dict(id='8999002',rank=10)])))['result']
         self.assertEqual(r['status'],'ready');self.assertEqual(len(r['pools']),1);g=r['pools'][0];self.assertEqual(g['group'],'B4');self.assertEqual(g['firstSet']['opponent']['tag'],'Otro rival');self.assertEqual(g['probablePath'][0]['opponent']['tag'],'Rival fuerte');self.assertEqual(g['strongest']['tag'],'Rival seed');self.assertEqual(g['strongestBasis'],'rank');self.assertIsNone(g['start']['timestamp']);self.assertNotIn('PRIVADO',json.dumps(r))
         r=bridge(dict(mode='response',p=p,player='184005',public={}))['result'];self.assertEqual(r['pools'][0]['strongest']['tag'],'Rival fuerte');self.assertEqual(r['pools'][0]['strongestBasis'],'seed')
+    def test_pool_time_fallback_bye_and_confirmed_versus_predicted_first_opponent(self):
+        p=sample();g=p['groups'][0];g.update(startAt=1792857600,timeSource='wave')
+        r=bridge(dict(mode='response',p=p,player='184005',public={}))['result']['pools'][0]
+        self.assertEqual(r['firstSet']['time']['source'],'wave');self.assertEqual(r['firstSet']['time']['guatemala'],'24/10/2026 10:00');self.assertEqual(r['firstSet']['time']['local'],'24/10/2026 10:00');self.assertTrue(r['firstSet']['opponentConfirmed'])
+        # Verified bye advances the player; an unfilled slot alone never does.
+        g['seeds'].append(dict(id='406',entrantId=None,seed=None,groupSeed=None,isBye=True));g['sets'][0]['slots'][1].update(entrantId=None,seedId='406')
+        r=bridge(dict(mode='response',p=p,player='184005',public={}))['result']['pools'][0]
+        self.assertEqual(r['firstSet']['id'],'preview_3');self.assertFalse(r['firstSet']['opponentConfirmed']);self.assertEqual(r['firstSet']['opponent']['tag'],'Rival fuerte')
+        g['seeds'][-1]['isBye']=False
+        r=bridge(dict(mode='response',p=p,player='184005',public={}))['result']['pools'][0]
+        self.assertEqual(r['firstSet']['id'],'preview_1');self.assertIsNone(r['firstSet']['opponent'])
+    def test_cycles_and_missing_seeds_do_not_invent_a_path_or_hang(self):
+        p=sample();g=p['groups'][0];g['sets'][1]['slots'][0].update(entrantId=None,seedId=None,prereqId='preview_3',prereqType='set',prereqPlacement=1)
+        r=bridge(dict(mode='response',p=p,player='184005',public={}))['result'];self.assertEqual(r['status'],'ready')
+        for s in g['seeds']:s['seed']=None
+        for en in p['entrants']:en['initialSeed']=None
+        r=bridge(dict(mode='response',p=p,player='184005',public={}))['result']['pools'][0];self.assertIsNone(r['strongest']);self.assertIsNone(r['probablePath'][0]['opponent'])
+
     def test_unknown_registration_unassigned_and_null_times(self):
         for player,status in ((None,'not_registered'),('999','not_registered')):self.assertEqual(bridge(dict(mode='response',p=sample(),player=player,public={}))['result']['status'],status)
         p=sample();p['groups']=[];self.assertEqual(bridge(dict(mode='response',p=p,player='184005',public={}))['result']['status'],'pools_unpublished')

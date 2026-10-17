@@ -51,7 +51,7 @@ function mt_bracket(array $g,string $me,array $members,?string $zone): array {
     $first=null;
     foreach($candidates as $s){$ids=[];foreach($s['slots'] as $v)$ids[]=$slot($v,0);$other=array_values(array_filter($ids,static fn($v)=>$v!==null&&$v!==$me));
         // A missing slot is not proof of a bye. Keep the first match as unknown.
-        $first=['id'=>$s['id'],'round'=>$s['roundText'],'opponent'=>count($other)===1?($members[$other[0]]??null):null,'time'=>mt_time($s['startAt']??$g['startAt'],$zone,$s['startAt']!==null?'set_or_round':$g['timeSource'])];break;
+        $first=['id'=>$s['id'],'round'=>$s['roundText'],'opponent'=>count($other)===1?($members[$other[0]]??null):null,'opponentConfirmed'=>count(array_filter($s['slots'],static fn($v)=>($confirmed($v)!==null&&$confirmed($v)!==$me)))===1,'time'=>mt_time($s['startAt']??$g['startAt'],$zone,$s['startAt']!==null?'set_or_round':$g['timeSource'])];break;
     }
     $path=[];$seen=[];$current=$first['id']??null;
     while($current!==null&&count($path)<20&&!isset($seen[$current])){
