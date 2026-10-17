@@ -20,7 +20,7 @@ REGISTRATIONS = '''query($slug:String!,$page:Int!){tournament(slug:$slug){partic
 HISTORY = '''query($id:ID!,$page:Int!){player(id:$id){sets(page:$page,perPage:5,filters:{entrantSize:[1],state:[3]}){pageInfo{total totalPages}nodes{
  id state winnerId updatedAt completedAt displayScore
  event{id name slug numEntrants startAt isOnline type videogame{id name} tournament{id name slug countryCode}}
- slots{entrant{id name participants{player{id gamerTag user{slug location{country}}}}} stats{score{value}}}
+ slots{entrant{id name participants{player{id gamerTag user{slug location{country}}}}}}
  games{id orderNum winnerId entrant1Score entrant2Score stage{id} selections{entrant{id} character{id name}}}
 }}}}'''
 MAX_PLAYERS = 1000
