@@ -30,6 +30,10 @@ def main():
         p=package(data);state['pages']={};stage='transport'
         envelope=dict(operation='analysis_import',eventId=1687524,baseRevision=inv['revision'],package=p,checkpoint=state)
         body=encode_transport(envelope)
+        import subprocess
+        php="require 'ranking-smash-ultimate/ranking-sync-lib.php';try{rc_validate_envelope(rc_envelope(stream_get_contents(STDIN)));echo json_encode(['stage'=>'php_validated_no_writes']);}catch(Throwable $e){echo json_encode(['stage'=>'php_validation','reason'=>$e instanceof SmashRankingError?$e->reason:'validation_failed','trace'=>array_map(static function($x){return ['file'=>basename($x['file']??''),'line'=>$x['line']??null,'function'=>$x['function']??''];},$e->getTrace())]);}"
+        checked=subprocess.run(['php','-r',php],input=body,capture_output=True,check=True)
+        print(checked.stdout.decode())
         print(json.dumps(dict(stage='validated_no_writes',queries=client.calls,sets=len(p['content']['entities']['sets']),games=len(p['content']['entities']['games']),bytes=len(body))))
     except Exception as error:
         trace=[dict(file=Path(x.filename).name,function=x.name,line=x.lineno) for x in traceback.extract_tb(error.__traceback__)]
