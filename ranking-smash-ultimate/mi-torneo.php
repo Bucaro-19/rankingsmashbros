@@ -102,7 +102,7 @@ function mt_bracket(array $g,string $me,array $members,?string $zone): array {
         $graph[]=['id'=>$s['id'],'round'=>$s['round'],'label'=>$s['roundText'],
             'side'=>$s['round']===null?null:($s['round']<0?'L':'W'),
             'state'=>$s['state'],'finished'=>$s['state']===3||$s['winnerId']!==null,
-            'isMine'=>$first!==null&&$s['id']===$first['id'],
+            'isMine'=>$first!==null&&$s['id']===$first['id'],'onProbablePath'=>isset($seen[$s['id']]),
             'time'=>mt_time($s['startAt'],$zone,$s['startAt']===null?null:'set_or_round'),'slots'=>$slots];
     }
     return ['firstSet'=>$first,'probablePath'=>$path,'bracket'=>$g['setsAvailable']&&$graph?['sets'=>$graph]:null];

@@ -26,7 +26,7 @@
   function fighter(m,mine){
     const c=character(m),role=mine?'Tú':'Primer rival';
     const origin=!c?'? Sin personaje registrado':c.source==='profile'?`★ Elegido en ${mine?'tu':'su'} perfil`:'◉ Main detectado';
-    return `<div class="mt-fighter ${mine?'mt-me':'mt-rival'}"><div class="mt-art"><div class="mt-stripe" aria-hidden="true"></div><div class="mt-initials" aria-hidden="true">${esc(initials(m))}</div>${c?`<img class="mt-portrait" src="./assets/characters/${esc(c.main.slug)}-portrait.png" alt="" loading="lazy" decoding="async">`:''}<span class="mt-origin">${esc(origin)}</span></div><div class="mt-fighter-info"><span class="mt-eyebrow">${role}</span><strong class="mt-tag">${esc(m?.tag||'Por confirmar')}</strong><div class="mt-player-facts">${seed(m)}<span>${esc(rank(m))}</span></div>${c?`<div class="mt-characters"><b>${esc(c.main.name)}</b>${c.secondary.map(c=>`<span><img src="./assets/characters/${esc(c.slug)}-icon.png" alt="" loading="lazy" width="26" height="26">${esc(c.name)}</span>`).join('')}</div>`:''}</div></div>`;
+    return `<div class="mt-fighter ${mine?'mt-me':'mt-rival'}"><div class="mt-art ${c?'mt-has-portrait':''}"><div class="mt-stripe" aria-hidden="true"></div><div class="mt-initials" aria-hidden="true">${esc(initials(m))}</div>${c?`<img class="mt-portrait" src="./assets/characters/${esc(c.main.slug)}-portrait.png" alt="" loading="lazy" decoding="async">`:''}<span class="mt-origin">${esc(origin)}</span></div><div class="mt-fighter-info"><span class="mt-eyebrow">${role}</span><strong class="mt-tag">${esc(m?.tag||'Por confirmar')}</strong><div class="mt-player-facts">${seed(m)}<span>${esc(rank(m))}</span></div>${c?`<div class="mt-characters"><b>${esc(c.main.name)}</b>${c.secondary.map(c=>`<span><img src="./assets/characters/${esc(c.slug)}-icon.png" alt="" loading="lazy" width="26" height="26">${esc(c.name)}</span>`).join('')}</div>`:''}</div></div>`;
   }
   function hour(t){
     if(!clock(t))return '<span class="mt-muted">Horario aún no publicado</span>';
@@ -97,15 +97,15 @@
         const group=matches.filter(s=>s.round===r);
         return `<div class="mt-round" style="left:${col*280}px"><h4>${esc(group[0]?.label||'Ronda sin nombre')}</h4>${group.map((s,row)=>{
           const y=40+row*132;positions.set(s.id,{x:col*280,y});
-          return `<article class="mt-match ${s.isMine?'mt-my-set':''}" style="top:${y}px" aria-label="${esc(model.labels.get(s.id))}"><div class="mt-match-heading"><b>${model.labels.get(s.id)}</b><small>${s.isMine?'◷ Tu set':s.finished?'✓ Terminado':'· Pendiente'}</small></div>${setRows(s,model)}${clock(s.time)?`<small class="mt-match-time">${esc(clock(s.time))} · ${esc(date(s.time))} GT</small>`:''}</article>`;
+          return `<article class="mt-match ${s.isMine?'mt-my-set':''}" style="top:${y}px" aria-label="${esc(model.labels.get(s.id))}"><div class="mt-match-heading"><b>${model.labels.get(s.id)}</b><small>${s.isMine?'◷ Tu set':s.finished?'✓ Terminado':s.onProbablePath?'Posible cruce':'· Pendiente'}</small></div>${setRows(s,model)}${clock(s.time)?`<small class="mt-match-time">${esc(clock(s.time))} · ${esc(date(s.time))} GT</small>`:''}</article>`;
         }).join('')}</div>`;
       }).join('');
       const lines=matches.flatMap(s=>s.slots.map(v=>{
         const from=positions.get(v.from?.setId),to=positions.get(s.id);
         if(!from||!to||from.x>=to.x)return '';
         const x1=from.x+232,y1=from.y+58,x2=to.x,y2=to.y+45+v.index*26,mid=x1+24;
-        const confirmed=model.byId.get(v.from.setId)?.finished;
-        return `<path class="${confirmed?'mt-edge-confirmed':s.isMine?'mt-edge-mine':'mt-edge-pending'}" d="M${x1},${y1} H${mid} V${y2} H${x2}"/>`;
+        const prior=model.byId.get(v.from.setId),confirmed=prior?.finished,probable=prior?.onProbablePath&&s.onProbablePath&&v.from.outcome==='winner';
+        return `<path class="${confirmed?'mt-edge-confirmed':probable?'mt-edge-mine':'mt-edge-pending'}" d="M${x1},${y1} H${mid} V${y2} H${x2}"/>`;
       })).join('');
       return `<section class="mt-bracket-side"><h3>${title}</h3><p class="mt-muted">Desliza para explorar → · usa Lista para leer los nombres completos.</p><div class="mt-bracket-scroll" role="region" tabindex="0" aria-label="Bracket ${title} de tu pool"><div class="mt-canvas" style="width:${width}px;height:${height}px"><svg aria-hidden="true" width="${width}" height="${height}">${lines}</svg>${cards}</div></div></section>`;
     }).join('');
@@ -134,7 +134,7 @@
     const phases=data.pools.length>1?`<div class="mt-phases" role="group" aria-label="Tus fases y grupos publicados">${data.pools.map((p,i)=>`<button type="button" data-mt-pool="${i}" aria-pressed="${i===poolIndex}"><b>${esc(p.phase)} · ${esc(p.group||'')}</b><small>${i===poolIndex?'Estás viendo':'Ver grupo publicado'}</small></button>`).join('')}</div>`:`<p class="mt-phase-chip">${esc(pool.phase)} · ${esc(pool.group||'Grupo sin nombre')}</p>`;
     $('my-tournament-body').innerHTML=`${phases}<div class="mt-hero">${nextSet(pool)}${schedule(pool)}</div>${bracket(pool)}${poolList(pool)}${reference(pool)}<p class="mt-foot">Pool y horarios son gratis. Datos tomados de start.gg; Ranking Smash Bros no organiza este torneo.</p>`;
   }
-  async function load(){
+  async function load(restoreFocus=false){
     if(!active)return;controller?.abort();const id=++generation;controller=new AbortController();loading=true;failed=false;render();
     const pending=controller,timer=setTimeout(()=>pending.abort(),20000);
     try{
@@ -144,7 +144,7 @@
       $('my-tournament-banner').hidden=!value.upcoming||visible;
       $('my-tournament-banner-text').textContent=value.upcoming?`Tienes ${name(value.event)} en los próximos 7 días. Consulta tu pool y horarios.`:'';
     }catch{if(id!==generation||!active)return;failed=true;}
-    finally{clearTimeout(timer);if(id===generation&&active){loading=false;render();}}
+    finally{clearTimeout(timer);if(id===generation&&active){loading=false;render();if(restoreFocus&&visible)$('my-tournament').focus();}}
   }
   const showView=next=>{view=next;render();$(`mt-view-${next}`)?.focus();};
   window.SmashMyTournament={
@@ -152,7 +152,7 @@
     show(value=true){visible=value;$('my-tournament').hidden=!visible||!active;$('my-tournament-banner').hidden=!data?.upcoming||visible;render();},
     refresh(){if(active)load();}
   };
-  $('my-tournament-retry').addEventListener('click',load);
+  $('my-tournament-retry').addEventListener('click',()=>load(true));
   $('my-tournament-banner-link').addEventListener('click',()=>{$('tab-tournament').click();$('my-tournament').focus();});
   $('my-tournament-body').addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;
@@ -167,7 +167,7 @@
   });
   $('my-tournament-body').addEventListener('error',event=>{
     const image=event.target;if(image.tagName!=='IMG')return;
-    if(image.classList.contains('mt-portrait')){const origin=image.parentElement.querySelector('.mt-origin');if(origin)origin.textContent+=' · retrato no disponible';}
+    if(image.classList.contains('mt-portrait')){image.parentElement.classList.remove('mt-has-portrait');const origin=image.parentElement.querySelector('.mt-origin');if(origin)origin.textContent+=' · retrato no disponible';}
     image.remove();
   },true);
 })();

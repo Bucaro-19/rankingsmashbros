@@ -218,6 +218,29 @@ class HttpTests(unittest.TestCase):
         code="require 'ranking-smash-ultimate/mi-torneo.php';echo json_encode(mt_profile_characters(new PDO('sqlite::memory:'),['pools'=>[]]));"
         self.assertEqual(subprocess.check_output(['php','-r',code],cwd=ROOT,text=True),'[]')
 
+    def test_other_pool_profile_and_inactive_profiles_are_not_exposed(self):
+        self.request('/fixture-login.php');extra=[]
+        try:
+            with self.db.cursor() as q:
+                for pid,sid in [(8999004,8999204),(8999005,8999205)]:
+                    q.execute("INSERT INTO players(id,tag) VALUES(%s,'Inventado')",(pid,))
+                    q.execute("INSERT INTO users(startgg_user_id,player_id) VALUES(%s,%s)",(sid,pid));uid=q.lastrowid;extra.append((uid,pid))
+                    q.execute("INSERT INTO oauth_connections(user_id,scopes) VALUES(%s,'user.identity')",(uid,))
+                    q.execute("INSERT INTO user_characters(user_id,position,character_id) VALUES(%s,1,1897)",(uid,))
+            r=self.request()[2];pool=r['pools'][0]
+            rival=next(m for m in pool['members'] if m['playerId']=='8999004');self.assertEqual(rival['characters']['source'],'profile')
+            self.assertNotIn('8999005',json.dumps(r))
+            with self.db.cursor() as q:q.execute("UPDATE oauth_connections SET revoked_at=UTC_TIMESTAMP() WHERE user_id=%s",(extra[0][0],))
+            rival=next(m for m in self.request()[2]['pools'][0]['members'] if m['playerId']=='8999004');self.assertIsNone(rival['characters'])
+            with self.db.cursor() as q:
+                q.execute("UPDATE oauth_connections SET revoked_at=NULL WHERE user_id=%s",(extra[0][0],));q.execute("UPDATE users SET status='disabled' WHERE id=%s",(extra[0][0],))
+            rival=next(m for m in self.request()[2]['pools'][0]['members'] if m['playerId']=='8999004');self.assertIsNone(rival['characters'])
+        finally:
+            with self.db.cursor() as q:
+                for uid,pid in extra:
+                    for table in ('user_characters','oauth_connections'):q.execute('DELETE FROM '+table+' WHERE user_id=%s',(uid,))
+                    q.execute('DELETE FROM users WHERE id=%s',(uid,));q.execute('DELETE FROM players WHERE id=%s',(pid,))
+
     def test_missing_snapshot_is_honest_and_no_file_is_created(self):
         self.request('/fixture-login.php');self.path.unlink();self.assertEqual(self.request()[2]['status'],'snapshot_unavailable');self.assertFalse(self.path.exists())
 

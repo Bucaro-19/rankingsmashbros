@@ -46,8 +46,8 @@ test('pool fallback is never labeled a scheduled set; matching timezones collaps
 });
 test('real graph uses only supplied nodes and edges; keyboard switches to the complete text list',async()=>{
   const data=fixture(),pool=data.pools[0],me=pool.members[0],op=pool.firstSet.opponent;
-  pool.bracket={sets:[{id:'a',round:1,label:'Winners Round 1',side:'W',isMine:true,finished:false,time:null,slots:[{index:0,member:me},{index:1,member:op}]},{id:'b',round:2,label:'Winners Final',side:'W',isMine:false,finished:false,time:null,slots:[{index:0,member:null,from:{setId:'a',outcome:'winner'}},{index:1,member:null}]}]};
-  const h=await ready(data,true);let html=h.get('my-tournament-body').innerHTML;assert.match(html,/aria-selected="true"[^>]*data-mt-view="graph"/);assert.match(html,/<path /);assert.match(html,/Ganador de W1/);assert.match(html,/Por confirmar/);assert.ok(!html.includes('0–0</'));assert.match(html,/role="region" tabindex="0"/);
+  pool.bracket={sets:[{id:'a',round:1,label:'Winners Round 1',side:'W',isMine:true,onProbablePath:true,finished:false,time:null,slots:[{index:0,member:me},{index:1,member:op}]},{id:'b',round:2,label:'Winners Final',side:'W',isMine:false,onProbablePath:true,finished:false,time:null,slots:[{index:0,member:null,from:{setId:'a',outcome:'winner'}},{index:1,member:null}]}]};
+  const h=await ready(data,true);let html=h.get('my-tournament-body').innerHTML;assert.match(html,/aria-selected="true"[^>]*data-mt-view="graph"/);assert.match(html,/<path class="mt-edge-mine"/);assert.match(html,/Ganador de W1/);assert.match(html,/Por confirmar/);assert.ok(!html.includes('0–0</'));assert.match(html,/role="region" tabindex="0"/);
   let prevented=false;h.get('my-tournament-body').listeners.keydown({target:button({mtView:'graph'}),key:'End',preventDefault(){prevented=true;},stopPropagation(){}});html=h.get('my-tournament-body').innerHTML;assert.equal(prevented,true);assert.match(html,/aria-selected="true"[^>]*data-mt-view="list"/);assert.match(html,/Trivi \(seed 2\)/);assert.equal(h.get('mt-view-list').focused,true);
   const mobile=await ready(data);assert.match(mobile.get('my-tournament-body').innerHTML,/aria-selected="true"[^>]*data-mt-view="path"/);
 });
@@ -61,6 +61,20 @@ test('error offers retry; late requests cannot restore data from another account
 test('empty states have no fictitious fights, and banner opens the dedicated tab',async()=>{
   for(const status of ['snapshot_unavailable','registrations_unavailable','not_registered','pools_unpublished']){const d=fixture();d.status=status;d.pools=[];const h=await ready(d);assert.match(h.get('my-tournament-body').innerHTML,/mt-notice/);assert.ok(!h.get('my-tournament-body').innerHTML.includes('mt-portrait'));}
   const h=await ready();h.get('my-tournament-banner-link').listeners.click();assert.equal(h.get('tab-tournament').clicked,true);assert.equal(h.get('my-tournament').focused,true);
+});
+test('portrait failure restores initials without losing the character identity',async()=>{
+  const h=await ready();let removed=false,restored=false;const origin={textContent:'Main detectado'};
+  const image={tagName:'IMG',classList:{contains:n=>n==='mt-portrait'},parentElement:{classList:{remove:n=>restored=n==='mt-has-portrait'},querySelector:()=>origin},remove(){removed=true;}};
+  h.get('my-tournament-body').listeners.error({target:image});assert.equal(removed,true);assert.equal(restored,true);assert.match(origin.textContent,/Main detectado · retrato no disponible/);
+});
+test('retry restores focus to the tournament after a successful recovery',async()=>{
+  let fail=true;const h=harness(async()=>{if(fail)throw Error();return {ok:true,json:async()=>fixture()};});
+  h.api.setContext({authenticated:true});h.api.show();await tick();fail=false;await h.get('my-tournament-retry').listeners.click();assert.equal(h.get('my-tournament-retry').hidden,true);assert.equal(h.get('my-tournament').focused,true);assert.match(h.get('my-tournament-body').innerHTML,/Trivi/);
+});
+test('several published phases switch only between the supplied own pools',async()=>{
+  const data=fixture();data.pools.push({...data.pools[0],phase:'Segunda fase',group:'D2',members:[member('Yo','1',true),member('Otra fase','5')]});
+  const h=await ready(data);assert.match(h.get('my-tournament-body').innerHTML,/data-mt-pool="1"/);
+  h.get('my-tournament-body').listeners.click({target:button({mtPool:'1'})});const html=h.get('my-tournament-body').innerHTML;assert.match(html,/Segunda fase/);assert.match(html,/Otra fase/);assert.match(html,/aria-pressed="true"/);
 });
 test('account integrates a dedicated accessible tab and no provider or paid request',()=>{
   const html=fs.readFileSync(path.join(site,'cuenta.html'),'utf8');assert.match(html,/id="my-tournament"[^>]*tabindex="-1"/);assert.match(html,/id="tab-tournament"[^>]*aria-controls="tournament-screen"/);assert.match(html,/id="tournament-screen"[^>]*aria-labelledby="tab-tournament"/);assert.match(html,/mi-torneo.js/);assert.match(html,/mi-torneo.css/);
