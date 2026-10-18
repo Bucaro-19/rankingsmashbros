@@ -4,6 +4,8 @@
 
 Sección gratuita en Tu cuenta, provisional por autorización expresa del dueño (17/oct). No es la pestaña premium de tops «Mis torneos». Muestra fases/grupos propios, horarios GT/local, primer set pendiente y rival confirmado o probable, camino posible si ganas, rival con mejor puesto conocido en el ranking combinado o menor seed si nadie tiene puesto, y lista del pool. Sin puesto no equivale a débil. Los enlaces de análisis conservan los controles premium existentes.
 
+Los botones junto a **Tu primer set pendiente** analizan a su oponente (con su nombre en cada botón). Los del rival de referencia permanecen en su sección, también con nombre y aclaración de que puede ser otra persona. Sin oponente o sin enlace no se sustituye por el rival de referencia ni se muestra un botón inventado.
+
 ## Captura y límites
 
 `scripts/database/my_tournament_sync.py` reutiliza collect.Client/BudgetClient: una petición/s incluyendo reintentos, dos tandas como máximo de 30 intentos/120 s cada una. Máximo 1000 inscritos, 100 grupos, 5000 seeds/sets, 8 MiB JSON / 4 MiB gzip. Solo publica una captura completa y validada; falla en rojo y conserva la anterior si se exceden límites o cambia la paginación. Sin artefactos, caché pública ni MySQL en Actions. No extender límites a ciegas.
