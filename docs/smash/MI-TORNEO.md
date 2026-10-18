@@ -68,3 +68,8 @@ Horarios: si firstSet.time.source no es set_or_round, el número grande se etiqu
 Bracket: Mi camino por defecto a menos de 760 px; Bracket en escritorio. Winners/Losers se dibujan por rondas reales, tarjetas legibles con scroll horizontal propio, conexiones reales en codo, próximo set destacado. Las conexiones entre lados se identifican por «Ganador/Perdedor de W…/L…» en cada casilla. Lista conserva nombres completos/seed/ganador/horarios y es la alternativa accesible. Sin grafo solo existe Mi camino, con aviso de información parcial. No se dibuja un cuadro estándar por seeds. No se anticipan fases no asignadas ni reglas de avance.
 
 Pruebas y revisión: PR #110; ver bloque de entrega del 18/oct en EN-CURSO.md. Los códigos W1/L1 son etiquetas locales de presentación para referir enlaces, no números de estación o llamados del organizador. No se fusiona/despliega como parte de la implementación sin completar revisión y CI. No hay escrituras productivas, migraciones, cambios del cálculo/elegibilidad/public.json ni nuevas consultas de captura.
+
+
+### Publicado por orden del dueño — 18/oct
+
+PR #110 fusionado por rama (squash 2bf4729), CI general/MySQL 8.0/MariaDB 10.11 verde y despliegue assets-only **39141959105 success**. HTTP de cuenta/scripts/estilos comprobado; API anónima 401 privada y bibliotecas 403. El hash público antes y después fue **d4f2d124b63b81bbd74eb608ba72e5f29cb52b70c9bed6274a98b9841bd197af / 2234287 B**, sin cambios. No hubo migraciones, escrituras SQL ni recaptura. La QA de sesión/pool fue local e inventada; no se impersonó una cuenta productiva. Cierre en EN-CURSO.md.
