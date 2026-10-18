@@ -6,3 +6,27 @@ test('anonymous never fetches; authenticated request never selects a player; log
 test('null schedules, seed explanation and real captured time; HTML tags escaped',async()=>{const p={tag:'<script>mal</script>',seed:2,rank:null,analysisUrl:'./analisis.html?rival=2',prepareUrl:'./preparar.html?rival=2'};const h=harness(async()=>({ok:true,json:async()=>({ok:true,status:'ready',upcoming:true,capturedAt:'2026-10-17T20:30:00Z',event:{name:'LEGENDS7'},pools:[{phase:'Pools',group:'B4',start:{timestamp:null},firstSet:{opponent:p,round:null,time:{timestamp:null}},probablePath:[],strongest:p,strongestBasis:'seed',members:[p]}]})}));h.api.setContext({authenticated:true});await tick();const html=h.get('my-tournament-body').innerHTML;assert.match(html,/Horario aún no publicado/);assert.match(html,/seed más alto/);assert.ok(!html.includes('<script>mal'));assert.match(html,/&lt;script&gt;/);assert.match(h.get('my-tournament-updated').textContent,/los horarios los define el organizador/);assert.equal(h.get('my-tournament-banner').hidden,false);});
 test('error offers keyboard button retry; late request cannot show a previous account',async()=>{let complete;const h=harness(()=>new Promise(resolve=>complete=resolve));h.api.setContext({authenticated:true});h.api.setContext({authenticated:false});complete({ok:true,json:async()=>({status:'ready',pools:[{phase:'SECRET'}]})});await tick();assert.equal(h.get('my-tournament-body').textContent,'');const bad=harness(async()=>{throw Error();});bad.api.setContext({authenticated:true});await tick();assert.equal(bad.get('my-tournament-retry').hidden,false);assert.match(bad.get('my-tournament-body').innerHTML,/role="alert"/);assert.equal(typeof bad.get('my-tournament-retry').listeners.click,'function');});
 test('account integrates section and loads no bracket data or paid features itself',()=>{const html=fs.readFileSync(path.join(site,'cuenta.html'),'utf8');assert.match(html,/id="my-tournament"[^>]*tabindex="-1"/);assert.match(html,/mi-torneo.js/);assert.match(html,/mi-torneo.css/);const js=fs.readFileSync(path.join(site,'mi-torneo.js'),'utf8');for(const forbidden of ['start.gg/gql','premium-api.php','analisis-api.php','assets/characters'])assert.ok(!js.includes(forbidden));});
+
+function member(tag,id){return {tag,seed:2,rank:null,analysisUrl:id?`./analisis.html?rival=${id}`:null,prepareUrl:id?`./preparar.html?rival=${id}`:null};}
+async function matchup(first,reference){
+  const h=harness(async()=>({ok:true,json:async()=>({ok:true,status:'ready',event:{name:'LEGENDS7'},pools:[{phase:'Pools',group:'B4',start:{timestamp:null},firstSet:{opponent:first,opponentConfirmed:true,round:'Winners Round 1',time:{timestamp:null}},probablePath:[],strongest:reference,strongestBasis:'seed',members:[first,reference].filter(Boolean)}]})}));
+  h.api.setContext({authenticated:true});await tick();return h.get('my-tournament-body').innerHTML;
+}
+test('first-set actions target that opponent, independently from the strongest pool rival',async()=>{
+  const html=await matchup(member('Trivi','4'),member('Soarin RD','2'));
+  const first=html.split('<h4>Tu primer set pendiente</h4>')[1].split('</section>')[0];
+  assert.match(first,/href="\.\/analisis\.html\?rival=4">Analizar a Trivi</);
+  assert.match(first,/href="\.\/preparar\.html\?rival=4">Prepara el set contra Trivi</);
+  assert.ok(!first.includes('rival=2'));assert.ok(!first.includes('Soarin'));
+  const reference=html.split('<h4>Rival de referencia del pool</h4>')[1].split('</section>')[0];
+  assert.match(reference,/href="\.\/analisis\.html\?rival=2">Analizar a Soarin RD</);
+  assert.match(reference,/href="\.\/preparar\.html\?rival=2">Prepara el set contra Soarin RD</);
+  assert.match(reference,/puede ser distinto del que te toca ahora/);
+});
+test('an unpublished or unlinked first opponent never gets the reference rival as a fallback',async()=>{
+  for(const opponent of [null,member('Sin perfil',null)]){
+    const html=await matchup(opponent,member('Soarin RD','2'));
+    const first=html.split('<h4>Tu primer set pendiente</h4>')[1].split('</section>')[0];
+    assert.ok(!first.includes('<a '));assert.ok(!first.includes('rival=2'));
+  }
+});

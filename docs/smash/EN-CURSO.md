@@ -1,5 +1,11 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Mi torneo: analizar al oponente del primer set (17/oct)
+
+El dueño detectó que le toca Trivi pero el botón abría a Soarin RD. Causa: los botones existentes estaban solo en «Rival de referencia del pool», enlazados a strongest; no había botones junto a firstSet.opponent. Rama propia fix/my-tournament-first-rival desde main remoto f00e493, tracked limpio; carpetas ajenas conservadas. Actions iniciales de main y captura verdes.
+
+Se añaden los accesos de análisis/Prepara el set al oponente del primer set y se nombra al jugador en cada botón. La referencia conserva sus propios accesos con nombre y una aclaración explícita de que puede ser otro rival. Sin oponente o sin enlaces no se usa strongest como sustituto. Cache-bust del script de cuenta. Mismos componentes; sin pantalla nueva, API, permisos, capturas, SQL, ranking o public.json nuevos. Prueba de regresión con rivales distintos, ambos destinos, rival ausente y jugador sin enlace: 6 Node correctas y sintaxis JS válida. Revisión en navegador con datos inventados, escritorio y 375 px sin desborde (scrollWidth 360): botones de ambos rivales con destinos distintos y nombres explícitos. Se publica mediante assets_only; el resultado de CI, fusión, despliegue y verificación del hash se registra en la PR de esta rama, [PR #109](https://github.com/Bucaro-19/rankingsmashbros/pull/109).
+
 ## Codex — Mi torneo (17/oct), separado de los prerrequisitos
 
 Rama feat/my-tournament desde 9aad1de, incorporado main a177d7c (#106). Leidos AGENTS/CONTEXTO/EN-CURSO/LEGENDS7-ANALISIS/AUTOMATIZACION-ANALISIS. Tracked limpio al empezar; laminas/, marca-rsb/, social/ ajenos conservados. Main abierto en otro worktree: no se forzo su checkout. Orden expresa permite seccion provisional, fusion por rama con CI verde, assets-only y activar solo Legends 7.
