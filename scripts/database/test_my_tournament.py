@@ -20,7 +20,7 @@ def sample():
 
 
 def bridge(value):
-    code="require 'ranking-smash-ultimate/mi-torneo.php';$v=json_decode(stream_get_contents(STDIN),true);try{if($v['mode']==='validate'){mt_validate($v['p']);$r=['valid'=>true];}elseif($v['mode']==='response'){$r=mt_response($v['p'],$v['player'],$v['public'],"+str(NOW)+");}else{$r=mt_receive($v['site'],base64_decode($v['body']),"+str(NOW)+");}echo json_encode(['ok'=>true,'result'=>$r]);}catch(Throwable $e){echo json_encode(['ok'=>false]);}"
+    code="require 'ranking-smash-ultimate/mi-torneo.php';$v=json_decode(stream_get_contents(STDIN),true);try{if($v['mode']==='validate'){mt_validate($v['p']);$r=['valid'=>true];}elseif($v['mode']==='response'){$r=mt_response($v['p'],$v['player'],$v['public'],"+str(NOW)+",$v['chosen']??[]);}else{$r=mt_receive($v['site'],base64_decode($v['body']),"+str(NOW)+");}echo json_encode(['ok'=>true,'result'=>$r]);}catch(Throwable $e){echo json_encode(['ok'=>false]);}"
     run=subprocess.run(['php','-d','memory_limit=512M','-r',code],input=json.dumps(value),capture_output=True,text=True,cwd=ROOT,timeout=15)
     if run.stderr:raise AssertionError(run.stderr)
     return json.loads(run.stdout)
@@ -114,6 +114,29 @@ class Contracts(unittest.TestCase):
         p=sample();r=bridge(dict(mode='response',p=p,player='184005',public=dict(players=[dict(id='8999003',rank=3),dict(id='8999002',rank=10)])))['result']
         self.assertEqual(r['status'],'ready');self.assertEqual(len(r['pools']),1);g=r['pools'][0];self.assertEqual(g['group'],'B4');self.assertEqual(g['firstSet']['opponent']['tag'],'Otro rival');self.assertEqual(g['probablePath'][0]['opponent']['tag'],'Rival fuerte');self.assertEqual(g['strongest']['tag'],'Rival seed');self.assertEqual(g['strongestBasis'],'rank');self.assertIsNone(g['start']['timestamp']);self.assertNotIn('PRIVADO',json.dumps(r))
         r=bridge(dict(mode='response',p=p,player='184005',public={}))['result'];self.assertEqual(r['pools'][0]['strongest']['tag'],'Rival fuerte');self.assertEqual(r['pools'][0]['strongestBasis'],'seed')
+    def test_actual_graph_slots_results_and_characters_without_invented_data(self):
+        p=sample();g=p['groups'][0]
+        g['sets'][0].update(winnerId='101',state=3)
+        public=dict(players=[dict(id='184005',rank=1,mains=[dict(characterId='1302',name='Mario',games=8)]),dict(id='8999004',rank=4,mains=[dict(characterId='1319',name='Pikachu',games=3)])])
+        r=bridge(dict(mode='response',p=p,player='184005',public=public,chosen={'184005':['1319','1302']}))['result']
+        pool=r['pools'][0];me=next(m for m in pool['members'] if m['isMe'])
+        self.assertEqual(me['tag'],'Yo');self.assertEqual(me['characters']['source'],'profile');self.assertEqual(me['characters']['mains'][0],dict(characterId='1319',games=None))
+        rival=next(m for m in pool['members'] if m['playerId']=='8999004')
+        self.assertEqual(rival['characters'],dict(source='detected',mains=[dict(characterId='1319',games=3)]))
+        sets=pool['bracket']['sets'];self.assertEqual(len(sets),3)
+        final=next(s for s in sets if s['id']=='preview_3')
+        self.assertTrue(final['isMine']);self.assertEqual(final['slots'][0]['member']['tag'],'Yo')
+        self.assertEqual(final['slots'][0]['from'],dict(setId='preview_1',outcome='winner'))
+        self.assertIsNone(final['slots'][1]['member']);self.assertEqual(final['slots'][1]['possibleMember']['tag'],'Rival fuerte')
+        self.assertTrue(sets[0]['slots'][0]['isWinner'])
+        for match in sets:
+            for slot in match['slots']:self.assertIsNone(slot['score'])
+        for private in ('entrantId','seedId','prereqId','tournamentId','PRIVADO OTRO POOL'):
+            self.assertNotIn(private,json.dumps(r))
+        p['groups'][0].update(sets=[],setsAvailable=False)
+        pool=bridge(dict(mode='response',p=p,player='184005',public={}))['result']['pools'][0]
+        self.assertIsNone(pool['bracket']);self.assertIsNone(pool['members'][0]['characters'])
+
     def test_pool_time_fallback_bye_and_confirmed_versus_predicted_first_opponent(self):
         p=sample();g=p['groups'][0];g.update(startAt=1792857600,timeSource='wave')
         r=bridge(dict(mode='response',p=p,player='184005',public={}))['result']['pools'][0]
@@ -181,6 +204,20 @@ class HttpTests(unittest.TestCase):
         self.request('/fixture-login.php')
         with self.db.cursor() as q:q.execute('UPDATE oauth_connections SET revoked_at=UTC_TIMESTAMP() WHERE user_id=(SELECT id FROM users WHERE startgg_user_id=8999101)')
         self.assertEqual(self.request()[0],401)
+    def test_profile_choices_are_scoped_and_revocation_removes_them(self):
+        self.request('/fixture-login.php')
+        with self.db.cursor() as q:
+            q.execute("SELECT id FROM users WHERE startgg_user_id=8999101");uid=q.fetchone()[0]
+            q.execute("INSERT INTO user_characters(user_id,position,character_id) VALUES(%s,1,1302)",(uid,))
+        status,_,r=self.request();self.assertEqual(status,200)
+        me=next(m for m in r['pools'][0]['members'] if m['isMe'])
+        self.assertEqual(me['characters']['source'],'profile');self.assertEqual(me['characters']['mains'][0]['characterId'],'1302')
+        for private in ('user_id','startgg_user_id','email','position','connection_version'):self.assertNotIn('"'+private+'"',json.dumps(r))
+        with self.db.cursor() as q:q.execute("DELETE FROM user_characters WHERE user_id=%s",(uid,))
+        # Direct read with an empty own-pool projection cannot return unrelated choices.
+        code="require 'ranking-smash-ultimate/mi-torneo.php';echo json_encode(mt_profile_characters(new PDO('sqlite::memory:'),['pools'=>[]]));"
+        self.assertEqual(subprocess.check_output(['php','-r',code],cwd=ROOT,text=True),'[]')
+
     def test_missing_snapshot_is_honest_and_no_file_is_created(self):
         self.request('/fixture-login.php');self.path.unlink();self.assertEqual(self.request()[2]['status'],'snapshot_unavailable');self.assertFalse(self.path.exists())
 

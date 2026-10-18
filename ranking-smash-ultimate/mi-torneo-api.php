@@ -13,6 +13,10 @@ try{
     if(!smash_account_resume('mt_pdo',time()))mt_http(401,['ok'=>false,'reason'=>'login_required']);
     $user=smash_account_current(mt_pdo());
     if($_GET)mt_http(400,['ok'=>false,'reason'=>'parameters_not_allowed']);
-    mt_http(200,mt_response(mt_read(__DIR__),$user['playerId'],smash_account_public(__DIR__),time()));
+    $snapshot=mt_read(__DIR__);$public=smash_account_public(__DIR__);$now=time();
+    $response=mt_response($snapshot,$user['playerId'],$public,$now);
+    $chosen=mt_profile_characters(mt_pdo(),$response);
+    if($chosen)$response=mt_response($snapshot,$user['playerId'],$public,$now,$chosen);
+    mt_http(200,$response);
 }catch(SmashAccountError $e){if($e->reason==='login_required'){unset($_SESSION['smash_account']);mt_http(401,['ok'=>false,'reason'=>'login_required']);}mt_http(503,['ok'=>false,'reason'=>'tournament_unavailable']);}
 catch(Throwable $e){mt_http(503,['ok'=>false,'reason'=>'tournament_unavailable']);}

@@ -5,8 +5,32 @@ function mt_time(?int $at,?string $zone,?string $source): array {
     $format=static function(int $t,string $z): string{return (new DateTimeImmutable('@'.$t))->setTimezone(new DateTimeZone($z))->format('d/m/Y H:i');};
     return ['timestamp'=>$at,'guatemala'=>$at===null?null:$format($at,'America/Guatemala'),'local'=>$at===null||$zone===null?null:$format($at,$zone),'timezone'=>$zone,'source'=>$source];
 }
-function mt_member(array $en,array $seed,array $ranks): array {
-    $pid=$en['playerId'];return ['playerId'=>$pid,'tag'=>$en['tag'],'seed'=>$seed['seed']??$en['initialSeed'],'groupSeed'=>$seed['groupSeed'],'rank'=>$ranks[$pid]['rank']??null,
+// Only character IDs from active, linked profiles in the authenticated player's pools.
+// No account identifiers or other profile fields leave this reader.
+function mt_profile_characters(PDO $pdo,array $response): array {
+    $ids=[];
+    foreach($response['pools'] as $pool)foreach($pool['members'] as $member)
+        if($member['playerId']!==null)$ids[$member['playerId']]=true;
+    if(!$ids)return [];
+    $marks=implode(',',array_fill(0,count($ids),'?'));
+    $q=$pdo->prepare("SELECT u.player_id, c.character_id FROM users u
+        JOIN oauth_connections o ON o.user_id=u.id AND o.revoked_at IS NULL
+        JOIN user_characters c ON c.user_id=u.id
+        WHERE u.status='active' AND u.player_id IN ($marks) ORDER BY u.player_id,c.position");
+    $q->execute(array_keys($ids));$out=[];
+    foreach($q->fetchAll(PDO::FETCH_ASSOC) as $row)$out[(string)$row['player_id']][]=(string)$row['character_id'];
+    return $out;
+}
+function mt_characters(array $detected,array $chosen): ?array {
+    if($chosen)return ['source'=>'profile','mains'=>array_map(static fn($id)=>['characterId'=>(string)$id,'games'=>null],array_slice($chosen,0,3))];
+    $mains=[];
+    foreach(array_slice($detected,0,3) as $main)if(isset($main['characterId']))
+        $mains[]=['characterId'=>(string)$main['characterId'],'games'=>$main['games']??null];
+    return $mains?['source'=>'detected','mains'=>$mains]:null;
+}
+function mt_member(array $en,array $seed,array $ranks,array $chosen,string $me): array {
+    $pid=$en['playerId'];return ['playerId'=>$pid,'tag'=>$en['tag'],'seed'=>$seed['seed']??$en['initialSeed'],'groupSeed'=>$seed['groupSeed'],'rank'=>$ranks[$pid]['rank']??null,'isMe'=>$en['id']===$me,
+        'characters'=>mt_characters($ranks[$pid]['mains']??[],$chosen[$pid]??[]),
         'analysisUrl'=>$pid===null?null:'./analisis.html?rival='.rawurlencode($pid),'prepareUrl'=>$pid===null?null:'./preparar.html?rival='.rawurlencode($pid)];
 }
 // Follow only published slot prerequisites. Never manufacture a standard bracket.
@@ -60,11 +84,32 @@ function mt_bracket(array $g,string $me,array $members,?string $zone): array {
         if($next===null)break;$opponent=null;foreach($next['slots'] as $i=>$v)if($i!==$side){$en=$slot($v,0);$opponent=$en===null?null:($members[$en]??null);}
         $path[]=['round'=>$next['roundText'],'opponent'=>$opponent,'time'=>mt_time($next['startAt']??$g['startAt'],$zone,$next['startAt']!==null?'set_or_round':$g['timeSource'])];$current=$next['id'];
     }
-    return ['firstSet'=>$first,'probablePath'=>$path];
+    // A safe projection of the actual graph of this pool only. No entrant/seed IDs,
+    // foreign-group edges, invented scores or character selections for future games.
+    $graph=[];
+    foreach($sets as $s){
+        $slots=[];
+        foreach($s['slots'] as $v){
+            $known=$confirmed($v);$predicted=$known===null?$slot($v,0):null;
+            $from=$v['prereqType']==='set'&&isset($sets[$v['prereqId']??''])&&in_array($v['prereqPlacement'],[1,2],true)
+                ?['setId'=>$v['prereqId'],'outcome'=>$v['prereqPlacement']===1?'winner':'loser']:null;
+            $slots[]=['index'=>$v['index'],'member'=>$known===null?null:($members[$known]??null),
+                'possibleMember'=>$predicted===null?null:($members[$predicted]??null),'from'=>$from,
+                'isBye'=>$v['seedId']!==null&&isset($byeSeeds[$v['seedId']]),
+                'isWinner'=>$s['winnerId']!==null&&$known===$s['winnerId'],'score'=>null];
+        }
+        usort($slots,static fn($a,$b)=>$a['index']<=>$b['index']);
+        $graph[]=['id'=>$s['id'],'round'=>$s['round'],'label'=>$s['roundText'],
+            'side'=>$s['round']===null?null:($s['round']<0?'L':'W'),
+            'state'=>$s['state'],'finished'=>$s['state']===3||$s['winnerId']!==null,
+            'isMine'=>$first!==null&&$s['id']===$first['id'],
+            'time'=>mt_time($s['startAt'],$zone,$s['startAt']===null?null:'set_or_round'),'slots'=>$slots];
+    }
+    return ['firstSet'=>$first,'probablePath'=>$path,'bracket'=>$g['setsAvailable']&&$graph?['sets'=>$graph]:null];
 }
-function mt_response(?array $p,?string $playerId,array $public,int $now): array {
+function mt_response(?array $p,?string $playerId,array $public,int $now,array $chosen=[]): array {
     $out=['ok'=>true,'status'=>'snapshot_unavailable','capturedAt'=>null,'event'=>null,'upcoming'=>false,'pools'=>[]];if($p===null)return $out;
-    mt_validate($p);$e=$p['event'];$out['capturedAt']=$p['capturedAt'];$out['event']=['name'=>$e['tournamentName'],'url'=>'https://www.start.gg/'.$e['slug'],'start'=>mt_time($e['startAt'],$e['timezone'],'event'),'endAt'=>$e['endAt']];
+    mt_validate($p);$e=$p['event'];$out['capturedAt']=$p['capturedAt'];$out['event']=['name'=>$e['tournamentName'],'discipline'=>$e['name'],'country'=>$e['country'],'timezone'=>$e['timezone'],'url'=>'https://www.start.gg/'.$e['slug'],'start'=>mt_time($e['startAt'],$e['timezone'],'event'),'endAt'=>$e['endAt']];
     if($p['registrationState']!=='published'){$out['status']='registrations_unavailable';return $out;}
     $entrant=null;foreach($p['entrants'] as $v)if($playerId!==null&&$v['playerId']===$playerId){$entrant=$v;break;}
     if($entrant===null){$out['status']='not_registered';return $out;}
@@ -72,7 +117,7 @@ function mt_response(?array $p,?string $playerId,array $public,int $now): array 
     $ranks=[];foreach($public['players']??[] as $r)if(isset($r['id'])&&is_int($r['rank']??null))$ranks[(string)$r['id']]=$r;
     $entrants=[];foreach($p['entrants'] as $v)$entrants[$v['id']]=$v;
     foreach($p['groups'] as $g){$mine=false;foreach($g['seeds'] as $s)if($s['entrantId']===$entrant['id'])$mine=true;if(!$mine||!$g['dataAvailable'])continue;
-        $members=[];$rivals=[];foreach($g['seeds'] as $s)if($s['entrantId']!==null){$m=mt_member($entrants[$s['entrantId']],$s,$ranks);$members[$s['entrantId']]=$m;if($s['entrantId']!==$entrant['id'])$rivals[]=$m;}
+        $members=[];$rivals=[];foreach($g['seeds'] as $s)if($s['entrantId']!==null){$m=mt_member($entrants[$s['entrantId']],$s,$ranks,$chosen,$entrant['id']);$members[$s['entrantId']]=$m;if($s['entrantId']!==$entrant['id'])$rivals[]=$m;}
         $ranked=array_values(array_filter($rivals,static fn($m)=>$m['rank']!==null));$eligible=$ranked?:array_values(array_filter($rivals,static fn($m)=>$m['seed']!==null));$basis=$ranked?'rank':'seed';
         usort($eligible,static fn($a,$b)=>[$a[$basis],$a['tag']]<=>[$b[$basis],$b['tag']]);$strongest=$eligible[0]??null;
         $list=array_values($members);usort($list,static fn($a,$b)=>[$a['seed']??PHP_INT_MAX,$a['tag']]<=>[$b['seed']??PHP_INT_MAX,$b['tag']]);

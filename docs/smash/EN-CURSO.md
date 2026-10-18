@@ -1,5 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Codex — Mi torneo: diseño final de Claude Design (18/oct)
+
+Rama `feat/my-tournament-design` desde main remoto **8fe2f5c**; remoto confirmado Bucaro-19/rankingsmashbros, tracked limpio al inicio. `laminas/`, `marca-rsb/` y `social/` ajenos preservados; handoff local ignorado por Git. Leídos AGENTS/CONTEXTO/MIGRACION/BASE-DE-DATOS/MI-TORNEO y README de `design_handoff_rsb_mi_torneo/`; no se porta support.js ni sus datos ficticios.
+
+Pestaña Mi torneo propia, título/chips/captura, próximo set con horario grande y versus, horarios GT/local, Mi camino/Bracket/Lista, roster y referencia separados. El primer rival mantiene sus botones; no se sustituye por strongest. Personajes desde preferencias vinculadas (solo IDs de personajes de miembros autorizados) o mains ya públicos, nunca premium ni personaje confirmado de un set futuro. Retratos locales solo al abrir la sección, de los dos lados visibles; no se precarga el catálogo. El grafo reutiliza la captura existente y solo expone conexiones del pool propio: sin nuevas consultas a start.gg ni cambios de captura/SQL/ranking. No se inventan marcadores, ciudad, fases futuras ni avance; contrato y omisiones en MI-TORNEO.md. Se retira el pendiente de diseño provisional.
+
+Verificación inicial: 11 Node de sección y 32 Node de cuenta/organizador/progreso correctas; 100 Python del pipeline correctas; 16 contratos/captura/HTTP de Mi torneo correctos en esquema **local desechable propio** `smash_schema_test_mt_design` (incluye sesión, anonimato, intento de elegir otro pool, revocación, grafo solo propio y personajes). Sintaxis PHP/JS y diff correctos. Revisión visual local de la cuenta completa con sesión inventada en marcha; entrega final de navegador y CI se añadirá antes de cerrar la PR. Sin lecturas de comentarios, credenciales ni escrituras en producción.
+
+Actions al iniciar: CI main y capturas de contexto verdes; semanal 39118615924 falló en «Sincronizar el corte publicado con SQL en BanaHosting». Se registra como antecedente observado; no se relanza, modifica ni atribuye una causa como parte de este diseño. El hash público no se reemplaza por un snapshot local. Sin fusión ni despliegue dentro de esta entrega de implementación.
+
 ## Mi torneo: analizar al oponente del primer set (17/oct)
 
 El dueño detectó que le toca Trivi pero el botón abría a Soarin RD. Causa: los botones existentes estaban solo en «Rival de referencia del pool», enlazados a strongest; no había botones junto a firstSet.opponent. Rama propia fix/my-tournament-first-rival desde main remoto f00e493, tracked limpio; carpetas ajenas conservadas. Actions iniciales de main y captura verdes.

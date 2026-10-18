@@ -29,12 +29,13 @@
     if(screen==='characters'&&next!=='characters'){chosen=[...saved];message('character-message','');}
     if(screen==='organizer'&&next!==screen)SmashOrganizador.stopSlides();
     screen=next;
-    for(const name of ['login','profile','characters','premium','organizer'])$(`${name}-screen`).hidden=name!==next;
+    for(const name of ['login','profile','characters','premium','organizer','tournament'])$(`${name}-screen`).hidden=name!==next;
     $('onboarding').hidden=next!=='onboarding';$('account-error').hidden=next!=='error';$('loading').hidden=true;
     $('account-tabs').hidden=!data?.authenticated||['error','onboarding'].includes(next);
-    ['profile','characters','premium','organizer'].forEach(name=>{$(`tab-${name}`).setAttribute('aria-selected',String(name===next));$(`tab-${name}`).tabIndex=name===next?0:-1;});
+    ['profile','characters','premium','organizer','tournament'].forEach(name=>{$(`tab-${name}`).setAttribute('aria-selected',String(name===next));$(`tab-${name}`).tabIndex=name===next?0:-1;});
+    window.SmashMyTournament?.show(next==='tournament');
     if(next==='profile')renderProfile();if(next==='characters')renderCharacters();if(next==='premium')SmashPremium.show();if(next==='organizer')SmashOrganizador.show();
-    // Four tabs do not fit a narrow screen: keep the active one in view.
+    // Keep the active account tab visible on narrow screens.
     {const tab=$(`tab-${next}`),row=tab?.parentElement;if(tab&&row&&!$('account-tabs').hidden)row.scrollLeft=Math.max(0,tab.offsetLeft-row.offsetLeft-12);}
     return true;
   }
@@ -196,10 +197,10 @@
   }
   $('oauth-form').addEventListener('submit',()=>{$('oauth-button').disabled=true;$('oauth-button').querySelector('span').textContent='Conectando con start.gg…';});
   $('retry-account').addEventListener('click',load);
-  $('tab-profile').addEventListener('click',()=>setScreen('profile'));$('tab-characters').addEventListener('click',()=>setScreen('characters'));$('tab-premium').addEventListener('click',()=>setScreen('premium'));$('tab-organizer').addEventListener('click',()=>setScreen('organizer'));
+  $('tab-tournament').addEventListener('click',()=>setScreen('tournament'));$('tab-profile').addEventListener('click',()=>setScreen('profile'));$('tab-characters').addEventListener('click',()=>setScreen('characters'));$('tab-premium').addEventListener('click',()=>setScreen('premium'));$('tab-organizer').addEventListener('click',()=>setScreen('organizer'));
   // Badge beside the alias and ring on the avatar while a paid period is running.
   function markPremium(active){document.body.classList.toggle('is-premium',active===true);document.querySelector('.premium-badge').hidden=active!==true;}
-  all('[role=tab]').forEach(tab=>tab.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const order=['profile','characters','premium','organizer'].filter(name=>!$(`tab-${name}`).hidden),at=order.indexOf(tab.id.slice(4));const next=event.key==='Home'?order[0]:event.key==='End'?order[order.length-1]:order[(at+(event.key==='ArrowRight'?1:order.length-1))%order.length];if(setScreen(next))$(`tab-${next}`).focus();}}));
+  all('#account-tabs [role=tab]').forEach(tab=>tab.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const order=['profile','characters','premium','organizer','tournament'].filter(name=>!$(`tab-${name}`).hidden),at=order.indexOf(tab.id.slice(4));const next=event.key==='Home'?order[0]:event.key==='End'?order[order.length-1]:order[(at+(event.key==='ArrowRight'?1:order.length-1))%order.length];if(setScreen(next))$(`tab-${next}`).focus();}}));
   $('edit-characters').addEventListener('click',()=>setScreen('characters'));
   all('[data-scope]').forEach(button=>button.addEventListener('click',()=>changeScope(button.dataset.scope)));
   all('[data-role]').forEach(button=>button.addEventListener('click',()=>{const role=button.dataset.role;roles=roles.includes(role)?roles.filter(r=>r!==role):[...roles,role].sort((a,b)=>a==='player'?-1:b==='player'?1:0);message('role-error','');renderOnboarding();}));
@@ -208,7 +209,7 @@
   $('change-role').addEventListener('click',()=>{renderOnboarding();setScreen('onboarding');});
   $('character-search').addEventListener('input',renderGrid);
   $('discard-characters').addEventListener('click',()=>{chosen=[...saved];message('character-message','');renderCharacters();});
-  $('save-characters').addEventListener('click',async()=>{saving=true;renderCharacters();try{await request({action:'characters',characters:chosen});saved=[...chosen];data.user.chosen=[...chosen];message('character-message','Personajes guardados. Ya se ven en tu perfil. El ranking público conserva sus personajes detectados.','success');}catch{message('character-message','No se guardaron tus cambios. Siguen aquí; intenta de nuevo.','error');}finally{saving=false;renderCharacters();}});
+  $('save-characters').addEventListener('click',async()=>{saving=true;renderCharacters();try{await request({action:'characters',characters:chosen});saved=[...chosen];data.user.chosen=[...chosen];window.SmashMyTournament?.refresh();message('character-message','Personajes guardados. Ya se ven en tu perfil. El ranking público conserva sus personajes detectados.','success');}catch{message('character-message','No se guardaron tus cambios. Siguen aquí; intenta de nuevo.','error');}finally{saving=false;renderCharacters();}});
   async function closeAccount(action) {
     if(action==='disconnect'&&!confirm('¿Desvincular tu cuenta de Ranking Smash Bros? Se cerrarán tus sesiones. Puedes volver a autorizarla después.'))return;
     try{await request({action});chosen=[...saved];await load();$('header-account').textContent='Ver ranking ↗';$('header-account').href='./#ranking';}catch{message('settings-error','No pudimos completar la operación. Intenta de nuevo.','error');}
