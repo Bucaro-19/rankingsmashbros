@@ -1,5 +1,7 @@
 # Progreso y propuestas de carga de Legends 7 — 19/oct/2026
 
+Plan solicitado después por el dueño: [PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md](PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md). La barra se publicó el 19/oct; el plan de captura sigue pendiente de implementación.
+
 ## Barra del panel privado
 
 La tarjeta «Historiales de Legends 7» usa el archivo activo privado `private-smash/analysis-context/1687524.json`. Se lee con límite de 2 MiB, sin seguir enlaces simbólicos, sin crear directorios/archivos y sin incluir configuración o secretos. Ignora `.pending`: solo muestra el estado que el worker dejó activo después de importar. Una lectura inválida aísla esta tarjeta; no deja el resto del panel fuera de servicio.
