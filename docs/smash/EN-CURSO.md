@@ -1,5 +1,22 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+
+## Publicación autorizada: barra Legends 7, plan y agenda (19/oct)
+
+Orden del dueño: «hagamos el plan de implementación, y publica lo que hiciste». PR #112 fusionado por nombre de rama feat/panel-legends-progress con match-head **f5e49ff30c9aa4a1cd25273a4847b001375f700a**, squash **ad7fd2e78b2aacc7b4138487ddb4ca635264e6c8**. CI PR [39360453116](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39360453116), push 39360407877 y main 39361869345 verdes en general/MySQL 8.0/MariaDB 10.11. Despliegue **assets_only=true** [39361869475](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39361869475) **success**, terminado 20/oct 03:03 UTC (19/oct 21:03 GT).
+
+Verificación productiva anónima: panel.js y panel.css con versión 20261019-2 responden 200 y coinciden byte a byte con el código; panel.php y panel-api.php responden 401 y no-store/private, sin datos de progreso; stats.php responde 403. public.json antes/después: **d4f2d124b63b81bbd74eb608ba72e5f29cb52b70c9bed6274a98b9841bd197af**, **2234287 bytes**, idéntico. Sin sesión de dueño ni consulta/escritura SQL productiva para publicar. La revisión visual de la tarjeta con datos inventados está en la entrega anterior; no se afirma haber visto los conteos privados reales.
+
+Plan concreto en [PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md](PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md): rotación por páginas, medición de rendimiento útil, evaluación de frecuencia temporal de dos horas y estudio separado de captura ligera/detalle. Define archivos, pruebas, criterios de aceptación, publicación y parada; conserva techos, contrato, expiración y autorización. **No se implementa ni activa ese cambio de frecuencia aquí.** Regresión documental/local: 13 Node de panel y 100 Python de pipeline correctas, diff sin errores. Carpetas ajenas laminas/, marca-rsb/, social/ conservadas.
+
+### Por qué no aparecía SMASH 2210 #1
+
+La agenda pública leída antes de intervenir tenía generatedAt **2026-10-19T19:20:16.607480+00:00** (13:20 GT), una consulta, cobertura completa y **0 torneos**. La sonda de solo lectura [39361955401](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39361955401), a las 21:03 GT, usó la consulta actual sin cambios y ya recibió **1 torneo**, SMASH 2210 #1, ID **966688**, Ultimate Singles **1738331**, país GT, juego 1386. También aparece quitando por separado publiclySearchable, upcoming o videogameIds: no hay evidencia de un filtro que lo excluya ahora. **Desfase de la captura diaria frente a la respuesta actual de start.gg**; no se verificó la hora de creación/publicación ni se atribuye un cambio concreto al organizador o al índice.
+
+Fuente pública y metadatos coinciden: https://www.start.gg/tournament/smash-2210-1/details , Quetzaltenango, **15/nov/2026 08:00 a 22/nov/2026 20:00 GT**. Son las fechas configuradas en start.gg, no inferidas del nombre «2210». La agenda no aplica el mínimo nacional de 20 activos. Sonda: **5 consultas**, sin personas, SQL, FTP, artefactos ni cambios en filtros/captura. Workflow temporal solo en rama probe/agenda-smash-2210; el archivo en esta rama de documentación coincide con main y no se porta la sonda al PR.
+
+Se solicitó una actualización normal de agenda por el workflow existente en main con publish=true; el resultado y verificación de torneos.html se registran al terminar. No se reemplaza public.json por el snapshot de Git ni se cambia el calendario de captura.
+
 ## Panel privado: avance de historiales de Legends 7 (19/oct)
 
 Rama `feat/panel-legends-progress` desde main **fb90783**, Bucaro-19/rankingsmashbros; tracked limpio al comenzar, carpetas ajenas laminas/, marca-rsb/, social/ conservadas. AGENTS/CONTEXTO/EN-CURSO/MIGRACION/BASE-DE-DATOS/SIGUIENTE-FASE leídos. Se añade una tarjeta al panel existente reutilizando card/track/estilos; no hay pantalla nueva que requiera otro handoff de Claude Design.
