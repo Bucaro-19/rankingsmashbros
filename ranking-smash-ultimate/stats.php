@@ -219,3 +219,79 @@ function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
         throw new SmashStatsError('stats_read_failed');
     }
 }
+
+// Legends 7: read ONLY the committed checkpoint, never .pending, sync secrets or APIs.
+// This projection is called only after the panel's owner gate. No personal fields leave it.
+function smash_stats_analysis_empty(string $status): array
+{
+    return ['status'=>$status,'eventName'=>'Legends 7','registered'=>null,'preexisting'=>null,
+        'targets'=>null,'completed'=>null,'partial'=>null,'notStarted'=>null,'pending'=>null,
+        'percentage'=>null,'pagesConfirmed'=>null,'rosterCapturedAt'=>null,'checkpointSavedAt'=>null,
+        'authorizationEndsAt'=>'2026-10-26T00:00:00-06:00','stale'=>false];
+}
+function smash_stats_analysis_summary(array $saved, int $now, int $modified): array
+{
+    $bad = static function (): void { throw new SmashStatsError('analysis_progress_unavailable'); };
+    $state=$saved['checkpoint']??null;
+    if (!is_string($saved['revision']??null) || !preg_match('/^[a-f0-9]{64}$/D',$saved['revision'])
+        || !is_array($saved['lastResult']??null) || !in_array($saved['lastResult']['status']??null,['imported','already_imported'],true)
+        || !is_array($state) || ($state['stateVersion']??null)!==1 || ($state['seasonYear']??null)!==2026
+        || (string)($state['roster']['event']['id']??'')!=='1687524') $bad();
+    $roster=$state['roster']; $players=$roster['players']??null; $coverage=$state['coverage']??null; $known=$state['knownPlayerIds']??null;
+    if (!is_array($players) || !$players || count($players)>1000 || ($roster['registrations']??null)!==count($players)
+        || !is_array($coverage) || count($coverage)>count($players) || !is_array($known) || count($known)>count($players)) $bad();
+    $ids=[]; foreach ($players as $id=>$player) {
+        if (!preg_match('/^[1-9][0-9]{0,19}$/D',(string)$id) || !is_array($player) || (string)($player['id']??'')!==(string)$id) $bad();
+        $ids[(string)$id]=true;
+    }
+    $knownIds=[]; foreach ($known as $id) {
+        if ((!is_string($id) && !is_int($id)) || !isset($ids[(string)$id]) || isset($knownIds[(string)$id])) $bad();
+        $knownIds[(string)$id]=true;
+    }
+    $complete=0; $partial=0; $pages=0;
+    foreach ($coverage as $id=>$cov) {
+        if (!isset($ids[(string)$id]) || !is_array($cov) || !is_int($cov['nextPage']??null) || $cov['nextPage']<1 || $cov['nextPage']>1000000
+            || !array_key_exists('totalPages',$cov) || !is_bool($cov['complete']??null)) $bad();
+        $total=$cov['totalPages'];
+        if ($total!==null && (!is_int($total) || $total<0 || $total>1000000)) $bad();
+        if ($cov['complete'] && ($total===null || $cov['nextPage']<=$total)) $bad();
+        if (!$cov['complete'] && $total!==null && $cov['nextPage']>$total) $bad();
+        if ($total===null && $cov['nextPage']!==1) $bad();
+        $pages+=$cov['nextPage']-1;
+        if ($cov['complete']) $complete++;
+        elseif ($cov['nextPage']>1) $partial++;
+    }
+    foreach ($ids as $id=>$_) if (!array_key_exists($id,$coverage) && !isset($knownIds[$id])) $bad();
+    $stamp=$roster['capturedAt']??null;
+    if (!is_string($stamp) || !preg_match('/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|\+00:00)$/D',$stamp)) $bad();
+    $at=strtotime($stamp);
+    if ($at===false || $at>$now+60 || $modified<1 || $modified>$now+60) $bad();
+    $format=static fn(int $t): string => (new DateTimeImmutable('@'.$t))->setTimezone(new DateTimeZone('America/Guatemala'))->format('Y-m-d\TH:i:sP');
+    $targets=count($coverage); $pending=$targets-$complete;
+    $out=smash_stats_analysis_empty($now>=strtotime('2026-10-26T06:00:00Z')?'expired':($pending?'pending':'complete'));
+    return array_replace($out,['registered'=>count($players),'preexisting'=>count($players)-$targets,
+        'targets'=>$targets,'completed'=>$complete,'partial'=>$partial,'notStarted'=>$pending-$partial,'pending'=>$pending,
+        'percentage'=>$targets?round(100*$complete/$targets,1):100,'pagesConfirmed'=>$pages,
+        'rosterCapturedAt'=>$format($at),'checkpointSavedAt'=>$format($modified),'stale'=>$pending>0 && $now-$modified>12*3600]);
+}
+function smash_stats_analysis_progress(string $siteRoot, int $now): array
+{
+    $handle=null;
+    try {
+        $site=realpath($siteRoot);
+        if ($site===false) return smash_stats_analysis_empty('unavailable');
+        $private=dirname($site).'/private-smash'; $dir=$private.'/analysis-context'; $file=$dir.'/1687524.json';
+        if (is_link($private) || is_link($dir) || is_link($file)) return smash_stats_analysis_empty('unavailable');
+        if (!file_exists($file)) return smash_stats_analysis_empty('not_started');
+        $handle=@fopen($file,'rb');
+        if ($handle===false) return smash_stats_analysis_empty('unavailable');
+        $meta=fstat($handle); $max=2*1024*1024;
+        if (!$meta || ($meta['mode'] & 0170000)!==0100000 || $meta['size']>$max) return smash_stats_analysis_empty('unavailable');
+        $raw=stream_get_contents($handle,$max+1);
+        if (!is_string($raw) || strlen($raw)>$max) return smash_stats_analysis_empty('unavailable');
+        $data=json_decode($raw,true,128,JSON_THROW_ON_ERROR);
+        if (!is_array($data)) return smash_stats_analysis_empty('unavailable');
+        return smash_stats_analysis_summary($data,$now,(int)$meta['mtime']);
+    } catch (Throwable $error) { return smash_stats_analysis_empty('unavailable'); }
+    finally { if (is_resource($handle)) fclose($handle); }
+}

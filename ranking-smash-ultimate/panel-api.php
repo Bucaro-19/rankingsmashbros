@@ -58,7 +58,7 @@ try {
     $snapshot = bin2hex(random_bytes(16));
     $snapshots[$snapshot] = ['at' => $now, 'day' => $report['today']['date'], 'season' => $season, 'maximumId' => $maximumId, 'scopes' => $scopes];
     $_SESSION['smash_registration_snapshots'] = $snapshots;
-    panel_response(200, ['ok' => true, 'csrf' => $_SESSION['smash_account_csrf'], 'registrationSnapshot' => $snapshot, 'report' => $report]);
+    panel_response(200, ['ok' => true, 'csrf' => $_SESSION['smash_account_csrf'], 'registrationSnapshot' => $snapshot, 'report' => $report, 'analysisProgress' => smash_stats_analysis_progress(__DIR__, $now)]);
 } catch (SmashStatsError $error) {
     panel_response($error->reason === 'invalid_registration_query' ? 400 : 503, ['ok' => false, 'reason' => $error->reason === 'invalid_registration_query' ? $error->reason : 'stats_unavailable']);
 } catch (SmashAccountError $error) {

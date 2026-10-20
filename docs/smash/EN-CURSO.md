@@ -1,5 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Panel privado: avance de historiales de Legends 7 (19/oct)
+
+Rama `feat/panel-legends-progress` desde main **fb90783**, Bucaro-19/rankingsmashbros; tracked limpio al comenzar, carpetas ajenas laminas/, marca-rsb/, social/ conservadas. AGENTS/CONTEXTO/EN-CURSO/MIGRACION/BASE-DE-DATOS/SIGUIENTE-FASE leídos. Se añade una tarjeta al panel existente reutilizando card/track/estilos; no hay pantalla nueva que requiera otro handoff de Claude Design.
+
+panel-api.php entrega analysisProgress únicamente después del control de dueño. Lectura del checkpoint privado activo, acotada y sin symlinks/escrituras/config/secretos; se ignora .pending. Porcentaje **capturas finalizadas / historiales programados**, con previos/parciales/sin iniciar aparte y páginas confirmadas. No se confunden conocidos en SQL con temporada completa, ni desconocido con cero. Fechas GT, aviso de estado antiguo, vencimiento existente, botón de actualización y ARIA. Sin nombres/IDs ni consultas a start.gg por abrir/actualizar. Un archivo inválido solo afecta esta tarjeta. Contrato y propuestas en MEJORAS-CARGA-LEGENDS7.md.
+
+Cuello de botella comprobado: capture_batch mantiene un jugador hasta agotar presupuesto y merge_state ordena por ID. Se proponen turnos por página, después frecuencia de dos horas con los mismos techos, y posteriormente captura básica/detalle con caché y medición. Se consultó la documentación oficial de límites. **No se cambia la automatización ni se ejecutan cargas** como parte de una solicitud de sugerencias.
+
+Pruebas locales iniciales: contratos PHP de progreso + calendario/estadísticas sobre esquema desechable MariaDB 13.0.2; siete HTTP de panel (dueño, 401/403, agregados sin personas, solo activo, archivo corrupto aislado); trece Node de panel; cien Python del pipeline. QA en esquema separado de las regresiones. Revisión de navegador y CI MySQL 8.0/MariaDB 10.11 se añaden a la PR antes de cerrar la entrega. Sin migraciones, producción, ranking/public.json, encuesta, premium o nuevas dependencias.
+
 ## Publicación autorizada: Mi torneo con diseño final (18/oct)
 
 Orden expresa del dueño: «publicalo». [PR #110](https://github.com/Bucaro-19/rankingsmashbros/pull/110) fusionado por nombre de rama `feat/my-tournament-design`, con match-head **2f336d5**, squash **2bf472929ca98abc540263099b39e17373bea4a4**. CI final de PR **39138060908**, push **39138058193** y main **39141943781** verdes en general, MySQL 8.0 y MariaDB 10.11. Publicación `assets_only=true` [39141959105](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39141959105) **success** (18/oct 15:49:15 UTC).

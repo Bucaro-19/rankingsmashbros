@@ -91,7 +91,8 @@ function registrationController(fetch) {
   const code=source.slice(0,source.lastIndexOf(end))+`  module.exports={
     open(scope){closeRegistrations(false);registrationScope=scope;registrationSnapshot='opaque-report-token';report={today:{date:'2026-10-10'}};return fetchRegistrations();},
     more(){return fetchRegistrations(true);},close(){closeRegistrations(false);},
-    state(){return {items:registrationData,next:registrationNext,total:registrationTotal};}
+    state(){return {items:registrationData,next:registrationNext,total:registrationTotal};},
+    progress(value){analysisProgress=value;renderAnalysisProgress();return $('analysis-progress').innerHTML;}
   };
 })();`;
   const context={PanelModel:m,document:{getElementById:node,querySelectorAll:()=>[],addEventListener:(k,v)=>listeners.set(k,v)},localStorage:{getItem:()=>null},
@@ -136,4 +137,18 @@ test('access loss clears rows; expired report offers to refresh instead of loopi
   }
   const h=registrationController(async()=>({status:400,ok:false,json:async()=>({ok:false,reason:'registration_snapshot_expired'})}));
   await h.api.open('all'); assert.match(h.panel.innerHTML,/Actualizar datos/); assert.doesNotMatch(h.panel.innerHTML,/data-registration-retry/);
+});
+
+const progressSample={status:'pending',registered:5,preexisting:1,targets:4,completed:1,partial:1,notStarted:2,pending:3,percentage:25,pagesConfirmed:5,rosterCapturedAt:'2026-10-19T17:54:00-06:00',checkpointSavedAt:'2026-10-19T18:00:00-06:00',stale:false};
+test('Legends progress reflects completed target histories, not known players; ARIA uses the real value',()=>{
+  const h=registrationController(async()=>{});const html=h.api.progress(progressSample);
+  assert.match(html,/aria-valuenow="25"/);assert.match(html,/width:25%/);assert.match(html,/1 de 4 historiales programados finalizados; 3 pendientes/);
+  assert.match(html,/Con datos previos · no recapturados/);assert.match(html,/Historiales en carga parcial/);assert.match(html,/5 páginas confirmadas/);assert.match(html,/19\/10\/2026/);assert.match(html,/puede bajar|Puede bajar/);assert.ok(!html.includes('PRIVATE PERSON'));
+});
+test('Legends unknown/corrupt progress has no false zero or fake running state',()=>{
+  const h=registrationController(async()=>{});
+  for(const p of [undefined,{status:'not_started'},{status:'unavailable'}]){const html=h.api.progress(p);assert.ok(!html.includes('aria-valuenow'));assert.ok(!html.includes('0%'));assert.match(html,/Actualizar progreso/);}
+  assert.match(h.api.progress({...progressSample,status:'expired',stale:true}),/terminó/);
+  assert.match(h.api.progress({...progressSample,stale:true}),/no confirma un fallo/);
+  const done=h.api.progress({...progressSample,status:'complete',completed:4,partial:0,notStarted:0,pending:0,percentage:100});assert.match(done,/aria-valuenow="100"/);assert.match(done,/Plan actual atendido/);
 });

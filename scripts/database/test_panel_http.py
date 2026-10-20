@@ -95,7 +95,7 @@ class PanelHttpTests(unittest.TestCase):
         self.assertIn('no-store', headers['Cache-Control']); self.assertIn('noindex', headers['X-Robots-Tag'])
 
     def assert_reveals_nothing(self, body):
-        for word in ('Visitas', 'registros', 'visitantes', 'Panel privado', 'panel.js', 'panel-api', 'report'):
+        for word in ('Visitas', 'registros', 'visitantes', 'Panel privado', 'panel.js', 'panel-api', 'report', 'analysisProgress', 'Legends'):
             self.assertNotIn(word, body)
 
     def test_anonymous_is_asked_to_sign_in_and_sees_no_figures(self):
@@ -116,6 +116,32 @@ class PanelHttpTests(unittest.TestCase):
         self.assertEqual((status, json.loads(body)), (403, {'ok': False, 'reason': 'forbidden'}))
         account = json.loads(self.get('/account-api.php')[2])
         self.assertTrue(account['authenticated']); self.assertNotIn('panel', account)
+
+    def test_legends_progress_is_owner_only_and_has_no_people_or_pending_state(self):
+        folder=self.private/'analysis-context';folder.mkdir(exist_ok=True)
+        path=folder/'1687524.json'
+        state={'revision':'a'*64,'lastResult':{'status':'imported'},'checkpoint':{
+            'stateVersion':1,'seasonYear':2026,'knownPlayerIds':['11','12','13'],'pages':[],
+            'roster':{'event':{'id':1687524},'capturedAt':'2026-10-19T12:00:00Z','registrations':4,
+                      'players':{str(i):{'id':str(i),'gamerTag':'PRIVATE PERSON '+str(i)} for i in range(11,15)}},
+            'coverage':{'12':{'nextPage':3,'totalPages':2,'complete':True},'13':{'nextPage':4,'totalPages':8,'complete':False},'14':{'nextPage':1,'totalPages':None,'complete':False}}}}
+        try:
+            path.write_text(json.dumps(state))
+            self.assertEqual(self.get('/panel-api.php')[0],401)
+            self.get('/fixture-login.php');status,_,body=self.get('/panel-api.php');self.assertEqual(status,403);self.assertNotIn('Legends',body)
+            self.get('/fixture-login.php?admin=1');status,headers,body=self.get('/panel-api.php');self.assertEqual(status,200);self.assert_private(headers)
+            progress=json.loads(body)['analysisProgress']
+            self.assertEqual([progress[k] for k in ['registered','targets','completed','partial','notStarted','pending','percentage']], [4,3,1,1,1,2,33.3])
+            self.assertEqual(progress['preexisting'],1)
+            for secret in ['PRIVATE PERSON','gamerTag','knownPlayerIds','nextPage','revision','private-smash','source_hash']:
+                self.assertNotIn(secret,json.dumps(progress))
+            self.assertNotIn('"players"',body)
+            path.unlink();(folder/'1687524.json.pending').write_text(json.dumps(state))
+            self.assertEqual(json.loads(self.get('/panel-api.php')[2])['analysisProgress']['status'],'not_started')
+            path.write_text('{')
+            status,_,body=self.get('/panel-api.php');self.assertEqual(status,200);self.assertEqual(json.loads(body)['analysisProgress']['status'],'unavailable');self.assertIn('accounts',json.loads(body)['report'])
+        finally:
+            path.unlink(missing_ok=True);(folder/'1687524.json.pending').unlink(missing_ok=True)
 
     def test_owner_gets_the_panel_and_aggregates_only(self):
         self.get('/fixture-login.php?admin=1')

@@ -8,6 +8,49 @@ check_stats(smash_stats_shift('2026-03-01', -1) === '2026-02-28' && smash_stats_
 check_stats(SMASH_STATS_PAGES['analisis-torneos'] === 'torneos' && SMASH_STATS_PAGES['torneos'] === 'agendaTorneos'
     && count(array_unique(SMASH_STATS_PAGES)) === count(SMASH_STATS_PAGES), 'Additive panel keys preserve historical meaning without duplicate aliases');
 echo "Statistics calendar contracts passed.\n";
+// Synthetic committed progress: prior context is NOT counted as a newly completed history.
+$progressNow=strtotime('2026-10-20T00:00:00Z');
+$progressState=['revision'=>str_repeat('a',64),'lastResult'=>['status'=>'imported'],'checkpoint'=>[
+    'stateVersion'=>1,'seasonYear'=>2026,'roster'=>['event'=>['id'=>1687524],
+        'capturedAt'=>'2026-10-19T23:54:00+00:00','registrations'=>5,'players'=>[
+            '11'=>['id'=>'11','gamerTag'=>'DO NOT EXPOSE NAME'],'12'=>['id'=>'12'],
+            '13'=>['id'=>'13'],'14'=>['id'=>'14'],'15'=>['id'=>'15']]],
+    'knownPlayerIds'=>['11','12','13'],'coverage'=>[
+        '12'=>['nextPage'=>3,'totalPages'=>2,'complete'=>true],
+        '13'=>['nextPage'=>4,'totalPages'=>10,'complete'=>false],
+        '14'=>['nextPage'=>1,'totalPages'=>null,'complete'=>false],
+        '15'=>['nextPage'=>1,'totalPages'=>null,'complete'=>false]],'pages'=>[]]];
+$progress=smash_stats_analysis_summary($progressState,$progressNow,$progressNow-60);
+check_stats([$progress['registered'],$progress['preexisting'],$progress['targets'],$progress['completed'],$progress['partial'],$progress['notStarted'],$progress['pending'],$progress['percentage'],$progress['pagesConfirmed']] === [5,1,4,1,1,2,3,25.0,5], 'Real coverage counts and numerator, not known SQL identities');
+check_stats($progress['status']==='pending' && !$progress['stale'] && $progress['rosterCapturedAt']==='2026-10-19T17:54:00-06:00', 'Progress uses Guatemala timestamps');
+check_stats(smash_stats_analysis_summary($progressState,$progressNow,$progressNow-13*3600)['stale'], 'Old committed file warns without claiming a failed run');
+check_stats(smash_stats_analysis_summary($progressState,strtotime('2026-10-26T06:00:00Z'),$progressNow)['status']==='expired', 'Capture deadline is not extended by panel');
+$completeState=$progressState;
+foreach($completeState['checkpoint']['coverage'] as &$cov) $cov=['nextPage'=>2,'totalPages'=>1,'complete'=>true];unset($cov);
+check_stats(smash_stats_analysis_summary($completeState,$progressNow,$progressNow)['percentage']===100.0, '100 only when every planned history finished');
+$noTargets=$progressState;$noTargets['checkpoint']['coverage']=[];$noTargets['checkpoint']['knownPlayerIds']=['11','12','13','14','15'];
+check_stats(smash_stats_analysis_summary($noTargets,$progressNow,$progressNow)['status']==='complete', 'No targeted histories is a satisfied plan, not an invented historical capture');
+$more=$progressState;$more['checkpoint']['roster']['players']['16']=['id'=>'16'];$more['checkpoint']['roster']['registrations']=6;$more['checkpoint']['coverage']['16']=['nextPage'=>1,'totalPages'=>null,'complete'=>false];
+check_stats(smash_stats_analysis_summary($more,$progressNow,$progressNow)['percentage']===20.0, 'New registrant may reduce percentage without losing confirmed progress');
+$raw=json_encode($progress);
+foreach(['DO NOT EXPOSE NAME','gamerTag','knownPlayerIds','revision','nextPage','players','checkpoint','lastResult','token','private-smash'] as $secret) check_stats(strpos($raw,'"'.$secret.'"')===false,'Closed aggregate projection: '.$secret);
+$home=sys_get_temp_dir().'/smash-progress-'.bin2hex(random_bytes(6));mkdir($home);mkdir($home.'/site');mkdir($home.'/private-smash');mkdir($home.'/private-smash/analysis-context');
+$progressFile=$home.'/private-smash/analysis-context/1687524.json';
+try {
+    check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='not_started','Missing file is unknown, never 0 percent');
+    file_put_contents($progressFile.'.pending',json_encode($progressState));
+    check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['registered']===null,'Pending import never contributes progress');
+    file_put_contents($progressFile,json_encode($progressState));touch($progressFile,$progressNow-60);clearstatcache();
+    $before=hash_file('sha256',$progressFile);
+    check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['percentage']===25.0,'Reads only the active checkpoint');
+    check_stats(hash_file('sha256',$progressFile)===$before,'Reader never writes checkpoint');
+    file_put_contents($progressFile,'{');check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='unavailable','Corrupt progress isolated from the rest of the panel');
+    file_put_contents($progressFile,str_repeat('x',2*1024*1024+1));check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='unavailable','Hard file size limit');
+    unlink($progressFile);symlink($progressFile.'.pending',$progressFile);check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='unavailable','No symlink traversal');unlink($progressFile);
+} finally {if(file_exists($progressFile)||is_link($progressFile))unlink($progressFile);unlink($progressFile.'.pending');rmdir(dirname($progressFile));rmdir($home.'/private-smash');rmdir($home.'/site');rmdir($home);}
+$invalid=$progressState;$invalid['checkpoint']['coverage']['12']['complete']=false;
+try {smash_stats_analysis_summary($invalid,$progressNow,$progressNow);throw new RuntimeException('Invalid completed/next-page relationship accepted');}catch(SmashStatsError $expected){}
+echo "Legends progress aggregate/read-only contracts passed.\n";
 $db = getenv('SMASH_SCHEMA_TEST_DB');
 if (!$db) { echo "SQL tests skipped: no disposable database configured.\n"; exit; }
 if (strpos($db, 'smash_schema_test') !== 0 || !in_array(getenv('SMASH_SCHEMA_TEST_HOST') ?: '127.0.0.1', ['127.0.0.1', 'localhost'], true)) throw new RuntimeException('Disposable database required');

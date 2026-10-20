@@ -3,7 +3,7 @@
   const $=id=>document.getElementById(id), M=PanelModel, N=n=>M.number(n);
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const PERIODS=[['7','7 días'],['30','30 días'],['90','90 días'],['season','Temporada']];
-  let report=null, csrf='', registrationSnapshot='', period='30', metric='visitors', selected=-1, items=[], listOpen=false;
+  let report=null, analysisProgress=null, csrf='', registrationSnapshot='', period='30', metric='visitors', selected=-1, items=[], listOpen=false;
   try{const saved=localStorage.getItem('smashgt.panel.periodo');if(PERIODS.some(p=>p[0]===saved))period=saved;}catch{}
   function show(state){$('panel-loading').hidden=state!=='loading';$('panel-error').hidden=state!=='error';$('panel-ready').hidden=state!=='ready';}
   async function load() {
@@ -16,7 +16,7 @@
       if(response.status===401||response.status===403){location.reload();return;}
       const json=await response.json();
       if(!response.ok||json.ok!==true)throw new Error(String(response.status));
-      report=json.report;csrf=json.csrf;registrationSnapshot=json.registrationSnapshot;render();show('ready');
+      report=json.report;analysisProgress=json.analysisProgress;csrf=json.csrf;registrationSnapshot=json.registrationSnapshot;render();show('ready');
     } catch(error) {
       // Old figures are never left on screen as if they were current.
       report=null;$('error-code').textContent=`STATS-${/^\d{3}$/.test(error.message)?error.message:'RED'}`;show('error');
@@ -26,9 +26,22 @@
     closeRegistrations(false);
     $('updated').textContent=`Datos actualizados: ${M.dmy(report.updatedAt.slice(0,10))} · ${report.updatedAt.slice(11,16)} (hora de Guatemala, UTC−6)`;
     renderGlance();
+    renderAnalysisProgress();
     $('periods').innerHTML=PERIODS.map(([key,label])=>`<button type="button" data-period="${key}" aria-pressed="${key===period}">${label}</button>`).join('');
     document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{period=button.dataset.period;try{localStorage.setItem('smashgt.panel.periodo',period);}catch{}selected=-1;render();}));
     renderPeriod();
+  }
+  function renderAnalysisProgress() {
+    const node=$('analysis-progress'),p=analysisProgress;
+    const format=value=>value?`${M.dmy(value.slice(0,10))} · ${value.slice(11,16)} (Guatemala)`:'';
+    const head='<div class="period-head"><h2 id="analysis-progress-title">Historiales de Legends 7</h2><button class="outline" type="button" data-progress-refresh>Actualizar progreso</button></div>';
+    if(!p||p.status==='unavailable'||p.status==='not_started') {
+      node.innerHTML=head+`<div class="empty" role="status"><strong>${p?.status==='not_started'?'Sin avance confirmado todavía':'Progreso no disponible'}</strong><p>${p?.status==='not_started'?'Todavía no hay un estado de carga guardado para mostrar. No equivale a cero inscritos.':'No pudimos leer el último avance confirmado. Esto no significa que se haya detenido la carga.'}</p></div>`;
+      return;
+    }
+    const pct=Number(p.percentage),pending=M.plural(p.pending,'historial pendiente','historiales pendientes');
+    const label=p.status==='expired'?'Finalizó el periodo automático':p.pending===0?'Plan actual atendido':'Carga por tandas · con pendientes';
+    node.innerHTML=head+`<div class="card"><p class="label">${label}</p><div class="sync-reading"><strong class="figure blue">${N(pct)}%</strong><p><strong>${N(p.completed)} de ${N(p.targets)}</strong> historiales programados con captura finalizada.<br>${pending}.</p></div><div class="track sync-track" role="progressbar" aria-labelledby="analysis-progress-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-valuetext="${escape(`${p.completed} de ${p.targets} historiales programados finalizados; ${p.pending} pendientes`)}"><span style="width:${pct}%"></span></div><p class="sync-status" role="status" aria-live="polite">${p.targets===0?'No se requiere captura adicional según el plan guardado.':`${N(p.pagesConfirmed)} páginas confirmadas. Un historial largo puede avanzar en páginas sin subir el porcentaje hasta terminar.`}</p><dl class="sync-counts"><div><dt>Inscritos en la lista</dt><dd>${N(p.registered)}</dd></div><div><dt>Con datos previos · no recapturados</dt><dd>${N(p.preexisting)}</dd></div><div><dt>Capturas finalizadas</dt><dd>${N(p.completed)}</dd></div><div><dt>Historiales en carga parcial</dt><dd>${N(p.partial)}</dd></div><div><dt>Historiales sin iniciar</dt><dd>${N(p.notStarted)}</dd></div></dl>${p.status==='expired'&&p.pending?'<p class="sync-warning">La autorización automática terminó; quedan historiales pendientes. No se promete que continúen cargándose.</p>':''}${p.stale?'<p class="sync-warning">Hay pendientes y el archivo de avance lleva más de 12 horas sin actualizarse. Revisa la ejecución; este aviso no confirma un fallo.</p>':''}<p class="fine">Lista consultada: ${escape(format(p.rosterCapturedAt))}.<br>Estado guardado: ${escape(format(p.checkpointSavedAt))}.</p><p class="fine">El porcentaje mide capturas programadas, no partidas ni cuentas de nuestra web. Los datos previos van aparte y no significan historial completo. Terminar no garantiza que start.gg registre todos los personajes y resultados. Puede bajar si entran nuevos inscritos.</p><p class="fine">Plan: cada 6 horas mientras esté habilitado, hasta el 25/10/2026; puede retrasarse. Sin hora estimada de finalización. Actualizar lee el último avance guardado y no consume consultas de start.gg.</p></div>`;
   }
   function glanceCard(name,label) {
     const p=report.periods[name];
@@ -160,6 +173,11 @@
     else if(event.target.closest('[data-registration-retry]'))fetchRegistrations(event.target.closest('[data-registration-retry]').dataset.registrationRetry==='true');
   });
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&registrationTrigger){event.preventDefault();closeRegistrations();}});
+  $('analysis-progress').addEventListener('click',async event=>{
+    if(!event.target.closest('[data-progress-refresh]'))return;
+    await load();
+    if(report)$('analysis-progress').querySelector('[data-progress-refresh]')?.focus();
+  });
   $('panel-retry').addEventListener('click',load);
   $('panel-logout').addEventListener('click',async()=>{
     const button=$('panel-logout');button.disabled=true;
