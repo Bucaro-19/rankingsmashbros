@@ -236,12 +236,14 @@ function smash_stats_analysis_summary(array $saved, int $now, int $modified): ar
     if (!is_string($saved['revision']??null) || !preg_match('/^[a-f0-9]{64}$/D',$saved['revision'])
         || !is_array($saved['lastResult']??null) || !in_array($saved['lastResult']['status']??null,['imported','already_imported'],true)
         || !is_array($state) || ($state['stateVersion']??null)!==1 || ($state['seasonYear']??null)!==2026
-        || (string)($state['roster']['event']['id']??'')!=='1687524') $bad();
+        || !is_array($state['roster']??null)) $bad();
+    $event=$state['roster']['event']??null;
+    if (!is_array($event) || (!is_string($event['id']??null) && !is_int($event['id']??null)) || (string)$event['id']!=='1687524') $bad();
     $roster=$state['roster']; $players=$roster['players']??null; $coverage=$state['coverage']??null; $known=$state['knownPlayerIds']??null;
     if (!is_array($players) || !$players || count($players)>1000 || ($roster['registrations']??null)!==count($players)
         || !is_array($coverage) || count($coverage)>count($players) || !is_array($known) || count($known)>count($players)) $bad();
     $ids=[]; foreach ($players as $id=>$player) {
-        if (!preg_match('/^[1-9][0-9]{0,19}$/D',(string)$id) || !is_array($player) || (string)($player['id']??'')!==(string)$id) $bad();
+        if (!preg_match('/^[1-9][0-9]{0,19}$/D',(string)$id) || !is_array($player) || (!is_string($player['id']??null) && !is_int($player['id']??null)) || (string)$player['id']!==(string)$id) $bad();
         $ids[(string)$id]=true;
     }
     $knownIds=[]; foreach ($known as $id) {
@@ -283,6 +285,7 @@ function smash_stats_analysis_progress(string $siteRoot, int $now): array
         $private=dirname($site).'/private-smash'; $dir=$private.'/analysis-context'; $file=$dir.'/1687524.json';
         if (is_link($private) || is_link($dir) || is_link($file)) return smash_stats_analysis_empty('unavailable');
         if (!file_exists($file)) return smash_stats_analysis_empty('not_started');
+        if (!is_file($file)) return smash_stats_analysis_empty('unavailable');
         $handle=@fopen($file,'rb');
         if ($handle===false) return smash_stats_analysis_empty('unavailable');
         $meta=fstat($handle); $max=2*1024*1024;

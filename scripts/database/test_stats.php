@@ -34,20 +34,21 @@ $more=$progressState;$more['checkpoint']['roster']['players']['16']=['id'=>'16']
 check_stats(smash_stats_analysis_summary($more,$progressNow,$progressNow)['percentage']===20.0, 'New registrant may reduce percentage without losing confirmed progress');
 $raw=json_encode($progress);
 foreach(['DO NOT EXPOSE NAME','gamerTag','knownPlayerIds','revision','nextPage','players','checkpoint','lastResult','token','private-smash'] as $secret) check_stats(strpos($raw,'"'.$secret.'"')===false,'Closed aggregate projection: '.$secret);
-$home=sys_get_temp_dir().'/smash-progress-'.bin2hex(random_bytes(6));mkdir($home);mkdir($home.'/site');mkdir($home.'/private-smash');mkdir($home.'/private-smash/analysis-context');
-$progressFile=$home.'/private-smash/analysis-context/1687524.json';
+$progressRoot=sys_get_temp_dir().'/smash-progress-'.bin2hex(random_bytes(6));mkdir($progressRoot);mkdir($progressRoot.'/site');mkdir($progressRoot.'/private-smash');mkdir($progressRoot.'/private-smash/analysis-context');
+$progressFile=$progressRoot.'/private-smash/analysis-context/1687524.json';
 try {
-    check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='not_started','Missing file is unknown, never 0 percent');
+    check_stats(smash_stats_analysis_progress($progressRoot.'/site',$progressNow)['status']==='not_started','Missing file is unknown, never 0 percent');
     file_put_contents($progressFile.'.pending',json_encode($progressState));
-    check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['registered']===null,'Pending import never contributes progress');
+    check_stats(smash_stats_analysis_progress($progressRoot.'/site',$progressNow)['registered']===null,'Pending import never contributes progress');
+    mkdir($progressFile);check_stats(smash_stats_analysis_progress($progressRoot.'/site',$progressNow)['status']==='unavailable','No special-directory reads');rmdir($progressFile);
     file_put_contents($progressFile,json_encode($progressState));touch($progressFile,$progressNow-60);clearstatcache();
     $before=hash_file('sha256',$progressFile);
-    check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['percentage']===25.0,'Reads only the active checkpoint');
+    check_stats(smash_stats_analysis_progress($progressRoot.'/site',$progressNow)['percentage']===25.0,'Reads only the active checkpoint');
     check_stats(hash_file('sha256',$progressFile)===$before,'Reader never writes checkpoint');
-    file_put_contents($progressFile,'{');check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='unavailable','Corrupt progress isolated from the rest of the panel');
-    file_put_contents($progressFile,str_repeat('x',2*1024*1024+1));check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='unavailable','Hard file size limit');
-    unlink($progressFile);symlink($progressFile.'.pending',$progressFile);check_stats(smash_stats_analysis_progress($home.'/site',$progressNow)['status']==='unavailable','No symlink traversal');unlink($progressFile);
-} finally {if(file_exists($progressFile)||is_link($progressFile))unlink($progressFile);unlink($progressFile.'.pending');rmdir(dirname($progressFile));rmdir($home.'/private-smash');rmdir($home.'/site');rmdir($home);}
+    file_put_contents($progressFile,'{');check_stats(smash_stats_analysis_progress($progressRoot.'/site',$progressNow)['status']==='unavailable','Corrupt progress isolated from the rest of the panel');
+    file_put_contents($progressFile,str_repeat('x',2*1024*1024+1));check_stats(smash_stats_analysis_progress($progressRoot.'/site',$progressNow)['status']==='unavailable','Hard file size limit');
+    unlink($progressFile);symlink($progressFile.'.pending',$progressFile);check_stats(smash_stats_analysis_progress($progressRoot.'/site',$progressNow)['status']==='unavailable','No symlink traversal');unlink($progressFile);
+} finally {if(file_exists($progressFile)||is_link($progressFile))unlink($progressFile);unlink($progressFile.'.pending');rmdir(dirname($progressFile));rmdir($progressRoot.'/private-smash');rmdir($progressRoot.'/site');rmdir($progressRoot);}
 $invalid=$progressState;$invalid['checkpoint']['coverage']['12']['complete']=false;
 try {smash_stats_analysis_summary($invalid,$progressNow,$progressNow);throw new RuntimeException('Invalid completed/next-page relationship accepted');}catch(SmashStatsError $expected){}
 echo "Legends progress aggregate/read-only contracts passed.\n";
