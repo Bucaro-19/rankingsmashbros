@@ -23,7 +23,26 @@ try:
     data['roster']=copy.deepcopy(roster);data['roster']['players']={pid:roster['players'][pid] for pid in changed}
     data['coverage']={pid:state['coverage'][pid] for pid in changed}
     print(json.dumps(dict(stage='captured',queries=client.calls,roots=len(changed),sets=len(data['sets']))))
-    stage='package';pack=a.package(data);state['pages']={}
+    stage='package';pack=a.package(data)
+    origins={}
+    for key,page in state['pages'].items():
+        pid=key.split(':')[0]
+        for match in page['sets']:origins.setdefault(str(match['id']),set()).add(pid)
+    roots=set(pack['content']['rootPlayerIds']);entities=pack['content']['entities']
+    links={r['entrant_id']:r['player_id'] for r in entities['entrant_players']}
+    related={r['set_id'] for r in entities['set_slots'] if links.get(r['entrant_id']) in roots}
+    unrelated=[m for sid,m in data['sets'].items() if int(sid) not in related]
+    shapes={}
+    for match in unrelated:
+        slots=match.get('slots') or []
+        players=[str(p['player']['id']) for slot in slots for p in (slot.get('entrant') or {}).get('participants') or [] if p.get('player')]
+        form=(len(slots),sum(bool(x.get('entrant')) for x in slots),len(players),bool(match.get('winnerId')),bool(set(players)&origins.get(str(match['id']),set())))
+        shapes[str(form)]=shapes.get(str(form),0)+1
+    print(json.dumps(dict(stage='unrelated_shapes',unrelatedSets=len(unrelated),shapes=shapes)))
+    if unrelated:
+        filtered=copy.deepcopy(data);filtered['sets']={sid:m for sid,m in data['sets'].items() if int(sid) in related}
+        pack=a.package(filtered)
+    state['pages']={}
     env=dict(operation='analysis_import',eventId=1687524,baseRevision=inv['revision'],package=pack,checkpoint=state)
     stage='transport';body=a.encode_transport(env)
     stage='php_local_validation'
