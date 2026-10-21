@@ -1,8 +1,8 @@
 # Automatización del contexto de inscritos — Legends 7
 
-## Fase 1 preparada — 20/oct/2026, sin activar
+## Fase 1 fusionada; reactivación pendiente — 20/oct/2026
 
-Rama feat/fair-rival-history-batches, desde main 0286a0e. La próxima política de capture_batch cambia solo el orden de páginas, no consulta, filtros, frecuencia, techo, paquete, checkpoint o receptor. No hay campos/versiones nuevos, PHP nuevo o migración. Producción sigue con el capturador anterior hasta fusionar esta PR por orden del dueño.
+Rama feat/fair-rival-history-batches, desde main 0286a0e. La próxima política de capture_batch cambia solo el orden de páginas, no consulta, filtros, frecuencia, techo, paquete, checkpoint o receptor. No hay campos/versiones nuevos, PHP nuevo o migración. PR #114 fusionado por orden del dueño, squash f3308c7. Primera verificación rechazada antes de la cola por analysis_unrelated_set; SMASH_RIVAL_SYNC_ENABLED=false durante la corrección descrita en EN-CURSO.md. No se presenta como publicación verificada todavía.
 
 Tres turnos eligen al objetivo incompleto con nextPage más bajo (desempate por ID numérico), recalculado después de cada página exitosa; el cuarto se reserva para quienes **ya estaban parciales al comenzar la tanda**. Esa cola parte del más avanzado y rota dentro de la tanda antes de volver a darle otro turno al mismo. Así el historial largo heredado sigue avanzando aunque lleguen muchos nuevos; los nuevos parciales entran en esa reserva en la siguiente tanda. Si no hay parciales pendientes, el turno reservado se aprovecha con el orden normal. Los ya completos se omiten siempre. Los reintentos consumen intentos del presupuesto, no turnos de páginas exitosas.
 
@@ -75,3 +75,10 @@ Datos enteramente inventados, base local aislada MariaDB **13.0.2**, PHP **8.5.3
 Tanda sintética densa: **140 sets, 1400 games, 2800 selecciones**, **28 consultas simuladas**; sobre completo **551042 bytes JSON**, aproximadamente **30 KB gzip**, worker **16777216 bytes (16 MiB) de pico**. Captura simulada + normalización + transporte/receptor + importación en local: **0,83–0,98 s**, sin espera ni latencia real de start.gg. No es una promesa de rendimiento productivo: las 28 consultas reales tienen como mínimo unos 28 s y el cron puede tardar varios minutos. Los techos comprobados siguen muy por debajo de 4 MiB/32 MiB y 512M.
 
 Regresión local: 100 pruebas del pipeline; receptor semanal 18, herramienta manual 7, paquetes 14, carga semanal 13, catálogo 11, contexto de organizador 8 y contexto de games 9 correctas. Se actualizaron las copias temporales de bibliotecas en fixtures HTTP al añadir las dos dependencias privadas; no se relajaron sus aserciones. SHA-256 versionado de public.json intacto: `1e681141bf4d043319593effc3153f44a7ec38531deef8a427f76c2573a24df1`. CI y PR final: ver EN-CURSO.md.
+
+
+## Historial sin vínculo verificable
+
+La respuesta de player.sets puede incluir sets donde los dos jugadores registrados difieren de la raíz solicitada (observado el 20/oct en cinco registros, sin inferir por qué). capture_batch solo conserva un set de una página si los participantes ya recibidos incluyen a su raíz; también filtra páginas en caché sin volver a consultarlas. No se asigna por tag ni se supone que otro ID sea un alias. La validación del receptor analysis_unrelated_set sigue intacta para rechazar paquetes ajenos antes de encolarlos.
+
+Las apariciones omitidas se cuentan en audit.unlinkedSetsSkipped. El resumen de Actions añade unlinkedSetsSkipped y una línea agregada en STEP_SUMMARY, acumulados únicamente tras confirmar la tanda. No son nombres/IDs ni un listado de partidas, y no es un conteo de sets válidos de ranking. La cobertura avanza al haber procesado la página de la fuente, incluso si ninguna fila tiene un vínculo demostrable; complete no certifica historial sin huecos. No se guarda una relación que no existe, ni se fabrican resultados o identidades. El contador no representa una corrección en start.gg o un intento de volver a consultar esas filas después.
