@@ -1,5 +1,18 @@
 # Automatización del contexto de inscritos — Legends 7
 
+## Fase 1 preparada — 20/oct/2026, sin activar
+
+Rama feat/fair-rival-history-batches, desde main 0286a0e. La próxima política de capture_batch cambia solo el orden de páginas, no consulta, filtros, frecuencia, techo, paquete, checkpoint o receptor. No hay campos/versiones nuevos, PHP nuevo o migración. Producción sigue con el capturador anterior hasta fusionar esta PR por orden del dueño.
+
+Tres turnos eligen al objetivo incompleto con nextPage más bajo (desempate por ID numérico), recalculado después de cada página exitosa; el cuarto se reserva para quienes **ya estaban parciales al comenzar la tanda**. Esa cola parte del más avanzado y rota dentro de la tanda antes de volver a darle otro turno al mismo. Así el historial largo heredado sigue avanzando aunque lleguen muchos nuevos; los nuevos parciales entran en esa reserva en la siguiente tanda. Si no hay parciales pendientes, el turno reservado se aprovecha con el orden normal. Los ya completos se omiten siempre. Los reintentos consumen intentos del presupuesto, no turnos de páginas exitosas.
+
+Con 28 páginas exitosas y una sola raíz parcial larga, recibe siete turnos de reserva y quedan 21 para ponerse al día. Con varias raíces parciales la reserva rota, y no se promete que cada raíz reciba un turno en cada tanda: hay un máximo de 28 páginas y hasta 1000 objetivos. La política no es un cursor persistente global; la cola se reconstruye desde cobertura al comenzar cada tanda. No promete historial reciente en la primera página, disponibilidad de datos de 2026 ni finalización antes del torneo. El porcentaje del panel conserva su significado.
+
+Activación: revisar CI general/MySQL 8.0/MariaDB 10.11 de esta rama, esperar que termine la tanda activa y comprobar que no haya trabajo fallido pendiente; después fusionar con orden del dueño. La siguiente ejecución normal de Actions toma el nuevo capturador del checkout de main. **No hace falta FTP ni assets_only para este cambio, porque no cambia ningún archivo del hosting.** No ejecutar una importación manual como benchmark. No resetear checkpoint, recibos, variables o colas. Reversión: el capturador anterior puede leer exactamente el mismo stateVersion=1 y continuar desde los nextPage que se hayan confirmado.
+
+Medición y pruebas inventadas en MEJORAS-CARGA-LEGENDS7.md, sección fase 1. Las métricas nuevas del resumen (fase 2), el cron de dos horas (fase 3) y la captura ligera/detalle (fase 4) no están implementados ni activados aquí.
+
+
 **Estado vigente 14/oct (orden posterior del dueño):** #102 fusionado/desplegado, altas de entidades aprobadas y constante en true; 007 aplicada según el dueño. El bloqueo de alcance mencionado abajo es histórico y queda resuelto. Corrección #103 fusionada y desplegada: cron habilitado y run 38606150069 verde con registrations_unavailable, una consulta y cero agregados. Evidencia completa en el primer bloque de EN-CURSO.md. No repetir migración ni pedir nuevamente autorización.
 
 Entrega del 14/oct/2026. Sin pantalla, migración nueva, credenciales nuevas ni servicio adicional. No fusionar, desplegar o activar sin orden. No se ejecutó captura real ni escritura/consulta SQL productiva en esta tarea.
