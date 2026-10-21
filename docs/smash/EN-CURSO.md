@@ -1,6 +1,16 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
 
+## Fase 1: repartir tandas de historiales — 20/oct
+
+Pedido del dueño: «bueno comencemos tu plan de mejora entonces». Rama propia **feat/fair-rival-history-batches** desde main remoto **0286a0e**, remoto Bucaro-19/rankingsmashbros confirmado; tracked limpio al inicio, laminas/, marca-rsb/, social/ ajenos conservados. Leídos AGENTS/CONTEXTO/EN-CURSO/MIGRACION/BASE-DE-DATOS/SIGUIENTE-FASE y plan. Actions iniciales de contexto y bracket verdes; la automatización vigente no se apaga ni se relanza para esta implementación.
+
+Solo cambia scripts/smash/rival_history.py: tres turnos al menor nextPage (ID numérico desempata) y uno reservado a los ya parciales al inicio de tanda, en cola rotativa que comienza por el más avanzado. Simulación demostró que el orden mínimo puro dejaría al legado profundo esperando frente a muchos nuevos; por eso se incluye la reserva contemplada en el plan. Mismo stateVersion=1, paquete, consulta/filtros, receptor, transacción, CAS, recibos, límites y expiración; auto.run no requiere cambios. Sin pantalla, migración, token nuevo, captura real, SQL de producción, cron nuevo ni archivos del hosting.
+
+Comparativa inventada con el capturador original de 0286a0e: en 28 intentos, un largo + 27 cortos pasa de **1 jugador con avance / 0 terminados** a **28 / 27**; con un largo heredado desde página 201, **22 / 21**, y el largo conserva siete páginas de avance. No es una promesa de completar Legends 7 ni de que la primera página sea reciente. Detalle/alcance, límites, activación y reversión documentados en MEJORAS-CARGA-LEGENDS7.md, AUTOMATIZACION-ANALISIS.md y PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md.
+
+Pruebas inventadas de orden canónico, parciales/conocidos/nuevos, presupuestos/reintentos, errores sin mutar checkpoint, receptor firmado de 35 raíces y reanudación desde legado, paridad SQL por tabla, repetición y estados pendientes/fallidos. Tanda densa distribuida: **140 sets, 1400 games, 2800 selecciones, 28 raíces / 28 consultas, 590778 B JSON, ~30,8 KB gzip, 16 MiB PHP**, ~1 s local sin fuente/cron reales. Local: **39 pruebas de automatización, 7 de contexto, 14 HTTP de análisis y 100 del pipeline correctas**; instalación/repetición del esquema, 9 correctas. Base desechable propia MariaDB 13.0.2; CI general/MySQL 8.0/MariaDB 10.11: evidencia final en la PR de esta rama. No se fusiona, activa ni publica sin orden posterior del dueño; el siguiente paso tras activar es medir tandas normales, no subir frecuencia a ciegas. Este cambio de capturador no necesita un despliegue FTP; Actions usa el checkout de main al fusionarse.
+
 ## Publicación autorizada: barra Legends 7, plan y agenda (19/oct)
 
 Orden del dueño: «hagamos el plan de implementación, y publica lo que hiciste». PR #112 fusionado por nombre de rama feat/panel-legends-progress con match-head **f5e49ff30c9aa4a1cd25273a4847b001375f700a**, squash **ad7fd2e78b2aacc7b4138487ddb4ca635264e6c8**. CI PR [39360453116](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39360453116), push 39360407877 y main 39361869345 verdes en general/MySQL 8.0/MariaDB 10.11. Despliegue **assets_only=true** [39361869475](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39361869475) **success**, terminado 20/oct 03:03 UTC (19/oct 21:03 GT).

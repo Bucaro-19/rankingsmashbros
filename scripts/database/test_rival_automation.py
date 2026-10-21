@@ -60,12 +60,128 @@ class DenseSource(Source):
         if q==auto.EVENT_ROSTER:return response
         rows=[]
         for j in range(5):
-            m=history(int(v['id']));m['id']=900000+(v['page']-1)*5+j
+            m=history(int(v['id']));m['id']=900000+int(v['id'])*100000+(v['page']-1)*5+j
             model=m['games'][0];m['games']=[]
             for i in range(1,11):
                 game=copy.deepcopy(model);game.update(id=m['id']*10+i,orderNum=i);m['games'].append(game)
             rows.append(m)
         response['player']['sets']['nodes']=rows;return response
+
+
+class PagedSource(Source):
+    """Record page coordinates; vary invented history length per root."""
+    def __init__(self,ids=(),page_counts=None):
+        super().__init__(ids);self.page_counts=page_counts or {};self.history_pages=[]
+    def query(self,q,v):
+        result=super().query(q,v)
+        if q!=auto.EVENT_ROSTER:
+            self.history_pages.append((str(v['id']),v['page']))
+            pages=self.page_counts.get(str(v['id']),1000)
+            result['player']['sets']['pageInfo']=dict(total=pages,totalPages=pages)
+        return result
+
+
+class FairHistory(unittest.TestCase):
+    def state(self,ids):
+        # <= 40 invented entrants, one real-sized roster page, no API/network.
+        return auto.merge_state(auto.event_roster(Source(ids),1687524),None,[])
+    def capture(self,client,state,**kwargs):return auto.capture_batch(client,state,**kwargs)
+    def test_many_short_histories_get_data_before_one_long_history_uses_the_budget(self):
+        state=self.state(range(9,37));before=copy.deepcopy(state)
+        c=PagedSource(page_counts={str(pid):1 for pid in range(10,37)})
+        data,after=self.capture(c,state)
+        self.assertEqual(state,before) # Caller checkpoint remains untouched until confirmation.
+        self.assertEqual(c.calls,28);self.assertEqual(data['audit']['playersQueried'],28)
+        self.assertEqual(sum(v['complete'] for v in after['coverage'].values()),27)
+        self.assertEqual(after['coverage']['9']['nextPage'],2)
+        self.assertEqual(len(set(c.history_pages)),28)
+        # The prior drain-one-root policy spent these same 28 attempts on root 9,
+        # leaving all 27 one-page histories unstarted and none complete.
+        self.assertEqual(sum(v['nextPage']==1 for v in after['coverage'].values()),0)
+    def test_canonical_order_and_legacy_partial_resume_without_repeating_confirmed_pages(self):
+        state=self.state(range(9,37));state['coverage']['9']=dict(nextPage=201,totalPages=1000,complete=False)
+        state=json.loads(canonical(state));before=copy.deepcopy(state)
+        a=PagedSource();data,saved=self.capture(a,state)
+        b=PagedSource();_,same=self.capture(b,dict(state,coverage=dict(reversed(list(state['coverage'].items())))))
+        self.assertEqual(a.history_pages,b.history_pages);self.assertEqual(saved['coverage'],same['coverage'])
+        self.assertEqual(state,before);self.assertEqual(data['audit']['requests'],28)
+        self.assertEqual(saved['coverage']['9']['nextPage'],208) # Seven reserved turns.
+        self.assertEqual(len({pid for pid,_ in a.history_pages if pid!='9'}),21)
+        self.assertTrue(all(page>=201 for pid,page in a.history_pages if pid=='9'))
+        # Simulate a committed checkpoint: pages are cleared and keys canonicalized.
+        saved['pages']={};saved=json.loads(canonical(saved))
+        resumed=auto.merge_state(saved['roster'],saved,[9])
+        c=PagedSource();_,last=self.capture(c,resumed)
+        self.assertFalse(set(a.history_pages)&set(c.history_pages))
+        self.assertGreater(last['coverage']['9']['nextPage'],saved['coverage']['9']['nextPage'])
+        self.assertTrue(all(v['nextPage']>1 for v in last['coverage'].values()))
+    def test_new_registrants_do_not_reset_existing_roots_or_stop_long_partial(self):
+        state=self.state([9]);state['coverage']['9']=dict(nextPage=401,totalPages=1000,complete=False)
+        seen=set()
+        for ids in (range(9,37),range(9,41)):
+            roster=auto.event_roster(Source(ids),1687524)
+            state=auto.merge_state(roster,json.loads(canonical(state)),[9])
+            old=state['coverage']['9']['nextPage'];c=PagedSource()
+            _,state=self.capture(c,state)
+            self.assertGreater(state['coverage']['9']['nextPage'],old)
+            self.assertFalse(seen & set(c.history_pages));seen.update(c.history_pages)
+            state['pages']={}
+    def test_reserved_partial_turns_rotate_and_skip_a_root_completed_in_catchup(self):
+        state=self.state(range(9,37))
+        for pid,page in (('9',101),('10',81),('11',61)):
+            state['coverage'][pid]=dict(nextPage=page,totalPages=1000,complete=False)
+        c=PagedSource();_,_=self.capture(c,state)
+        self.assertEqual([pid for pid,_ in c.history_pages[3::4]][:3],['9','10','11'])
+        state=self.state([9,10]);state['coverage']['9']=dict(nextPage=2,totalPages=2,complete=False)
+        c=PagedSource(page_counts={'9':2,'10':4});_,last=self.capture(c,state)
+        self.assertTrue(all(v['complete'] for v in last['coverage'].values()))
+        self.assertEqual(c.history_pages.count(('9',2)),1);self.assertEqual(c.calls,5)
+    def test_completed_known_and_empty_targets_make_no_history_queries(self):
+        state=self.state([9]);state['coverage']['9']=dict(nextPage=2,totalPages=1,complete=True)
+        for value in (state,dict(state,coverage={}),auto.merge_state(state['roster'],None,[9])):
+            c=PagedSource();data,_=self.capture(c,value)
+            self.assertEqual(c.calls,0);self.assertEqual(data['audit']['requests'],0)
+    def test_retries_and_time_budget_apply_to_all_roots_not_each_player(self):
+        class Retries(PagedSource):
+            def query(self,q,v):
+                if not self.calls:self.calls+=2 # Two failed HTTP attempts, then success.
+                return super().query(q,v)
+        c=Retries();data,_=self.capture(c,self.state(range(9,37)))
+        self.assertEqual(c.calls,28);self.assertEqual(len(c.history_pages),26)
+        self.assertEqual(data['audit']['requests'],28)
+        class LateRetries(PagedSource):
+            def query(self,q,v):
+                if self.calls==27:self.calls+=2
+                return super().query(q,v)
+        c=LateRetries();data,_=self.capture(c,self.state(range(9,37)))
+        self.assertEqual(c.calls,30);self.assertEqual(len(c.history_pages),28)
+        self.assertEqual(data['audit']['requests'],30)
+        class Tick:
+            value=0
+            def __call__(self):return self.value
+        clock=Tick()
+        class Slow(PagedSource):
+            def query(self,q,v):
+                result=super().query(q,v);clock.value+=30;return result
+        c=Slow();data,_=self.capture(c,self.state(range(9,37)),clock=clock)
+        self.assertEqual(c.calls,4);self.assertEqual(data['audit']['seconds'],120)
+    def test_failed_or_overlong_page_does_not_mutate_callers_checkpoint(self):
+        state=self.state(range(9,37));before=copy.deepcopy(state)
+        class Broken(PagedSource):
+            def query(self,q,v):
+                if self.calls==4:raise auto.APIError('Invented failure')
+                return super().query(q,v)
+        with self.assertRaises(auto.APIError):self.capture(Broken(),state)
+        self.assertEqual(state,before)
+        class Tick:
+            value=0
+            def __call__(self):return self.value
+        clock=Tick()
+        class TooSlow(PagedSource):
+            def query(self,q,v):
+                result=super().query(q,v);clock.value+=121;return result
+        with self.assertRaises(auto.APIError):self.capture(TooSlow(),state,clock=clock)
+        self.assertEqual(state,before)
 
 
 def quiet_run(*args,**kwargs):
@@ -209,6 +325,18 @@ class Contracts(unittest.TestCase):
     def test_owner_approved_base_entity_inserts(self):
         # Explicit owner approval on 14 Oct; keep the server policy and its test consistent.
         self.assertIn('const RC_ENTITY_INSERTS_AUTHORIZED=true;',(SITE/'rival-sync-lib.php').read_text())
+    def test_pending_job_finishes_before_inventory_and_failed_job_stops_before_history(self):
+        host=mock.Mock();job=dict(sha256='a'*64,status='queued')
+        host.inventory.side_effect=[dict(pendingJob=job),dict(knownIds=[9],checkpoint=None,revision=None)]
+        c=Source([9]);report,_=quiet_run(c,host,1687524,now=NOW)
+        host.wait.assert_called_once_with(1687524,'a'*64,job)
+        self.assertEqual(report['status'],'already_imported');self.assertEqual(c.history_ids,[])
+        host.deliver.assert_not_called()
+        host=mock.Mock();host.inventory.side_effect=sender.SyncStopped('analysis_failed_job_requires_review')
+        c=Source([9])
+        with contextlib.redirect_stdout(io.StringIO()),self.assertRaisesRegex(sender.SyncStopped,'analysis_failed_job_requires_review'):
+            auto.run(c,host,1687524,now=NOW)
+        self.assertEqual(c.history_ids,[]);host.deliver.assert_not_called()
 
 
 @unittest.skipUnless(os.getenv('SMASH_SCHEMA_TEST_DB'),'Disposable SQL service required')
@@ -285,19 +413,58 @@ class SqlTests(fixtures.SqlTests):
             self.assertEqual((report['pending'],report['queries'],report['added']),(0,5,0))
             self.assertEqual(host.inventory(auto.event_roster(Source([9]),1687524))['checkpoint']['coverage']['9']['nextPage'],61)
     def test_partial_large_roster_keeps_unqueried_roots_after_canonical_key_sort(self):
-        # Real source: one long history uses the whole batch, other registrants
-        # retain the default coverage object. JSON key order is not progress.
+        # More roots than fit in one batch leaves real untouched default coverage.
+        # The same strict receiver must still accept both touched/untouched roots
+        # after JSON canonicalization, without relying on the old unfair scheduler.
+        ids=list(range(9,44))
+        with self.serving() as host,mock.patch.object(auto,'MAX_BATCHES',1):
+            c=PagedSource(ids);report,_=quiet_run(c,host,1687524,now=NOW)
+            self.assertEqual((report['pending'],report['queries'],report['added']),(35,29,28))
+            saved=host.inventory(auto.event_roster(Source(ids),1687524))
+            old=copy.deepcopy(saved['checkpoint']['coverage'])
+            self.assertEqual(sum(v['nextPage']==1 for v in old.values()),7)
+            self.assertEqual(old['43'],dict(nextPage=1,totalPages=None,complete=False))
+            c=PagedSource(ids);report,_=quiet_run(c,host,1687524,now=NOW)
+            self.assertEqual(report['added'],7)
+            saved=host.inventory(auto.event_roster(Source(ids),1687524))
+            self.assertTrue(all(v['nextPage']>1 for v in saved['checkpoint']['coverage'].values()))
+            for pid,page in c.history_pages:self.assertGreaterEqual(page,old[pid]['nextPage'])
+
+    def test_multi_root_legacy_checkpoint_new_order_python_php_parity_and_replay(self):
+        # Import an actual legacy-shaped one-root checkpoint through the existing
+        # receiver, then add unknown roots. SQL already knows root 9 at this point.
+        protected=self.protected();public=(self.site/'data/public.json').read_bytes()
         with self.serving() as host:
-            c=Source([9,10],pages=60);report,_=quiet_run(c,host,1687524,now=NOW)
-            self.assertEqual((report['pending'],report['queries'],report['added']),(2,57,1))
-            saved=host.inventory(auto.event_roster(Source([9,10]),1687524))
-            self.assertEqual(saved['checkpoint']['coverage']['9']['nextPage'],57)
-            self.assertEqual(saved['checkpoint']['coverage']['10'],dict(nextPage=1,totalPages=None,complete=False))
-            c=Source([9,10],pages=60);report,_=quiet_run(c,host,1687524,now=NOW)
-            self.assertEqual(report['added'],1)
-            saved=host.inventory(auto.event_roster(Source([9,10]),1687524))
-            self.assertTrue(saved['checkpoint']['coverage']['9']['complete'])
-            self.assertEqual(saved['checkpoint']['coverage']['10']['nextPage'],53)
+            legacy_roster=auto.event_roster(Source([9]),1687524)
+            data,legacy=auto.capture_batch(PagedSource(),auto.merge_state(legacy_roster,None,[]))
+            data['audit']['seconds']=1;legacy['pages']={}
+            host.deliver(dict(operation='analysis_import',eventId=1687524,baseRevision=None,package=package(data),checkpoint=legacy))
+            roster=auto.event_roster(Source(range(9,37)),1687524);inventory=host.inventory(roster)
+            initial=auto.merge_state(roster,inventory['checkpoint'],inventory['knownIds'])
+            c=PagedSource();data,next_state=auto.capture_batch(c,initial);data['audit']['seconds']=1
+            changed={pid for pid in next_state['coverage'] if next_state['coverage'][pid]!=initial['coverage'][pid]}
+            data['roster']=copy.deepcopy(roster)
+            data['roster']['players']={pid:roster['players'][pid] for pid in changed}
+            data['coverage']={pid:next_state['coverage'][pid] for pid in changed}
+            p=package(data);next_state['pages']={}
+            env=dict(operation='analysis_import',eventId=1687524,baseRevision=inventory['revision'],package=p,checkpoint=next_state)
+            baseline=self.dump();self.assertEqual(load(self.db,p)['status'],'validated_no_writes')
+            self.assertEqual(self.dump(),baseline)
+            # Snapshot Python's fully validated transaction at commit, then let
+            # its finally rollback leave the identical baseline for the PHP worker.
+            expected=[]
+            with mock.patch.object(self.db,'commit',side_effect=lambda:expected.append(self.dump())):
+                self.assertEqual(load(self.db,p,apply=True)['status'],'imported')
+            self.assertEqual(self.dump(),baseline);self.assertEqual(len(expected),1)
+            host.deliver(env);self.assertEqual(self.dump(),expected[0])
+            state=self.dump();replay=host.deliver(env)
+            self.assertEqual(replay['status'],'succeeded');self.assertEqual(self.dump(),state)
+            self.assertEqual(load(self.db,p,apply=True)['status'],'already_imported')
+            confirmed=host.inventory(roster)['checkpoint']['coverage']
+            self.assertGreater(confirmed['9']['nextPage'],legacy['coverage']['9']['nextPage'])
+            self.assertEqual(confirmed['36'],dict(nextPage=1,totalPages=None,complete=False))
+        self.assertEqual(self.protected(),protected)
+        self.assertEqual((self.site/'data/public.json').read_bytes(),public)
 
     def test_source_failure_does_not_queue_partial_capture(self):
         class Broken(Source):
@@ -307,7 +474,7 @@ class SqlTests(fixtures.SqlTests):
                 return super().query(q,v)
         before=self.dump();protected=self.protected()
         with self.serving() as host,contextlib.redirect_stdout(io.StringIO()) as output:
-            with self.assertRaises(auto.APIError):auto.run(Broken([9],pages=10),host,1687524,now=NOW)
+            with self.assertRaises(auto.APIError):auto.run(Broken([9,10,11,12],pages=10),host,1687524,now=NOW)
         self.assertIn('"status": "failed"',output.getvalue());self.assertNotIn('upstream',output.getvalue())
         self.assertEqual(self.dump(),before);self.assertEqual(self.protected(),protected)
         self.assertEqual(sql(self.db,"SELECT COUNT(*) FROM sync_jobs WHERE kind='player_history'")[0][0],0)
@@ -345,6 +512,26 @@ class SqlTests(fixtures.SqlTests):
             self.assertEqual(len(p['content']['entities']['games']),1400);self.assertLess(len(body),4*1024*1024);self.assertLess(raw,8*1024*1024)
             host.deliver(env);self.assertLess(self.last_peak,512*1024*1024);self.assertEqual(self.protected(),before)
             print(json.dumps(dict(syntheticBatch=dict(sets=140,games=1400,selections=2800,sourceQueries=28,compressedBytes=len(body),rawBytes=raw,workerPeakBytes=self.last_peak,seconds=round(time.monotonic()-began,3)))))
+    def test_dense_fair_batch_many_roots_stays_inside_receiver_size_and_memory_limits(self):
+        before=self.protected();public=(self.site/'data/public.json').read_bytes()
+        with self.serving() as host:
+            client=DenseSource(range(9,37),pages=1000)
+            roster=auto.event_roster(client,1687524)
+            began=time.monotonic();data,state=auto.capture_batch(client,auto.merge_state(roster,None,[]))
+            data['audit']['seconds']=1;state['pages']={};p=package(data)
+            env=dict(operation='analysis_import',eventId=1687524,baseRevision=None,package=p,checkpoint=state)
+            body=sender.encode_transport(env);raw=len(gzip.decompress(body))
+            self.assertEqual(data['audit']['playersQueried'],28);self.assertEqual(data['audit']['requests'],28)
+            for table,count in (('sets',140),('games',1400),('game_selections',2800)):
+                self.assertEqual(len(p['content']['entities'][table]),count)
+            self.assertLess(len(body),4*1024*1024);self.assertLess(raw,8*1024*1024)
+            host.deliver(env);self.assertLess(self.last_peak,512*1024*1024)
+            confirmed=host.inventory(roster)['checkpoint']
+            self.assertEqual(len(confirmed['coverage']),28)
+            self.assertTrue(all(v['nextPage']==2 for v in confirmed['coverage'].values()))
+            print(json.dumps(dict(syntheticFairBatch=dict(roots=28,sets=140,games=1400,selections=2800,sourceQueries=28,
+                compressedBytes=len(body),rawBytes=raw,workerPeakBytes=self.last_peak,seconds=round(time.monotonic()-began,3)))))
+        self.assertEqual(self.protected(),before);self.assertEqual((self.site/'data/public.json').read_bytes(),public)
     def test_committed_batch_recovers_private_checkpoint_after_interrupted_worker(self):
         with self.serving() as host:
             roster=auto.event_roster(Source([9]),1687524);initial=host.inventory(roster)

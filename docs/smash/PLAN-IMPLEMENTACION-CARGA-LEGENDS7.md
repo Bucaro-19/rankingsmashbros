@@ -2,6 +2,8 @@
 
 19/oct/2026, Guatemala. Pedido del dueño: publicar la barra y preparar el plan; **este documento no activa una frecuencia nueva ni cambia el capturador**. Continuación de [MEJORAS-CARGA-LEGENDS7.md](MEJORAS-CARGA-LEGENDS7.md). El plazo de importación ya autorizado termina el **26/oct a las 00:00 GT**. No extenderlo para cumplir el plan.
 
+**20/oct:** fase 1 implementada en feat/fair-rival-history-batches, pendiente de fusión autorizada. Política definitiva 3:1, pruebas y mediciones en AUTOMATIZACION-ANALISIS.md y MEJORAS-CARGA-LEGENDS7.md. La frecuencia sigue en seis horas; fases 2–4 pendientes.
+
 ## Resultado que buscamos
 
 Que más inscritos tengan datos utilizables pronto, que los historiales largos sigan avanzando y que el panel explique el avance confirmado. No prometer una fecha de finalización ni considerar «identidad conocida» como «historial completo». Sin servicios nuevos o cuota adicional contratada; más ejecuciones sí consumen más consultas y minutos de Actions.

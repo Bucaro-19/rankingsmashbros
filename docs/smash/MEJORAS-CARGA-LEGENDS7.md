@@ -42,3 +42,27 @@ start.gg documenta un promedio máximo de 80 solicitudes por 60 s y 1000 objetos
 4. **Medir rendimiento útil.** Jugadores que avanzaron, páginas y sets realmente de 2026 por tanda, tiempo de captura frente a espera del cron y fallos seguros. Añadir ETA solo cuando exista base suficiente y señalar incertidumbre. Revisar después si acortar el cron del worker (hoy cada cinco minutos) compensa en el plan compartido; no cambiar cPanel a ciegas.
 
 Orden sugerido: rotación justa, medir varias tandas, luego probar dos horas; la captura en dos etapas queda como optimización posterior. En esta entrega no se cambia capturador, receptor/importador, cálculo, elegibilidad, public.json, migraciones ni producción.
+
+
+## Fase 1 implementada en rama — 20/oct/2026
+
+feat/fair-rival-history-batches, sin fusión/activación todavía. Reparto 3:1 explicado en AUTOMATIZACION-ANALISIS.md. La reserva se eligió al simular un checkpoint heredado con nextPage=201 y 27 nuevos: priorizar únicamente el menor nextPage dejaría quieto al parcial hasta que los demás alcanzaran su profundidad o terminaran. Se reservan turnos sin extender el estado ni cambiar los validadores.
+
+Comparación **sin red ni SQL de producción**, ejecutando el capturador anterior del commit **0286a0e** y el nuevo contra el mismo cliente inventado, con el mismo presupuesto:
+
+| Caso / política | Intentos | Jugadores con avance | Historiales terminados | Sin primera página | Páginas del historial largo |
+|---|---:|---:|---:|---:|---:|
+| Un largo nuevo + 27 de una página, anterior | 28 | 1 | 0 | 27 | 28 |
+| Mismo caso, nuevo | 28 | 28 | 27 | 0 | 1 |
+| Un largo parcial (201) + 27 nuevos de una página, anterior | 28 | 1 | 0 | 27 | 28 |
+| Mismo caso, nuevo | 28 | 22 | 21 | 6 | 7 |
+
+Es una comparación de distribución, **no una predicción** del roster real o su fecha de terminación. No aumenta consultas por tanda ni afirma que todos reciban datos útiles con una página. El historial largo avanza menos páginas en esa tanda porque reparte el presupuesto con otros, pero conserva todas las anteriores.
+
+Tanda densa inventada por receptor/cola/worker SQL reales **locales**: 28 raíces, 28 consultas, **140 sets / 1400 games / 2800 selecciones**, **590778 B JSON**, aproximadamente **30790 B gzip** (el tamaño comprimido puede variar unos bytes con la fecha), **16 MiB de pico PHP**, aproximadamente **1,006 s** local sin latencia de start.gg ni espera del cron. Se conserva el techo específico de 8 MiB JSON del receptor de análisis (más estricto que el general de 32 MiB), 4 MiB comprimidos y 512M de PHP. Los límites de 150 sets/1500 games/3000 selecciones no cambian.
+
+Regresiones añadidas: orden JSON canónico o invertido produce los mismos turnos; checkpoint antiguo/identidad ya conocida retoma cada nextPage; nuevos inscritos entre tandas sin repetir páginas; reserva rotativa y raíz que termina antes de su reserva; raíces completas/conocidas/vacías; reintentos agregados y 120 s compartidos entre raíces; error o consulta de más de 120 s conserva intacto el estado del llamador. HTTP firmado con 35 raíces deja defaults reales sin consultar y los conserva tras canonicalización; reanudación legado→nuevo, paridad de todas las tablas Python/PHP, simulación sin escrituras, repetición, recuperación tras commit y rollback. Se mantienen las pruebas de permisos gratis/premium, ranking/instantáneas/mains y public.json inventado intactos.
+
+Local: MariaDB **13.0.2**, esquema propio desechable smash_schema_test_fair_history; no se presenta como MySQL 8.0 o MariaDB 10.11. La matriz requerida sigue en CI. El primer ensayo de la nueva prueba de paridad rechazó correctamente un roster recortado por alias de objetos en el fixture: se corrigió el fixture para copiar el roster como ya hace auto.run; no se relajó el receptor ni se cambió código productivo para aceptarlo.
+
+Reproducción de contratos: `PYTHONPATH=scripts/database:scripts/smash python -m unittest test_rival_automation.FairHistory -v`. Integración completa: preparar una base **local desechable** como en CI, ejecutar test_schema.py y luego test_rival_automation.py con SMASH_SCHEMA_TEST_DB/PORT/PASSWORD exclusivamente de pruebas. La herramienta no necesita tokens ni acceso a start.gg. No se registra un ETA a partir de esta simulación.

@@ -4,6 +4,7 @@ Thirty API attempts / 120 s per batch, including retries, one request/second via
 State resumes completed pages; missing/unpublished registrations are never called zero.
 """
 from datetime import datetime, timezone
+from collections import deque
 from pathlib import Path
 import copy
 import json
@@ -83,21 +84,32 @@ def capture_batch(client, state, *, clock=time.monotonic):
     if state.get('stateVersion')!=1 or not 2000<=state['seasonYear']<=2100: raise ValueError('Invalid state.')
     start=season_timestamp(f"{state['seasonYear']}-01-01");end=season_timestamp(f"{state['seasonYear']+1}-01-01")
     b=BudgetClient(client,clock);started=clock();before=client.calls; chosen={str(m['id']):m for page in state['pages'].values() for m in page['sets']}; touched=[]
-    for pid,cov in state['coverage'].items():
-        while not cov['complete']:
-            if client.calls-before+3>MAX_ATTEMPTS or clock()-started>=MAX_SECONDS: break
-            page=cov['nextPage']; key=f'{pid}:{page}'
-            conn=(b.query(HISTORY,dict(id=pid,page=page)).get('player') or {}).get('sets'); info=connection(conn)
-            rows=[]
-            for m in conn['nodes']:
-                ev=m.get('event') or {}; at=ev.get('startAt')
-                if str((ev.get('videogame') or {}).get('id'))!='1386' or ev.get('type')!=1 or type(at) is not int or not start<=at<end: continue
-                if m.get('state')!=3: raise APIError('Completed history changed.')
-                rows.append(m);chosen[str(m['id'])]=m
-            state['pages'][key]=dict(sets=rows,totalPages=info['totalPages'])
-            cov.update(nextPage=page+1,totalPages=info['totalPages'],complete=page>=info['totalPages'])
-            touched.append(pid)
-        if client.calls-before+3>MAX_ATTEMPTS or clock()-started>=MAX_SECONDS: break
+    # Three catch-up turns, then one for histories already partial at batch start.
+    # The latter queue rotates within this batch, most advanced first so a legacy
+    # long history keeps moving while new registrants get their first pages.
+    # All ordering is derived from coverage values, never JSON insertion order;
+    # no new cursor/state version or receiver deployment is required.
+    partials=deque(sorted((pid for pid,c in state['coverage'].items()
+                           if not c['complete'] and c['nextPage']>1),
+                          key=lambda pid:(-state['coverage'][pid]['nextPage'],int(pid))))
+    while client.calls-before+3<=MAX_ATTEMPTS and clock()-started<MAX_SECONDS:
+        pending=[pid for pid,c in state['coverage'].items() if not c['complete']]
+        if not pending:break
+        while partials and state['coverage'][partials[0]]['complete']:partials.popleft()
+        reserved=len(touched)%4==3 and bool(partials)
+        pid=partials.popleft() if reserved else min(pending,key=lambda pid:(state['coverage'][pid]['nextPage'],int(pid)))
+        cov=state['coverage'][pid];page=cov['nextPage'];key=f'{pid}:{page}'
+        conn=(b.query(HISTORY,dict(id=pid,page=page)).get('player') or {}).get('sets');info=connection(conn)
+        rows=[]
+        for m in conn['nodes']:
+            ev=m.get('event') or {};at=ev.get('startAt')
+            if str((ev.get('videogame') or {}).get('id'))!='1386' or ev.get('type')!=1 or type(at) is not int or not start<=at<end:continue
+            if m.get('state')!=3:raise APIError('Completed history changed.')
+            rows.append(m);chosen[str(m['id'])]=m
+        state['pages'][key]=dict(sets=rows,totalPages=info['totalPages'])
+        cov.update(nextPage=page+1,totalPages=info['totalPages'],complete=page>=info['totalPages'])
+        touched.append(pid)
+        if reserved and not cov['complete']:partials.append(pid)
     if clock()-started>MAX_SECONDS: raise APIError('Capture time ceiling; retain previous state.')
     captured=datetime.now(timezone.utc).isoformat()
     data=dict(kind='analysis_history',schemaVersion=1,capturedAt=captured,seasonYear=state['seasonYear'],
