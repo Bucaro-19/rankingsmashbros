@@ -1,6 +1,6 @@
 # Progreso y propuestas de carga de Legends 7 — 19/oct/2026
 
-Plan solicitado después por el dueño: [PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md](PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md). La barra se publicó el 19/oct; el plan de captura sigue pendiente de implementación.
+Plan solicitado después por el dueño: [PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md](PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md). La barra se publicó el 19/oct; la fase 1 se publicó por orden posterior del dueño; las fases de métricas y frecuencia siguen pendientes.
 
 ## Barra del panel privado
 
@@ -44,9 +44,9 @@ start.gg documenta un promedio máximo de 80 solicitudes por 60 s y 1000 objetos
 Orden sugerido: rotación justa, medir varias tandas, luego probar dos horas; la captura en dos etapas queda como optimización posterior. En esta entrega no se cambia capturador, receptor/importador, cálculo, elegibilidad, public.json, migraciones ni producción.
 
 
-## Fase 1 implementada en rama — 20/oct/2026
+## Fase 1 fusionada — 20/oct/2026
 
-feat/fair-rival-history-batches, sin fusión/activación todavía. Reparto 3:1 explicado en AUTOMATIZACION-ANALISIS.md. La reserva se eligió al simular un checkpoint heredado con nextPage=201 y 27 nuevos: priorizar únicamente el menor nextPage dejaría quieto al parcial hasta que los demás alcanzaran su profundidad o terminaran. Se reservan turnos sin extender el estado ni cambiar los validadores.
+feat/fair-rival-history-batches, PR #114 fusionado por orden posterior del dueño y corrección de fuente en #115. Cierre productivo en EN-CURSO.md. Reparto 3:1 explicado en AUTOMATIZACION-ANALISIS.md. La reserva se eligió al simular un checkpoint heredado con nextPage=201 y 27 nuevos: priorizar únicamente el menor nextPage dejaría quieto al parcial hasta que los demás alcanzaran su profundidad o terminaran. Se reservan turnos sin extender el estado ni cambiar los validadores.
 
 Comparación **sin red ni SQL de producción**, ejecutando el capturador anterior del commit **0286a0e** y el nuevo contra el mismo cliente inventado, con el mismo presupuesto:
 
