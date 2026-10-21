@@ -26,7 +26,7 @@ MAX_BATCHES=2
 SAFE_REASONS=frozenset(('analysis_migration_required','analysis_schema_invalid','analysis_entity_authorization_required',
     'analysis_authorization_expired','analysis_event_not_authorized','analysis_checkpoint_conflict','analysis_checkpoint_progress_invalid','analysis_checkpoint_regression','analysis_identity_conflict',
     'analysis_failed_job_requires_review','analysis_queue_limit','analysis_batch_limit',
-    'analysis_source_shape_unexpected','analysis_source_query_failed','analysis_history_source_failed'))
+    'analysis_source_shape_unexpected','analysis_source_query_failed','analysis_history_source_failed','analysis_unrelated_set'))
 EVENT_ROSTER='''query($id:ID!,$page:Int!){
  event(id:$id){
   id name slug type numEntrants startAt isOnline videogame{id name}
@@ -48,7 +48,8 @@ def emit_summary(summary):
     target=os.environ.get('GITHUB_STEP_SUMMARY')
     if target:
         lines=['## Contexto de análisis',f"Estado: `{summary['status']}`",'','| Inscritos | Conocidos | Agregados | Pendientes | Consultas | Segundos |','|---:|---:|---:|---:|---:|---:|',
-               '| '+' | '.join('desconocido' if summary[k] is None else str(summary[k]) for k in ('registered','known','added','pending','queries','seconds'))+' |']
+               '| '+' | '.join('desconocido' if summary[k] is None else str(summary[k]) for k in ('registered','known','added','pending','queries','seconds'))+' |',
+               '', 'Sets sin vínculo con el inscrito omitidos en tandas confirmadas: '+str(summary.get('unlinkedSetsSkipped',0))]
         with open(target,'a') as out:out.write('\n'.join(lines)+'\n')
 
 
@@ -144,7 +145,7 @@ class Hosting:
 
 
 def run(client,hosting,event_id,*,now=None,clock=time.monotonic):
-    start=clock();summary=dict(status='disabled',eventId=event_id,registered=None,known=None,added=0,pending=None,queries=0,seconds=0)
+    start=clock();summary=dict(status='disabled',eventId=event_id,registered=None,known=None,added=0,pending=None,queries=0,seconds=0,unlinkedSetsSkipped=0)
     try:
         if not active(now):summary['status']='authorization_expired';return summary
         if event_id!=1687524:raise SyncStopped('analysis_event_not_authorized')
@@ -176,6 +177,7 @@ def run(client,hosting,event_id,*,now=None,clock=time.monotonic):
             hosting.deliver(envelope)
             after=hosting.inventory(roster)
             summary['added']+=after['lastResult']['newRosterPlayers']
+            summary['unlinkedSetsSkipped']+=data['audit'].get('unlinkedSetsSkipped',0)
             summary.update(pending=sum(not c['complete'] for c in state['coverage'].values()),status='imported')
             if not summary['pending']:break
         return summary

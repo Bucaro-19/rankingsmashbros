@@ -81,6 +81,16 @@ class PagedSource(Source):
         return result
 
 
+class UnlinkedSource(PagedSource):
+    def query(self,q,v):
+        result=super().query(q,v)
+        if q!=auto.EVENT_ROSTER and str(v['id'])=='9' and v['page']==1:
+            # Observed shape: two entrants, two real players, winner present,
+            # but neither is the root whose history the API was asked for.
+            result['player']['sets']['nodes']=[history(pid) for pid in range(20,25)]
+        return result
+
+
 class FairHistory(unittest.TestCase):
     def state(self,ids):
         # <= 40 invented entrants, one real-sized roster page, no API/network.
@@ -182,6 +192,27 @@ class FairHistory(unittest.TestCase):
                 result=super().query(q,v);clock.value+=121;return result
         with self.assertRaises(auto.APIError):self.capture(TooSlow(),state,clock=clock)
         self.assertEqual(state,before)
+    def test_unlinked_completed_sets_are_counted_without_forging_a_player_relation(self):
+        state=self.state([9]);before=copy.deepcopy(state)
+        c=UnlinkedSource(page_counts={'9':2});data,last=self.capture(c,state)
+        self.assertEqual(c.history_pages,[('9',1),('9',2)])
+        self.assertEqual(data['audit']['unlinkedSetsSkipped'],5)
+        self.assertEqual(set(data['sets']),{str(history(9)['id'])})
+        self.assertEqual(last['coverage']['9'],dict(nextPage=3,totalPages=2,complete=True))
+        self.assertEqual(last['pages']['9:1']['sets'],[]);self.assertEqual(state,before)
+    def test_legacy_cached_unlinked_rows_are_filtered_without_another_request(self):
+        state=self.state([9]);state['coverage']['9']=dict(nextPage=2,totalPages=1,complete=True)
+        state['pages']={'9:1':dict(totalPages=1,sets=[history(20),history(9)])};before=copy.deepcopy(state)
+        c=PagedSource();data,last=self.capture(c,state)
+        self.assertEqual(c.calls,0);self.assertEqual(data['audit']['unlinkedSetsSkipped'],1)
+        self.assertEqual(set(data['sets']),{str(history(9)['id'])})
+        self.assertEqual(len(last['pages']['9:1']['sets']),1);self.assertEqual(state,before)
+    def test_a_different_captured_root_does_not_prove_the_requested_roots_history(self):
+        state=self.state([9,20]);c=UnlinkedSource(page_counts={'9':1,'20':1})
+        data,_=self.capture(c,state)
+        self.assertEqual(data['audit']['unlinkedSetsSkipped'],5)
+        self.assertEqual(set(data['sets']),{str(history(20)['id'])})
+        self.assertEqual(c.history_pages,[('9',1),('20',1)])
 
 
 def quiet_run(*args,**kwargs):
@@ -337,6 +368,13 @@ class Contracts(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()),self.assertRaisesRegex(sender.SyncStopped,'analysis_failed_job_requires_review'):
             auto.run(c,host,1687524,now=NOW)
         self.assertEqual(c.history_ids,[]);host.deliver.assert_not_called()
+    def test_unrelated_receiver_reason_remains_specific_and_private(self):
+        c=Source([9]);host=mock.Mock();host.inventory.return_value=dict(knownIds=[],checkpoint=None,revision=None)
+        host.deliver.side_effect=sender.SyncStopped('analysis_unrelated_set')
+        with mock.patch.dict(os.environ,dict(STARTGG_TOKEN='invented',SMASH_SQL_SYNC_KEY='1'*64)),mock.patch.object(auto,'active',return_value=True),mock.patch.object(auto,'Client',return_value=c),mock.patch.object(auto,'Hosting',return_value=host),contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(auto.main(),1)
+        self.assertEqual(json.loads(out.getvalue().splitlines()[-1])['reason'],'analysis_unrelated_set')
+        self.assertNotIn('Inventado',out.getvalue())
 
 
 @unittest.skipUnless(os.getenv('SMASH_SCHEMA_TEST_DB'),'Disposable SQL service required')
@@ -377,6 +415,29 @@ class SqlTests(fixtures.SqlTests):
             cols=[r[0] for r in sql(self.db,'SHOW COLUMNS FROM '+table) if r[0] not in ('updated_at','imported_at')]
             out[table]=sorted(sql(self.db,'SELECT '+','.join(cols)+' FROM '+table),key=repr)
         return out
+    def test_unlinked_source_rows_are_omitted_and_reported_after_confirmed_import(self):
+        protected=self.protected();public=(self.site/'data/public.json').read_bytes()
+        with self.serving() as host:
+            c=UnlinkedSource([9],page_counts={'9':2});report,log=quiet_run(c,host,1687524,now=NOW)
+            self.assertEqual((report['status'],report['queries'],report['added'],report['pending']),('imported',3,1,0))
+            self.assertEqual(report['unlinkedSetsSkipped'],5);self.assertNotIn('Inventado',log)
+            for pid in range(20,25):
+                self.assertEqual(sql(self.db,'SELECT id FROM sets WHERE id=%s',(history(pid)['id'],)),())
+            self.assertEqual(sql(self.db,'SELECT id FROM sets WHERE id=%s',(history(9)['id'],)),((history(9)['id'],),))
+            confirmed=host.inventory(auto.event_roster(Source([9]),1687524))['checkpoint']
+            self.assertEqual(confirmed['coverage']['9'],dict(nextPage=3,totalPages=2,complete=True))
+        self.assertEqual(self.protected(),protected);self.assertEqual((self.site/'data/public.json').read_bytes(),public)
+    def test_receiver_still_rejects_an_unrelated_set_before_any_queue_or_graph_write(self):
+        roster=auto.event_roster(Source([9]),1687524)
+        data,_=auto.capture_batch(PagedSource(page_counts={'9':1}),auto.merge_state(roster,None,[]))
+        data['sets']={str(history(20)['id']):history(20)};data['audit']['seconds']=1
+        state=auto.merge_state(roster,None,[]);state['coverage']=copy.deepcopy(data['coverage'])
+        p=package(data);env=dict(operation='analysis_import',eventId=1687524,baseRevision=None,package=p,checkpoint=state)
+        before=self.dump();protected=self.protected()
+        with self.serving() as host:
+            with self.assertRaisesRegex(sender.SyncStopped,'analysis_unrelated_set'):host.call(env)
+        self.assertEqual(self.dump(),before);self.assertEqual(self.protected(),protected)
+        self.assertEqual(sql(self.db,"SELECT COUNT(*) FROM sync_jobs WHERE kind='player_history'")[0][0],0)
     def test_import_once_new_registration_and_frozen_ranking_over_real_signed_http(self):
         before=self.protected();public=(self.site/'data/public.json').read_bytes()
         with self.serving() as host:

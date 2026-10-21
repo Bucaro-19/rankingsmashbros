@@ -79,11 +79,25 @@ def new_state(roster_data, known, year):
                 coverage={pid:dict(nextPage=1,totalPages=None,complete=False) for pid in sorted(ids-set(known),key=int)},pages={})
 
 
+def linked_to_player(match,pid):
+    return any(str((p.get('player') or {}).get('id'))==str(pid)
+               for slot in match.get('slots') or []
+               for p in (slot.get('entrant') or {}).get('participants') or [])
+
+
 def capture_batch(client, state, *, clock=time.monotonic):
     state=copy.deepcopy(state)
     if state.get('stateVersion')!=1 or not 2000<=state['seasonYear']<=2100: raise ValueError('Invalid state.')
     start=season_timestamp(f"{state['seasonYear']}-01-01");end=season_timestamp(f"{state['seasonYear']+1}-01-01")
-    b=BudgetClient(client,clock);started=clock();before=client.calls; chosen={str(m['id']):m for page in state['pages'].values() for m in page['sets']}; touched=[]
+    b=BudgetClient(client,clock);started=clock();before=client.calls;chosen={};touched=[];unlinked=0
+    # Manual captures may retain cached pages; validate their original root too,
+    # without querying again or changing the caller's persisted input.
+    for key,page in state['pages'].items():
+        rows=[]
+        for match in page['sets']:
+            if not linked_to_player(match,key.split(':')[0]):unlinked+=1;continue
+            rows.append(match);chosen[str(match['id'])]=match
+        page['sets']=rows
     # Three catch-up turns, then one for histories already partial at batch start.
     # The latter queue rotates within this batch, most advanced first so a legacy
     # long history keeps moving while new registrants get their first pages.
@@ -105,6 +119,10 @@ def capture_batch(client, state, *, clock=time.monotonic):
             ev=m.get('event') or {};at=ev.get('startAt')
             if str((ev.get('videogame') or {}).get('id'))!='1386' or ev.get('type')!=1 or type(at) is not int or not start<=at<end:continue
             if m.get('state')!=3:raise APIError('Completed history changed.')
+            # The provider can return completed sets with two real players but
+            # neither is the player whose history was requested. Do not guess
+            # aliases or import unrelated context; retain the receiver's guard.
+            if not linked_to_player(m,pid):unlinked+=1;continue
             rows.append(m);chosen[str(m['id'])]=m
         state['pages'][key]=dict(sets=rows,totalPages=info['totalPages'])
         cov.update(nextPage=page+1,totalPages=info['totalPages'],complete=page>=info['totalPages'])
@@ -116,7 +134,7 @@ def capture_batch(client, state, *, clock=time.monotonic):
         roster=state['roster'],sets=chosen,coverage=state['coverage'],
         audit=dict(requests=client.calls-before,seconds=round(clock()-started,3),playersQueried=len(set(touched)),
                    registered=len(state['roster']['players']),known=len(state['knownPlayerIds']),missing=len(state['coverage']),
-                   complete=sum(x['complete'] for x in state['coverage'].values()),sets=len(chosen)))
+                   complete=sum(x['complete'] for x in state['coverage'].values()),sets=len(chosen),unlinkedSetsSkipped=unlinked))
     if len(json.dumps(state).encode())>MAX_BYTES: raise APIError('State ceiling; retain previous checkpoint.')
     return data,state
 
