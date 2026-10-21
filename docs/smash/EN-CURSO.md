@@ -1,6 +1,16 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
 
+## Fase 1 publicada y verificada — cierre 21/oct
+
+La orden «dale publicalo» queda completada. [PR #114](https://github.com/Bucaro-19/rankingsmashbros/pull/114) fusionado por rama con match-head 5af8209, squash **f3308c7**; tras el rechazo seguro documentado debajo se fusionó la corrección necesaria [PR #115](https://github.com/Bucaro-19/rankingsmashbros/pull/115), rama fix/rival-history-unlinked-sets, match-head **f6e503a8ed9d4588ef3dbfd9eb0800c9a9ae9625**, squash **6140c12f64a0400915e580c6445d187133d0cf98**. CI de la corrección: [39552317719](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39552317719), push 39552313567 y main **39552599051**, todos verdes en general/MySQL 8.0/MariaDB 10.11. No se fusionó ni portó el workflow temporal de las sondas.
+
+Se reactivó **SMASH_RIVAL_SYNC_ENABLED=true** y se verificó mediante **una ejecución normal del flujo existente**, [39552600582](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39552600582), head 6140c12, **success / imported**, terminada 21/oct **06:05:15 UTC / 00:05:15 GT**: **328 inscritos, 131 conocidos al inventariar, 24 inscritos nuevos incorporados, 253 historiales incompletos, 63 consultas y 397,966 s**. Se omitieron **5 apariciones de sets sin vínculo verificable** con la raíz de su consulta; el contador solo incluye tandas confirmadas. Las dos tandas se completaron por receptor firmado/cola/worker y el inventario confirmó sus resultados. No son 24 historiales completos ni se debe restar pendientes de inscritos para certificar temporadas completas. La cantidad de pendientes no bajó en esta ejecución, aunque más inscritos ya tienen contexto parcial.
+
+Variables releídas: contexto **true** y Mi torneo **true**; no se cambian cron, techos, fecha de expiración o tokens. Frecuencia de contexto **seis horas**, misma concurrencia compartida. Ninguna nueva cuenta, migración, SQL manual, reinicio de checkpoint/recibos o cambio en ranking, elegibilidad, mains y public.json. La pausa temporal terminó; no queda una activación pendiente de #114/#115. El cambio es solo del capturador en Actions y no requiere FTP/assets_only ni redeploy de archivos web.
+
+Verificación HTTP pública antes y después: **d4f2d124b63b81bbd74eb608ba72e5f29cb52b70c9bed6274a98b9841bd197af**, **2234287 bytes** en data/public.json, idéntico. No se usó el snapshot antiguo de Git. Las bases locales propias de ambas pruebas fueron eliminadas y se conservó el servicio compartido y las carpetas ajenas laminas/, marca-rsb/, social/. El siguiente trabajo es fase 2: métricas útiles y observación de tres ejecuciones normales antes de evaluar la frecuencia de dos horas; no se activa de forma implícita.
+
 ## Publicación de fase 1: rechazo seguro de sets sin vínculo — 20/oct
 
 Orden posterior del dueño: «dale publicalo». PR #114 fusionado por nombre de rama feat/fair-rival-history-batches, match-head **5af820910ea1e85638d16b2eb0d80940aa0891cd**, squash **f3308c7d526f7b01953272c1a6971244d617161f**. CI de PR/push 39548861477/39548857099 y main 39551045349 verdes en general, MySQL 8.0 y MariaDB 10.11. No había carga en curso. No hay archivos nuevos del hosting: no se ejecuta FTP/assets_only.
