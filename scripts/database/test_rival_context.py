@@ -94,6 +94,25 @@ class SqlTests(unittest.TestCase):
         p['sha256']=digest(p['content'])
         with self.assertRaises(ValueError):load(self.db,p,apply=True)
         self.assertEqual(self.protected(),before)
+    def test_context_first_cannot_block_later_national_attribution(self):
+        # Invented analysis history first observes player 99 for a national entrant.
+        raw,public=fixture('2026-10-11T06:00:00+00:00');data,_=sample()
+        m=copy.deepcopy(raw['sets']['500']);m['slots'][0]['entrant']['participants'][0]['player']['id']=99
+        data['sets']={'500':m};data['roster']['players']={'99':dict(id=99,gamerTag='Previous synthetic')}
+        data['coverage']={'99':dict(nextPage=2,totalPages=1,complete=True)}
+        context=package(data)
+        self.clean()  # Context arrives before any national cut includes this entrant.
+        self.assertEqual(load(self.db,context,apply=True)['status'],'imported')
+        self.assertEqual(sql(self.db,'SELECT player_id FROM entrant_players WHERE entrant_id=1001'),((99,),))
+        national=build_package(raw,public)
+        self.assertEqual(import_package(self.db,national,apply=True)['identityReconciliations'],1)
+        self.assertEqual(sql(self.db,'SELECT player_id FROM entrant_players WHERE entrant_id=1001'),((1,),))
+        self.assertEqual(len(sql(self.db,'SELECT id FROM cuts')),1)
+        # Stale context cannot reverse national attribution (including direct replay).
+        with self.assertRaises(ValueError):load(self.db,context,apply=True)
+        self.assertEqual(sql(self.db,'SELECT player_id FROM entrant_players WHERE entrant_id=1001'),((1,),))
+        self.assertEqual(import_package(self.db,national,apply=True)['status'],'already_imported')
+
     def test_dry_apply_repeat_and_frozen_ranking(self):
         p=package(sample()[0]);before=self.protected();r=load(self.db,p);self.assertEqual(r['status'],'validated_no_writes');self.assertEqual(sql(self.db,'SELECT id FROM players WHERE id=9'),())
         self.assertEqual(load(self.db,p,apply=True)['status'],'imported');self.assertEqual(load(self.db,p,apply=True)['status'],'already_imported')

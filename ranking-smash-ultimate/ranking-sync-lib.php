@@ -66,6 +66,38 @@ function sr_receive(PDO $db, array $config, string $body, string $hash): array {
         return sr_job($db, $hash);
     } finally { sr_query($db, 'SELECT RELEASE_LOCK(?)', [$lock]); }
 }
+// Explicit signed maintenance operation, never an automatic retry of terminal failures.
+function sr_retry(PDO $db, string $root, array $config, string $hash, int $id, string $reason, bool $apply): array {
+    sr_require($reason==='identity_conflict','retry_not_allowed');
+    $lock='smash-ranking-worker-v1';
+    sr_require((int)sr_query($db,'SELECT GET_LOCK(?,0)',[$lock])[0][0]===1,'worker_busy');
+    try {
+        $job=sr_job($db,$hash);
+        sr_require($job!==null && $job['jobId']===$id,'job_not_found');
+        if($job['status']!=='failed') return $job;
+        sr_require($job['reason']===$reason,'retry_reason_mismatch');
+        $path=sr_sync_directory($config).'/'.$hash.'.json.gz';
+        sr_require(is_file($path) && !is_link($path) && filesize($path)<=SR_COMPRESSED_MAX,'package_missing');
+        $body=file_get_contents($path);sr_require(hash_equals($hash,hash('sha256',$body)),'transport_hash_invalid');
+        $raw=gzdecode($body,32*1024*1024+1);sr_require(is_string($raw) && strlen($raw)<=32*1024*1024,'package_invalid');
+        $p=sr_package($raw);unset($raw,$body);
+        $live=$root.'/data/public.json';sr_require(is_file($live) && filesize($live)<=32*1024*1024,'public_unavailable');
+        sr_require(sr_json(json_decode(file_get_contents($live),false,512,JSON_THROW_ON_ERROR))===$p['_public_json'],'not_the_published_cut');
+        $plan=sr_import($db,$p,false);
+        sr_require(in_array($plan['status'],['validated_no_writes','already_imported'],true),'retry_not_allowed');
+        if(!$apply) return ['status'=>'validated_no_writes','jobId'=>$id,'identityReconciliations'=>$plan['identityReconciliations'] ?? 0];
+        sr_require(sr_query($db,"SELECT ENGINE FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='audit_log'")===[['InnoDB']],'schema_invalid');
+        $old=sr_query($db,'SELECT started_at,finished_at FROM sync_jobs WHERE id=?',[$id])[0];
+        $db->beginTransaction();
+        sr_query($db,'INSERT INTO audit_log(action,entity_type,entity_id,details) VALUES (?,?,?,?)',
+            ['ranking_import_retry','sync_job',(string)$id,sr_json((object)['previousError'=>$reason,'previousAttempts'=>$job['attempts'],'previousStartedAt'=>$old[0],'previousFinishedAt'=>$old[1],'transportSha256'=>$hash,'sourceHash'=>$p['sha256']])]);
+        $q=$db->prepare("UPDATE sync_jobs SET status='queued',next_attempt_at=NULL WHERE id=? AND kind='ranking_import' AND status='failed' AND error_code=? AND deduplication_key=?");
+        $q->execute([$id,$reason,$hash]);sr_require($q->rowCount()===1,'retry_conflict');
+        // Preserve previous timestamps, error and attempts until the normal worker starts.
+        $db->commit();return sr_job($db,$hash);
+    } catch(Throwable $e) {if($db->inTransaction())$db->rollBack();throw $e;}
+    finally {sr_query($db,'SELECT RELEASE_LOCK(?)',[$lock]);}
+}
 function sr_process(PDO $db, string $root, array $config): array {
     $lock = 'smash-ranking-worker-v1'; sr_require((int)sr_query($db, 'SELECT GET_LOCK(?,0)', [$lock])[0][0] === 1, 'worker_busy');
     try {
