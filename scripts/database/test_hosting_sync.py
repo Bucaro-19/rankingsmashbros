@@ -114,6 +114,14 @@ class ContractTests(unittest.TestCase):
         value['private'] = self.temp.name; self.path.write_text(json.dumps(value))
         self.assertEqual(bridge('auth', self.path)['reason'], 'replayed_request')
 
+    def test_recovery_workflow_is_manual_bounded_signed_and_uses_original_artifact(self):
+        workflow=(ROOT/'.github/workflows/smash-retry-sql.yml').read_text()
+        self.assertNotIn('schedule:',workflow);self.assertIn('workflow_dispatch:',workflow)
+        self.assertIn('group: smash-gt-publication',workflow);self.assertIn("github.ref == 'refs/heads/main'",workflow)
+        self.assertIn('name: smash-gt-paquete-sql',workflow);self.assertIn('default: false',workflow)
+        self.assertIn('publish_sql.py retry',workflow);self.assertNotIn('STARTGG_TOKEN',workflow)
+        self.assertNotIn('mysql ',workflow);self.assertNotIn('FTP_PASSWORD',workflow)
+
     def test_sender_requires_import_success_and_sanitizes_failures(self):
         with mock.patch.object(sender, 'request', side_effect=[{'ok': True, 'status': 'queued', 'jobId': 2}, {'ok': True, 'status': 'succeeded', 'jobId': 2}]):
             self.assertEqual(sender.deliver('1' * 64, b'body', pause=lambda _: None)['status'], 'sql_synchronized')
@@ -139,6 +147,7 @@ class HostingSQLTests(unittest.TestCase):
     def clear(self):
         self.db.rollback(); sql(self.db, 'DROP TRIGGER IF EXISTS reject_hosting_test'); sql(self.db, 'UPDATE rankings SET previous_cut_id=NULL')
         sql(self.db, "DELETE FROM sync_jobs WHERE kind='ranking_import'")
+        sql(self.db, "DELETE FROM audit_log WHERE action IN ('ranking_entrant_identity_reconciled','ranking_import_retry')")
         for t in TABLES: sql(self.db, 'DELETE FROM `' + t + '`')
         sql(self.db, 'ALTER TABLE cuts AUTO_INCREMENT=1'); self.db.commit()
 
@@ -170,6 +179,81 @@ class HostingSQLTests(unittest.TestCase):
             self.assertEqual(self.run_package(p)['result']['status'], 'imported')
             self.assertEqual(self.run_package(p)['result']['status'], 'already_imported')
         self.assertEqual(expected, self.snapshot(compare_importers=True))
+
+    def test_national_attribution_wins_over_first_observation_with_python_php_parity(self):
+        p=build_package(*fixture()); outputs=[]
+        for importer in ('python','php'):
+            self.clear()
+            # Same real entrant, source attribution changed; unrelated account IDs stay intact.
+            import_package(self.db,p,apply=True)
+            before=sql(self.db,'SELECT public_snapshot,source_hash FROM cuts')
+            sql(self.db,"INSERT INTO players(id,tag) VALUES(99,'Synthetic previous attribution')")
+            sql(self.db,'UPDATE entrant_players SET player_id=99 WHERE entrant_id=1001')
+            next_cut=build_package(*fixture(SECOND)); original=canonical(next_cut)
+            dry=(import_package(self.db,next_cut) if importer=='python' else self.run_package(next_cut,'dry')['result'])
+            self.assertEqual(dry['identityReconciliations'],1)
+            self.assertEqual(sql(self.db,'SELECT player_id FROM entrant_players WHERE entrant_id=1001'),((99,),))
+            self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM audit_log')[0][0],0)
+            if importer=='python': result=import_package(self.db,next_cut,apply=True)
+            else:
+                report=self.run_package(next_cut); self.assertTrue(report['ok'],report);result=report['result']
+            self.assertEqual(result['identityReconciliations'],1)
+            self.assertEqual(sql(self.db,'SELECT player_id FROM entrant_players WHERE entrant_id=1001'),((1,),))
+            self.assertEqual(sql(self.db,'SELECT public_snapshot,source_hash FROM cuts WHERE id=1'),before)
+            self.assertEqual(canonical(next_cut),original)
+            audit=sql(self.db,"SELECT details FROM audit_log WHERE action='ranking_entrant_identity_reconciled'")
+            details=json.loads(audit[0][0]);self.assertEqual(details,dict(entrantId=1001,previousPlayerIds=[99],playerId=1,cutId=2,sourceHash=next_cut['sha256']))
+            outputs.append((self.snapshot(compare_importers=True),details))
+            # Replaying either cut cannot reverse the current attribution or duplicate audits.
+            for previous in (p,next_cut):
+                replay=import_package(self.db,previous,apply=True) if importer=='python' else self.run_package(previous)['result']
+                self.assertEqual(replay['status'],'already_imported')
+            self.assertEqual(sql(self.db,'SELECT player_id FROM entrant_players WHERE entrant_id=1001'),((1,),))
+            self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM audit_log')[0][0],1)
+        self.assertEqual(*outputs)
+
+    def test_analysis_then_national_and_stale_analysis_cannot_reverse_attribution(self):
+        from test_rival_context import sample
+        from rival_context import package as context_package, load
+        from test_rival_automation import php
+        raw,public=fixture();data,_=sample();m=copy.deepcopy(raw['sets']['500'])
+        m['slots'][0]['entrant']['participants'][0]['player']['id']=99
+        data['sets']={'500':m};data['roster']['players']={'99':dict(id=99,gamerTag='Previous synthetic')}
+        data['coverage']={'99':dict(nextPage=2,totalPages=1,complete=True)}
+        context=context_package(data);national=build_package(raw,public);outputs=[]
+        for importer in ('python','php'):
+            self.clear();sql(self.db,'DELETE FROM analysis_context_players');sql(self.db,'DELETE FROM analysis_context_batches')
+            if importer=='python':self.assertEqual(load(self.db,context,apply=True)['status'],'imported')
+            else:self.assertTrue(php('apply',context)['ok'])
+            self.assertEqual(sql(self.db,'SELECT player_id FROM entrant_players WHERE entrant_id=1001'),((99,),))
+            if importer=='python':self.assertEqual(import_package(self.db,national,apply=True)['identityReconciliations'],1)
+            else:self.assertEqual(self.run_package(national)['result']['identityReconciliations'],1)
+            before=self.snapshot(compare_importers=True)
+            with self.assertRaises(ValueError):load(self.db,context,apply=True)
+            self.assertEqual(php('apply',context)['reason'],'analysis_identity_conflict')
+            self.assertEqual(before,self.snapshot(compare_importers=True));outputs.append(before)
+            sql(self.db,'DELETE FROM analysis_context_players');sql(self.db,'DELETE FROM analysis_context_batches')
+        self.assertEqual(*outputs)
+
+    def test_real_parent_identity_conflict_still_stops_before_writes(self):
+        p=build_package(*fixture())
+        sql(self.db,"INSERT INTO tournaments(id,name) VALUES(999,'Different competition')")
+        sql(self.db,"INSERT INTO events(id,tournament_id,name) VALUES(100,999,'Different event')")
+        before=self.snapshot()
+        for apply in (False,True):
+            with self.assertRaises(ValueError):import_package(self.db,p,apply=apply)
+            self.assertEqual(self.run_package(p,'apply' if apply else 'dry')['reason'],'identity_conflict')
+            self.assertEqual(before,self.snapshot())
+
+    def test_identity_audit_and_link_roll_back_with_failed_cut(self):
+        p=build_package(*fixture());import_package(self.db,p,apply=True)
+        sql(self.db,"INSERT INTO players(id,tag) VALUES(99,'Previous')")
+        sql(self.db,'UPDATE entrant_players SET player_id=99 WHERE entrant_id=1001')
+        next_cut=build_package(*fixture(SECOND));before=self.snapshot()
+        sql(self.db,"CREATE TRIGGER reject_hosting_test BEFORE INSERT ON rankings FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='test-only'")
+        with self.assertRaises(Exception):import_package(self.db,next_cut,apply=True)
+        self.assertEqual(before,self.snapshot());self.assertFalse(self.run_package(next_cut)['ok'])
+        self.assertEqual(before,self.snapshot());self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM audit_log')[0][0],0)
 
     def test_failure_mid_write_rolls_back_and_conflict_preserves_history(self):
         first = build_package(*fixture())
@@ -360,7 +444,36 @@ class HostingSQLTests(unittest.TestCase):
         self.assertEqual(fetch(body + b'!', signed(body))[0], 401)
         self.assertEqual(fetch(body, signed(body))[1]['jobId'], response['jobId'])
         self.assertEqual(sql(self.db, 'SELECT COUNT(*) FROM sync_jobs')[0][0], 1)
+        sql(self.db,"UPDATE sync_jobs SET status='failed',error_code='identity_conflict',requests_count=1,finished_at=UTC_TIMESTAMP(6)")
+        digest_=__import__('hashlib').sha256(body).hexdigest()
+        retry=dict(operation='retry_ranking',sha256=digest_,jobId=response['jobId'],expectedError='identity_conflict',apply=False)
+        def retry_request(**changes):
+            value=canonical(dict(retry,**changes)).encode()
+            return fetch(value,signed(value,type_='application/json'))
+        self.assertEqual(fetch(canonical(retry).encode())[0],401)
+        self.assertEqual(retry_request(jobId=999999)[1]['reason'],'job_not_found')
+        self.assertEqual(retry_request(expectedError='other')[1]['reason'],'retry_not_allowed')
+        sql(self.db,"UPDATE sync_jobs SET error_code='different_failure'")
+        self.assertEqual(retry_request()[1]['reason'],'retry_reason_mismatch')
+        sql(self.db,"UPDATE sync_jobs SET error_code='identity_conflict'")
+        (site/'data/public.json').write_text(canonical(fixture(SECOND)[1]))
+        self.assertEqual(retry_request()[1]['reason'],'not_the_published_cut')
+        (site/'data/public.json').write_text(canonical(package['content']['public']))
+        self.assertEqual(retry_request()[1]['status'],'validated_no_writes')
+        self.assertEqual(sql(self.db,'SELECT status,requests_count FROM sync_jobs'),(('failed',1),))
+        self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM audit_log')[0][0],0)
+        sql(self.db,"CREATE TRIGGER reject_hosting_test BEFORE INSERT ON audit_log FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='test-only'")
+        self.assertEqual(retry_request(apply=True)[0],503)
+        self.assertEqual(sql(self.db,'SELECT status,requests_count FROM sync_jobs'),(('failed',1),))
+        sql(self.db,'DROP TRIGGER reject_hosting_test')
+        self.assertEqual(retry_request(apply=True)[1]['status'],'queued')
+        self.assertEqual(retry_request(apply=True)[1]['status'],'queued')
+        self.assertEqual(sql(self.db,'SELECT COUNT(*) FROM audit_log')[0][0],1)
+        audit=json.loads(sql(self.db,'SELECT details FROM audit_log')[0][0])
+        self.assertEqual(audit['previousError'],'identity_conflict');self.assertEqual(audit['previousAttempts'],1)
+        self.assertEqual(audit['transportSha256'],digest_)
         self.assertEqual(bridge('worker', site, private)['result']['status'], 'imported')
+        self.assertEqual(sql(self.db,'SELECT status,requests_count FROM sync_jobs'),(('succeeded',2),))
         hash_ = __import__('hashlib').sha256(body).hexdigest()
         status_body = canonical({'operation': 'status', 'sha256': hash_}).encode()
         self.assertEqual(fetch(status_body, signed(status_body, type_='application/json'))[1]['status'], 'succeeded')

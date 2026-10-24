@@ -153,7 +153,7 @@ Verificado directamente por Claude Code el 7 de octubre desde la Mac del dueño,
 
 ## Límites conocidos
 - Depende de la Mac, de su IP y de `gh`. Si falla, el sitio sigue publicándose desde JSON y SQL se atrasa; `status` lo muestra. Nada avisa por sí solo salvo `--notify` cuando se ejecuta.
-- El importador conserva las filas de contexto tal como se observaron por primera vez; las correcciones posteriores en start.gg solo llegan a las copias de cada corte. Refrescar el contexto es trabajo del futuro sincronizador en vivo, que no debe reescribir cortes.
+- El importador conserva las filas base observadas salvo las conciliaciones explícitas documentadas: desde 23/oct, el vínculo entrant→jugador del corte nacional vigente tiene prioridad; games/selecciones siguen su reemplazo validado. Los resultados históricos permanecen en las copias de cada corte. Refrescar el contexto es trabajo del futuro sincronizador en vivo, que no debe reescribir cortes.
 - Cargar ejecuciones manuales o reanudadas crea más de un corte por semana; cada una tiene su propia fecha. El cargador toma la última exitosa: usar `--run-id` para elegir otra.
 - Mains recapturados para un corte ya importado tienen otro hash: el importador lo trata como conflicto y se detiene. Falta decidir qué versión es la canónica en SQL.
 
@@ -166,3 +166,23 @@ Para cuando se quiera prescindir de la Mac. Requisitos del relevo: privado y aut
 - **Paridad entre implementaciones:** el importador PHP debe pasar en CI una prueba cruzada: mismo paquete importado con Python y con PHP en bases desechables, volcado idéntico tabla por tabla. El hash se calcula sobre los bytes canónicos recibidos, no reserializando en PHP.
 - **Antes de construirlo hay que medir** en el servidor: `memory_limit`, `post_max_size`, `max_execution_time` del PHP web y del CLI, y el tiempo real de una importación. Decodificar 9 MB de JSON puede necesitar más de 100 MB de memoria.
 - **Riesgos que justifican no hacerlo a medias:** dos implementaciones de un contrato de unas 480 líneas que hay que mantener iguales, y un punto web nuevo capaz de escribir unas 40 mil filas con los privilegios completos del sitio.
+
+
+## Recuperar un identity_conflict ya corregido (23/oct)
+
+Nunca borrar el job ni modificar su deduplication_key para saltarse el fallo. La operación firmada retry_ranking está limitada a un trabajo ranking_import fallido por identity_conflict y exige jobId y sha256 del transporte exactos. Comprueba el archivo privado retenido (hash, tamaño y paquete), que corresponde literalmente al corte público vigente y la simulación del importador. Un corte posterior publicado impide recuperar el viejo por esta vía. Un job queued/running/succeeded se devuelve tal cual, sin duplicarlo. Cualquier otro error terminal exige diagnóstico, no esta herramienta.
+
+El nuevo workflow es **solo manual**, en main, con grupo smash-gt-publication. Descarga únicamente el artefacto SQL de una ejecución semanal completada en main (puede haber terminado failed después de publicar). La existencia del artefacto posterior al FTP y la comparación del receptor con public.json impiden usar una captura sin publicar. Actions solo habla al receptor firmado; no recibe ni necesita credenciales MySQL. No captura start.gg ni publica FTP/public.json.
+
+Para el incidente del 18/oct, orden de escritura ya dada por el dueño en el chat:
+
+```sh
+# Primero simulación. Esperar success/validated_no_writes antes de aplicar.
+gh workflow run smash-retry-sql.yml --ref main -f run_id=39118615924 -f job_id=7 -f apply=false
+# Solo con la orden del dueño y simulación correcta:
+gh workflow run smash-retry-sql.yml --ref main -f run_id=39118615924 -f job_id=7 -f apply=true
+```
+
+La aplicación conserva id, hash, requests_count y fechas del intento anterior al reencolar. Una transacción guarda ranking_import_retry en audit_log (error/contador/fechas anteriores y hashes) y cambia failed→queued. Si falla la auditoría, no cambia el job. Después el worker normal incrementa intentos, importa/publica SQL, comprueba replay already_imported y marca succeeded. Su selección por id atiende el job 7 antes de trabajos de contexto posteriores que estén en cola. El fallo original permanece en la auditoría; no se borran recibos ni paquetes a mano. El worker elimina el archivo privado solo después del éxito como siempre.
+
+Comprobar por SELECT el estado/contador del job, las dos acciones de auditoría, los tres cortes publicados y sus hashes/instantáneas previas; comprobar por HTTP que public.json sigue idéntico. cuts=3 se refiere al **número de filas**, no al ID autoincremental: un intento revertido puede consumir un ID. No lanzar un corte nacional nuevo para recuperar uno ya publicado. El cron semanal y las variables siguen intactos; el domingo 25 el mismo caso entrant→jugador se concilia sin bloquear SQL. Eso no garantiza disponibilidad futura de red/API/hosting ni permite ignorar un padre de competición incoherente.

@@ -1,5 +1,20 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Recuperación del corte del 18/oct — diagnóstico y corrección (23/oct)
+
+Orden expresa del dueño: corregir, fusionar con CI verde, desplegar assets_only y recuperar el corte ya publicado por el canal normal. Rama propia `fix/national-import-analysis-identity` desde `origin/main c23db2e`; remoto Bucaro-19/rankingsmashbros y Actions recientes verdes confirmados, sin cambios tracked al inicio. Se conservan laminas/, marca-rsb/ y social/ ajenos. Sin cambios de cálculo, puntos, elegibilidad, public.json, cuentas o migraciones.
+
+**Causa comprobada con SELECT READ ONLY y el artefacto original del run 39118615924:** una sola diferencia en entrant_players: entrant **24754391**, evento **1712611**, guardado con player **2542108**, paquete con **5632480**. No hay diferencias de padres en eventos/entrants/sets/games ni de identidad en slots. El entrant y el jugador antiguo tienen synced_at del **4/oct 11:43:18.348499 UTC**; la primera tanda de analysis_context_batches es del **17/oct 23:05:02 UTC**. Por tanto el vínculo ya existía antes del contexto Legends 7; no se atribuye el fallo a esa automatización ni se infiere una fusión de cuentas en start.gg. El problema era conservar para siempre la primera atribución del entrant. Los sets **108000487 / 108000555** asociados no tienen filas en cut_set_results anteriores.
+
+Paquete V3 original **8427d0378f5720a953b5b40580d7d2852e24c43c50b21ef49a0845e145b6ae09**, generado **2026-10-18T10:38:15.219576+00:00**: 3,454 jugadores de contexto, 4,561 entrants, 9,107 sets, 5,131 games, 10,218 selecciones, catálogo 78 filas. Su gzip determinista coincide con deduplication_key del trabajo **7**, failed/identity_conflict, **un intento**. SQL conserva **2 cortes publicados**. Simulación del importador corregido en transacción READ ONLY: **validated_no_writes / identityReconciliations=1**, **17.488 s** incluyendo lecturas comparativas. No se escribió producción al diagnosticar. HTTP public.json: **d4f2d124b63b81bbd74eb608ba72e5f29cb52b70c9bed6274a98b9841bd197af**, **2,234,287 B**.
+
+Python/PHP concilian solo entrant→jugador según el paquete nacional nuevo, auditando IDs anteriores/nuevo, hash y corte en la misma transacción. No fusionan players ni users; no cambian snapshots/ledgers anteriores. El replay de un corte viejo no restaura una atribución antigua. El contexto de análisis sigue sin permiso para sobrescribir una identidad existente: si queda obsoleto, se rechaza antes de escribir. Una identidad distinta de torneo/evento/set sigue siendo error real, no una excusa para reparentar competiciones. La regresión reproduce también contexto primero → nacional después → contexto antiguo: gana el nacional, con paridad de ambos motores/importadores.
+
+Recuperación operativa nueva: workflow manual smash-retry-sql.yml (sin cron, solo main, concurrencia compartida), artefacto semanal original, receptor HMAC existente, validación contra el public vigente y trabajo/hash/error exactos; simulación por defecto. --apply registra ranking_import_retry en audit_log con error, intentos y fechas anteriores; reencola **el mismo job**, sin borrar ni reiniciar intentos, para que lo procese el worker normal. Solo se admite el fallo identity_conflict; no se convierte en un reintento automático general. Sin MySQL ni start.gg desde Actions. Comandos y garantías en CARGA-SEMANAL-SQL.md.
+
+Local: instalación repetida del esquema (9), pipeline (100), importación (14), contexto (8), automatización (46), catálogo (11), contexto de organizador (8), games (9) y cargador (13) correctos en base desechable propia MariaDB 13.0.2. Pruebas HTTP/Python/PHP de identidad, rollback de vínculo/auditoría, replay, padre inválido, autorización y reencolado: ejecución final y CI MySQL 8.0/MariaDB 10.11 enlazadas en el PR. Publicación y SELECT posterior **pendientes**, no se da el incidente por resuelto hasta confirmar cuts=3/job7 succeeded/hash intacto.
+
+
 
 ## Fase 1 publicada y verificada — cierre 21/oct
 

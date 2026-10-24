@@ -20,6 +20,11 @@ try {
     if ($type === 'application/vnd.smash.analysis+gzip') sr_response(200,rc_receive($db,$config,$body,$auth['hash'],time()));
     if ($type === 'application/gzip') sr_response(202, ['ok' => true] + sr_receive($db, $config, $body, $auth['hash']));
     sr_require(strlen($body) <= 1024, 'payload_invalid'); $request = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
+    if (($request['operation'] ?? null) === 'retry_ranking') {
+        rc_keys($request,['operation','sha256','jobId','expectedError','apply']);
+        sr_require(is_string($request['sha256']) && preg_match('/^[a-f0-9]{64}$/D',$request['sha256'])===1 && is_bool($request['apply']) && is_string($request['expectedError']),'payload_invalid');
+        sr_response(200,['ok'=>true]+sr_retry($db,__DIR__,$config,$request['sha256'],sr_id($request['jobId']),$request['expectedError'],$request['apply']));
+    }
     if (($request['operation'] ?? null) === 'analysis_status') {
         rc_keys($request,['operation','eventId','sha256']);rc_policy(sr_id($request['eventId']),time());rc_ready($db);
         sr_require(is_string($request['sha256']) && preg_match('/^[a-f0-9]{64}$/D',$request['sha256']),'payload_invalid');

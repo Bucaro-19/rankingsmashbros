@@ -41,7 +41,7 @@ def insert_rows(db, table, columns, rows, *, keep_existing=False):
 def verify_schema(db):
     require(sql(db, "SELECT version FROM schema_migrations WHERE version=%s", ('001_accounts_competition',)) == (('001_accounts_competition',),), 'Esquema requerido no instalado.')
     rows = dict(sql(db, "SELECT TABLE_NAME,ENGINE FROM information_schema.tables WHERE table_schema=DATABASE()"))
-    for name in list(COLUMNS) + ['cuts','cut_events','cut_set_results','rankings','player_characters','characters']:
+    for name in list(COLUMNS) + ['cuts','cut_events','cut_set_results','rankings','player_characters','characters','audit_log']:
         require(rows.get(name) == 'InnoDB', 'Tabla requerida ausente o sin transacciones.')
     sql(db, "SET time_zone='+00:00'")
     sql(db, "SET SESSION sql_mode=CONCAT(@@sql_mode,',STRICT_TRANS_TABLES')")
@@ -164,6 +164,28 @@ def replace_game_context(db, content):
         require(normalized == wanted and len(found) == len(wanted), 'Paridad de games/selecciones falló.')
 
 
+def identity_plan(db, content):
+    # Parent IDs identify different competitions: never silently reparent them.
+    # A singles entrant's player attribution can change upstream (e.g. correction).
+    # The published cut, not the first context observation, owns that attribution.
+    for table, parent in [('events', 'tournament_id'), ('entrants', 'event_id'), ('sets', 'event_id')]:
+        present = dict(context_rows(db, table, 'id '+parent, [r['id'] for r in content['entities'][table]], id_column='id'))
+        require(all(r['id'] not in present or present[r['id']] == r[parent] for r in content['entities'][table]),
+                'Identidad externa asociada a otro evento/torneo.')
+    wanted = {r['entrant_id']: r['player_id'] for r in content['entities']['entrant_players']}
+    present = defaultdict_set(context_rows(db, 'entrant_players', 'entrant_id player_id', list(wanted), id_column='entrant_id'))
+    return [dict(entrantId=en, previousPlayerIds=sorted(pids), playerId=wanted[en])
+            for en, pids in sorted(present.items()) if pids != {wanted[en]}]
+
+
+def reconcile_identities(db, changes, cut, source_hash):
+    for change in changes:
+        sql(db, 'DELETE FROM entrant_players WHERE entrant_id=%s', (change['entrantId'],))
+        details = dict(change, cutId=cut, sourceHash=source_hash)
+        sql(db, 'INSERT INTO audit_log(action,entity_type,entity_id,details) VALUES (%s,%s,%s,%s)',
+            ('ranking_entrant_identity_reconciled', 'entrant', str(change['entrantId']), canonical(details)))
+
+
 def import_package(db, package, *, apply=False):
     content = validate_package(package)
     organizer = None
@@ -200,6 +222,8 @@ def import_package(db, package, *, apply=False):
         character_ids.update(r['character_id'] for r in content['entities'].get('game_selections', []))
         known = {r[0] for r in sql(db,'SELECT id FROM characters')}
         require(character_ids <= known, 'Personaje no instalado; actualizar catálogo antes de importar.')
+        changes = identity_plan(db, content)
+        plan['identityReconciliations'] = len(changes)
         if not apply:
             db.rollback()
             return dict(plan,status='validated_no_writes')
@@ -208,15 +232,9 @@ def import_package(db, package, *, apply=False):
             cursor.execute('INSERT INTO cuts(generated_at,season_year,method_version,season_label,schema_version,character_captured_at,public_snapshot,source_hash) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)',
                 identity+(p['seasonLabel'],p['schemaVersion'],instant(p['characterCapturedAt']),canonical(p),package['sha256']))
             cut_id = cursor.lastrowid
-        # Preserve first-observed identities/live rows; immutable cut copies carry every later result.
+        # Snapshots stay immutable; only the current entrant attribution is reconciled.
+        reconcile_identities(db, changes, cut_id, package['sha256'])
         for table in ('players','tournaments','events','entrants','entrant_players','sets','set_slots'):
-            if table in ('events','entrants','sets'):
-                parent = 'tournament_id' if table=='events' else 'event_id'
-                known_parent = dict(sql(db,'SELECT id,`'+parent+'` FROM `'+table+'`'))
-                require(all(r['id'] not in known_parent or known_parent[r['id']]==r[parent] for r in content['entities'][table]), 'Identidad externa asociada a otro evento/torneo.')
-            if table=='entrant_players':
-                present = defaultdict_set(sql(db,'SELECT entrant_id,player_id FROM entrant_players'))
-                require(all(not present.get(r['entrant_id']) or present[r['entrant_id']]=={r['player_id']} for r in content['entities'][table]), 'Entrant vinculado a otro jugador.')
             insert_rows(db, table, COLUMNS[table], content['entities'][table], keep_existing=True)
         replace_game_context(db,content)
         replace_tournament_catalog(db, content, plan['catalog'])

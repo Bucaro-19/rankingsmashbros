@@ -470,6 +470,27 @@ function sr_replace_catalog(PDO $db, array $c, array &$plan): void {
     sr_equal_rows(sr_query($db, 'SELECT ' . implode(',', $columns) . ' FROM tournament_catalog'), $expected);
     $plan['status'] = 'replaced';
 }
+function sr_identity_plan(PDO $db, array $c): array {
+    foreach (['events'=>'tournament_id','entrants'=>'event_id','sets'=>'event_id'] as $table=>$parent) {
+        $present=array_column(sr_context_rows($db,$table,'id '.$parent,array_column($c['entities'][$table],'id'),'id'),1,0);
+        foreach($c['entities'][$table] as $r) sr_require(!isset($present[$r['id']]) || (int)$present[$r['id']]===$r[$parent], 'identity_conflict');
+    }
+    $wanted=array_column($c['entities']['entrant_players'],'player_id','entrant_id'); $present=[]; $changes=[];
+    foreach(sr_context_rows($db,'entrant_players','entrant_id player_id',array_keys($wanted),'entrant_id') as $r) $present[$r[0]][]=(int)$r[1];
+    ksort($present,SORT_NUMERIC);
+    foreach($present as $en=>$players) {
+        sort($players,SORT_NUMERIC);
+        if($players!==[$wanted[$en]]) $changes[]=['entrantId'=>(int)$en,'previousPlayerIds'=>$players,'playerId'=>$wanted[$en]];
+    }
+    return $changes;
+}
+function sr_reconcile_identities(PDO $db, array $changes, int $cut, string $hash): void {
+    foreach($changes as $change) {
+        sr_query($db,'DELETE FROM entrant_players WHERE entrant_id=?',[$change['entrantId']]);
+        sr_query($db,'INSERT INTO audit_log(action,entity_type,entity_id,details) VALUES (?,?,?,?)',
+            ['ranking_entrant_identity_reconciled','entrant',(string)$change['entrantId'],sr_json((object)($change+['cutId'=>$cut,'sourceHash'=>$hash]))]);
+    }
+}
 function sr_import(PDO $db, array $package, bool $apply = false): array {
     sr_require(!$db->inTransaction(), 'transaction_already_active');
     $c = $package['content']; $p = $c['public']; $identity = [sr_at($p['generatedAt']), $p['seasonYear'], $p['methodVersion']];
@@ -485,7 +506,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
             'sets' => 'id event_id source_state status outcome_type winner_entrant_id display_score completed_at source_updated_at synced_at source_hash',
             'set_slots' => 'set_id slot_index event_id entrant_id score is_dq'];
         $engines = array_column(sr_query($db, 'SELECT TABLE_NAME,ENGINE FROM information_schema.tables WHERE table_schema=DATABASE()'), 1, 0);
-        foreach (array_merge(array_keys($columns), ['cuts', 'cut_events', 'cut_set_results', 'rankings', 'player_characters', 'characters', 'games', 'game_selections']) as $t)
+        foreach (array_merge(array_keys($columns), ['cuts', 'cut_events', 'cut_set_results', 'rankings', 'player_characters', 'characters', 'games', 'game_selections', 'audit_log']) as $t)
             sr_require(($engines[$t] ?? null) === 'InnoDB', 'schema_invalid');
         $db->exec("SET time_zone='+00:00'"); $db->exec("SET SESSION sql_mode=CONCAT(@@sql_mode,',STRICT_TRANS_TABLES')");
         $catalog = sr_catalog_plan($db, $c);
@@ -508,23 +529,14 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         foreach (sr_scopes($p) as $view) foreach ($view['players'] as $r) foreach ($r['mains'] as $m)
             sr_require(isset($known[sr_id($m['characterId'])]), 'character_missing');
         foreach ($c['entities']['game_selections'] ?? [] as $r) sr_require(isset($known[sr_id($r['character_id'])]), 'character_missing');
-        if (!$apply) return ['status' => 'validated_no_writes', 'catalog' => $catalog] + ($organizer !== null ? ['organizer'=>$organizer] : []);
+        $changes=sr_identity_plan($db,$c);
+        if (!$apply) return ['status' => 'validated_no_writes', 'identityReconciliations'=>count($changes), 'catalog' => $catalog] + ($organizer !== null ? ['organizer'=>$organizer] : []);
         $db->beginTransaction();
         $s = $db->prepare('INSERT INTO cuts(generated_at,season_year,method_version,season_label,schema_version,character_captured_at,public_snapshot,source_hash) VALUES (?,?,?,?,?,?,?,?)');
         $s->execute(array_merge($identity, [$p['seasonLabel'], $p['schemaVersion'], sr_at($p['characterCapturedAt']), $package['_public_json'], $package['sha256']]));
         $cut = (int)$db->lastInsertId();
-        foreach ($columns as $table => $cols) {
-            if (in_array($table, ['events', 'entrants', 'sets'], true)) {
-                $parent = $table === 'events' ? 'tournament_id' : 'event_id';
-                $parents = array_column(sr_query($db, 'SELECT id,`' . $parent . '` FROM `' . $table . '`'), 1, 0);
-                foreach ($c['entities'][$table] as $r) sr_require(!isset($parents[$r['id']]) || (int)$parents[$r['id']] === $r[$parent], 'identity_conflict');
-            }
-            if ($table === 'entrant_players') {
-                $links = []; foreach (sr_query($db, 'SELECT entrant_id,player_id FROM entrant_players') as $r) $links[$r[0]][] = (int)$r[1];
-                foreach ($c['entities'][$table] as $r) sr_require(!isset($links[$r['entrant_id']]) || $links[$r['entrant_id']] === [$r['player_id']], 'identity_conflict');
-            }
-            sr_insert($db, $table, $cols, $c['entities'][$table], true);
-        }
+        sr_reconcile_identities($db,$changes,$cut,$package['sha256']);
+        foreach ($columns as $table => $cols) sr_insert($db, $table, $cols, $c['entities'][$table], true);
         sr_replace_game_context($db, $c);
         sr_replace_catalog($db, $c, $catalog);
         $events = []; $results = []; $rankings = []; $mains = []; $hashes = array_column($c['entities']['sets'], 'source_hash', 'id');
@@ -549,7 +561,7 @@ function sr_import(PDO $db, array $package, bool $apply = false): array {
         sr_parity($db, $p, $cut, $package['_public_json']);
         if ($organizer !== null) $organizer = sr_import_organizer($db,$package['_organizer'],$cut,$organizer,$columns);
         sr_query($db, "UPDATE cuts SET status='published' WHERE id=?", [$cut]); $db->commit();
-        return ['status' => 'imported', 'cutId' => $cut, 'catalog' => $catalog] + ($organizer !== null ? ['organizer'=>$organizer] : []);
+        return ['status' => 'imported', 'identityReconciliations'=>count($changes), 'cutId' => $cut, 'catalog' => $catalog] + ($organizer !== null ? ['organizer'=>$organizer] : []);
     } catch (Throwable $e) { if ($db->inTransaction()) $db->rollBack(); throw $e; }
     finally { sr_query($db, 'SELECT RELEASE_LOCK(?)', [$lock]); }
 }

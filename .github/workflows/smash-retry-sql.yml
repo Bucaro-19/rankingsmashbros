@@ -1,0 +1,60 @@
+name: Recuperar sincronización SQL de un corte publicado
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Ejecución semanal que publicó el paquete
+        required: true
+        type: string
+      job_id:
+        description: ID del trabajo fallido en el hosting
+        required: true
+        type: string
+      apply:
+        description: Reencolar con auditoría y esperar al worker (requiere orden del dueño)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
+jobs:
+  retry:
+    if: github.repository == 'Bucaro-19/rankingsmashbros' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verificar origen del artefacto publicado
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ inputs.run_id }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          source = os.environ['SOURCE_RUN']
+          if not source.isdecimal(): raise SystemExit('invalid_run_id')
+          run = json.loads(subprocess.check_output(['gh','api',f'repos/Bucaro-19/rankingsmashbros/actions/runs/{source}']))
+          if run['path'] != '.github/workflows/smash-publish.yml' or run['head_branch'] != 'main' or run['status'] != 'completed':
+              raise SystemExit('not_a_completed_national_publication')
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          name: smash-gt-paquete-sql
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/ranking-recovery
+      - name: Validar y recuperar por receptor firmado (sin MySQL directo)
+        env:
+          SMASH_SQL_SYNC_KEY: ${{ secrets.SMASH_SQL_SYNC_KEY }}
+          JOB_ID: ${{ inputs.job_id }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          args=()
+          if [ "$APPLY" = 'true' ]; then args+=(--apply); fi
+          python scripts/database/publish_sql.py retry "$RUNNER_TEMP/ranking-recovery/database-package.json" --job-id "$JOB_ID" --expected-error identity_conflict "${args[@]}"

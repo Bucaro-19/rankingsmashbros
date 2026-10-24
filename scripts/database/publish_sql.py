@@ -109,9 +109,12 @@ def deliver(key, body, wait_seconds=600, *, pause=time.sleep, clock=time.monoton
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['check', 'send', 'diagnostic'])
+    parser.add_argument('command', choices=['check', 'send', 'diagnostic', 'retry'])
     parser.add_argument('package', type=Path, nargs='?')
     parser.add_argument('--wait-seconds', type=int, default=600)
+    parser.add_argument('--job-id', type=int)
+    parser.add_argument('--expected-error', choices=['identity_conflict'])
+    parser.add_argument('--apply', action='store_true', help='Reencolar explícitamente el trabajo fallido; sin esto solo valida')
     args = parser.parse_args(argv)
     try:
         if args.command == 'diagnostic': body = None
@@ -127,6 +130,16 @@ def main(argv=None):
                 value = request(key, b'{"operation":"diagnostic"}', 'application/json')
                 # Allowlist response: even a bad/misconfigured receiver must not print arbitrary content.
                 result = {k: value.get(k) for k in ('ok', 'phpVersion', 'memoryLimit', 'postMaxSize', 'maxExecutionTime', 'inboxWritable')}
+            elif args.command == 'retry':
+                if not args.job_id or args.job_id < 1 or args.expected_error is None:
+                    raise SyncStopped('retry_arguments_required')
+                value = request(key, canonical(dict(operation='retry_ranking', sha256=hashlib.sha256(body).hexdigest(),
+                    jobId=args.job_id, expectedError=args.expected_error, apply=args.apply)).encode(), 'application/json',
+                    safe_reasons=('retry_reason_mismatch','job_not_found','package_missing','not_the_published_cut','worker_busy','identity_conflict'))
+                if args.apply: result = deliver(key, body, args.wait_seconds)
+                else:
+                    if value.get('status') != 'validated_no_writes': raise SyncStopped('retry_not_failed')
+                    result = {k:value.get(k) for k in ('ok','status','jobId','identityReconciliations')}
             else: result = deliver(key, body, args.wait_seconds)
         print(json.dumps(result)); return 0
     except Exception as error:
