@@ -22,9 +22,13 @@ function ig_token($value): string {
 function ig_json(array $value): string { return json_encode($value,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR)."\n"; }
 function ig_atomic(string $path,string $body,int $mode): void {
     ig_require(!is_link($path),'instagram_storage_unavailable');$tmp=$path.'.'.bin2hex(random_bytes(12)).'.tmp';
+    $handle=null;
     try {
-        ig_require(file_put_contents($tmp,$body,LOCK_EX)===strlen($body) && chmod($tmp,$mode) && rename($tmp,$path),'instagram_storage_unavailable');
-    } finally {if(is_file($tmp))unlink($tmp);}
+        // Set permissions before writing any credential bytes, including the temporary file.
+        $handle=fopen($tmp,'x');ig_require($handle!==false && chmod($tmp,$mode),'instagram_storage_unavailable');
+        ig_require(fwrite($handle,$body)===strlen($body) && fflush($handle),'instagram_storage_unavailable');
+        fclose($handle);$handle=null;ig_require(rename($tmp,$path),'instagram_storage_unavailable');
+    } finally {if(is_resource($handle))fclose($handle);if(is_file($tmp))unlink($tmp);}
 }
 function ig_private(string $root): string {
     $dir=dirname($root).'/private-smash';
