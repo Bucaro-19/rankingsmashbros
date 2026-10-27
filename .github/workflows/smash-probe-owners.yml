@@ -6,7 +6,7 @@ permissions:
   contents: read
 jobs:
   probe:
-    if: github.ref == 'refs/heads/main'
+    if: github.repository == 'Bucaro-19/rankingsmashbros' && github.ref == 'refs/heads/probe/oct27-event-review'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

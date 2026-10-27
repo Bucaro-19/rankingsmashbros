@@ -1,33 +1,21 @@
-"""One-off check: does the weekly capture's optional owner query work against start.gg?
-
-Read-only. Runs exactly the query the capture uses and prints aggregate counts only: no user,
-tournament or player identifiers, so the public Actions log exposes nothing about any person.
-"""
+"""Temporary read-only event review. No SQL, FTP, files or participant lists."""
 import json
 import os
-import sys
-import time
-from collections import Counter
-
 from collect import Client
-from discover import season_timestamp, tournament_owners
+from discover_abroad import USER_EVENTS
 
+META="""query($id:ID!){event(id:$id){id name slug startAt numEntrants isOnline state type videogame{id name} tournament{id name slug countryCode isOnline startAt endAt}}}"""
 
 def main():
-    token = os.environ.get("STARTGG_TOKEN")
-    if not token:
-        sys.exit("STARTGG_TOKEN is required")
-    client = Client(token)
-    year = time.gmtime().tm_year
-    owners = tournament_owners(client, season_timestamp(f"{year}-01-01"), season_timestamp(f"{year + 1}-01-01"))
-    if owners is None:
-        print(json.dumps({"ownerQuery": "failed", "requests": client.calls}))
-        sys.exit(1)
-    counts = Counter(row["ownerId"] for row in owners.values() if row["ownerId"])
-    print(json.dumps({"ownerQuery": "ok", "requests": client.calls, "tournaments": len(owners),
-                      "withOwner": sum(counts.values()), "withCity": sum(bool(row["city"]) for row in owners.values()),
-                      "distinctOwners": len(counts), "tournamentsOfTopOwners": [n for _, n in counts.most_common(5)]}))
+    client=Client(os.environ['STARTGG_TOKEN'])
+    for eid in (1737661,1687524):
+        event=client.query(META,{'id':eid}).get('event')
+        print(json.dumps({'event':event},ensure_ascii=False))
+    person=client.query('query{player(id:184005){user{id}}}',{})
+    uid=person['player']['user']['id']
+    user=client.query(USER_EVENTS,{'id':uid,'page':1}).get('user') or {}
+    events=(user.get('events') or {}).get('nodes') or []
+    recent=[{'id':e['id'],'name':e['tournament']['name'],'slug':e['slug'],'state':e['state'],'isOnline':e['isOnline'],'type':e['type'],'numEntrants':e['numEntrants'],'startAt':e['startAt'],'country':e['tournament'].get('countryCode')} for e in events if e.get('startAt',0)>=1791670000]
+    print(json.dumps({'recentEvents':recent,'queries':client.calls},ensure_ascii=False))
 
-
-if __name__ == "__main__":
-    main()
+if __name__=='__main__':main()
