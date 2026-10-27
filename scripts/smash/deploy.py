@@ -10,15 +10,15 @@ from pathlib import Path
 from collections import Counter, defaultdict
 from seo import build_sitemap
 
-FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "cuenta.css", "mi-torneo.css", "panel.css", "paginas.css", "analisis.css", "preparar.css", "torneos.css", "tops.css", "metodologia.css", "encuesta.css", "opiniones.css", "organizador.css", "top.css", "analisis-torneos.css",
-         "characters.js", "account-model.js", "premium.js", "laminas.js", "organizador.js", "torneos-model.js", "torneos.js", "tops.js", "proximo.js", "analisis-model.js", "analisis.js", "frame-tools.js", "preparar.js", "mi-torneo.js", "cuenta.js", "app.js", "cabecera.js", "encuesta.js", "visita.js", "panel-model.js", "panel.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "database.php", "survey.php", "accounts.php", "visits.php", "stats.php", "premium.php", "organizador.php", "organizer-slides.php", "tops.php", "data/frame-facts-v1.json", "frame-facts.php", "analysis-context.php", "analisis.php", "ranking-import.php", "rival-import.php", "rival-sync-lib.php", "ranking-sync-lib.php", "bracket-store.php", "mi-torneo.php", "mi-torneo-api.php", "ranking-sync.php", "ranking-worker.php", "account-api.php", "oauth.php", "visita.php", "panel-api.php", "panel.php", "opiniones-acceso.php", "premium-api.php", "organizador-api.php", "top.php", "tops-api.php", "analisis-api.php", "recurrente-webhook.php", "encuesta.php", "opiniones.php", "cuenta.html", "analisis.html", "preparar.html", "torneos.html", "tops.html", "terminos.html", "reembolsos.html", "index.html", "metodologia.html",
+FILES = ("feedback-data/.htaccess", "style.css", "arena.css", "instagram.css", "cuenta.css", "mi-torneo.css", "panel.css", "paginas.css", "analisis.css", "preparar.css", "torneos.css", "tops.css", "metodologia.css", "encuesta.css", "opiniones.css", "organizador.css", "top.css", "analisis-torneos.css",
+         "instagram.js", "characters.js", "account-model.js", "premium.js", "laminas.js", "organizador.js", "torneos-model.js", "torneos.js", "tops.js", "proximo.js", "analisis-model.js", "analisis.js", "frame-tools.js", "preparar.js", "mi-torneo.js", "cuenta.js", "app.js", "cabecera.js", "encuesta.js", "visita.js", "panel-model.js", "panel.js", "metodologia.js", "analisis-torneos.js", ".htaccess", "instagram.php", "instagram-sync.php", "database.php", "survey.php", "accounts.php", "visits.php", "stats.php", "premium.php", "organizador.php", "organizer-slides.php", "tops.php", "data/frame-facts-v1.json", "frame-facts.php", "analysis-context.php", "analisis.php", "ranking-import.php", "rival-import.php", "rival-sync-lib.php", "ranking-sync-lib.php", "bracket-store.php", "mi-torneo.php", "mi-torneo-api.php", "ranking-sync.php", "ranking-worker.php", "account-api.php", "oauth.php", "visita.php", "panel-api.php", "panel.php", "opiniones-acceso.php", "premium-api.php", "organizador-api.php", "top.php", "tops-api.php", "analisis-api.php", "recurrente-webhook.php", "encuesta.php", "opiniones.php", "cuenta.html", "analisis.html", "preparar.html", "instagram.html", "torneos.html", "tops.html", "terminos.html", "reembolsos.html", "index.html", "metodologia.html",
          "analisis-torneos.html", "data/analisis-torneos.json", "analisis-top20.html", "analisis-top20.css",
          "analisis-top20.js", "data/analisis-top20.json", "data/public.json")
 # Explicitly scoped character assets, before the atomic public-data replacement.
 ASSET_ROOT = Path(__file__).resolve().parents[2] / "ranking-smash-ultimate/assets/characters"
 CHARACTER_FILES = tuple("assets/characters/" + path.name for path in sorted(ASSET_ROOT.glob("*.png"))
                         if re.fullmatch(r"[a-z0-9_]+-(icon|portrait)\.png", path.name))
-FILES = FILES[:-1] + ("assets/characters/.htaccess",) + CHARACTER_FILES + ('assets/smash-gt-social.jpg', 'assets/rsb-logo-gt-oscuro.svg', 'assets/rsb-mark.svg', 'favicon.svg', 'favicon-16.png', 'favicon-32.png', 'favicon-48.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'site.webmanifest', 'pagos-en-pausa.txt', 'robots.txt', 'sitemap.xml') + FILES[-1:]
+FILES = FILES[:-1] + ("assets/characters/.htaccess", "assets/instagram/.htaccess") + CHARACTER_FILES + ('assets/smash-gt-social.jpg', 'assets/rsb-logo-gt-oscuro.svg', 'assets/rsb-mark.svg', 'favicon.svg', 'favicon-16.png', 'favicon-32.png', 'favicon-48.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'site.webmanifest', 'pagos-en-pausa.txt', 'robots.txt', 'sitemap.xml') + FILES[-1:]
 HASH_PATTERN = re.compile(r"\$2y\$(?:10|11|12|13|14)\$[./0-9A-Za-z]{53}")
 
 
@@ -245,7 +245,7 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
                 pass
             raise
     ftp.cwd("..")
-    for directory in ("assets", "assets/characters"):
+    for directory in ("assets", "assets/characters", "assets/instagram"):
         try:
             ftp.mkd(directory)
         except ftplib.error_perm as error:

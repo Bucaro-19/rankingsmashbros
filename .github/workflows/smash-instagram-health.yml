@@ -1,0 +1,20 @@
+name: Instagram · comprobar captura del hosting
+on:
+  workflow_dispatch:
+  schedule:
+    # Capture on hosting: 7 */2 * * * (Guatemala). Check 22 minutes later.
+    - cron: '29 */2 * * *'
+permissions:
+  contents: read
+jobs:
+  health:
+    if: github.ref == 'refs/heads/main' && vars.SMASH_INSTAGRAM_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Comprobar estado y antigüedad sin capturar ni usar llaves
+        run: python scripts/smash/check_instagram.py

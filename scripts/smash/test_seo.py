@@ -79,6 +79,14 @@ class SEOTests(unittest.TestCase):
                 titles.add(head.meta['og:title']); descriptions.add(head.meta['description'])
         self.assertEqual(len(titles), len(PUBLIC_PAGES)); self.assertEqual(len(descriptions), len(PUBLIC_PAGES))
 
+    def test_instagram_has_editorial_lastmod_and_no_runtime_feed_in_deploy(self):
+        self.assertIn('instagram.html', PUBLIC_PAGES)
+        self.assertEqual(CONTENT_UPDATED_AT['instagram.html'], '2026-10-27T23:05:59Z')
+        for name in ('instagram.html', 'instagram.js', 'instagram.css'):
+            self.assertIn(name, FILES)
+        self.assertNotIn('data/instagram.json', FILES)
+        self.assertNotIn('data/instagram-status.json', FILES)
+
     def test_private_pages_noindex_and_robots_exclusions(self):
         for page in ('cuenta.html', 'analisis.html'):
             self.assertIn('noindex', Head((SITE / page).read_text()).meta['robots'].split(','))

@@ -1,5 +1,20 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+
+## Desde Instagram — rama feat/instagram-owned-feed, 27/oct
+
+Pedido del dueño: lectura oficial de su cuenta profesional propia, captura cada dos horas, imágenes locales y galería, sin widgets ni scripts/cookies de Meta en el navegador. Confirmó **solo últimas 12**, no archivo histórico. Pantalla provisional expresamente autorizada; prompt de Claude Design y configuración paso a paso en PENDIENTES-DUENO.md. Contrato, seguridad, límites y operación en [INSTAGRAM.md](INSTAGRAM.md).
+
+Estado: implementación local; PR/CI se anotan al cerrar. Rama desde origin/main **25cfceb77555dc87387c65193ad3f6072f30fc8f**, remoto Bucaro-19/rankingsmashbros y Actions confirmados antes de editar; tracked limpio de partida. Se conservan laminas/, marca-rsb/ y social/ ajenos. **No fusionado, desplegado, activado, conectado a Meta ni escrito en producción.** No toca SQL, ranking, cálculo, elegibilidad, public.json o sus hashes.
+
+Cron propuesto BanaHosting minuto 7 cada 2h: instagram-sync.php/instagram.php CLI con bearer privado, validación de cuenta propia, 12 posts, primera foto de carrusel o miniatura de video, GD 1080/360 WebP/JPG, nombres por SHA256 y snapshot por rename atómico. Renovación semanal del token de 60 días persistida en private-smash (600), sin PAT para escribir secretos de GitHub. Error conserva copia anterior; imagen fallida conserva la previa o tarjeta sin foto. Caché larga solo en las imágenes propias, JSON revalidable, limpieza de huérfanos propios tras siete días. Presupuesto 70 peticiones / 240 s para iniciar solicitudes / CLI 300 s y 256M, respuesta API 512 KiB / imagen 12 MiB y 12MP / JSON público 128 KiB.
+
+Actions separado solo comprueba el JSON de salud saneado y su antigüedad: cada 2h minuto 29 UTC, opt-in **SMASH_INSTAGRAM_ENABLED=true**, únicamente main; error/obsoleto queda rojo sin alterar la copia. No se añadió/activó ninguna variable ni cron en producción. Configuración y token inicial se hacen por el dueño fuera de la raíz pública; no deben pegarse en chat o Git.
+
+Portada con preview diferido de seis tarjetas debajo del ranking y página instagram.html con 12, modal nativo/escape/retorno del foco, caption textContent, alt desde caption y miniaturas lazy. Sin peticiones del visitante a Meta; solo abre Instagram si pulsa el enlace. FILES/SEO/sitemap y denegación HTTP de las bibliotecas incluidos; prueba de FTP simulado demuestra que ni full ni assets_only reemplazan el JSON o fotos de ejecución. No se añadió analítica.
+
+Pruebas locales: PHP con GD real y transporte inventado (11 grupos), Node (6), pipeline Python (105 tras la prueba SEO nueva); sin llamadas Meta/SQL. QA local con 12 posts inventados, caption largo, vacío y foto faltante: escritorio y 375 px, modal 337 px / contenido 320 px, sin desborde y Escape devuelve el foco. Preview de seis tarjetas diferido al llegar al pie del ranking y estados vacío/sin archivo comprobados también en navegador; falta cierre de CI. **No hay prueba de autenticación Meta real**: falta configurar la cuenta y token largo del dueño; el portal de documentación devolvió 429, fuentes oficiales/indexadas anotadas en INSTAGRAM.md. No se afirma aprobación de app ni funcionamiento real de un permiso no probado.
+
 ## Ranking actualizado con Legends 7 — cierre verificado 27/oct
 
 Orden del dueño «resuélvelo amigo» completada: se revisaron los dos eventos pendientes/recién terminados, se fusionó por rama **[PR #119](https://github.com/Bucaro-19/rankingsmashbros/pull/119)** con match-head **3d42db64eaa588e729f95e1b9830b7d162895838**, squash **8b255cb95c86f0fc229aba18003190093fcbb4b4**, y se ejecutó el circuito normal de captura nueva → cálculo → auditoría → FTP → receptor firmado/cola/worker SQL. CI PR **40556519708**, push **40556511330** y main **40556947245**, verdes en general/MySQL 8.0/MariaDB 10.11; **100 pruebas locales** del pipeline correctas. No se incorporó la sonda temporal ni se modificaron workflows, cálculo, mínimos, exclusiones previas, esquema público o migraciones.

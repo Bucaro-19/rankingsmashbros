@@ -1,0 +1,9 @@
+Options -Indexes
+<FilesMatch "(?i)\.(php[0-9]?|phtml|phar|tmp)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_headers.c>
+  <FilesMatch "^[a-f0-9]{64}-(full|thumb)\.(webp|jpg)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>

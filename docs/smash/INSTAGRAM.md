@@ -1,0 +1,75 @@
+# Desde Instagram — captura propia, últimas 12
+
+Entrega de 27/oct/2026. Pantalla provisional autorizada por el dueño; no fusionar, desplegar ni activar sin su orden. No utiliza SQL, start.gg, el cálculo, public.json ni el circuito del corte. La elección del dueño es conservar **solo las últimas 12 publicaciones**, no un archivo histórico.
+
+## Circuito y límites
+
+1. Cron de BanaHosting cada dos horas, minuto 7, ejecuta `instagram-sync.php` con PHP CLI. Solo biblioteca `instagram.php`, curl, GD y mbstring; memoria 256M, ejecución CLI 300 s. Presupuesto 70 solicitudes, sin iniciar otra después de 240 s (una petición ya iniciada puede tardar hasta 15 s); cada respuesta API como máximo 512 KiB, cada imagen 12 MiB y 12 millones de píxeles. No requiere otro servicio de pago.
+2. Confirma que `/me?fields=user_id` corresponde a la cuenta configurada. Lee `/me/media` con `instagram_business_basic`, API fijada a v25.0: id, media_type, caption cuando esté disponible, permalink, media_url, thumbnail_url y timestamp. Máximo tres páginas acotadas por cursor y 12 resultados; se ordenan por fecha. Si Meta rechaza específicamente caption con código 100, repite una vez sin ese campo y deja el texto vacío. No se inventa.
+3. Carrusel: primer elemento de `/children`, limit=1. Video: solo thumbnail_url; no descarga ni reproduce el video. Imágenes: descarga HTTPS desde cdninstagram.com/fbcdn.net, máximo dos redirecciones a esos mismos dominios. Nunca envía el bearer al CDN. Sin SDK, embeds, cookies o peticiones del visitante a Meta; el enlace a Instagram requiere que la persona lo pulse.
+4. GD reencoda y elimina metadatos: lado mayor de 1080 px y miniatura de 360 px, sin ampliar originales pequeños. WebP calidad 82 o JPG 85. Nombres SHA256 del contenido, cabecera immutable un año únicamente en assets/instagram. Los archivos referenciados se conservan; huérfanos propios mayores a siete días se eliminan después de una captura correcta. No elimina otros assets.
+5. Publica data/instagram.json por rename atómico **después** de validar toda la respuesta. Error de API/esquema/renovación conserva la última copia buena. Una imagen que falla usa su copia local anterior o queda image:null: tarjeta legible con logo/texto/enlace, sin romper el resto. Las eliminaciones salen de la lista en la próxima captura correcta; sus archivos dejan de referenciarse y se limpian tras siete días. No es una eliminación instantánea de todos los caches de terceros.
+6. Escribe data/instagram-status.json con estado reducido sin respuesta de Meta ni credenciales. Actions `smash-instagram-health.yml` lo comprueba cada dos horas en el minuto 29 UTC (22 minutos después del cron GT), solo en main y con SMASH_INSTAGRAM_ENABLED=true. Falla en rojo si no está ready o tiene más de tres horas. No captura ni usa FTP, SQL o llaves. GitHub puede retrasar sus horarios; configurar también Cron Email para enterarse de fallos del hosting. No modifica ninguna automatización existente.
+
+El token se renueva semanalmente, o al quedar menos de siete días, nunca con menos de 24 horas de antigüedad ni después de caducar. `expires_in` de Meta determina el vencimiento real. Se persiste la renovación **antes** de capturar las publicaciones, para no perderla si después falla la API. Token revocado/caducado requiere autorización nueva; no se promete renovación indefinida si Meta retira el permiso.
+
+## Archivos privados y despliegue
+
+`/home/<usuario>/private-smash/instagram.local.php` (600), al lado y fuera de la raíz pública, contiene enabled, account_id, access_token e issued_at. Plantilla **sin secretos**: [instagram-config.example.php](instagram-config.example.php). El directorio privado debe existir y ser escribible por el PHP del cron. El proceso crea allí instagram-token.json (600) y instagram.lock (600). El token original identifica la configuración; no sobrescribe uno ya renovado. Cambiar el token semilla permite una nueva autorización. No copiar el estado al repositorio, a una carpeta web ni a un artefacto de Actions.
+
+Ambos PHP son solo CLI: defensa PHP 403 más denegación en .htaccess. No incluyen accounts.php/database.php ni hacen consultas SQL. El CLI desactiva mensajes crudos de PHP y solo imprime conteos/códigos permitidos, nunca excepciones, URLs firmadas, bodies, tokens o cabeceras de Meta. Los archivos públicos rechazan credenciales conocidas incluso si aparecieran en contenido fuente.
+
+FILES publica HTML/CSS/JS, las dos piezas PHP y assets/instagram/.htaccess. **Nunca** incluye JSON de ejecución ni imágenes generadas, y el despliegue no borra archivos remotos. Prueba FTP simulada cubre tanto assets_only como despliegue completo. El sitemap incorpora instagram.html con fecha editorial real; no lee el feed para inventar lastmod ni cambia public.json. El feed usa no-cache; salud usa no-store; esto no cambia el caché del ranking ni de las páginas.
+
+## Contrato público v1
+
+```json
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-27T23:05:59Z",
+  "posts": [
+    {
+      "id": "10001",
+      "type": "IMAGE",
+      "caption": "Texto público de la publicación",
+      "permalink": "https://www.instagram.com/p/EJEMPLO/",
+      "timestamp": "2026-10-27T18:00:00Z",
+      "image": null
+    }
+  ]
+}
+```
+
+Ejemplo inventado de contrato, no dataset instalado. type: IMAGE, VIDEO o CAROUSEL_ALBUM. image es null o `{src, thumbnail, width, height, thumbnailWidth, thumbnailHeight}`; rutas locales `assets/instagram/{sha256}-full.webp|jpg` y `...-thumb.webp|jpg`, nunca URL temporal. Máximo 12 posts, caption 2200 caracteres Unicode, JSON máximo 128 KiB. No account_id, nombre de usuario, seguidores, comentarios, personas etiquetadas ni estadísticas. El ID de media y su caption/permalink son contenido público solicitado por el dueño.
+
+Salud: `{schemaVersion:1,checkedAt,ok,status,code}`; valores controlados, sin detalles de la respuesta fuente. Ausencia de configuración deja el feed intacto; el monitor no se debe activar antes de configurar y comprobar una captura.
+
+## Interfaz
+
+Portada: seis tarjetas después del ranking, inicialmente oculta; consulta el JSON al aproximarse a esa zona (IntersectionObserver) y solo entonces crea miniaturas lazy. Galería: hasta 12 tarjetas; vacío neutral si falta el archivo, no hay posts o la lectura falla. Ambos leen únicamente su snapshot local; no hay exposición de fallos de la API al visitante. La sección propia tiene enlace en la portada y su pie.
+
+Modal nativo: imagen completa bajo demanda, caption en textContent con saltos de línea, fecha GT, tipo y Ver en Instagram. Escape/cerrar devuelve el foco, bloqueo de scroll, foco visible y prefers-reduced-motion. Sin dialog compatible, abre el permalink de forma segura. Un error HTTP de imagen conserva el bloque del logo y el enlace. No carga videos ni llamadas de análisis nuevas.
+
+## Configuración y comprobación por el dueño
+
+Guía detallada en [PENDIENTES-DUENO.md](PENDIENTES-DUENO.md), sección Desde Instagram. Esta entrega no registra la app, no autoriza una cuenta, no instala un cron, no activa SMASH_INSTAGRAM_ENABLED ni despliega. No hay token real disponible para hacer una captura de Meta de punta a punta.
+
+Prueba manual después del despliegue autorizado: ejecutar el PHP CLI sin argumentos secretos. Debe imprimir status ready; comprobar ambos JSON estáticos y las rutas de imagen. Activar monitor después. En fallo, inspeccionar solo el código seguro y los permisos/versión PHP; **no habilitar curl verbose ni pegar el token en comandos o chat**. Para reautorizar, editar el archivo privado en cPanel con una llave larga nueva y su fecha real. Eliminar/rotar el token anterior en Meta cuando corresponda.
+
+Apagar captura: enabled=false y desactivar variable del monitor; conserva el último feed. Para ocultar inmediatamente la sección, mover data/instagram.json fuera del sitio con el administrador de archivos (copia recuperable). Al no tener fuente, la portada se oculta y la galería muestra su vacío. No hace falta desplegar ni tocar SQL.
+
+## Pruebas y límites de lo comprobado
+
+- PHP con transporte inventado y GD real: paginación/12, primera imagen del carrusel/video, dimensiones y hash, persistencia de la renovación incluso si falla media, refresh fallido/expiración, API caída preserva feed, imagen fallida/reutilización/null, secreto no publicado, cuenta ajena, CDN no permitido, permisos y lock, eliminación de posts y limpieza de huérfanos. Nunca llama a Meta ni SQL.
+- Node: validación, rutas locales, límites, feed diferido, seis tarjetas, vacío silencioso, modal/escape/foco, textContent y fallback de imagen, sin SDK/embeds.
+- Python: salud fresca/obsoleta/malformada y errores sanitizados; HTTP 403 de ambos PHP; CLI sin configuración no llama a API; FTP simulado conserva feed/fotos tanto full como assets-only; SEO y publicación.
+- CI ejecuta las pruebas PHP con GD en **MySQL 8.0 y MariaDB 10.11**, además de pipeline/Node. La funcionalidad Instagram no utiliza ninguna base.
+- QA local con datos inventados: escritorio y 375 px, galería 12/preview 6, caption largo y vacío, logo al faltar foto, detalle/escape/foco, vacío/API caída. Ningún dato de ejemplo se versiona o se despliega.
+
+Límite pendiente explícito: **sin prueba autenticada de Meta**. El portal oficial de documentación respondió 429 desde este entorno; se comprobó la documentación oficial indexada y la colección de Meta, pero los campos/permisos/versionado deben confirmarse al autorizar la cuenta real. Si la API rechaza un campo distinto de caption, conserva el snapshot y marca error; no amplía permisos a ciegas. No se solicita publicar, leer mensajes, comentarios, contactos ni cuentas ajenas.
+
+Referencias primarias para el operador:
+- [Instagram API with Instagram Login](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/).
+- [Business Login](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login/).
+- [Renovar token](https://developers.facebook.com/docs/instagram-platform/reference/refresh_access_token/).
+- [Colección oficial Meta en Postman](https://www.postman.com/meta/instagram/folder/1z5vxzu/instagram-api-with-instagram-login).

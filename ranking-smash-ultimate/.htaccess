@@ -89,3 +89,19 @@ Options -Indexes
 <Files "mi-torneo.php">
   Require all denied
 </Files>
+
+# Own Instagram cron/library: CLI inclusion only, no browser endpoint.
+<Files "instagram.php">
+  Require all denied
+</Files>
+<Files "instagram-sync.php">
+  Require all denied
+</Files>
+<IfModule mod_headers.c>
+  <Files "instagram.json">
+    Header set Cache-Control "no-cache"
+  </Files>
+  <Files "instagram-status.json">
+    Header set Cache-Control "no-store"
+  </Files>
+</IfModule>
