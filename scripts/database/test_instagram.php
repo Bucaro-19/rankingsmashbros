@@ -99,6 +99,24 @@ $tests['lock_and_private_config_guards']=static function($root,$private,$c){
     $seen=[];$h=fopen($private.'/instagram.lock','c');flock($h,LOCK_EX);$r=ig_run($root,IG_FAKE_NOW,ig_wire($seen));check_ig($r['status']==='busy' && !$seen,'no overlapping capture');flock($h,LOCK_UN);fclose($h);
     chmod($private.'/instagram.local.php',0644);clearstatcache();$r=ig_run($root,IG_FAKE_NOW,ig_wire($seen));check_ig(!$r['ok'] && $r['code']==='instagram_config_invalid','private file permission');
 };
+$tests['bounded_cursor_pagination_never_follows_source_next_url']=static function($root,$private,$c){
+    $seen=[];$pages=0;$special=static function($url)use(&$pages){
+        if(strpos($url,'/me/media')===false)return null;
+        $pages++;$posts=[];for($i=0;$i<6;$i++)$posts[]=ig_post((string)(100+$pages*6+$i));
+        $data=['data'=>$posts];if($pages===1)$data['paging']=['next'=>'https://evil.test/not-followed','cursors'=>['after'=>'FAKE_CURSOR']];
+        else check_ig(strpos($url,'after=FAKE_CURSOR')!==false,'only validated cursor used');
+        return ['status'=>200,'body'=>json_encode($data),'location'=>null];
+    };
+    $r=ig_run($root,IG_FAKE_NOW,ig_wire($seen,[],$special));check_ig($r['ok'] && $r['posts']===12 && $pages===2,'two bounded pages');
+    check_ig(!array_filter(array_column($seen,0),static fn($url)=>strpos($url,'evil.test')!==false),'next URL never requested');
+    $before=file_get_contents($root.'/data/instagram.json');$seen=[];$pages=0;
+    $incomplete=static function($url)use(&$pages){
+        if(strpos($url,'/me/media')===false)return null;
+        $pages++;return ['status'=>200,'body'=>json_encode(['data'=>[ig_post((string)(200+$pages))],'paging'=>['next'=>'https://evil.test/ignored','cursors'=>['after'=>'FAKE_CURSOR']]]),'location'=>null];
+    };
+    $r=ig_run($root,IG_FAKE_NOW+1,ig_wire($seen,[],$incomplete));check_ig(!$r['ok'] && $r['code']==='instagram_pagination_incomplete' && $pages===3,'three-page ceiling');
+    check_ig(file_get_contents($root.'/data/instagram.json')===$before,'incomplete pagination retains prior feed');
+};
 $tests['rolling_twelve_sorted_and_old_assets_grace_period']=static function($root,$private,$c){
     $posts=[];for($i=1;$i<=15;$i++){$r=ig_post((string)$i);$r['timestamp']='2026-10-'.str_pad((string)$i,2,'0',STR_PAD_LEFT).'T12:00:00Z';$posts[]=$r;}
     $orphan=$root.'/assets/instagram/'.str_repeat('a',64).'-full.jpg';file_put_contents($orphan,'old');touch($orphan,IG_FAKE_NOW-8*86400);
