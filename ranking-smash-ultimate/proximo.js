@@ -5,12 +5,14 @@
   if(!box||!M)return;
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   fetch('./data/agenda.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(agenda=>{
-    if(!agenda||agenda.schemaVersion!==1||M.stale(agenda,Date.now()))return;
-    const now=Date.now(), list=M.upcoming(agenda,now), t=M.next(list);
+    if(!agenda||agenda.schemaVersion!==1)return;
+    const now=Date.now(), list=M.upcoming(agenda,now), t=M.next(list), stale=M.stale(agenda,now);
+    const at=Date.parse(agenda.generatedAt);
+    const warning=stale?`<p class="nt-note" role="status">Agenda pendiente de actualizar.${Number.isNaN(at)?'':` Última captura: ${M.date(at)}.`} Confirma fecha, hora e inscripción en start.gg antes de ir.</p>`:'';
     const head='<div class="nt-head"><h2 id="next-title">Próximo torneo</h2><a href="./torneos.html">Ver todos →</a></div>';
-    if(!t){box.innerHTML=`${head}<p class="nt-none">— No hay torneos anunciados por ahora. Cuando se publique uno en start.gg, aparecerá aquí.</p>`;box.hidden=false;return;}
-    const b=M.box(t.start), c=M.countdown(t.start,now), r=M.registration(t,now), more=list.length-1;
-    box.innerHTML=`${head}<div class="nt-body"><div class="nt-date" aria-hidden="true"><span>${b.dow}</span><b>${b.day}</b><span>${b.month}</span></div>
+    if(!t){box.innerHTML=`${head}${warning}<p class="nt-none">${stale?'No tenemos anuncios futuros en la última copia disponible.':'— No hay torneos anunciados por ahora. Cuando se publique uno en start.gg, aparecerá aquí.'}</p>`;box.hidden=false;return;}
+    const b=M.box(t.start), c=M.countdown(t.start,now), r=stale?{kind:'unknown',glyph:'?',text:'Inscripción por confirmar en start.gg'}:M.registration(t,now), more=list.length-1;
+    box.innerHTML=`${head}${warning}<div class="nt-body"><div class="nt-date" aria-hidden="true"><span>${b.dow}</span><b>${b.day}</b><span>${b.month}</span></div>
       <div class="nt-copy"><p class="nt-count">${c.text} · ${M.time(t.start)}</p><h3>${escape(t.name)}</h3><p>${escape([t.online?null:t.city,M.modeLabel(t)].filter(Boolean).join(' · '))}</p><p class="nt-reg ${r.kind}"><span aria-hidden="true">${r.glyph}</span> ${r.text}</p></div></div>
       <a class="nt-cta" href="./torneos.html#${escape(t.slug)}"><span>Ver el torneo →</span></a>
       <p class="nt-note">${more>0?`Y ${M.plural(more,'torneo más','torneos más')} en la agenda. `:''}Ranking Smash Bros no organiza estos torneos.</p>`;

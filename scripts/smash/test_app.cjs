@@ -131,3 +131,22 @@ test('all roster names resolve including DLC; local assets exist and aliases map
   for(const name of ['Sora','Joker','Hero','Banjo & Kazooie','Byleth','Min Min','Steve','Sephiroth','Pyra/Mythra','Kazuya','Terry','Piranha Plant','Rosalina'])assert.ok(char.asset(name),name);
   assert.equal(char.asset('<script>'),null);
 });
+
+test('first load selects Guatemala; a manual international selection survives refresh', async () => {
+  const data=dualFixture(), controls=new Map();
+  const context=vm.createContext({AbortController,setTimeout,clearTimeout,
+    document:{querySelector:selector=>{if(!controls.has(selector))controls.set(selector,{disabled:false,hidden:true,open:false});return controls.get(selector);}},
+    fetch:async()=>({ok:true,json:async()=>structuredClone(data)})});
+  vm.runInContext(source.split('const tabs =')[0]+'\nrender=()=>{};',context);
+  assert.equal(vm.runInContext('includeInternational',context),false);
+  await vm.runInContext('refresh()',context);
+  assert.equal(vm.runInContext('snapshot.rankingScope',context),'guatemala');
+  vm.runInContext('setScope(true)',context);
+  await vm.runInContext('refresh()',context);
+  assert.equal(vm.runInContext('snapshot.rankingScope',context),'combined');
+  vm.runInContext('setScope(false)',context);
+  assert.equal(vm.runInContext('snapshot.rankingScope',context),'guatemala');
+  const html=fs.readFileSync(path.join(__dirname,'../../ranking-smash-ultimate/index.html'),'utf8');
+  assert.match(html,/id="scope-local"[^>]*aria-pressed="true"/);
+  assert.match(html,/id="scope-combined"[^>]*aria-pressed="false"/);
+});

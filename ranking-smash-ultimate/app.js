@@ -1,5 +1,5 @@
 const $ = selector => document.querySelector(selector);
-let snapshot=null, published=null, includeInternational=true, loading=false;
+let snapshot=null, published=null, includeInternational=false, loading=false;
 let rankingView='top', selectedMain=null, selectedPlayerId=null;
 let playerMatches=[], allPlayerMatches=[], visibleMatches=20;
 const dateFormat=new Intl.DateTimeFormat('es-GT',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Guatemala'});

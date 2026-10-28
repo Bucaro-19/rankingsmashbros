@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs=require('node:fs'), path=require('node:path'), vm=require('node:vm');
 const m = require('../../ranking-smash-ultimate/torneos-model.js');
 
 // «Now» is Thursday 8 Oct 2026, 16:00 in Guatemala.
@@ -112,4 +113,38 @@ test('possible ranked tournament: the way to twenty, never «already counts»', 
   assert.deepEqual(b({attendanceType:'online',isOfflineSingles:false}), {kind:'no',text:'No cuenta para el ranking',detail:'el ranking solo usa torneos presenciales.'});
   assert.equal(b({isOfflineSingles:false,events:[{competitionType:'doubles'}]}).detail, 'el ranking solo usa singles.');
   assert.equal(b({isOfflineSingles:null,attendanceType:null,events:[]}), null);
+});
+
+// Exercise the actual homepage controller, including its asynchronous fetch and hidden state.
+const homeSource=fs.readFileSync(path.join(__dirname,'../../ranking-smash-ultimate/proximo.js'),'utf8');
+async function homeBlock(agenda,{ok=true,reject=false}={}) {
+  const box={hidden:true,innerHTML:''};
+  class Clock extends Date {static now(){return now;}}
+  const context=vm.createContext({Date:Clock,TorneosModel:m,document:{getElementById:()=>box},
+    fetch:async()=>{if(reject)throw new Error('offline');return {ok,json:async()=>agenda};}});
+  vm.runInContext(homeSource,context);
+  await new Promise(resolve=>setImmediate(resolve));
+  return box;
+}
+test('homepage keeps future announcements from stale agenda with an honest warning',async()=>{
+  const agenda={schemaVersion:1,generatedAt:'2026-10-01T12:00:00-06:00',tournaments:[raw()]};
+  const box=await homeBlock(agenda);
+  assert.equal(box.hidden,false);
+  assert.match(box.innerHTML,/Agenda pendiente de actualizar/);
+  assert.match(box.innerHTML,/01\/10\/2026/);
+  assert.match(box.innerHTML,/Inscripción por confirmar en start.gg/);
+  assert.doesNotMatch(box.innerHTML,/Inscripción abierta/);
+  assert.match(box.innerHTML,/torneos.html#/);
+});
+test('homepage fresh agenda, empty, past-only and unreadable states stay independent of ranking',async()=>{
+  const base={schemaVersion:1,generatedAt:'2026-10-08T12:00:00-06:00',tournaments:[raw()]};
+  const fresh=await homeBlock(base);
+  assert.equal(fresh.hidden,false);assert.match(fresh.innerHTML,/Inscripción abierta/);
+  assert.doesNotMatch(fresh.innerHTML,/pendiente de actualizar/);
+  const past=await homeBlock({...base,tournaments:[raw({name:'Torneo ya terminado',startAt:'2026-10-01T10:00:00-06:00'})]});
+  assert.equal(past.hidden,false);assert.doesNotMatch(past.innerHTML,/Torneo ya terminado/);
+  assert.match(past.innerHTML,/No hay torneos anunciados/);
+  const oldEmpty=await homeBlock({...base,generatedAt:'2026-10-01T12:00:00-06:00',tournaments:[]});
+  assert.match(oldEmpty.innerHTML,/última copia disponible/);
+  for(const box of [await homeBlock(null),await homeBlock(base,{ok:false}),await homeBlock(base,{reject:true})])assert.equal(box.hidden,true);
 });

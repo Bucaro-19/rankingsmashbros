@@ -247,6 +247,48 @@ class PublicationTests(unittest.TestCase):
         agenda.publish(ftp,empty,clock=lambda:current)
         self.assertEqual(json.loads(ftp.files['agenda.json'])['tournaments'],[])
 
+    def test_empty_capture_can_retire_only_source_confirmed_past_announcements(self):
+        class Recheck:
+            def __init__(self, row=None, fail=False):self.calls=0;self.row=row;self.fail=fail
+            def query(self, query, variables):
+                self.calls+=1
+                self_test.assertEqual(query,agenda.RECHECK_QUERY)
+                self_test.assertEqual(variables,dict(id='1'))
+                if self.fail:raise APIError('synthetic failure')
+                return dict(tournament=self.row)
+        self_test=self
+        past=dict(id=1,startAt=int((NOW-timedelta(days=1)).timestamp()),events=[dict(id=101,startAt=int((NOW-timedelta(days=1)).timestamp()))])
+        old=data();empty=data([]);ftp=FakeFTP(old);client=Recheck(past)
+        self.assertEqual(agenda.publish(ftp,empty,clock=lambda:NOW,client=client),1)
+        self.assertEqual(json.loads(ftp.files['agenda.json']),empty)
+        self.assertEqual(client.calls,1)
+        # The precise incident: stored future date, source date moved to the past.
+        for row in (None,dict(id=2,startAt=past['startAt']),dict(id=1,startAt=None),
+                    dict(id=1,startAt=0),dict(id=1,startAt=True),
+                    dict(id=1,startAt=int((NOW+timedelta(days=2)).timestamp())),
+                    {**past,'events':None},{**past,'events':[]},
+                    {**past,'events':[dict(id=101,startAt=None)]},
+                    {**past,'events':[dict(id=101,startAt=int((NOW+timedelta(days=2)).timestamp()))]}):
+            ftp=FakeFTP(old)
+            with self.assertRaises(ValueError):agenda.publish(ftp,empty,clock=lambda:NOW,client=Recheck(row))
+            self.assertEqual(ftp.files,{'agenda.json':agenda.encode(old)})
+            self.assertFalse(any(c[0]=='stor' for c in ftp.commands))
+        ftp=FakeFTP(old)
+        with self.assertRaises(APIError):agenda.publish(ftp,empty,clock=lambda:NOW,client=Recheck(fail=True))
+        self.assertEqual(ftp.files,{'agenda.json':agenda.encode(old)})
+        # No extra source query during normal publications or without old future entries.
+        client=Recheck(past);ftp=FakeFTP(old)
+        self.assertEqual(agenda.publish(ftp,data([tournament('2')]),clock=lambda:NOW,client=client),0)
+        self.assertEqual(client.calls,0)
+        ftp=FakeFTP(empty);agenda.publish(ftp,empty,clock=lambda:NOW,client=client)
+        self.assertEqual(client.calls,0)
+        # The guard is bounded; it never checks arbitrary numbers of old entries.
+        many=data([tournament(str(i)) for i in range(1,agenda.MAX_RECHECKS+2)])
+        ftp=FakeFTP(many)
+        with self.assertRaises(ValueError):agenda.publish(ftp,empty,clock=lambda:NOW,client=client)
+        self.assertEqual(client.calls,0)
+        self.assertEqual(ftp.files,{'agenda.json':agenda.encode(many)})
+
     def test_remote_traversal_is_rejected_before_ftp_and_publish_defaults_to_plan(self):
         for remote in ('..','site/../../other','/absolute','a b','.'):
             ftp=FakeFTP()

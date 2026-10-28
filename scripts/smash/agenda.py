@@ -21,6 +21,9 @@ PER_PAGE = 5
 MAX_PAGES = 40
 EVENT_LIMIT = 50
 MAX_BYTES = 512 * 1024
+MAX_RECHECKS = 5
+RECHECK_QUERY = '''query AgendaAnnouncement($id:ID!){tournament(id:$id){id startAt
+ events(limit:50,filter:{videogameId:[1386],published:true}){id startAt}}}'''
 MAX_AGE = timedelta(hours=48)
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[2] / 'ranking-smash-ultimate/data/agenda.json'
 # Checked by authenticated introspection on 8/oct/2026 (see AGENDA-TORNEOS.md).
@@ -285,8 +288,9 @@ def save(path,data):
         if name:Path(name).unlink(missing_ok=True)
 
 
-def publish(ftp,data, *, remote='.', clock=utc_now):
+def publish(ftp,data, *, remote='.', clock=utc_now, client=None):
     validate(data,now=clock(),fresh=True)
+    verification_before=client.calls if client is not None else 0
     require(isinstance(remote,str) and re.fullmatch(r'\.|[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*',remote) is not None
             and '..' not in remote.split('/'),'SMASH_FTP_DIR inválido.')
     if remote!='.':ftp.cwd(remote)
@@ -307,13 +311,35 @@ def publish(ftp,data, *, remote='.', clock=utc_now):
         else:
             prior=json.loads(buffer.getvalue())
             require(isinstance(prior,dict) and isinstance(prior.get('tournaments'),list))
-            require(not any(aware(t['startAt'])>clock() for t in prior['tournaments']),
-                    'Captura vacía frente a anuncios futuros vigentes: conservar y revisar.')
+            future=[t for t in prior['tournaments'] if aware(t['startAt'])>clock()]
+            if future:
+                # A date can move backwards: confirm each known announcement at the source.
+                # Never treat null/deletion/API failure as proof that it has ended.
+                require(client is not None and len(future)<=MAX_RECHECKS,
+                        'Captura vacía frente a anuncios futuros vigentes: conservar y revisar.')
+                for t in future:
+                    tid=identifier(t['id'])
+                    row=client.query(RECHECK_QUERY,dict(id=tid)).get('tournament')
+                    require(isinstance(row,dict) and identifier(row.get('id'))==tid,
+                            'No se pudo verificar el anuncio anterior; conservar y revisar.')
+                    started=timestamp(row.get('startAt'),None)
+                    require(started is not None and aware(started)<=clock(),
+                            'El anuncio sigue siendo futuro o no tiene fecha verificable; conservar y revisar.')
+                    events=row.get('events')
+                    require(isinstance(events,list) and 0<len(events)<EVENT_LIMIT,
+                            'No se pudo verificar el calendario de Ultimate; conservar y revisar.')
+                    for event in events:
+                        require(isinstance(event,dict))
+                        identifier(event.get('id'))
+                        event_start=timestamp(event.get('startAt'),None)
+                        require(event_start is not None and aware(event_start)<=clock(),
+                                'Ultimate tiene una fecha futura o desconocida; conservar y revisar.')
     body=encode(data);temporary='agenda.json.'+uuid.uuid4().hex+'.tmp'
     try:
         ftp.storbinary('STOR '+temporary,io.BytesIO(body))
         validate(data,now=clock(),fresh=True)  # also protects a start reached during upload
         ftp.rename(temporary,'agenda.json')
+        return client.calls-verification_before if client is not None else 0
     except Exception:
         try:ftp.delete(temporary)
         except ftplib.all_errors:pass
@@ -338,8 +364,9 @@ def main():
                 require(all(os.environ.get(k) for k in ('FTP_SERVER','FTP_USERNAME','FTP_PASSWORD')),'Faltan secretos FTP.')
                 with ftplib.FTP(timeout=45) as ftp:
                     ftp.connect(os.environ['FTP_SERVER'],21);ftp.login(os.environ['FTP_USERNAME'],os.environ['FTP_PASSWORD'])
-                    publish(ftp,data,remote=os.environ.get('SMASH_FTP_DIR') or 'ranking-smash-ultimate');ftp.quit()
-                print('Solo data/agenda.json publicado; ranking y SQL intactos.')
+                    checks=publish(ftp,data,remote=os.environ.get('SMASH_FTP_DIR') or 'ranking-smash-ultimate',
+                                   client=Client(os.environ['STARTGG_TOKEN']) if os.environ.get('STARTGG_TOKEN') else None);ftp.quit()
+                print(json.dumps(dict(published='data/agenda.json',sourceVerificationRequests=checks)))
             else:print('Agenda válida; sin publicación FTP (publish requiere --apply).')
     except (APIError,ValueError,TypeError,KeyError,OverflowError,OSError,ftplib.Error,EOFError) as error:
         # Never echo a server response, filename, token or FTP credential.
