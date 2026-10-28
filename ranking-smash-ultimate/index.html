@@ -22,6 +22,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./arena.css?v=20261009-marca">
+  <link rel="stylesheet" href="./instagram.css?v=20261027-1">
+  <script src="./instagram.js?v=20261027-1" defer></script>
   <script src="./characters.js?v=20261006-design2" defer></script><script src="./app.js?v=20261008-2" defer></script><script src="./cabecera.js?v=20261009-1" defer></script><script src="./torneos-model.js?v=20261009-2" defer></script><script src="./proximo.js?v=20261009-1" defer></script><script src="./visita.js?v=20261007" data-page="inicio" defer></script>
   <script type="application/ld+json">
 {
@@ -76,9 +78,14 @@
       <button id="view-all" class="gt-outline view-all" type="button" aria-pressed="false" hidden>Ver todos los clasificados</button>
       <p id="list-note" class="gt-note"></p><p class="gt-note">Para clasificar: 2 torneos y 4 sets válidos. Ambas vistas se actualizan los domingos a las 00:00 de Guatemala; la publicación puede demorar. <a href="./metodologia.html">Método y torneos ↗</a></p>
     </section>
+    <div data-instagram-trigger aria-hidden="true"></div>
+    <section id="desde-instagram" class="ig-section" data-instagram="preview" aria-labelledby="ig-title" hidden>
+      <header class="ig-header"><div class="ig-title-wrap"><img src="./assets/rsb-mark.svg" alt="" width="48" height="48" loading="lazy"><div><p class="ig-kicker">Nuestra comunidad</p><h2 id="ig-title">Desde <span>Instagram.</span></h2></div></div><a class="ig-all" href="./instagram.html"><span>Ver todas las publicaciones ↗</span></a></header>
+      <div class="ig-grid"></div><p class="ig-foot">Fotos, noticias y momentos de Ranking Smash Bros. Los videos se muestran con su portada.</p>
+    </section>
     <section id="cuenta" class="gt-preview" aria-labelledby="preview-title"><div class="preview-layout"><div><p class="gt-kicker">Tu cuenta</p><h2 id="preview-title">Elige tu<br>main.</h2><p class="preview-copy">Entra con tu cuenta de start.gg y ten tu carta de jugador, tu historial y tu récord contra cada rival. Es gratis. Aquí puedes probar cómo se ve con un personaje; esta prueba no guarda nada.</p><a class="preview-cta" href="./cuenta.html"><span>Continuar con start.gg →</span></a><div id="demo-roster" class="demo-roster" role="group" aria-label="Elegir personaje para la carta de demostración"></div></div><div class="preview-card-wrap"><div id="demo-card" class="demo-card"><div id="demo-art" class="demo-art"></div><div class="demo-name"><span>TU TAG<small id="demo-main-name">Carta de demostración</small></span><span id="demo-icon"></span></div></div><p id="demo-status" class="sr-only" role="status"></p></div></div></section>
   </main>
-  <footer class="gt-footer"><span>Hecho para la comunidad de Guatemala. <a href="https://ingporras.com/">INGPORRAS ↗</a></span><span>Datos: start.gg · <span id="footer-method">BT-PILOTO-3</span><br>Arte: Nintendo y titulares respectivos · Recursos: <a href="https://github.com/marcrd/smash-ultimate-assets" target="_blank" rel="noopener noreferrer">marcrd</a> / <a href="https://github.com/jonborg/ThumbnailGenerator" target="_blank" rel="noopener noreferrer">ThumbnailGenerator</a></span><p>Proyecto independiente, sin afiliación con Nintendo, start.gg ni UltRank. Ranking experimental.</p><nav aria-label="Condiciones del servicio"><a href="/tops.html">Tops de organizadores</a> · <a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
+  <footer class="gt-footer"><span>Hecho para la comunidad de Guatemala. <a href="https://ingporras.com/">INGPORRAS ↗</a></span><span>Datos: start.gg · <span id="footer-method">BT-PILOTO-3</span><br>Arte: Nintendo y titulares respectivos · Recursos: <a href="https://github.com/marcrd/smash-ultimate-assets" target="_blank" rel="noopener noreferrer">marcrd</a> / <a href="https://github.com/jonborg/ThumbnailGenerator" target="_blank" rel="noopener noreferrer">ThumbnailGenerator</a></span><p>Proyecto independiente, sin afiliación con Nintendo, start.gg ni UltRank. Ranking experimental.</p><nav aria-label="Condiciones del servicio"><a href="/instagram.html">Desde Instagram</a> · <a href="/tops.html">Tops de organizadores</a> · <a href="/terminos.html">Términos y condiciones</a> · <a href="/reembolsos.html">Política de reembolsos</a></nav></footer>
   <dialog id="player-dialog" class="gt-drawer" aria-labelledby="player-title">
     <div class="drawer-hero"><strong id="drawer-rank" aria-hidden="true"></strong><div id="drawer-art"></div><button id="player-close" type="button" class="close" aria-label="Cerrar detalle" autofocus>×</button></div>
     <div class="drawer-content"><div><p class="gt-kicker">Perfil de la comunidad</p><h2 id="player-title"></h2><p id="player-subtitle"></p><p id="player-movement"></p></div><div id="player-stats" class="drawer-stats"></div><p id="player-summary" class="drawer-note"></p>
@@ -89,6 +96,10 @@
       <section><h3 id="player-history-title">Sets considerados en este corte</h3><button id="player-all-results" class="gt-outline" type="button" hidden>Volver a todos los sets</button><p id="player-history-count" class="drawer-note" role="status"></p><div id="player-matches"></div><button id="player-more" class="gt-outline" type="button" hidden>Ver más resultados</button></section>
       <a id="player-link" class="gt-outline" target="_blank" rel="noopener noreferrer">Ver perfil en start.gg ↗</a>
     </div>
+  </dialog>
+  <dialog id="ig-dialog" class="ig-dialog" aria-labelledby="ig-dialog-title">
+    <button type="button" class="ig-close" aria-label="Cerrar publicación" autofocus>×</button>
+    <div class="ig-dialog-layout"><div class="ig-dialog-media"></div><div class="ig-dialog-copy"><h2 id="ig-dialog-title">Ranking Smash Bros</h2><span class="ig-dialog-type ig-type"></span><time></time><p class="ig-dialog-caption"></p><a class="ig-original" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer"><span>Ver en Instagram ↗</span></a></div></div>
   </dialog>
   <noscript><p class="gt-error">Activa JavaScript para consultar el ranking y sus filtros.</p></noscript>
 </body>

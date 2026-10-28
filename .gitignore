@@ -20,3 +20,10 @@ recurrente.local.txt
 
 # Referencias de Claude Design: locales, nunca versionadas
 design_handoff_*/
+
+# Private Instagram credential/state and runtime feed/media (never deployed from Git)
+instagram.local.php
+instagram-token.json
+ranking-smash-ultimate/data/instagram*.json
+ranking-smash-ultimate/assets/instagram/*
+!ranking-smash-ultimate/assets/instagram/.htaccess

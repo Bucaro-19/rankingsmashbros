@@ -31,6 +31,7 @@ jobs:
           python scripts/database/test_weekly_ranking_load.py
       - name: Verificar JavaScript
         run: |
+          node --check ranking-smash-ultimate/instagram.js
           node --check ranking-smash-ultimate/characters.js
           node --check ranking-smash-ultimate/app.js
           node --check ranking-smash-ultimate/metodologia.js
@@ -53,7 +54,7 @@ jobs:
           node --check ranking-smash-ultimate/cabecera.js
           node --check ranking-smash-ultimate/panel-model.js
           node --check ranking-smash-ultimate/panel.js
-          node --test scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_organizador.cjs scripts/smash/test_slide_progress.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_frame_tools.cjs scripts/smash/test_torneos.cjs scripts/smash/test_tops.cjs scripts/smash/test_my_tournament.cjs
+          node --test scripts/smash/test_instagram.cjs scripts/smash/test_app.cjs scripts/smash/test_accounts.cjs scripts/smash/test_organizador.cjs scripts/smash/test_slide_progress.cjs scripts/smash/test_panel.cjs scripts/smash/test_analisis.cjs scripts/smash/test_frame_tools.cjs scripts/smash/test_torneos.cjs scripts/smash/test_tops.cjs scripts/smash/test_my_tournament.cjs
       - name: Verify native slide rendering and ZIP with invented data
         run: |
           npm install --prefix "$RUNNER_TEMP/smash-canvas" --no-save --package-lock=false @napi-rs/canvas@0.1.80
@@ -110,7 +111,7 @@ jobs:
           python-version: '3.12'
       - run: pip install PyMySQL==1.1.2 cryptography==46.0.2 graphql-core==3.2.6
       - name: Install PHP database drivers and UTF-8 support
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq php-cli php-mysql php-sqlite3 php-mbstring
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq php-cli php-mysql php-sqlite3 php-mbstring php-gd php-curl
       - name: Verify catalog seed matches UI
         run: node scripts/database/build_character_seed.cjs --check
       - name: Install schema twice and test competition workflows
@@ -121,6 +122,8 @@ jobs:
         run: |
           for file in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$file"; done
           python scripts/database/test_schema.py
+          php scripts/database/test_instagram.php
+          python -m unittest discover -s scripts/smash -p test_instagram_setup.py -v
           php scripts/database/test_connection.php
           php scripts/database/test_accounts.php
           python scripts/database/test_accounts_http.py
