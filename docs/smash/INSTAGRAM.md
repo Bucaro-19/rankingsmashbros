@@ -52,7 +52,14 @@ Modal nativo: imagen completa bajo demanda, caption en textContent con saltos de
 
 ## Configuración y comprobación por el dueño
 
-Guía detallada en [PENDIENTES-DUENO.md](PENDIENTES-DUENO.md), sección Desde Instagram. Esta entrega no registra la app, no autoriza una cuenta, no instala un cron, no activa SMASH_INSTAGRAM_ENABLED ni despliega. No hay token real disponible para hacer una captura de Meta de punta a punta.
+Guía detallada en [PENDIENTES-DUENO.md](PENDIENTES-DUENO.md), sección Desde Instagram.
+
+Asistente manual para el dueño en Terminal cPanel: [configurar-instagram-cpanel.sh](configurar-instagram-cpanel.sh). Comprueba /usr/local/bin/php CLI 8.1+, curl/GD/mbstring; confirma token largo recién generado (<24 h), lo pide sin eco por /dev/tty y lo pasa a PHP solo por stdin. Crea exclusivamente /home/ivcjgjlk/private-smash/instagram.local.php, modo 600, cuenta 17841423954542472 comprobada en la pantalla de Meta. Se detiene antes de pedir la llave si el archivo ya existe; no lo reemplaza. Captura **desactivada**, sin API, SQL, cron, FTP, publicación o activación. Después del despliegue autorizado hay que habilitar la captura y hacer la primera prueba antes de programarla.
+
+Excepción conservadora del asistente para la semilla recién creada y confirmada: no conoce el instante de emisión de Meta. Usa `issued_at = hora de configuración − 24 h` como **cota inferior**, nunca como una afirmación del instante real. Así no sobreestima los 60 días de vida, y su primera renovación se intenta seis días después de configurar, cuando ya supera el mínimo de 24 h. Tras renovar, el estado guarda el instante y expires_in de la respuesta real. Un token antiguo o de duración desconocida no debe configurarse con este asistente. El archivo editable manual sigue requiriendo una fecha de emisión válida; no rejuvenecer tokens antiguos.
+
+El dueño confirmó guardado de INSTAGRAM_ACCESS_TOKEN mediante gh secret set. GitHub no permite volver a leerlo por API; el cron actual **no consume ese secreto**. El asistente necesita pegar el original desde Meta en Terminal cPanel. No se creó un canal para transportar secretos de Actions a hosting ni permisos para escribirlos desde un workflow. No hay ninguna escritura remota ejecutada por Codex en esta preparación.
+ Esta entrega no registra la app, no autoriza una cuenta, no instala un cron, no activa SMASH_INSTAGRAM_ENABLED ni despliega. No hay token real disponible para hacer una captura de Meta de punta a punta.
 
 Prueba manual después del despliegue autorizado: ejecutar el PHP CLI sin argumentos secretos. Debe imprimir status ready; comprobar ambos JSON estáticos y las rutas de imagen. Activar monitor después. En fallo, inspeccionar solo el código seguro y los permisos/versión PHP; **no habilitar curl verbose ni pegar el token en comandos o chat**. Para reautorizar, editar el archivo privado en cPanel con una llave larga nueva y su fecha real. Eliminar/rotar el token anterior en Meta cuando corresponda.
 

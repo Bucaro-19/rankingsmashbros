@@ -111,7 +111,7 @@ jobs:
           python-version: '3.12'
       - run: pip install PyMySQL==1.1.2 cryptography==46.0.2 graphql-core==3.2.6
       - name: Install PHP database drivers and UTF-8 support
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq php-cli php-mysql php-sqlite3 php-mbstring php-gd
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq php-cli php-mysql php-sqlite3 php-mbstring php-gd php-curl
       - name: Verify catalog seed matches UI
         run: node scripts/database/build_character_seed.cjs --check
       - name: Install schema twice and test competition workflows
@@ -123,6 +123,7 @@ jobs:
           for file in ranking-smash-ultimate/*.php scripts/database/*.php; do php -l "$file"; done
           python scripts/database/test_schema.py
           php scripts/database/test_instagram.php
+          python -m unittest discover -s scripts/smash -p test_instagram_setup.py -v
           php scripts/database/test_connection.php
           php scripts/database/test_accounts.php
           python scripts/database/test_accounts_http.py
