@@ -21,7 +21,7 @@ from rival_history import new_state,capture_batch,MAX_PLAYERS
 from rival_context import package
 from publish_sql import request,encode_transport,SyncStopped
 
-UNTIL=datetime(2026,10,26,6,tzinfo=timezone.utc) # End of 25/oct, Guatemala/El Salvador.
+UNTIL=datetime(2027,1,1,6,tzinfo=timezone.utc) # Owner renewal 27/oct: finish 2026 context by end of 31/Dec GT/SV.
 MAX_BATCHES=2
 SAFE_REASONS=frozenset(('analysis_migration_required','analysis_schema_invalid','analysis_entity_authorization_required',
     'analysis_authorization_expired','analysis_event_not_authorized','analysis_checkpoint_conflict','analysis_checkpoint_progress_invalid','analysis_checkpoint_regression','analysis_identity_conflict',

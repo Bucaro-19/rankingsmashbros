@@ -1,5 +1,18 @@
 # Automatización del contexto de inscritos — Legends 7
 
+## Renovación del dueño — 27/oct/2026 GT
+
+El dueño pidió continuar los historiales de Legends 7 para conservar el contexto de 2026 y consultarlo el próximo año. Se interpreta como renovación del mismo circuito de análisis y sus altas base ya autorizadas, **solo evento 1687524 / temporada 2026**, sin reiniciar checkpoint ni introducir otros eventos/temporadas. Nuevo tope fijo **2027-01-01T06:00:00Z = fin del 31/dic/2026 GT/SV**, sin argumento/variable que lo amplíe. Se mantiene cada seis horas, máximo dos tandas, 30 intentos/120 s por tanda y una petición/s. Receptor, worker, capturador y fecha mostrada en panel comparten ese plazo y sus pruebas comprueban la paridad. No cambia «Mi torneo»: pools/horarios de un torneo ya terminado no se reactivan.
+
+El último run previo al vencimiento, **40241693908**, dejó **343 inscritos, 177 historiales pendientes**, 63 intentos y 558,503 s. Los runs posteriores siguen verdes pero responden **authorization_expired / 0 consultas** (confirmado 40605516240), no han estado capturando. SELECT de solo lectura 27/oct: **007 presente, 66 tandas / 270 marcas analysis_context_players de 2026, todos los 66 player_history succeeded, 4 cuts**. Las marcas no equivalen a historiales completos; la cobertura privada es quien determina pendientes.
+
+La reanudación conserva nextPage, recibos, identidad, prioridad nacional y exclusión de mains/rankings. Los historiales terminados no se vuelven a consultar; «completo» significa paginación recorrida, no que start.gg registre todos los personajes o que un conocido ya tuviera historial completo. Tras terminar se obtiene already_imported y solo se revisa el roster/inventario mientras siga vigente la orden. No se amplían cuotas ni se reinicia a todos.
+
+**Conservación:** el vencimiento detiene capturas, no borra SQL/checkpoints. Los datos quedan etiquetados con season_year/seasonYear **2026**, sin TTL de borrado en este circuito. En 2027 siguen como histórico: el lector actual selecciona la temporada del corte y no los mezcla automáticamente con un ranking 2027. Ofrecer historial multitemporada en la pantalla sería otra mejora; no se presenta este cambio de plazo como esa función ni como backup inmutable de toda la base. No capturar 2027 bajo esta autorización.
+
+La variable estaba true. Despliegue seguro: pausar solo el interruptor antes de fusionar; comprobar que no haya jobs/capturas pendientes o ejecutándose, desplegar assets_only (aquí **sí hay cambio PHP**), volver a true y lanzar una ejecución normal. Nunca aplicar desde MySQL manualmente ni resetear la cola. Ver EN-CURSO.md para CI, publicación y primera tanda reanudada; no darlos por verificados hasta registrar resultados.
+
+
 ## Fase 1 publicada — 20/oct/2026
 
 Rama feat/fair-rival-history-batches, desde main 0286a0e. La política vigente de capture_batch cambia solo el orden de páginas, no consulta, filtros, frecuencia, techo, paquete, checkpoint o receptor. No cambia la versión ni los campos del checkpoint; la corrección añade el contador de omisiones en audit/resumen, sin PHP nuevo o migración. PR #114 fusionado por orden del dueño, squash f3308c7. Primera verificación rechazada antes de la cola por analysis_unrelated_set; se pausó solo esta carga durante el diagnóstico. La corrección #115, squash 6140c12, se fusionó con la CI verde y se reactivó SMASH_RIVAL_SYNC_ENABLED=true. Verificación [39552600582](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/39552600582) correcta: 328 inscritos, 24 nuevos incorporados, 253 historiales incompletos, 63 consultas y cinco referencias sin vínculo omitidas; cierre completo en EN-CURSO.md.
@@ -19,7 +32,7 @@ Entrega del 14/oct/2026. Sin pantalla, migración nueva, credenciales nuevas ni 
 
 ## Alcance y bloqueo de autorización
 
-Destino autorizado: Legends 7, torneo 942547, Ultimate Singles **1687524**, `tournament/legends7`, El Salvador. Temporada 2026; expiración **26/oct/2026 06:00 UTC**, justo después del 25/oct en GT/SV. El proceso no puede extender esa fecha por argumento. Otro evento requiere una nueva orden y actualizar la política fija en ambos extremos; el ID ya se recibe por variable para reutilizar el circuito.
+Destino autorizado: Legends 7, torneo 942547, Ultimate Singles **1687524**, `tournament/legends7`, El Salvador. Temporada 2026; expiración renovada por el dueño el 27/oct a **1/ene/2027 06:00 UTC**, fin del 31/dic/2026 en GT/SV (antes era 26/oct 06:00 UTC). El proceso no puede extender esa fecha por argumento. Otro evento requiere una nueva orden y actualizar la política fija en ambos extremos; el ID ya se recibe por variable para reutilizar el circuito.
 
 El dueño autorizó `rival_context.py --apply` «solo en las tablas de la migración 007». Ese importador necesita además insertar las entidades ausentes en `players`, `tournaments`, `events`, `entrants`, `entrant_players`, `sets`, `set_slots`, `games` y `game_selections`; 007 tiene llaves foráneas hacia ellas. No sería posible registrar un jugador desconocido escribiendo exclusivamente las tres tablas de 007. **Pregunta pendiente en el chat:** autorizar esas inserciones necesarias, preservando todas las filas existentes, o mantener literalmente el alcance 007. Hasta respuesta expresa, `RC_ENTITY_INSERTS_AUTHORIZED=false` rechaza el inventario/importación automática. Las pruebas habilitan solo una copia temporal de la biblioteca, nunca la fuente productiva. No presentar esto como automatización activa.
 
@@ -64,7 +77,7 @@ Segunda ejecución sin nuevos inscritos: una consulta de lista (más paginación
 2. Claude Code aplica 007 con orden del dueño por el procedimiento habitual; no desde Actions. Confirmar CI y revisar PR. Fusionar/desplegar bibliotecas/receptor antes de activar cron, siempre con nueva orden.
 3. Reutilizar los Secrets existentes, nunca pegarlos en comandos/chat. Configurar `SMASH_RIVAL_EVENT_ID=1687524`; habilitar `SMASH_RIVAL_SYNC_ENABLED=true` únicamente después de los puntos anteriores. El primer inventario comprueba la migración, no se confía solo en su confirmación verbal.
 4. Para apagar futuras ejecuciones: `SMASH_RIVAL_SYNC_ENABLED=false`. Esto no cancela un run ya iniciado ni un trabajo ya aceptado; cancelar ese run explícitamente si se necesita una parada inmediata y revisar su estado antes de nueva orden.
-5. Revisar resumen de Actions y fallo rojo si aparece. No publicar capturas ni imprimir config privada para diagnosticar. No reintentar jobs fallidos a ciegas. Tras 25/oct no se importará más, aunque la variable siga true.
+5. Revisar resumen de Actions y fallo rojo si aparece. No publicar capturas ni imprimir config privada para diagnosticar. No reintentar jobs fallidos a ciegas. Tras 31/dic/2026 GT no se importará más bajo esta renovación, aunque la variable siga true.
 
 No se cambiaron variables del repo, permisos de red, cron de cPanel o secretos en esta entrega. No se comprobó el estado productivo actual de 007 ni de la lista; los datos del 13/oct en LEGENDS7-ANALISIS.md siguen siendo observaciones históricas.
 

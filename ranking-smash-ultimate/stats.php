@@ -222,12 +222,13 @@ function smash_stats_report(PDO $pdo, int $now, int $seasonYear): array
 
 // Legends 7: read ONLY the committed checkpoint, never .pending, sync secrets or APIs.
 // This projection is called only after the panel's owner gate. No personal fields leave it.
+const SMASH_STATS_ANALYSIS_UNTIL='2027-01-01T06:00:00Z';
 function smash_stats_analysis_empty(string $status): array
 {
     return ['status'=>$status,'eventName'=>'Legends 7','registered'=>null,'preexisting'=>null,
         'targets'=>null,'completed'=>null,'partial'=>null,'notStarted'=>null,'pending'=>null,
         'percentage'=>null,'pagesConfirmed'=>null,'rosterCapturedAt'=>null,'checkpointSavedAt'=>null,
-        'authorizationEndsAt'=>'2026-10-26T00:00:00-06:00','stale'=>false];
+        'authorizationEndsAt'=>(new DateTimeImmutable(SMASH_STATS_ANALYSIS_UNTIL))->setTimezone(new DateTimeZone('America/Guatemala'))->format('Y-m-d\TH:i:sP'),'stale'=>false];
 }
 function smash_stats_analysis_summary(array $saved, int $now, int $modified): array
 {
@@ -270,7 +271,7 @@ function smash_stats_analysis_summary(array $saved, int $now, int $modified): ar
     if ($at===false || $at>$now+60 || $modified<1 || $modified>$now+60) $bad();
     $format=static fn(int $t): string => (new DateTimeImmutable('@'.$t))->setTimezone(new DateTimeZone('America/Guatemala'))->format('Y-m-d\TH:i:sP');
     $targets=count($coverage); $pending=$targets-$complete;
-    $out=smash_stats_analysis_empty($now>=strtotime('2026-10-26T06:00:00Z')?'expired':($pending?'pending':'complete'));
+    $out=smash_stats_analysis_empty($now>=strtotime(SMASH_STATS_ANALYSIS_UNTIL)?'expired':($pending?'pending':'complete'));
     return array_replace($out,['registered'=>count($players),'preexisting'=>count($players)-$targets,
         'targets'=>$targets,'completed'=>$complete,'partial'=>$partial,'notStarted'=>$pending-$partial,'pending'=>$pending,
         'percentage'=>$targets?round(100*$complete/$targets,1):100,'pagesConfirmed'=>$pages,

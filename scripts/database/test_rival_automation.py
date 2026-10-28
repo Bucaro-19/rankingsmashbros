@@ -323,7 +323,25 @@ class Contracts(unittest.TestCase):
     def test_expired_is_zero_queries(self):
         client=Source([9]);host=mock.Mock();report,_=quiet_run(client,host,1687524,now=auto.UNTIL)
         self.assertEqual(report['status'],'authorization_expired');self.assertEqual(client.calls,0);host.inventory.assert_not_called()
-        self.assertTrue(auto.active(datetime(2026,10,26,5,59,59,tzinfo=timezone.utc)))
+        self.assertTrue(auto.active(auto.UNTIL-datetime.resolution))
+        self.assertTrue(auto.active(datetime(2026,10,28,tzinfo=timezone.utc)))
+        self.assertEqual(auto.UNTIL,datetime(2027,1,1,6,tzinfo=timezone.utc))
+    def test_renewed_owner_deadline_matches_receiver_and_owner_panel(self):
+        import re
+        expected=auto.UNTIL.strftime('%Y-%m-%dT%H:%M:%SZ')
+        for filename,constant in (('rival-sync-lib.php','RC_UNTIL'),('stats.php','SMASH_STATS_ANALYSIS_UNTIL')):
+            source=(SITE/filename).read_text()
+            self.assertEqual(re.search(r"const "+constant+r"='([^']+)';",source).group(1),expected)
+        # A completed 2026 checkpoint stays complete: renewal does not reset coverage or season.
+        roster=auto.event_roster(Source([9]),1687524)
+        checkpoint=auto.merge_state(roster,None,[])
+        checkpoint['coverage']['9']=dict(nextPage=3,totalPages=2,complete=True)
+        before=copy.deepcopy(checkpoint)
+        resumed=auto.merge_state(roster,checkpoint,[9])
+        self.assertEqual(resumed['coverage'],before['coverage'])
+        self.assertEqual(resumed['seasonYear'],2026)
+        self.assertEqual(checkpoint,before)
+
     def test_different_event_is_not_authorized_and_does_not_query(self):
         client=Source([9]);host=mock.Mock()
         with contextlib.redirect_stdout(io.StringIO()),self.assertRaisesRegex(sender.SyncStopped,'analysis_event_not_authorized'):auto.run(client,host,999,now=NOW)
@@ -388,7 +406,7 @@ class SqlTests(fixtures.SqlTests):
         for filename in ('database.php','ranking-import.php','rival-import.php','rival-sync-lib.php','ranking-sync-lib.php','ranking-sync.php','bracket-store.php','ranking-worker.php','characters.js'):
             shutil.copyfile(SITE/filename,self.site/filename)
         # Only the disposable fixture extends the deadline, keeping these tests usable after October.
-        lib=self.site/'rival-sync-lib.php';lib.write_text(lib.read_text().replace("const RC_UNTIL='2026-10-26T06:00:00Z'","const RC_UNTIL='2099-10-26T06:00:00Z'"))
+        lib=self.site/'rival-sync-lib.php';lib.write_text(lib.read_text().replace("const RC_UNTIL='2027-01-01T06:00:00Z'","const RC_UNTIL='2099-10-26T06:00:00Z'"))
         config=dict(database=dict(host='127.0.0.1',port=int(os.getenv('SMASH_SCHEMA_TEST_PORT','3306')),name=os.environ['SMASH_SCHEMA_TEST_DB'],user='root',password=os.environ['SMASH_SCHEMA_TEST_PASSWORD']))
         (self.private/'config.local.php').write_text('<?php return json_decode('+json.dumps(json.dumps(config))+',true);')
         (self.private/'sync.local.php').write_text("<?php return ['enabled'=>true,'key'=>'"+'1'*64+"'];")
@@ -415,6 +433,31 @@ class SqlTests(fixtures.SqlTests):
             cols=[r[0] for r in sql(self.db,'SHOW COLUMNS FROM '+table) if r[0] not in ('updated_at','imported_at')]
             out[table]=sorted(sql(self.db,'SELECT '+','.join(cols)+' FROM '+table),key=repr)
         return out
+    def test_owner_renewal_resumes_old_partial_after_original_expiry_without_reset(self):
+        # Use the actual renewed server policy, not the fixture's distant deadline.
+        lib=self.site/'rival-sync-lib.php'
+        lib.write_text(lib.read_text().replace('2099-10-26T06:00:00Z','2027-01-01T06:00:00Z'))
+        protected=self.protected();public=(self.site/'data/public.json').read_bytes()
+        with self.serving() as host:
+            first=PagedSource([9],page_counts={'9':60})
+            with mock.patch.object(auto,'MAX_BATCHES',1):report,_=quiet_run(first,host,1687524,now=NOW)
+            self.assertEqual(report['pending'],1)
+            roster=auto.event_roster(Source([9]),1687524)
+            saved=host.inventory(roster)['checkpoint']
+            self.assertEqual(saved['coverage']['9']['nextPage'],29)
+            resumed=PagedSource([9],page_counts={'9':60})
+            report,_=quiet_run(resumed,host,1687524,now=datetime(2026,10,28,tzinfo=timezone.utc))
+            self.assertEqual(report['pending'],0);self.assertEqual(report['added'],0)
+            self.assertEqual(resumed.history_pages[0],('9',29))
+            self.assertNotIn(('9',1),resumed.history_pages)
+            self.assertTrue(host.inventory(roster)['checkpoint']['coverage']['9']['complete'])
+            # Full replay after completion fetches the roster, no history or new batch.
+            before=self.dump();again=PagedSource([9],page_counts={'9':60})
+            report,_=quiet_run(again,host,1687524,now=datetime(2026,10,29,tzinfo=timezone.utc))
+            self.assertEqual(report['status'],'already_imported');self.assertEqual(again.history_pages,[])
+            self.assertEqual(self.dump(),before)
+        self.assertEqual(self.protected(),protected);self.assertEqual((self.site/'data/public.json').read_bytes(),public)
+
     def test_unlinked_source_rows_are_omitted_and_reported_after_confirmed_import(self):
         protected=self.protected();public=(self.site/'data/public.json').read_bytes()
         with self.serving() as host:

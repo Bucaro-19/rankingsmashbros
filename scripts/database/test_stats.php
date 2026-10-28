@@ -24,7 +24,9 @@ $progress=smash_stats_analysis_summary($progressState,$progressNow,$progressNow-
 check_stats([$progress['registered'],$progress['preexisting'],$progress['targets'],$progress['completed'],$progress['partial'],$progress['notStarted'],$progress['pending'],$progress['percentage'],$progress['pagesConfirmed']] === [5,1,4,1,1,2,3,25.0,5], 'Real coverage counts and numerator, not known SQL identities');
 check_stats($progress['status']==='pending' && !$progress['stale'] && $progress['rosterCapturedAt']==='2026-10-19T17:54:00-06:00', 'Progress uses Guatemala timestamps');
 check_stats(smash_stats_analysis_summary($progressState,$progressNow,$progressNow-13*3600)['stale'], 'Old committed file warns without claiming a failed run');
-check_stats(smash_stats_analysis_summary($progressState,strtotime('2026-10-26T06:00:00Z'),$progressNow)['status']==='expired', 'Capture deadline is not extended by panel');
+check_stats(smash_stats_analysis_summary($progressState,strtotime('2026-10-28T06:00:00Z'),$progressNow)['status']==='pending', 'Owner renewal resumes pending coverage after original deadline');
+check_stats($progress['authorizationEndsAt']==='2027-01-01T00:00:00-06:00', 'Renewed deadline shown in Guatemala time');
+check_stats(smash_stats_analysis_summary($progressState,strtotime(SMASH_STATS_ANALYSIS_UNTIL),$progressNow)['status']==='expired', 'Renewed deadline still stops the panel at exact boundary');
 $completeState=$progressState;
 foreach($completeState['checkpoint']['coverage'] as &$cov) $cov=['nextPage'=>2,'totalPages'=>1,'complete'=>true];unset($cov);
 check_stats(smash_stats_analysis_summary($completeState,$progressNow,$progressNow)['percentage']===100.0, '100 only when every planned history finished');
