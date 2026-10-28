@@ -29,25 +29,17 @@ jobs:
           python-version: '3.12'
       - name: Probar captura, validación y FTP simulados (sin credenciales)
         run: python -m unittest discover -s scripts/smash -p test_agenda.py -v
-      - name: Capturar torneos futuros de Guatemala (solo lectura)
+      - name: Sonda de filtros de agenda (solo lectura, sin personas)
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/agenda.py capture
-      - name: Validar agenda antes de cualquier publicación
-        run: python scripts/smash/agenda.py validate ranking-smash-ultimate/data/agenda.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: smash-gt-agenda
-          path: ranking-smash-ultimate/data/agenda.json
-          retention-days: 7
-          if-no-files-found: error
-      - name: Publicar únicamente agenda.json por renombrado atómico
-        if: >-
-          github.ref == 'refs/heads/main' &&
-          (github.event_name == 'schedule' || inputs.publish == true)
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          SMASH_FTP_DIR: ${{ vars.SMASH_FTP_DIR }}
-        run: python scripts/smash/agenda.py publish ranking-smash-ultimate/data/agenda.json --apply
+        run: |
+          python - <<'PROBE'
+          import os,sys,json,time
+          sys.path.insert(0,'scripts/smash')
+          from collect import Client
+          c=Client(os.environ['STARTGG_TOKEN'])
+          for label,extra in [('original','upcoming:true,publiclySearchable:true,'),('after_only','publiclySearchable:true,'),('without_search','')]:
+              q='query Probe($after:Timestamp!){tournaments(query:{page:1,perPage:5,sortBy:"startAt asc",filter:{countryCode:"GT",videogameIds:[1386],published:true,afterDate:$after,'+extra+'}}){pageInfo{total totalPages} nodes{id startAt registrationClosesAt}}}'
+              d=c.query(q,{'after':int(time.time())})
+              print(json.dumps({'variant':label,'response':d,'queries':c.calls}))
+          PROBE
