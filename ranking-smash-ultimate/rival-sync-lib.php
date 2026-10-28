@@ -3,8 +3,9 @@ declare(strict_types=1);
 require_once __DIR__.'/rival-import.php';
 // Owner scope is fixed to Legends 7. Future events require a new explicit authorization.
 const RC_EVENT_ID=1687524;
-const RC_UNTIL='2026-10-26T06:00:00Z';
-// Remains false until the owner clarifies the base-entity insert authorization.
+// Owner renewed on 27/oct: resume existing 2026 checkpoints, same event and tables.
+const RC_UNTIL='2027-01-01T06:00:00Z';
+// Base-entity inserts approved by the owner on 14/oct; national data retains priority.
 const RC_ENTITY_INSERTS_AUTHORIZED=true;
 function rc_policy(int $event,int $now): void {
     sr_require($event===RC_EVENT_ID,'analysis_event_not_authorized');

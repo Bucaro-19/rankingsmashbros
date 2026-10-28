@@ -1,5 +1,16 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Reanudar historiales de Legends 7 — orden del dueño 27/oct GT
+
+Rama `fix/legends-history-resume-2026` desde main **25c94ec**, remoto Bucaro-19/rankingsmashbros, tracked limpio antes de editar; carpetas ajenas laminas/, marca-rsb/ y social/ conservadas. Pedido posterior del dueño: que continúe la captura para conservar los datos de 2026 el próximo año. Renueva el mismo evento 1687524 y las importaciones de análisis/base previamente aprobadas, sin autorizar ranking, mains, nuevas temporadas/eventos o migraciones.
+
+Causa confirmada: plazo fijo 26/oct 06:00 UTC tanto en Python como PHP y panel. Run **40605516240** verde con authorization_expired / cero consultas. Última tanda efectiva **40241693908**: 343 inscritos / 177 pendientes / 63 intentos / 558,503 s. SELECT productivo exclusivamente de agregados: **007 presente; 66 analysis_context_batches para Legends 7; 270 marcas de jugadores de análisis 2026; 66 player_history succeeded y ninguno failed/queued/running; 4 cortes**. No se imprimen nombres, credenciales o checkpoint.
+
+Se amplía el plazo fijo a **1/ene/2027 06:00 UTC (fin del 31/dic/2026 GT)** en capturador, receptor/worker y fecha del panel; prueba de paridad evita divergencia. Sin cambio de cron (cada 6 h), dos tandas/30 intentos/120 s/1 petición/s, contrato stateVersion=1, paquetes, recibos, paginación ni prioridad nacional. El avance se reanuda, no se recapturan raíces completas. SQL conserva los datos con temporada 2026 después de vencer la captura; el análisis de 2027 no los mezcla automáticamente. No reactiva pools de «Mi torneo». Alcance y conservación detallados en AUTOMATIZACION-ANALISIS.md y LEGENDS7-ANALISIS.md.
+
+Pruebas: casos posteriores al plazo original, límite nuevo exacto y paridad Python/PHP/panel; regresión SQL inventada reanuda en página 29, termina, repite sin consultar historial ni duplicar, y conserva cortes/rankings/public.json. Ver CI para ejecución MySQL 8.0/MariaDB 10.11; local no se usa producción para pruebas. **Publicación/reanudación aún pendientes** al preparar esta nota; variable inicialmente true, no alterada todavía. Hash productivo de partida **aa4fa53dfa41e4d12e8eae457c005694c9a8af40425a948ad85847b372b808aa**. No hay escritura SQL manual, migración ni reinicio de estado.
+
+
 ## Portada: Solo Guatemala por defecto y recuperación de agenda — 27/oct GT
 
 Rama `fix/home-local-agenda` desde origin/main **6fbe83f**; remoto Bucaro-19/rankingsmashbros, tracked limpio y Actions main en verde comprobados antes de editar. Se conservan laminas/, marca-rsb/ y social/ ajenos; main sigue ocupado por el worktree de Claude. Pedido del dueño: abrir inicialmente Solo Guatemala, conservar la vista internacional y recuperar próximos torneos en inicio.

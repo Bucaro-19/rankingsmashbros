@@ -1,5 +1,18 @@
 # Legends 7: contexto de análisis, no ranking
 
+## Renovación del dueño — 27/oct/2026 GT
+
+El dueño pidió continuar los historiales de Legends 7 para conservar el contexto de 2026 y consultarlo el próximo año. Se interpreta como renovación del mismo circuito de análisis y sus altas base ya autorizadas, **solo evento 1687524 / temporada 2026**, sin reiniciar checkpoint ni introducir otros eventos/temporadas. Nuevo tope fijo **2027-01-01T06:00:00Z = fin del 31/dic/2026 GT/SV**, sin argumento/variable que lo amplíe. Se mantiene cada seis horas, máximo dos tandas, 30 intentos/120 s por tanda y una petición/s. Receptor, worker, capturador y fecha mostrada en panel comparten ese plazo y sus pruebas comprueban la paridad. No cambia «Mi torneo»: pools/horarios de un torneo ya terminado no se reactivan.
+
+El último run previo al vencimiento, **40241693908**, dejó **343 inscritos, 177 historiales pendientes**, 63 intentos y 558,503 s. Los runs posteriores siguen verdes pero responden **authorization_expired / 0 consultas** (confirmado 40605516240), no han estado capturando. SELECT de solo lectura 27/oct: **007 presente, 66 tandas / 270 marcas analysis_context_players de 2026, todos los 66 player_history succeeded, 4 cuts**. Las marcas no equivalen a historiales completos; la cobertura privada es quien determina pendientes.
+
+La reanudación conserva nextPage, recibos, identidad, prioridad nacional y exclusión de mains/rankings. Los historiales terminados no se vuelven a consultar; «completo» significa paginación recorrida, no que start.gg registre todos los personajes o que un conocido ya tuviera historial completo. Tras terminar se obtiene already_imported y solo se revisa el roster/inventario mientras siga vigente la orden. No se amplían cuotas ni se reinicia a todos.
+
+**Conservación:** el vencimiento detiene capturas, no borra SQL/checkpoints. Los datos quedan etiquetados con season_year/seasonYear **2026**, sin TTL de borrado en este circuito. En 2027 siguen como histórico: el lector actual selecciona la temporada del corte y no los mezcla automáticamente con un ranking 2027. Ofrecer historial multitemporada en la pantalla sería otra mejora; no se presenta este cambio de plazo como esa función ni como backup inmutable de toda la base. No capturar 2027 bajo esta autorización.
+
+La variable estaba true. Despliegue seguro: pausar solo el interruptor antes de fusionar; comprobar que no haya jobs/capturas pendientes o ejecutándose, desplegar assets_only (aquí **sí hay cambio PHP**), volver a true y lanzar una ejecución normal. Nunca aplicar desde MySQL manualmente ni resetear la cola. Ver EN-CURSO.md para CI, publicación y primera tanda reanudada; no darlos por verificados hasta registrar resultados.
+
+
 **Estado vigente 14/oct (orden posterior del dueño):** #102 fusionado/desplegado, altas de entidades aprobadas y constante en true; 007 aplicada según el dueño. El bloqueo de alcance mencionado abajo es histórico y queda resuelto. Corrección #103 fusionada y desplegada: cron habilitado y run 38606150069 verde con registrations_unavailable, una consulta y cero agregados. Evidencia completa en el primer bloque de EN-CURSO.md. No repetir migración ni pedir nuevamente autorización.
 
 **Actualización 14/oct:** PR #100 fusionado y desplegado según el dueño. La sección siguiente describe la automatización nueva, todavía sin fusionar, activar ni desplegar. La comprobación de lista/esquema del 13/oct debajo es histórica; no se repitió contra producción en esta entrega.
@@ -10,7 +23,7 @@ Implementación y operación en [AUTOMATIZACION-ANALISIS.md](AUTOMATIZACION-ANAL
 
 **La autorización del dueño dice «solo en las tablas de 007», pero `rival_context.py --apply` también inserta las identidades/resultados ausentes en nueve tablas base referenciadas por 007.** Se solicitó aclaración en este chat; no se recibió respuesta al documentar. El receptor queda cerrado con `RC_ENTITY_INSERTS_AUTHORIZED=false` hasta confirmación explícita. No convertir ese interruptor en true por interpretación ni activar el workflow mientras falte. La migración 007 la aplica Claude Code únicamente por orden del dueño; esta entrega no comprueba ni altera la base productiva.
 
-La autorización temporal termina al finalizar el 25/oct/2026 GT (26/oct 06:00 UTC); tanto el capturador como el receptor/worker la hacen cumplir. La orden actual permite entregar el PR, **no fusionarlo, desplegarlo ni activar el cron en main**.
+La autorización original terminaba al finalizar el 25/oct/2026 GT; fue renovada el 27/oct hasta fin del 31/dic/2026 GT, como se detalla arriba; tanto el capturador como el receptor/worker la hacen cumplir. La orden actual permite entregar el PR, **no fusionarlo, desplegarlo ni activar el cron en main**.
 
 
 ## Comprobación real
