@@ -1,6 +1,6 @@
 # Desde Instagram — captura propia, últimas 12
 
-Entrega de 27/oct/2026. Pantalla provisional autorizada por el dueño; no fusionar, desplegar ni activar sin su orden. No utiliza SQL, start.gg, el cálculo, public.json ni el circuito del corte. La elección del dueño es conservar **solo las últimas 12 publicaciones**, no un archivo histórico.
+Publicado y activado el 27/oct/2026 por orden expresa del dueño; PR #121 fusionado y despliegue assets-only 40623868271. Pantalla provisional autorizada, pendiente revisión de Claude Design. No utiliza SQL, start.gg, el cálculo, public.json ni el circuito del corte. La elección del dueño es conservar **solo las últimas 12 publicaciones**, no un archivo histórico.
 
 ## Circuito y límites
 
@@ -52,14 +52,14 @@ Modal nativo: imagen completa bajo demanda, caption en textContent con saltos de
 
 ## Configuración y comprobación por el dueño
 
-Guía detallada en [PENDIENTES-DUENO.md](PENDIENTES-DUENO.md), sección Desde Instagram.
+Guía de configuración/reautorización en [PENDIENTES-DUENO.md](PENDIENTES-DUENO.md), sección Desde Instagram. **Ya está instalado**: no volver a ejecutar el asistente ni añadir otro cron por rutina. Estado y evidencia en EN-CURSO.md.
 
 Asistente manual para el dueño en Terminal cPanel: [configurar-instagram-cpanel.sh](configurar-instagram-cpanel.sh). Comprueba /usr/local/bin/php CLI 8.1+, curl/GD/mbstring; confirma token largo recién generado (<24 h), lo pide sin eco por /dev/tty y lo pasa a PHP solo por stdin. Crea exclusivamente /home/ivcjgjlk/private-smash/instagram.local.php, modo 600, cuenta 17841423954542472 comprobada en la pantalla de Meta. Se detiene antes de pedir la llave si el archivo ya existe; no lo reemplaza. Captura **desactivada**, sin API, SQL, cron, FTP, publicación o activación. Después del despliegue autorizado hay que habilitar la captura y hacer la primera prueba antes de programarla.
 
 Excepción conservadora del asistente para la semilla recién creada y confirmada: no conoce el instante de emisión de Meta. Usa `issued_at = hora de configuración − 24 h` como **cota inferior**, nunca como una afirmación del instante real. Así no sobreestima los 60 días de vida, y su primera renovación se intenta seis días después de configurar, cuando ya supera el mínimo de 24 h. Tras renovar, el estado guarda el instante y expires_in de la respuesta real. Un token antiguo o de duración desconocida no debe configurarse con este asistente. El archivo editable manual sigue requiriendo una fecha de emisión válida; no rejuvenecer tokens antiguos.
 
 El dueño confirmó guardado de INSTAGRAM_ACCESS_TOKEN mediante gh secret set. GitHub no permite volver a leerlo por API; el cron actual **no consume ese secreto**. El asistente necesita pegar el original desde Meta en Terminal cPanel. No se creó un canal para transportar secretos de Actions a hosting ni permisos para escribirlos desde un workflow. No hay ninguna escritura remota ejecutada por Codex en esta preparación.
- Esta entrega no registra la app, no autoriza una cuenta, no instala un cron, no activa SMASH_INSTAGRAM_ENABLED ni despliega. No hay token real disponible para hacer una captura de Meta de punta a punta.
+ El dueño registró/autoriza la app y aceptó la invitación de tester; luego se verificó la captura real y se activó el cron. El token no fue pegado en chat, Git o argumentos de consola por esta integración.
 
 Prueba manual después del despliegue autorizado: ejecutar el PHP CLI sin argumentos secretos. Debe imprimir status ready; comprobar ambos JSON estáticos y las rutas de imagen. Activar monitor después. En fallo, inspeccionar solo el código seguro y los permisos/versión PHP; **no habilitar curl verbose ni pegar el token en comandos o chat**. Para reautorizar, editar el archivo privado en cPanel con una llave larga nueva y su fecha real. Eliminar/rotar el token anterior en Meta cuando corresponda.
 
@@ -73,10 +73,19 @@ Apagar captura: enabled=false y desactivar variable del monitor; conserva el úl
 - CI ejecuta las pruebas PHP con GD en **MySQL 8.0 y MariaDB 10.11**, además de pipeline/Node. La funcionalidad Instagram no utiliza ninguna base.
 - QA local con datos inventados: escritorio y 375 px, galería 12/preview 6, caption largo y vacío, logo al faltar foto, detalle/escape/foco, vacío/API caída. Ningún dato de ejemplo se versiona o se despliega.
 
-Límite pendiente explícito: **sin prueba autenticada de Meta**. El portal oficial de documentación respondió 429 desde este entorno; se comprobó la documentación oficial indexada y la colección de Meta, pero los campos/permisos/versionado deben confirmarse al autorizar la cuenta real. Si la API rechaza un campo distinto de caption, conserva el snapshot y marca error; no amplía permisos a ciegas. No se solicita publicar, leer mensajes, comentarios, contactos ni cuentas ajenas.
+Prueba autenticada completada: **dos posts reales, seis solicitudes, cero imágenes faltantes**, API v25.0 y captions/carouseles funcionando con la cuenta del dueño. **La primera renovación real todavía no ocurre**; solo está cubierta con transporte inventado y estado privado programado, sin forzar la renovación antes de 24 h. El portal de documentación respondió 429 durante la implementación; no se afirmó una lectura completa de esa web bloqueada. Si la API rechaza un campo distinto de caption, conserva el snapshot y marca error; no amplía permisos a ciegas. No se solicita publicar, leer mensajes, comentarios, contactos ni cuentas ajenas.
 
 Referencias primarias para el operador:
 - [Instagram API with Instagram Login](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/).
 - [Business Login](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login/).
 - [Renovar token](https://developers.facebook.com/docs/instagram-platform/reference/refresh_access_token/).
 - [Colección oficial Meta en Postman](https://www.postman.com/meta/instagram/folder/1z5vxzu/instagram-api-with-instagram-login).
+
+
+## Estado productivo (27/oct)
+
+- PHP 8.1.34; enabled=true; configuración, instagram-token.json y log privados 600 comprobados por metadatos.
+- Cron único `7 */2 * * * /usr/local/bin/php /home/ivcjgjlk/rankingsmashbros.com/instagram-sync.php >> /home/ivcjgjlk/private-smash/instagram-sync.log 2>&1`. Usa calendario del servidor (EDT −0400 al instalar); no se alteró la zona global. Los cambios de horario del servidor pueden desplazar la hora equivalente de Guatemala; la tarea sigue siendo cada dos horas de ese calendario.
+- Monitor habilitado, SMASH_INSTAGRAM_ENABLED=true; prueba manual 40629915272 verde. No necesita credenciales IG en Actions.
+- Primera captura manual 27/oct 21:06:31 GT: dos carruseles, seis solicitudes incluyendo descargas, feed 2,484 B, todo servido desde el dominio. Bibliotecas denegadas por HTTP. public.json intacto.
+- Primer disparo automático comprobado: ready y generatedAt **2026-10-28T04:07:02Z / 27/oct 22:07:02 GT**, después de la captura manual y sin reenviarla. Cierre: EN-CURSO.md. No volver a generar llaves o duplicar el cron para una actualización normal.
