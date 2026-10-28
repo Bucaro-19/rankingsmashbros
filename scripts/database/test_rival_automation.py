@@ -332,6 +332,14 @@ class Contracts(unittest.TestCase):
         for filename,constant in (('rival-sync-lib.php','RC_UNTIL'),('stats.php','SMASH_STATS_ANALYSIS_UNTIL')):
             source=(SITE/filename).read_text()
             self.assertEqual(re.search(r"const "+constant+r"='([^']+)';",source).group(1),expected)
+        code="""require $argv[1];$out=[];
+        foreach([[1687524,'2026-10-28T00:00:00Z'],[1687524,'2027-01-01T06:00:00Z'],[999,'2026-10-28T00:00:00Z']] as $case){
+          try{rc_policy($case[0],strtotime($case[1]));$out[]='ok';}
+          catch(SmashRankingError $e){$out[]=$e->reason;}
+        } echo json_encode($out);"""
+        result=subprocess.run(['php','-r',code,str(SITE/'ranking-sync-lib.php')],text=True,capture_output=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(json.loads(result.stdout),['ok','analysis_authorization_expired','analysis_event_not_authorized'])
         # A completed 2026 checkpoint stays complete: renewal does not reset coverage or season.
         roster=auto.event_roster(Source([9]),1687524)
         checkpoint=auto.merge_state(roster,None,[])
@@ -434,9 +442,7 @@ class SqlTests(fixtures.SqlTests):
             out[table]=sorted(sql(self.db,'SELECT '+','.join(cols)+' FROM '+table),key=repr)
         return out
     def test_owner_renewal_resumes_old_partial_after_original_expiry_without_reset(self):
-        # Use the actual renewed server policy, not the fixture's distant deadline.
-        lib=self.site/'rival-sync-lib.php'
-        lib.write_text(lib.read_text().replace('2099-10-26T06:00:00Z','2027-01-01T06:00:00Z'))
+        # HTTP fixtures retain their distant deadline so this regression also runs in 2027.
         protected=self.protected();public=(self.site/'data/public.json').read_bytes()
         with self.serving() as host:
             first=PagedSource([9],page_counts={'9':60})
