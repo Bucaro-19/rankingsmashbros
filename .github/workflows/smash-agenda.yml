@@ -36,8 +36,11 @@ jobs:
           sys.path.insert(0,'scripts/smash')
           from collect import Client
           c=Client(os.environ['STARTGG_TOKEN'])
-          for label,extra in [('original','upcoming:true,publiclySearchable:true,'),('after_only','publiclySearchable:true,'),('without_search','')]:
-              q='query Probe($after:Timestamp!){tournaments(query:{page:1,perPage:5,sortBy:"startAt asc",filter:{countryCode:"GT",videogameIds:[1386],published:true,afterDate:$after,'+extra+'}}){pageInfo{total totalPages} nodes{id startAt registrationClosesAt}}}'
-              d=c.query(q,{'after':int(time.time())})
+          probes=[
+              ('known', 'query{tournament(id:966688){id startAt endAt countryCode isRegistrationOpen registrationClosesAt}}'),
+              ('upcoming_only','query{tournaments(query:{page:1,perPage:5,sortBy:"startAt asc",filter:{countryCode:"GT",videogameIds:[1386],published:true,publiclySearchable:true,upcoming:true}}){pageInfo{total totalPages} nodes{id startAt registrationClosesAt}}}'),
+              ('latest_without_time','query{tournaments(query:{page:1,perPage:5,sortBy:"startAt desc",filter:{countryCode:"GT",videogameIds:[1386],published:true,publiclySearchable:true}}){pageInfo{total totalPages} nodes{id startAt registrationClosesAt}}}')]
+          for label,q in probes:
+              d=c.query(q,{})
               print(json.dumps({'variant':label,'response':d,'queries':c.calls}))
           PROBE
