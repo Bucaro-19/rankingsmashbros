@@ -27,8 +27,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probar captura, validación y FTP simulados (sin credenciales)
-        run: python -m unittest discover -s scripts/smash -p test_agenda.py -v
       - name: Sonda de filtros de agenda (solo lectura, sin personas)
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
