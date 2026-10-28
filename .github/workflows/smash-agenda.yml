@@ -36,11 +36,6 @@ jobs:
           sys.path.insert(0,'scripts/smash')
           from collect import Client
           c=Client(os.environ['STARTGG_TOKEN'])
-          probes=[
-              ('known', 'query{tournament(id:966688){id startAt endAt countryCode isRegistrationOpen registrationClosesAt}}'),
-              ('upcoming_only','query{tournaments(query:{page:1,perPage:5,sortBy:"startAt asc",filter:{countryCode:"GT",videogameIds:[1386],published:true,publiclySearchable:true,upcoming:true}}){pageInfo{total totalPages} nodes{id startAt registrationClosesAt}}}'),
-              ('latest_without_time','query{tournaments(query:{page:1,perPage:5,sortBy:"startAt desc",filter:{countryCode:"GT",videogameIds:[1386],published:true,publiclySearchable:true}}){pageInfo{total totalPages} nodes{id startAt registrationClosesAt}}}')]
-          for label,q in probes:
-              d=c.query(q,{})
-              print(json.dumps({'variant':label,'response':d,'queries':c.calls}))
+          q='query{tournament(id:966688){id startAt endAt timezone isRegistrationOpen registrationClosesAt events(limit:50,filter:{videogameId:[1386],published:true}){id name startAt isOnline type}}}'
+          print(json.dumps({'response':c.query(q,{}),'queries':c.calls}))
           PROBE
