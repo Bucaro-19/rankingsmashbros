@@ -21,22 +21,6 @@ jobs:
           import os,json
           from collect import Client,PROFILE,SETS
           c=Client(os.environ['STARTGG_TOKEN'])
-          u=c.query(PROFILE,{'slug':'user/292faebd'}).get('user') or {}
-          p=u.get('player') or {}
-          if str(p.get('id'))!='5551493':
-              raise SystemExit('profile_identity_unexpected')
-          found={}; count=0; total=None
-          for page in range(1,4):
-              conn=(c.query(SETS,{'id':5551493,'page':page}).get('player') or {}).get('sets')
-              if not isinstance(conn,dict):
-                  print(json.dumps({'status':'history_unavailable','requests':c.calls}));break
-              info=conn.get('pageInfo') or {}; total=info.get('totalPages')
-              nodes=conn.get('nodes') or []
-              for s in nodes:
-                  e=s.get('event') or {}; t=e.get('tournament') or {}
-                  if not any(str((part.get('player') or {}).get('id'))=='5551493' for slot in s.get('slots') or [] for part in (slot.get('entrant') or {}).get('participants') or []):continue
-                  count+=1
-                  found[str(e.get('id'))]={'eventId':e.get('id'),'eventName':e.get('name'),'eventSlug':e.get('slug'),'startAt':e.get('startAt'),'isOnline':e.get('isOnline'),'game':e.get('videogame'),'tournamentId':t.get('id'),'tournamentName':t.get('name'),'countryCode':t.get('countryCode')}
-              if not isinstance(total,int) or page>=total:break
-          print(json.dumps({'status':'inspected','playerId':p['id'],'tag':p.get('gamerTag'),'country':((p.get('user') or {}).get('location') or {}).get('country'),'matchingSets':count,'pagesFetched':page,'totalPages':total,'requests':c.calls,'events':list(found.values())},ensure_ascii=False))
+          q="""query { a:tournament(id:957669){id name slug countryCode startAt endAt isOnline events(limit:30){id name numEntrants type state startAt isOnline videogame{id name}}} b:tournament(id:948197){id name slug countryCode startAt endAt isOnline events(limit:30){id name numEntrants type state startAt isOnline videogame{id name}}} c:tournament(id:947356){id name slug countryCode startAt endAt isOnline events(limit:30){id name numEntrants type state startAt isOnline videogame{id name}}} }"""
+          print(json.dumps({'requests':1,'tournaments':c.query(q,{})},ensure_ascii=False))
           PROBE
