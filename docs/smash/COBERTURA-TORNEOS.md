@@ -73,6 +73,10 @@ Las cifras de «antes» salen de recalcular la captura de ese run en la simulaci
 
 Para pinguis, en la cuenta se verán: 1697423 (cuenta, 0–2), 1719115 Clase A (no cuenta para él: solo DQ), 1699110 (18 activos de 20 inscritos) y, cuando el contexto pequeño lo capture, 1719129 Clase B (2–2, 13 inscritos). El contexto pequeño toma los 6 candidatos más recientes por semana, así que la Clase B del 26/sep puede tardar o no entrar; no se promete.
 
+## Publicado — 2/nov/2026
+
+Variable encendida y corte extraordinario [41404971594](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/41404971594) por orden del dueño: 210 clasificados, 52 eventos, los cuatro eventos admisibles recuperados dentro del cálculo y 1699110 fuera. pinguis sigue sin puesto. Evidencia en EN-CURSO.md.
+
 ## Límites
 
 - La muestra de historiales es acotada y el orden en que start.gg pagina `player.sets` no está documentado: un torneo oculto al que no asistió ningún jugador muestreado puede seguir faltando. No se promete cobertura completa.
