@@ -376,6 +376,11 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
     $counted = []; foreach ($public['events'] ?? [] as $event) $counted[(string)$event['id']] = true;
     $editorial = []; foreach ($public['excludedEvents'] ?? [] as $event) if (is_string($event['reason'] ?? null)) $editorial[(string)$event['id']] = $event['reason'];
     try {
+        if (!isset($public['events'])) {
+            // Without the published file, the events of the latest published cut stand for it.
+            $q = $pdo->query("SELECT DISTINCT event_id FROM cut_events WHERE cut_id = (SELECT MAX(id) FROM cuts WHERE status = 'published')");
+            foreach ($q->fetchAll(PDO::FETCH_COLUMN) as $event) $counted[(string)$event] = true;
+        }
         $q = $pdo->prepare("SELECT e.id, t.name, e.name AS event_name, DATE(COALESCE(e.starts_at, t.starts_at)) AS day,
               t.country_code, COALESCE(e.url, t.url) AS url, COALESCE(e.active_players, c.active_players) AS active_players,
               e.registered_entrants, en.id AS entrant_id,
