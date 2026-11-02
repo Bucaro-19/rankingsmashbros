@@ -21,6 +21,7 @@ jobs:
           import os,json
           from collect import Client,PROFILE,SETS
           c=Client(os.environ['STARTGG_TOKEN'])
-          q="""query { a:tournament(id:957669){id name slug countryCode startAt endAt isOnline events(limit:30){id name numEntrants type state startAt isOnline videogame{id name}}} b:tournament(id:948197){id name slug countryCode startAt endAt isOnline events(limit:30){id name numEntrants type state startAt isOnline videogame{id name}}} c:tournament(id:947356){id name slug countryCode startAt endAt isOnline events(limit:30){id name numEntrants type state startAt isOnline videogame{id name}}} }"""
-          print(json.dumps({'requests':1,'tournaments':c.query(q,{})},ensure_ascii=False))
+          q='query { t:__type(name:"Tournament"){fields{name}} f:__type(name:"TournamentPageFilter"){inputFields{name}} }'
+          d=c.query(q,{})
+          print(json.dumps({'requests':1,'tournamentFields':[x['name'] for x in (d.get('t') or {}).get('fields') or [] if any(w in x['name'].lower() for w in ('public','search','league','type','publish','state','country'))],'filterFields':[x['name'] for x in (d.get('f') or {}).get('inputFields') or []]}))
           PROBE
