@@ -21,7 +21,6 @@ jobs:
           import os,json
           from collect import Client,PROFILE,SETS
           c=Client(os.environ['STARTGG_TOKEN'])
-          q='query { t:__type(name:"Tournament"){fields{name}} f:__type(name:"TournamentPageFilter"){inputFields{name}} }'
-          d=c.query(q,{})
-          print(json.dumps({'requests':1,'tournamentFields':[x['name'] for x in (d.get('t') or {}).get('fields') or [] if any(w in x['name'].lower() for w in ('public','search','league','type','publish','state','country'))],'filterFields':[x['name'] for x in (d.get('f') or {}).get('inputFields') or []]}))
+          q='query { plain:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356]}}){pageInfo{total}nodes{id}} gt:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],countryCode:"GT"}}){pageInfo{total}nodes{id}} game:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],videogameIds:[1386]}}){pageInfo{total}nodes{id}} both:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],countryCode:"GT",videogameIds:[1386]}}){pageInfo{total}nodes{id}} nonSearchable:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],publiclySearchable:false}}){pageInfo{total}nodes{id}} }'
+          print(json.dumps({'requests':1,'discovery':c.query(q,{})}))
           PROBE
