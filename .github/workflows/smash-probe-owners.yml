@@ -21,6 +21,28 @@ jobs:
           import os,json
           from collect import Client,PROFILE,SETS
           c=Client(os.environ['STARTGG_TOKEN'])
-          q='query { plain:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356]}}){pageInfo{total}nodes{id}} gt:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],countryCode:"GT"}}){pageInfo{total}nodes{id}} game:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],videogameIds:[1386]}}){pageInfo{total}nodes{id}} both:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],countryCode:"GT",videogameIds:[1386]}}){pageInfo{total}nodes{id}} nonSearchable:tournaments(query:{perPage:10,filter:{ids:[957669,948197,947356],publiclySearchable:false}}){pageInfo{total}nodes{id}} }'
-          print(json.dumps({'requests':1,'discovery':c.query(q,{})}))
+          import time
+          from discover import fetch_event
+          from rank import competitive_set
+          started=time.monotonic()
+          class Bounded(Client):
+              def query(self,q,v):
+                  if self.calls>=18 or time.monotonic()-started>90:raise SystemExit('probe_budget_exceeded')
+                  return super().query(q,v)
+          c=Bounded(os.environ['STARTGG_TOKEN'])
+          q='query { a:tournament(id:957669){id name slug countryCode events(limit:30){id name slug numEntrants type state startAt isOnline videogame{id name}}} b:tournament(id:948197){id name slug countryCode events(limit:30){id name slug numEntrants type state startAt isOnline videogame{id name}}} c:tournament(id:947356){id name slug countryCode events(limit:30){id name slug numEntrants type state startAt isOnline videogame{id name}}} }'
+          d=c.query(q,{});rows=[]
+          for t in d.values():
+              for e in t['events']:
+                  if e['id'] not in [1719115,1699110,1697423]:continue
+                  event={**e,'tournament':{k:t[k] for k in ('id','name','slug','countryCode')}}
+                  rec,players,sets=fetch_event(c,event)
+                  active=set();valid=0;wins=0;losses=0
+                  for match in sets.values():
+                      pair=competitive_set(match)
+                      if pair is None:continue
+                      valid+=1;active.update(pair)
+                      wins+=pair[0]=='5551493';losses+=pair[1]=='5551493'
+                  rows.append({'eventId':e['id'],'numEntrants':e['numEntrants'],'activePlayers':len(active),'competitiveSets':valid,'playerWins':wins,'playerLosses':losses,'meetsMinimum20':len(active)>=20})
+          print(json.dumps({'requests':c.calls,'seconds':round(time.monotonic()-started,3),'events':rows}))
           PROBE
