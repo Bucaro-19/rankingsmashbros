@@ -1,20 +1,37 @@
 name: Comprobar dueños de torneos en start.gg
-# Consulta de un solo uso, solo lectura. Imprime conteos agregados, sin identificadores.
+# SONDA de un solo uso, solo lectura, rama probe/: no fusionar. Máximo 4 consultas.
 on:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   probe:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probar la consulta de dueños que usa la captura semanal
+      - name: Búsqueda por organizador de tres torneos verificados, solo lectura
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/probe_owners.py
+          PYTHONPATH: scripts/smash
+        run: |
+          python - <<'PROBE'
+          import os,json,time
+          from collect import Client
+          started=time.monotonic(); c=Client(os.environ['STARTGG_TOKEN'])
+          ids=[957669,948197,947356]
+          q='query{'+' '.join(f't{i}:tournament(id:{i}){{id owner{{id}} city addrState publishing}}' for i in ids)+'}'
+          meta=c.query(q,{}); owners=sorted({str((t.get('owner') or {}).get('id')) for t in meta.values() if t})
+          after,before=1767247200,1793512800  # 2026-01-01 .. 2026-11-01 GT
+          parts=[]
+          for o in owners[:3]:
+              base=f'ownerId:{o},afterDate:{after},beforeDate:{before}'
+              for tag,extra in (('owner',''),('ownerGame',',videogameIds:[1386]'),('ownerCountry',',countryCode:"GT"')):
+                  parts.append(f'{tag}_{o}:tournaments(query:{{perPage:50,filter:{{{base}{extra}}}}}){{pageInfo{{total totalPages}} nodes{{id countryCode}}}}')
+          d=c.query('query{'+' '.join(parts)+'}',{}) if parts else {}
+          out={k:{'total':v['pageInfo']['total'],'pages':v['pageInfo']['totalPages'],'containsMissing':sorted(n['id'] for n in v['nodes'] if n['id'] in ids),'countries':sorted({str(n.get('countryCode')) for n in v['nodes']})} for k,v in d.items()}
+          print(json.dumps({'requests':c.calls,'seconds':round(time.monotonic()-started,3),'meta':meta,'owners':owners,'search':out}))
+          PROBE
