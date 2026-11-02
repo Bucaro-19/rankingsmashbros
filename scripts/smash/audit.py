@@ -54,6 +54,7 @@ def audit(snapshot, curation, points_table=None):
                          "top100WithFewerThanTenSets": sum(row["sets"] < 10 for row in current)},
             "unverifiedCountry": unverified, "top10Sensitivity": top, "eventLedger": ledger,
             "excludedForeignEvents": curation.get("excludedForeignEventIds", {}),
+            "coverageComplement": snapshot.get("coverageComplement"),
             "scenarioNote": "Cada escenario recalcula todo el modelo; un cambio de posición mide sensibilidad, no demuestra cuál orden es correcto."}
 
 
@@ -87,6 +88,20 @@ def markdown(result):
     for row in result["eventLedger"]:
         name = f"[{cell(row['name'])}]({row['source']})" if row["source"] else cell(row["name"])
         lines.append(f"| {row['date']} | {name} | {cell(row['country'])} | {row['entrants']} | {row['validSets']} | {cell(row['status'])} |")
+    complement = result.get("coverageComplement")
+    lines += ["", "## Complemento de cobertura", ""]
+    if not isinstance(complement, dict):
+        lines.append("- No se ejecutó en esta captura (desactivado o captura reanudada sin él). La búsqueda filtrada puede omitir torneos.")
+    else:
+        lines.append(f"- Estado: {cell(complement.get('status'))}; consultas: {complement.get('requests')}; segundos: {complement.get('seconds')}")
+        lines.append(f"- Jugadores consultados: {complement.get('seedsScanned')} de {complement.get('seedsPlanned')} (historiales truncados: {complement.get('seedsTruncated')})")
+        for label, key in (("Recuperados para el cálculo normal", "recoveredEvents"), ("Contexto pequeño", "smallContextEvents"),
+                           ("Pendientes", "pendingEvents"), ("Fallidos", "failedEvents"), ("No disponibles por ID", "unavailableTournaments"),
+                           ("Hallados solo por historial: añadir a curation.json", "unlistedTournaments")):
+            lines.append(f"- {label}: {cell(', '.join(complement.get(key) or []) or 'ninguno')}")
+        for eid, reason in (complement.get("excludedEvents") or {}).items():
+            lines.append(f"- Excluido {cell(eid)}: {cell(reason)}")
+        lines.append("- Cubre una muestra acotada de historiales y la lista verificada; no prueba que no falten otros torneos.")
     if result["excludedForeignEvents"]:
         lines += ["", "## Eventos extranjeros descartados antes de descargar el cuadro", "",
                   "| ID start.gg | Motivo registrado |", "|---|---|"]

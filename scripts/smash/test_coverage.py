@@ -291,6 +291,18 @@ class CoverageComplementTests(unittest.TestCase):
         self.assertEqual(sorted(summary["pendingEvents"]), ["1699110", "1719115"])
         self.assertEqual(summary["unlistedTournaments"], ["948197", "957669"])
 
+    def test_audit_makes_the_complement_and_its_absence_visible(self):
+        from audit import audit, markdown
+        world = pinguis_world()
+        world.add(2, 102, entrants=28, active=28, start=START + 230 * DAY)
+        national = national_from(world)
+        self.assertIn("No se ejecutó en esta captura", markdown(audit(national, {})))
+        result, _ = complement(FakeClient(world, history=False), national, CURATION)
+        report = markdown(audit(result, {}))
+        self.assertIn("Recuperados para el cálculo normal: 1697423, 1699110, 1719115", report)
+        self.assertIn("Contexto pequeño: 1719129", report)
+        self.assertIn("no prueba que no falten otros torneos", report)
+
     def test_listed_ids_are_bounded(self):
         world = pinguis_world()
         _, summary = complement(FakeClient(world), national_from(world), {"recoveredTournamentIds": {str(i): "x" for i in range(41)}})
