@@ -68,6 +68,14 @@ jobs:
           flags=()
           if [[ "$SMASH_ORGANIZER_SMALL_ENABLED" == 'true' ]]; then flags+=(--organizer-candidates); fi
           python scripts/smash/discover.py --start "$SMASH_START" --end "$end_date" "${flags[@]}"
+      - name: Complemento de cobertura (opcional; un fallo no bloquea el corte)
+        if: inputs.resume_run_id == '' && vars.SMASH_COVERAGE_COMPLEMENT_ENABLED == 'true'
+        env:
+          STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
+        # Recovers Guatemala events that the filtered search omits; fixed ceilings in coverage.py.
+        run: |
+          python scripts/smash/coverage.py scripts/smash/data/national.json --curation scripts/smash/curation.json \
+            || echo "::warning::Complemento de cobertura omitido; la captura nacional quedó intacta."
       - name: Descartar complemento reanudado cuando la ampliación está apagada
         if: vars.SMASH_ORGANIZER_SMALL_ENABLED != 'true'
         run: rm -f scripts/smash/data/organizer-small.json

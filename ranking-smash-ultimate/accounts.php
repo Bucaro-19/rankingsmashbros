@@ -363,30 +363,82 @@ function smash_account_public(string $siteRoot): array
     return $data;
 }
 
-// Small tournaments this player entered, kept apart from the ranking (organizer_event_context).
-// They never count: the list only explains why. Without the table or on any SQL error it is empty.
-function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear): array
+// Verified participations of this player that the published cut does not count for them, with the
+// concrete reason. Only events whose complete bracket was captured qualify: events.active_players is
+// written by the national and small-event circuits, never by analysis histories, and the small-event
+// marker covers rows imported before that column. They never count: the list only explains why.
+// Without SQL or on any error it is empty, and an empty list never means that the player did not play.
+function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear, array $public = []): array
 {
     if ($playerId === null) return [];
+    $rules = $public['eligibilityRules'] ?? [];
+    $localMinimum = (int)($rules['localMinimumActive'] ?? 20); $foreignMinimum = (int)($rules['foreignMinimumActive'] ?? 64);
+    $counted = []; foreach ($public['events'] ?? [] as $event) $counted[(string)$event['id']] = true;
+    $editorial = []; foreach ($public['excludedEvents'] ?? [] as $event) if (is_string($event['reason'] ?? null)) $editorial[(string)$event['id']] = $event['reason'];
     try {
         $q = $pdo->prepare("SELECT e.id, t.name, e.name AS event_name, DATE(COALESCE(e.starts_at, t.starts_at)) AS day,
-              t.country_code, COALESCE(e.url, t.url) AS url, c.active_players,
+              t.country_code, COALESCE(e.url, t.url) AS url, COALESCE(e.active_players, c.active_players) AS active_players,
+              e.registered_entrants, en.id AS entrant_id,
               COALESCE(SUM(s.outcome_type = 'competitive' AND s.winner_entrant_id = en.id), 0) AS wins,
-              COALESCE(SUM(s.outcome_type = 'competitive' AND s.winner_entrant_id IS NOT NULL AND s.winner_entrant_id <> en.id), 0) AS losses
-            FROM organizer_event_context c
-            JOIN events e ON e.id = c.event_id JOIN tournaments t ON t.id = e.tournament_id
+              COALESCE(SUM(s.outcome_type = 'competitive' AND s.winner_entrant_id IS NOT NULL AND s.winner_entrant_id <> en.id), 0) AS losses,
+              COALESCE(SUM(s.id IS NOT NULL AND s.outcome_type <> 'competitive'), 0) AS other
+            FROM events e JOIN tournaments t ON t.id = e.tournament_id
+            LEFT JOIN organizer_event_context c ON c.event_id = e.id
             JOIN entrants en ON en.event_id = e.id JOIN entrant_players ep ON ep.entrant_id = en.id AND ep.player_id = ?
-            LEFT JOIN set_slots sl ON sl.entrant_id = en.id AND sl.event_id = e.id LEFT JOIN sets s ON s.id = sl.set_id
-            WHERE YEAR(COALESCE(e.starts_at, t.starts_at)) = ? AND NOT EXISTS (SELECT 1 FROM cut_events ce WHERE ce.event_id = e.id)
-            GROUP BY e.id, en.id, t.name, e.name, day, t.country_code, url, c.active_players ORDER BY day DESC, e.id LIMIT 60");
+            LEFT JOIN set_slots sl ON sl.entrant_id = en.id AND sl.event_id = e.id LEFT JOIN sets s ON s.id = sl.set_id AND s.event_id = e.id
+            WHERE (e.active_players IS NOT NULL OR c.event_id IS NOT NULL) AND (e.videogame_id IS NULL OR e.videogame_id = 1386)
+              AND (e.entrant_size IS NULL OR e.entrant_size = 1) AND YEAR(COALESCE(e.starts_at, t.starts_at)) = ?
+            GROUP BY e.id, en.id, t.name, e.name, day, t.country_code, url, active_players, e.registered_entrants
+            ORDER BY day DESC, e.id LIMIT 80");
         $q->execute([$playerId, $seasonYear]);
         $events = [];
         foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $active = (int)$row['active_players'];
-            $events[(string)$row['id']] = ['id' => (string)$row['id'], 'name' => $row['name'], 'eventName' => $row['event_name'],
-                'date' => $row['day'], 'country' => $row['country_code'], 'url' => $row['url'],
-                'wins' => (int)$row['wins'], 'losses' => (int)$row['losses'], 'counts' => false,
-                'reason' => 'tuvo ' . $active . ($active === 1 ? ' jugador activo' : ' jugadores activos') . ' y el ranking pide 20 o más. Tus resultados ahí no suman ni restan puntos.'];
+            $id = (string)$row['id']; $wins = (int)$row['wins']; $losses = (int)$row['losses']; $other = (int)$row['other'];
+            $active = $row['active_players'] === null ? null : (int)$row['active_players'];
+            $registered = $row['registered_entrants'] === null ? null : (int)$row['registered_entrants'];
+            $minimum = $row['country_code'] === 'GT' ? $localMinimum : $foreignMinimum;
+            if (isset($counted[$id])) {
+                // A counted event is already in the published profile when the player has valid sets there.
+                if ($wins + $losses > 0) continue;
+                $reason = 'aquí solo tienes resultados por DQ, W.O. o bye: no son sets válidos y no suman a tu actividad.';
+            } elseif (isset($editorial[$id])) {
+                $reason = 'el torneo está excluido del ranking: ' . $editorial[$id];
+            } elseif ($active !== null && $active < $minimum) {
+                $reason = 'tuvo ' . $active . ($active === 1 ? ' jugador activo' : ' jugadores activos')
+                    . ($registered !== null && $registered !== $active ? ' (' . $registered . ' inscritos)' : '')
+                    . ' y el ranking pide ' . $minimum . ' o más con al menos un set válido. Tus resultados ahí no suman ni restan puntos.';
+            } elseif ($wins + $losses === 0) {
+                $reason = 'aquí solo tienes resultados por DQ, W.O. o bye: no son sets válidos y no suman a tu actividad.';
+            } else {
+                $reason = 'no está entre los torneos del corte publicado.';
+            }
+            $events[$id] = ['id' => $id, 'name' => $row['name'], 'eventName' => $row['event_name'], 'date' => $row['day'],
+                'country' => $row['country_code'], 'url' => $row['url'], 'wins' => $wins, 'losses' => $losses, 'other' => $other,
+                'counts' => false, 'reason' => $reason, 'sets' => []];
+        }
+        if ($events) {
+            // The player's own sets in those events, winner first like the published results.
+            $marks = implode(',', array_fill(0, count($events), '?'));
+            $q = $pdo->prepare("SELECT s.id, s.event_id, s.outcome_type, s.display_score, s.winner_entrant_id, sl.entrant_id, ep.player_id, COALESCE(p.tag, ep.registered_tag) AS tag
+                FROM sets s JOIN set_slots sl ON sl.set_id = s.id AND sl.event_id = s.event_id
+                LEFT JOIN entrant_players ep ON ep.entrant_id = sl.entrant_id LEFT JOIN players p ON p.id = ep.player_id
+                WHERE s.event_id IN ($marks) AND s.winner_entrant_id IS NOT NULL AND EXISTS (SELECT 1 FROM set_slots me JOIN entrant_players mp ON mp.entrant_id = me.entrant_id
+                  WHERE me.set_id = s.id AND mp.player_id = ?) ORDER BY s.event_id, s.id, sl.slot_index LIMIT 800");
+            $q->execute(array_merge(array_map('strval', array_keys($events)), [$playerId]));
+            $sets = [];
+            foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $sid = (string)$row['id'];
+                $sets[$sid] = $sets[$sid] ?? ['id' => $sid, 'eventId' => (string)$row['event_id'], 'outcome' => $row['outcome_type'], 'score' => $row['display_score'], 'slots' => []];
+                $sets[$sid]['slots'][] = ['winner' => (string)$row['entrant_id'] === (string)$row['winner_entrant_id'],
+                    'player' => $row['player_id'] === null ? null : (string)$row['player_id'], 'tag' => $row['tag']];
+            }
+            foreach ($sets as $set) {
+                if (count($set['slots']) !== 2 || !isset($events[$set['eventId']])) continue;
+                usort($set['slots'], static fn($a, $b) => (int)$b['winner'] - (int)$a['winner']);
+                $events[$set['eventId']]['sets'][] = ['id' => $set['id'], 'eventId' => $set['eventId'], 'outcome' => $set['outcome'],
+                    'score' => $set['score'], 'playerIds' => [$set['slots'][0]['player'], $set['slots'][1]['player']],
+                    'playerTags' => [$set['slots'][0]['tag'], $set['slots'][1]['tag']]];
+            }
         }
         return array_values($events);
     } catch (PDOException $error) {
@@ -480,5 +532,5 @@ function smash_account_profile(array $public, ?string $playerId): array
     }
     return ['rivals' => (object)$rivals, 'generatedAt' => $public['generatedAt'], 'seasonYear' => $public['seasonYear'],
         'methodVersion' => $public['methodVersion'], 'eligibilityRules' => $public['eligibilityRules'],
-        'historyCoverage' => 'Resultados disponibles en el corte publicado. No es tu historial completo de start.gg.', 'views' => $profiles];
+        'historyCoverage' => 'Torneos del corte publicado y participaciones registradas que no cuentan. No es tu historial completo de start.gg: si jugaste un torneo que no aparece, puede faltar en nuestra cobertura.', 'views' => $profiles];
 }
