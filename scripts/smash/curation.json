@@ -32,5 +32,12 @@
   },
   "playerAliases": {
     "1321023": "HaunterGV"
+  },
+  "recoveredTournamentIds": {
+    "947356": "Omitido por la búsqueda filtrada de start.gg (país, juego u organizador) y visible por ID e historial de jugadores; verificado el 1/nov/2026 (runs 41392236930, 41392406064, 41393251710). Solo se descubre: la admisión sigue las reglas normales.",
+    "948197": "Omitido por la búsqueda filtrada de start.gg (país, juego u organizador) y visible por ID e historial de jugadores; verificado el 1/nov/2026 (runs 41392236930, 41392406064, 41393251710). Solo se descubre: la admisión sigue las reglas normales.",
+    "957669": "Omitido por la búsqueda filtrada de start.gg (país, juego u organizador) y visible por ID e historial de jugadores; verificado el 1/nov/2026 (runs 41392236930, 41392406064, 41393251710). Solo se descubre: la admisión sigue las reglas normales.",
+    "962666": "Omitido por la búsqueda filtrada de start.gg; hallado en historiales de jugadores por el complemento y validado por ID el 2/nov/2026 (simulación 41394881853). Solo se descubre: la admisión sigue las reglas normales.",
+    "968395": "Omitido por la búsqueda filtrada de start.gg; hallado en historiales de jugadores por el complemento y validado por ID el 2/nov/2026 (simulación 41394881853). Solo se descubre: la admisión sigue las reglas normales."
   }
 }

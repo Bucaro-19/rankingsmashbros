@@ -62,7 +62,7 @@ try {
     $owner = smash_stats_is_owner($pdo, $user['id']) ? ['panel' => true] : [];
     if (account_organizer_ready()) $owner['organizerReady'] = true;
     $public = smash_account_public(__DIR__); $profile = smash_account_profile($public, $user['playerId']);
-    $profile = smash_account_with_small_events($profile, smash_account_small_events($pdo, $user['playerId'], (int)$public['seasonYear']));
+    $profile = smash_account_with_small_events($profile, smash_account_small_events($pdo, $user['playerId'], (int)$public['seasonYear'], $public));
     account_response(200, $owner + ['ok' => true, 'authenticated' => true, 'oauthReady' => $ready,
         'csrf' => $_SESSION['smash_account_csrf'], 'user' => $user, 'profile' => $profile]);
 } catch (SmashAccountError $error) {

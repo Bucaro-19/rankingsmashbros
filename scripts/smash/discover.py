@@ -167,6 +167,21 @@ def small_organizer_candidates(tournaments, start, end):
     ], key=lambda e:(e['startAt'], str(e['id'])), reverse=True)
 
 
+def event_reason(tournament, event, start, end, *, include_small=False):
+    """Why a catalog event does not enter the national download, or None when it does."""
+    if event.get("isOnline") is not False or tournament.get("isOnline") is True:
+        return "online_or_unknown"
+    if event.get("state") != "COMPLETED":
+        return "unfinished_event"
+    if event.get("type") != 1:
+        return "not_singles"
+    if not isinstance(event.get("numEntrants"), int) or event["numEntrants"] < 1 or (not include_small and event["numEntrants"] < LOCAL_MINIMUM_ACTIVE):
+        return f"under_{LOCAL_MINIMUM_ACTIVE}_entrants"
+    if not isinstance(event.get("startAt"), int) or not start <= event["startAt"] < end:
+        return "outside_window"
+    return None
+
+
 def discover(client, start, end, *, max_events=None, include_small=False, organizer_candidates=False):
     tournaments = []
     for page in range(1, 101):
@@ -188,17 +203,7 @@ def discover(client, start, end, *, max_events=None, include_small=False, organi
         for event in tournament.get("events") or []:
             if str((event.get("videogame") or {}).get("id")) != str(GAME_ID):
                 continue
-            reason = None
-            if event.get("isOnline") is not False or tournament.get("isOnline") is True:
-                reason = "online_or_unknown"
-            elif event.get("state") != "COMPLETED":
-                reason = "unfinished_event"
-            elif event.get("type") != 1:
-                reason = "not_singles"
-            elif not isinstance(event.get("numEntrants"), int) or event["numEntrants"] < 1 or (not include_small and event["numEntrants"] < LOCAL_MINIMUM_ACTIVE):
-                reason = f"under_{LOCAL_MINIMUM_ACTIVE}_entrants"
-            elif not isinstance(event.get("startAt"), int) or not start <= event["startAt"] < end:
-                reason = "outside_window"
+            reason = event_reason(tournament, event, start, end, include_small=include_small)
             reasons[str(event.get("id"))] = reason
             if reason:
                 excluded.append({"id": str(event.get("id")), "reason": reason})

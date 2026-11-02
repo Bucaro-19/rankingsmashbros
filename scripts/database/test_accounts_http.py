@@ -190,6 +190,56 @@ class AccountHttpTests(unittest.TestCase):
             self.assertEqual([e for e in view['events'] if e['id']!=str(base)],old['events'])
             self.assertEqual([e['date'] for e in view['events']],sorted((e['date'] for e in view['events']),reverse=True))
 
+    def test_recorded_participations_explain_why_they_do_not_count(self):
+        before=self.login(); year=before['profile']['seasonYear']
+        public=json.loads((SITE/'data/public.json').read_text())
+        played={r['eventId'] for r in public['results'] if '184005' in r['playerIds']}
+        counted=next(str(e['id']) for e in public['events'] if str(e['id']) not in played)
+        base=8999300; ids=[base, int(counted), base+50]
+        def wipe():
+            with self.db.cursor() as q:
+                for eid in ids:
+                    q.execute(f'DELETE FROM set_slots WHERE event_id={eid}'); q.execute(f'DELETE FROM sets WHERE event_id={eid}')
+                    q.execute(f'DELETE ep FROM entrant_players ep JOIN entrants en ON en.id=ep.entrant_id WHERE en.event_id={eid}')
+                    q.execute(f'DELETE FROM entrants WHERE event_id={eid}')
+                    q.execute(f'DELETE FROM events WHERE id={eid}')
+                q.execute(f'DELETE FROM tournaments WHERE id IN ({base},{base+50},{base+70})'); q.execute(f'DELETE FROM players WHERE id={base+9}')
+        wipe(); self.addCleanup(wipe)
+        with self.db.cursor() as q:
+            q.execute(f"INSERT INTO players (id, tag) VALUES ({base+9}, 'Rival QA')")
+            for tid, name in ((base, 'Liga QA 20 inscritos'), (base+70, 'Clase A QA'), (base+50, 'Historial de análisis QA')):
+                q.execute(f"INSERT INTO tournaments (id, name, starts_at, country_code) VALUES ({tid}, '{name}', '{year}-08-31 17:00:00', 'GT')")
+            # 1) National capture: 20 registered, 18 active. 2) A counted event where the player only has DQ.
+            # 3) An analysis history row: no complete bracket, so it never appears as a recorded participation.
+            q.execute(f"INSERT INTO events (id, tournament_id, name, videogame_id, entrant_size, starts_at, registered_entrants, active_players) VALUES "
+                      f"({base}, {base}, 'Singles', 1386, 1, '{year}-08-31 17:00:00', 20, 18), ({counted}, {base+70}, 'Clase A', 1386, 1, '{year}-09-26 17:00:00', 38, 30), "
+                      f"({base+50}, {base+50}, 'Singles', 1386, 1, '{year}-08-31 17:00:00', 25, NULL)")
+            for eid in ids:
+                q.execute(f"INSERT INTO entrants (id, event_id, name) VALUES ({eid*10+1}, {eid}, 'Jugador QA'), ({eid*10+2}, {eid}, 'Rival QA')")
+                q.execute(f"INSERT INTO entrant_players (entrant_id, player_id) VALUES ({eid*10+1}, 184005), ({eid*10+2}, {base+9})")
+            rows=[(base, base*10+2, 'competitive', 'Rival QA 2 - Jugador QA 0'), (base, base*10+2, 'dq', 'DQ'), (base, base*10+2, 'dq', 'DQ'), (base, base*10+2, 'dq', 'DQ'),
+                  (int(counted), int(counted)*10+2, 'dq', 'DQ'), (int(counted), int(counted)*10+2, 'dq', 'DQ'), (base+50, (base+50)*10+1, 'competitive', 'Jugador QA 2 - Rival QA 1')]
+            for n, (eid, winner, kind, score) in enumerate(rows):
+                sid=base+100+n
+                q.execute(f"INSERT INTO sets (id, event_id, status, outcome_type, winner_entrant_id, display_score) VALUES ({sid}, {eid}, 'completed', '{kind}', {winner}, '{score}')")
+                q.execute(f"INSERT INTO set_slots (set_id, slot_index, event_id, entrant_id) VALUES ({sid}, 0, {eid}, {winner}), ({sid}, 1, {eid}, {eid*10+1 if winner==eid*10+2 else eid*10+2})")
+        data=self.login()
+        for scope in ('combined','guatemala'):
+            view=data['profile']['views'][scope]; old=before['profile']['views'][scope]
+            events={e['id']:e for e in view['events']}
+            league=events[str(base)]
+            self.assertEqual((league['counts'],league['wins'],league['losses'],league['other']),(False,0,1,3))
+            self.assertIn('18 jugadores activos (20 inscritos)',league['reason']); self.assertIn('20 o más',league['reason'])
+            self.assertEqual([s['outcome'] for s in league['sets']].count('dq'),3)
+            self.assertEqual(league['sets'][0]['playerIds'][0],str(base+9))
+            dq=events[counted]
+            self.assertEqual((dq['counts'],dq['wins'],dq['losses'],dq['other']),(False,0,0,2))
+            self.assertIn('DQ, W.O. o bye',dq['reason'])
+            self.assertNotIn(str(base+50),events)
+            # Ranking figures are exactly what the published cut says.
+            self.assertEqual({k:v for k,v in view.items() if k!='events'},{k:v for k,v in old.items() if k!='events'})
+        self.assertIn('No es tu historial completo',data['profile']['historyCoverage'])
+
     def test_preferences_identity_is_server_bound(self):
         data=self.login(); csrf=data['csrf']
         self.assertEqual(self.request(body={'action':'roles','roles':['player','organizer'],'userId':'999'},csrf=csrf)[0],200)
