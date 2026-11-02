@@ -23,15 +23,8 @@ jobs:
           from collect import Client
           started=time.monotonic(); c=Client(os.environ['STARTGG_TOKEN'])
           ids=[957669,948197,947356]
-          q='query{'+' '.join(f't{i}:tournament(id:{i}){{id owner{{id}} city addrState publishing}}' for i in ids)+'}'
-          meta=c.query(q,{}); owners=sorted({str((t.get('owner') or {}).get('id')) for t in meta.values() if t})
-          after,before=1767247200,1793512800  # 2026-01-01 .. 2026-11-01 GT
-          parts=[]
-          for o in owners[:3]:
-              base=f'ownerId:{o},afterDate:{after},beforeDate:{before}'
-              for tag,extra in (('owner',''),('ownerGame',',videogameIds:[1386]'),('ownerCountry',',countryCode:"GT"')):
-                  parts.append(f'{tag}_{o}:tournaments(query:{{perPage:50,filter:{{{base}{extra}}}}}){{pageInfo{{total totalPages}} nodes{{id countryCode}}}}')
-          d=c.query('query{'+' '.join(parts)+'}',{}) if parts else {}
-          out={k:{'total':v['pageInfo']['total'],'pages':v['pageInfo']['totalPages'],'containsMissing':sorted(n['id'] for n in v['nodes'] if n['id'] in ids),'countries':sorted({str(n.get('countryCode')) for n in v['nodes']})} for k,v in d.items()}
-          print(json.dumps({'requests':c.calls,'seconds':round(time.monotonic()-started,3),'meta':meta,'owners':owners,'search':out}))
+          q='query{ f:__type(name:"UserTournamentsPaginationFilter"){inputFields{name}} u:user(id:2735916){tournaments(query:{perPage:50,page:1}){pageInfo{total totalPages} nodes{id countryCode startAt}}} }'
+          d=c.query(q,{}); conn=((d.get('u') or {}).get('tournaments') or {})
+          nodes=conn.get('nodes') or []
+          print(json.dumps({'requests':c.calls,'seconds':round(time.monotonic()-started,3),'filterFields':[x['name'] for x in ((d.get('f') or {}).get('inputFields') or [])],'total':(conn.get('pageInfo') or {}).get('total'),'pages':(conn.get('pageInfo') or {}).get('totalPages'),'containsMissing':sorted(n['id'] for n in nodes if n['id'] in ids),'returned':len(nodes)}))
           PROBE
