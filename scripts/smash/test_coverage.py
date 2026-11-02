@@ -172,7 +172,7 @@ class CoverageComplementTests(unittest.TestCase):
         result, summary = complement(FakeClient(world), national_from(world), CURATION)
         self.assertNotIn(1719129, [e["id"] for e in result["events"]])
         self.assertIn("1719129", [str(e["id"]) for e in result["organizerCandidates"]])
-        context = capture(FakeClient(world), result, limit=MAX_EVENT_DOWNLOADS)
+        context = capture(FakeClient(world), result, limit=6)
         self.assertIn(1719129, [e["id"] for e in context["events"]])
         self.assertNotIn("1719129", compute(result)["eventIds"])
         # Without the small-context circuit it is only recorded as excluded, with its reason.
@@ -277,9 +277,23 @@ class CoverageComplementTests(unittest.TestCase):
         self.assertNotEqual(seed_players(later)[4:], seeds[4:])
         self.assertEqual(seed_players(later)[:4], seeds[:4])
 
+    def test_listed_tournaments_are_downloaded_before_newer_history_finds(self):
+        # The search never sees them, so every week they must fit again: listed ones go first.
+        import coverage
+        world = pinguis_world()
+        original = coverage.MAX_EVENT_DOWNLOADS
+        try:
+            coverage.MAX_EVENT_DOWNLOADS = 1
+            _, summary = complement(FakeClient(world), national_from(world), {"recoveredTournamentIds": {"947356": "x"}})
+        finally:
+            coverage.MAX_EVENT_DOWNLOADS = original
+        self.assertEqual(summary["recoveredEvents"], ["1697423"])
+        self.assertEqual(sorted(summary["pendingEvents"]), ["1699110", "1719115"])
+        self.assertEqual(summary["unlistedTournaments"], ["948197", "957669"])
+
     def test_listed_ids_are_bounded(self):
         world = pinguis_world()
-        _, summary = complement(FakeClient(world), national_from(world), {"recoveredTournamentIds": {str(i): "x" for i in range(11)}})
+        _, summary = complement(FakeClient(world), national_from(world), {"recoveredTournamentIds": {str(i): "x" for i in range(41)}})
         self.assertEqual(summary["status"], "failed")
 
 

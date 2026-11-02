@@ -26,16 +26,19 @@ from rank import competitive_set, profile_country
 from rules import LOCAL_MINIMUM_ACTIVE
 
 # Fixed ceilings, not arguments. Three attempts are reserved before every query (Client retries).
-MAX_ATTEMPTS = 90
-MAX_SECONDS = 180
+# The search never returns these tournaments, so every week they are downloaded again like any
+# national event: the ceiling has to hold every known omitted event, measured at ~3.75 queries each.
+MAX_ATTEMPTS = 210
+MAX_SECONDS = 240
 RECENT_SEEDS = 4
 ROTATING_SEEDS = 4
 HISTORY_PAGES = 2
-# Histories stop this many attempts before the ceiling: validation and downloads keep their share.
-HISTORY_RESERVE = 42
+# Histories never use more than this, and always leave the reserve to validation and downloads.
+HISTORY_ATTEMPTS = 48
+DOWNLOAD_RESERVE = 42
 MAX_TOURNAMENTS = 25
-MAX_EVENT_DOWNLOADS = 4
-MAX_LISTED_IDS = 10
+MAX_EVENT_DOWNLOADS = 12
+MAX_LISTED_IDS = 40
 
 PLAYER_EVENTS = """query($id:ID!,$page:Int!){player(id:$id){
  sets(page:$page,perPage:50,filters:{entrantSize:[1]}){pageInfo{total totalPages}
@@ -71,6 +74,10 @@ class Budget:
         if self.used() + 3 > MAX_ATTEMPTS or self.clock() - self.started >= MAX_SECONDS:
             raise BudgetExhausted("Presupuesto del complemento agotado.")
         return self.client.query(query, variables)
+
+
+def history_limit():
+    return min(HISTORY_ATTEMPTS, MAX_ATTEMPTS - DOWNLOAD_RESERVE)
 
 
 def known_event_ids(national):
@@ -124,10 +131,10 @@ def scan_histories(budget, seeds, start, end, known, summary):
     """Tournament IDs of unseen Guatemala events in the seeds' recent set histories."""
     found = {}
     for pid in seeds:
-        if budget.used() + 3 > MAX_ATTEMPTS - HISTORY_RESERVE:
+        if budget.used() + 3 > history_limit():
             break
         for page in range(1, HISTORY_PAGES + 1):
-            if budget.used() + 3 > MAX_ATTEMPTS - HISTORY_RESERVE:
+            if budget.used() + 3 > history_limit():
                 summary["seedsTruncated"] += 1
                 break
             player = budget.query(PLAYER_EVENTS, {"id": pid, "page": page}).get("player")
@@ -166,7 +173,7 @@ def validate(budget, tournament_ids):
     return {tid: nodes.get(tid) for tid in tournament_ids}
 
 
-def classify(tournaments, start, end, known, small_enabled):
+def classify(tournaments, start, end, known, small_enabled, listed=()):
     """Admissible downloads, small context candidates and exclusions, by the discover.py rules."""
     admissible, small, excluded, catalog = [], [], {}, []
     for tid, node in tournaments.items():
@@ -198,7 +205,8 @@ def classify(tournaments, start, end, known, small_enabled):
             catalog.append({"id": tid, "name": node.get("name"), "slug": node.get("slug"), "startAt": node.get("startAt"),
                             "city": city.strip() if isinstance(city, str) and city.strip() else None,
                             "ownerId": str(owner) if owner is not None else None, "events": rows})
-    admissible.sort(key=lambda e: (-e["startAt"], str(e["id"])))
+    listed = {str(tid) for tid in listed}
+    admissible.sort(key=lambda e: (0, e["startAt"], str(e["id"])) if str(e["tournament"]["id"]) in listed else (1, -e["startAt"], str(e["id"])))
     return admissible, small, excluded, catalog
 
 
@@ -210,9 +218,9 @@ def complement(client, national, curation, *, clock=time.monotonic):
     small_enabled = isinstance(national.get("organizerCandidates"), list)
     summary = {"schemaVersion": 1, "status": "complete", "seedsPlanned": 0, "seedsScanned": 0, "seedsTruncated": 0,
                "seedsWithoutHistory": 0, "historyPages": 0, "listedTournaments": 0, "unseenTournaments": 0,
-               "validatedTournaments": 0, "unavailableTournaments": [], "recoveredEvents": [], "smallContextEvents": [],
+               "validatedTournaments": 0, "unavailableTournaments": [], "unlistedTournaments": [], "recoveredEvents": [], "smallContextEvents": [],
                "excludedEvents": {}, "pendingEvents": [], "failedEvents": [], "requests": 0, "seconds": 0,
-               "limits": {"attempts": MAX_ATTEMPTS, "historyAttempts": MAX_ATTEMPTS - HISTORY_RESERVE, "seconds": MAX_SECONDS, "historyPages": HISTORY_PAGES,
+               "limits": {"attempts": MAX_ATTEMPTS, "historyAttempts": history_limit(), "seconds": MAX_SECONDS, "historyPages": HISTORY_PAGES,
                           "seeds": RECENT_SEEDS + ROTATING_SEEDS, "tournaments": MAX_TOURNAMENTS,
                           "eventDownloads": MAX_EVENT_DOWNLOADS}}
     budget = Budget(client, clock)
@@ -237,7 +245,9 @@ def complement(client, national, curation, *, clock=time.monotonic):
         tournaments = validate(budget, unseen) if unseen else {}
         summary["validatedTournaments"] = len([n for n in tournaments.values() if n is not None])
         summary["unavailableTournaments"] = sorted((tid for tid, n in tournaments.items() if n is None), key=int)
-        admissible, small, excluded, catalog = classify(tournaments, start, end, known, small_enabled)
+        admissible, small, excluded, catalog = classify(tournaments, start, end, known, small_enabled, listed)
+        # Found only through histories this week: list them in curation.json so they are not lost.
+        summary["unlistedTournaments"] = sorted((tid for tid, node in tournaments.items() if node is not None and tid not in listed), key=int)
         summary["excludedEvents"] = dict(sorted(excluded.items(), key=lambda kv: int(kv[0])))
         summary["smallContextEvents"] = sorted((str(e["id"]) for e in small), key=int)
         records, players, sets = [], {}, {}
@@ -293,7 +303,7 @@ def merge(national, records, players, sets, small, excluded, catalog):
 
 def report(summary):
     line = json.dumps({k: summary[k] for k in ("status", "seedsScanned", "seedsTruncated", "historyPages", "listedTournaments",
-                                                 "unseenTournaments", "validatedTournaments", "unavailableTournaments",
+                                                 "unseenTournaments", "validatedTournaments", "unavailableTournaments", "unlistedTournaments",
                                                  "recoveredEvents", "smallContextEvents", "excludedEvents", "pendingEvents",
                                                  "failedEvents", "requests", "seconds")}, ensure_ascii=False)
     print("Complemento de cobertura:", line, flush=True)
@@ -306,7 +316,8 @@ def report(summary):
                                ("Consultas", "requests"), ("Segundos", "seconds")):
                 handle.write(f"- {label}: {summary[key]}\n")
             for label, key in (("Recuperados (entran al cálculo normal)", "recoveredEvents"), ("Contexto pequeño", "smallContextEvents"),
-                               ("Pendientes", "pendingEvents"), ("Fallidos", "failedEvents"), ("No disponibles", "unavailableTournaments")):
+                               ("Pendientes", "pendingEvents"), ("Fallidos", "failedEvents"), ("No disponibles", "unavailableTournaments"),
+                               ("Hallados solo por historial: añadir a curation.json", "unlistedTournaments")):
                 handle.write(f"- {label}: {', '.join(summary[key]) or 'ninguno'}\n")
             for eid, reason in summary["excludedEvents"].items():
                 handle.write(f"- Excluido {eid}: {reason}\n")
