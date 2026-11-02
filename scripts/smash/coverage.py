@@ -42,7 +42,7 @@ MAX_LISTED_IDS = 40
 
 PLAYER_EVENTS = """query($id:ID!,$page:Int!){player(id:$id){
  sets(page:$page,perPage:50,filters:{entrantSize:[1]}){pageInfo{total totalPages}
-  nodes{event{id startAt tournament{id countryCode}}}}
+  nodes{event{id startAt videogame{id} tournament{id countryCode}}}}
  }}"""
 # The only lookup that returned the omitted tournaments: by ID, without country or game filters.
 BY_IDS = """query($ids:[ID]){tournaments(query:{page:1,perPage:25,filter:{ids:$ids}}){
@@ -149,6 +149,9 @@ def scan_histories(budget, seeds, start, end, known, summary):
                 eid, tid = event.get("id"), tournament.get("id")
                 if eid is None or tid is None or str(eid) in known or tournament.get("countryCode") != "GT":
                     continue
+                # Other games' events would only spend validation queries.
+                if str((event.get("videogame") or {}).get("id")) != str(GAME_ID):
+                    continue
                 if not isinstance(event.get("startAt"), int) or not start <= event["startAt"] < end:
                     continue
                 found.setdefault(str(tid), set()).add(str(eid))
@@ -247,7 +250,9 @@ def complement(client, national, curation, *, clock=time.monotonic):
         summary["unavailableTournaments"] = sorted((tid for tid, n in tournaments.items() if n is None), key=int)
         admissible, small, excluded, catalog = classify(tournaments, start, end, known, small_enabled, listed)
         # Found only through histories this week: list them in curation.json so they are not lost.
-        summary["unlistedTournaments"] = sorted((tid for tid, node in tournaments.items() if node is not None and tid not in listed), key=int)
+        contributed = {str(e["tournament"]["id"]) for e in admissible + small} | {
+            tid for tid, node in tournaments.items() if node is not None and any(str(e.get("id")) in excluded for e in node.get("events") or [])}
+        summary["unlistedTournaments"] = sorted((tid for tid in contributed if tid not in listed), key=int)
         summary["excludedEvents"] = dict(sorted(excluded.items(), key=lambda kv: int(kv[0])))
         summary["smallContextEvents"] = sorted((str(e["id"]) for e in small), key=int)
         records, players, sets = [], {}, {}

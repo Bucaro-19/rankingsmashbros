@@ -63,7 +63,8 @@ class World:
             for winner, loser, _ in data["sets"]:
                 if pid in (winner, loser):
                     t = self.tournaments[data["tid"]]
-                    nodes.append({"event": {"id": eid, "startAt": data["event"]["startAt"], "tournament": {"id": t["id"], "countryCode": t["countryCode"]}}})
+                    nodes.append({"event": {"id": eid, "startAt": data["event"]["startAt"], "videogame": data["event"]["videogame"],
+                                            "tournament": {"id": t["id"], "countryCode": t["countryCode"]}}})
         return nodes
 
 
@@ -302,6 +303,17 @@ class CoverageComplementTests(unittest.TestCase):
         self.assertIn("Recuperados para el cálculo normal: 1697423, 1699110, 1719115", report)
         self.assertIn("Contexto pequeño: 1719129", report)
         self.assertIn("no prueba que no falten otros torneos", report)
+
+    def test_other_games_in_histories_are_not_validated_nor_flagged(self):
+        world = pinguis_world()
+        world.add(555, 5551, entrants=30, active=30, start=START + 250 * DAY, hidden=True,
+                  extra_valid=[("1000", "1001", "2 - 0")])
+        world.events[5551]["event"]["videogame"] = {"id": 1, "name": "Otro juego"}
+        client = FakeClient(world)
+        _, summary = complement(client, national_from(world), CURATION)
+        self.assertTrue(all(kind != "ids" or "555" not in entry[0] for kind, *entry in client.log))
+        self.assertEqual(summary["unlistedTournaments"], [])
+        self.assertNotIn("5551", summary["recoveredEvents"])
 
     def test_listed_ids_are_bounded(self):
         world = pinguis_world()
