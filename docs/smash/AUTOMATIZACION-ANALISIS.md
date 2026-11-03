@@ -2,7 +2,7 @@
 
 ## Fase 2: medir avance útil — 2/nov/2026 GT
 
-Pedido del dueño: retomar el plan de eficiencia. Implementación en `feat/rival-efficiency-metrics`, pendiente de CI/orden de publicación. Solo Python en Actions: no requiere PHP, migración, FTP ni assets_only. Se mantienen consulta, orden 3:1, cinco sets por página, dos tandas, techos, seis horas, ámbito 1687524/2026, expiración y canal firmado. No hay consultas nuevas a start.gg ni al receptor para observar; se aprovechan las respuestas que ya se obtenían.
+Pedido del dueño: retomar el plan de eficiencia. **#130 fusionado por orden posterior del dueño** desde `feat/rival-efficiency-metrics`, match-head **66139b8**, squash **1119acc**, 2/nov 21:08:11 GT; CI PR 41555713067, push 41555707271 y main 41570362638 verdes (general/MySQL 8.0/MariaDB 10.11). Solo Python en Actions: no requiere PHP, migración, FTP ni assets_only. Se mantienen consulta, orden 3:1, cinco sets por página, dos tandas, techos, seis horas, ámbito 1687524/2026, expiración y canal firmado. No hay consultas nuevas a start.gg ni al receptor para observar; se aprovechan las respuestas que ya se obtenían. Las próximas cargas de main incorporarán las métricas; no se lanzó una captura manual como benchmark.
 
 El JSON del resumen conserva sus campos y añade `metrics.version=1`. Solo agregados de lista cerrada, nunca nombres, IDs de jugadores, fuente, credenciales, revisión o checkpoint. El nuevo `captureMetrics` que devuelve `capture_batch` es local: `package()` no lo transporta, no cambia `audit`, hashes, `stateVersion=1`, SQL ni el estado privado. El resumen Markdown explica las unidades.
 
@@ -36,6 +36,26 @@ Logs normales revisados el 2/nov; todos `imported`, 343 inscritos/conocidos, cer
 Estos resúmenes no tienen páginas/sets útiles ni desglose de tiempos. No se reconstruyen como cifras medidas a partir de consultas o de 343−165, ni se concluye que la cola o la API sea el cuello de botella por esos totales. No se ejecutó una captura productiva adicional para medir.
 
 Después de autorizar la fusión, observar al menos tres ejecuciones normales con metrics.version=1. Comparar páginas confirmadas e historiales terminados, sets competitivos/games, páginas sin sets de temporada, intentos y captura frente a espera. Revisar fallos/429 y cola sin borrar estados. Solo entonces decidir fase 3 (más frecuencia) o estudiar fase 4 (lista ligera y detalle/cache por set+updatedAt, con orden/filtros de fuente comprobados). Sin aumentar por defecto el volumen, el evento, los permisos ni prometer todos los datos de start.gg. Revertir esta fase solo retira observaciones: el receptor y el checkpoint son iguales.
+
+## Preparación de fase 3: revisión reproducible, sin activar frecuencia
+
+El dueño pidió fusionar #130 y continuar. `scripts/database/rival_efficiency.py` prepara la evaluación pendiente; **no cambia el cron**. Comando desde la raíz: `python3 scripts/database/rival_efficiency.py --from-actions`. Usa la sesión local ya existente de gh; no necesita STARTGG_TOKEN ni llaves SQL. Una lectura de hasta 12 metadatos de ejecuciones y, como máximo, tres logs del workflow fijo del repo. `--input /ruta/informes.json` acepta un objeto `runs` para pruebas/informes sin red (máximo 12 filas/8 MiB). Nunca imprime fuente bruta ni errores de gh.
+
+Solo entran las tres ejecuciones más recientes con `head_branch=main`, `event=schedule`, workflow exacto y created_at posterior a **2026-11-03T03:08:11Z** (fusión #130). Las manuales, ramas, otros workflows y observaciones anteriores no rellenan la muestra. Se rechazan IDs duplicados, versiones desconocidas y métricas incoherentes/no finitas. Una ejecución reciente fallida/en curso no se sustituye por una más antigua exitosa. **No llama a start.gg, MySQL ni receptor, no dispara workflows, no cambia variables y no tiene modo --apply.** Solo permite los comandos gh de lectura fijos de su circuito.
+
+| Estado del informe | Siguiente paso |
+|---|---|
+| insufficient_observations | Esperar las cargas normales; el informe indica observadas/requeridas. Primera revisión real tras fusionar #130: **0/3**. |
+| review_required | Revisar las filas: fallo/en curso, métricas ausentes/incoherentes, intentos extra, espera de un trabajo anterior, tiempos desconocidos, pendientes crecientes o duración incompatible con dos horas. Los reintentos no se etiquetan como 429: pueden tener otras causas. |
+| nothing_pending | No aumentar la frecuencia para recorrer un plan ya terminado. |
+| review_capture_strategy | Las tres no aportaron sets competitivos; estudiar qué páginas se recorren antes de multiplicar consultas. No demuestra que no haya más sets útiles. |
+| ready_for_owner_review | Muestra utilizable; revisar cola/fallos/429 compartidos y pedir la orden de activación. **No es activación automática ni una certificación de capacidad del hosting.** |
+| authorization_expired | No ampliar el plazo por optimización ni activar otro horario bajo esta orden. |
+| review_unavailable | Fallo de lectura/entrada; no inferir cero pendientes ni seguridad para cambiar frecuencia. |
+
+El resultado mantiene siempre `scheduleChangeAllowed=false` y `queueCheckRequired=true`. Los contadores de sets/games se suman por ejecución, no como resultados distintos de toda la base; jugadores distintos entre ejecuciones es null porque los agregados anónimos no permiten deduplicarlos. El desglose de esperas conserva su carácter observado y solapado, sin atribuir tiempo SQL puro. No se calcula ETA ni ganancia real de pasar a dos horas.
+
+La revisión externa pendiente incluye `SELECT status,COUNT(*) FROM sync_jobs WHERE kind='player_history' GROUP BY status` **de solo lectura**, más fallos/reintentos de flujos que comparten cuota/concurrencia. No se abre MySQL a Actions. Si se decide activar, una PR posterior debe cambiar cron/texto del panel/pruebas y documentar reversión; mantiene dos tandas, 30 intentos/120 s, 1/s y expiración. El coste nominal de 4 a 12 disparos diarios triplica el volumen si las cargas mantienen el mismo trabajo; no se presenta como una reducción de consumo. El estudio de captura ligera/detalle sigue siendo la fase 4, independiente.
 
 ## Renovación del dueño — 27/oct/2026 GT
 
