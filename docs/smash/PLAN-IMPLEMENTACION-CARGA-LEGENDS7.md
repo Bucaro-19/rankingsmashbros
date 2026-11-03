@@ -56,6 +56,8 @@ Condiciones: sin jobs fallidos por revisar, sin crecimiento persistente de cola,
 
 ## Fase 4 — Captura ligera y detalle (posterior; no requisito para Legends 7)
 
+**Estudio adelantado 2/nov GT mientras se reúnen las tres observaciones:** [ESTUDIO-CAPTURA-LIGERA.md](ESTUDIO-CAPTURA-LIGERA.md), sonda de esquema de una consulta y modelo offline reproducible. Player.sets no admite sortType ni filtro de temporada; updatedAfter es creación/actualización. Separar listado/detalle puede gastar más llamadas en datos nuevos o historiales cortos. PerPage mayor y caché requieren medición y un protocolo que no reutilice mal las páginas V1. El estudio no cambia la captura ni necesita esperar la fase 3; su implementación/activación sí requiere diseño, pruebas y orden propios.
+
 Investigar lista ligera de sets y posterior detalle de games/personajes con caché por set ID + updatedAt. Antes de implementarlo: confirmar campos/orden del esquema, comparar consultas y tamaño con la consulta actual, y demostrar cómo el checkpoint distingue ambos recorridos sin marcar completo el detalle pendiente. Si aumenta consultas o requiere un contrato/migración no autorizados, dejar estudio y no activar. Datos ausentes siguen ausentes; ningún personaje o resultado se estima.
 
 ## Publicación y reversión de cada fase
