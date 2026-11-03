@@ -2,6 +2,8 @@
 
 Plan solicitado después por el dueño: [PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md](PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md). La barra se publicó el 19/oct; la fase 1 se publicó por orden posterior del dueño; las fases de métricas y frecuencia siguen pendientes.
 
+**Actualización 2/nov GT:** fase 2 de métricas implementada en rama propia, todavía sin publicar. Contrato y tres ejecuciones previas observadas en [AUTOMATIZACION-ANALISIS.md](AUTOMATIZACION-ANALISIS.md): 165 pendientes y 63 consultas en las tres, sin datos suficientes para concluir estancamiento. Medirá páginas/jugadores confirmados, sets competitivos/games y captura frente a espera, sin API adicional ni cambios de paquete/checkpoint. No se activa la fase de dos horas. El plazo original de la barra descrito abajo se renovó en #125 hasta fin del 31/dic/2026 GT; el documento conserva como antecedente las observaciones del 19/oct.
+
 ## Barra del panel privado
 
 La tarjeta «Historiales de Legends 7» usa el archivo activo privado `private-smash/analysis-context/1687524.json`. Se lee con límite de 2 MiB, sin seguir enlaces simbólicos, sin crear directorios/archivos y sin incluir configuración o secretos. Ignora `.pending`: solo muestra el estado que el worker dejó activo después de importar. Una lectura inválida aísla esta tarjeta; no deja el resto del panel fuera de servicio.

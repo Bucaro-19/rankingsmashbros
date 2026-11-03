@@ -90,6 +90,8 @@ def capture_batch(client, state, *, clock=time.monotonic):
     if state.get('stateVersion')!=1 or not 2000<=state['seasonYear']<=2100: raise ValueError('Invalid state.')
     start=season_timestamp(f"{state['seasonYear']}-01-01");end=season_timestamp(f"{state['seasonYear']+1}-01-01")
     b=BudgetClient(client,clock);started=clock();before=client.calls;chosen={};touched=[];unlinked=0
+    # Observation only: never added to the package audit/hash or persisted checkpoint.
+    metrics=dict(pagesFetched=0,sourceSetsSeen=0,pagesWithoutSeasonSets=0)
     # Manual captures may retain cached pages; validate their original root too,
     # without querying again or changing the caller's persisted input.
     for key,page in state['pages'].items():
@@ -114,6 +116,7 @@ def capture_batch(client, state, *, clock=time.monotonic):
         pid=partials.popleft() if reserved else min(pending,key=lambda pid:(state['coverage'][pid]['nextPage'],int(pid)))
         cov=state['coverage'][pid];page=cov['nextPage'];key=f'{pid}:{page}'
         conn=(b.query(HISTORY,dict(id=pid,page=page)).get('player') or {}).get('sets');info=connection(conn)
+        metrics['pagesFetched']+=1;metrics['sourceSetsSeen']+=len(conn['nodes'])
         rows=[]
         for m in conn['nodes']:
             ev=m.get('event') or {};at=ev.get('startAt')
@@ -124,6 +127,7 @@ def capture_batch(client, state, *, clock=time.monotonic):
             # aliases or import unrelated context; retain the receiver's guard.
             if not linked_to_player(m,pid):unlinked+=1;continue
             rows.append(m);chosen[str(m['id'])]=m
+        if not rows:metrics['pagesWithoutSeasonSets']+=1
         state['pages'][key]=dict(sets=rows,totalPages=info['totalPages'])
         cov.update(nextPage=page+1,totalPages=info['totalPages'],complete=page>=info['totalPages'])
         touched.append(pid)
@@ -136,6 +140,7 @@ def capture_batch(client, state, *, clock=time.monotonic):
                    registered=len(state['roster']['players']),known=len(state['knownPlayerIds']),missing=len(state['coverage']),
                    complete=sum(x['complete'] for x in state['coverage'].values()),sets=len(chosen),unlinkedSetsSkipped=unlinked))
     if len(json.dumps(state).encode())>MAX_BYTES: raise APIError('State ceiling; retain previous checkpoint.')
+    data['captureMetrics']=metrics
     return data,state
 
 

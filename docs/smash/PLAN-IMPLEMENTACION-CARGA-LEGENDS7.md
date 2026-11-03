@@ -1,8 +1,10 @@
 # Plan de implementación — historiales de Legends 7
 
-19/oct/2026, Guatemala. Pedido del dueño: publicar la barra y preparar el plan; **este documento no activa una frecuencia nueva ni cambia el capturador**. Continuación de [MEJORAS-CARGA-LEGENDS7.md](MEJORAS-CARGA-LEGENDS7.md). El plazo de importación ya autorizado termina el **26/oct a las 00:00 GT**. No extenderlo para cumplir el plan.
+19/oct/2026, Guatemala. Pedido del dueño: publicar la barra y preparar el plan; **este documento no activa una frecuencia nueva**. Continuación de [MEJORAS-CARGA-LEGENDS7.md](MEJORAS-CARGA-LEGENDS7.md). El plazo original terminaba el 26/oct; el dueño lo renovó el 27/oct hasta **fin del 31/dic/2026 GT**, mismo evento/temporada y checkpoint, en #125. No volver a extenderlo para cumplir el plan.
 
 **20/oct:** fase 1 fusionada y activada por orden posterior del dueño, PR #114 y corrección #115. Política definitiva 3:1, pruebas y mediciones en AUTOMATIZACION-ANALISIS.md y MEJORAS-CARGA-LEGENDS7.md. La frecuencia sigue en seis horas; fases 2–4 pendientes.
+
+**2/nov:** el dueño pide retomar la eficiencia. Fase 2 implementada en rama `feat/rival-efficiency-metrics`, sin activar ni fusionar aún: métricas locales aditivas en stdout/Step Summary, fuera del paquete y checkpoint. Contrato y línea de base de tres ejecuciones en AUTOMATIZACION-ANALISIS.md. Las tres observaciones previas no sustituyen las tres ejecuciones con métricas que deben evaluarse después de autorizar la publicación. Fases 3 y 4 siguen pendientes; no se cambia el cron ni se captura todo start.gg.
 
 ## Resultado que buscamos
 
