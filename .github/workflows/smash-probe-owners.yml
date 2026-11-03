@@ -1,20 +1,33 @@
 name: Comprobar dueños de torneos en start.gg
-# Consulta de un solo uso, solo lectura. Imprime conteos agregados, sin identificadores.
 on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: smash-gt-publication
+  cancel-in-progress: false
 jobs:
   probe:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/study/rival-light-capture'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Probar la consulta de dueños que usa la captura semanal
+      - name: Esquema de historial, solo lectura y sin personas
         env:
           STARTGG_TOKEN: ${{ secrets.STARTGG_TOKEN }}
-        run: python scripts/smash/probe_owners.py
+          PYTHONPATH: scripts/smash
+        run: |
+          python - <<'PROBE'
+          import os,json
+          from collect import Client
+          c=Client(os.environ['STARTGG_TOKEN'])
+          q='query { p:__type(name:"Player"){fields{name args{name description type{kind name ofType{kind name}}}}} f:__type(name:"SetFilters"){inputFields{name description type{kind name ofType{kind name}}}} s:__type(name:"SetSortType"){enumValues{name description}} q:__type(name:"Query"){fields{name args{name type{kind name ofType{kind name}}}}} }'
+          try:
+              d=c.query(q,{})
+              print(json.dumps({'requests':c.calls,'playerSets':[f for f in d['p']['fields'] if f['name']=='sets'],'setFilters':d['f'],'setSort':d['s'],'setLookup':[f for f in d['q']['fields'] if f['name']=='set']},ensure_ascii=False))
+          except Exception:raise SystemExit('schema_probe_unavailable')
+          PROBE
