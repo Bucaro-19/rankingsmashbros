@@ -130,7 +130,8 @@ class Review(unittest.TestCase):
             command.assert_not_called()
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/'reports.json';path.write_text(json.dumps(dict(runs=[])))
-            with mock.patch('sys.argv',['review','--input',str(path)]),contextlib.redirect_stdout(io.StringIO()) as out:
+            evaluate=review.evaluate
+            with mock.patch('sys.argv',['review','--input',str(path)]),mock.patch.object(review,'evaluate',side_effect=lambda runs:evaluate(runs,now=NOW)),contextlib.redirect_stdout(io.StringIO()) as out:
                 self.assertEqual(review.main(),0)
             self.assertEqual(json.loads(out.getvalue())['status'],'insufficient_observations')
 
