@@ -26,6 +26,8 @@ Diseño pendiente identificado: caché privada por ID/versión/fingerprint/vigen
 
 Validación local: **131 pruebas del pipeline, incluidas cuatro nuevas del modelo**, correctas; sin red ni SQL en la simulación. El workflow de sonda queda idéntico a origin/main en el diff final. CI general/MySQL 8.0/MariaDB 10.11 y enlace de PR se completan en el cierre de esta entrega. No hay fusión ni despliegue de este estudio.
 
+Entrega en **[PR #132](https://github.com/Bucaro-19/rankingsmashbros/pull/132)**, rama `study/rival-light-capture`. Resultados de CI del último commit en checks/cuerpo del PR. El estudio queda sin fusionar ni activar; #131 continúa separado y el historial productivo sigue usando V1. Se conservan las carpetas ajenas y no se creó ninguna base/servicio local para este estudio.
+
 ## Cobertura de torneos e historial del jugador — 1–2/nov GT (Claude Code)
 
 Rama `fix/tournament-coverage-history` desde main **1209010**; remoto, Actions y cambios ajenos (`laminas/`, `marca-rsb/`, `social/`, rama `docs/search-console-audit-20261028` en la carpeta principal) comprobados y conservados: el trabajo se hizo en un worktree aparte. Detalle completo en [COBERTURA-TORNEOS.md](COBERTURA-TORNEOS.md).
