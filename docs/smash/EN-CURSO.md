@@ -14,6 +14,8 @@ Nueve pruebas nuevas inventadas del evaluador: 0/2/3 muestras, exclusión de ant
 
 Local: **9 pruebas nuevas, 127 pipeline y 36 contratos/captura/métricas de automatización** correctas; 21 SQL omitidas localmente porque esta herramienta no abre una base. La matriz de CI mantiene las pruebas SQL reales en MySQL 8.0/MariaDB 10.11. No se crea ningún servicio local nuevo. Los únicos cambios de workflow son registrar la prueba del evaluador en smash-check.yml; smash-rival-context.yml y su cron quedan idénticos.
 
+Preparación entregada en **[PR #131](https://github.com/Bucaro-19/rankingsmashbros/pull/131)**, rama `feat/rival-frequency-review`; resultado final de CI sobre el último commit en checks/cuerpo del PR. Esta nueva PR sigue sin fusionar; no activa dos horas ni captura datos. #130 sí quedó fusionado y disponible para las próximas cargas normales. El evaluador puede ejecutarse desde esta rama sin despliegue.
+
 ## Eficiencia de historiales: fase 2 de métricas — 2/nov GT (Codex)
 
 Pedido del dueño: ponerse al día y continuar el plan de eficiencia. Rama propia `feat/rival-efficiency-metrics` desde `origin/main b6a1d38`; remoto Bucaro-19/rankingsmashbros, tracked limpio, sin PR abiertos y Actions recientes verdes comprobados antes de editar (CI de #129 terminó verde durante la lectura). Leídos AGENTS/CONTEXTO/EN-CURSO/MIGRACION/BASE-DE-DATOS/SIGUIENTE-FASE y plan. Conservadas laminas/, marca-rsb/, social/ ajenas; no se usa ni fusiona la rama de sondas de pinguis. Se incorpora el relevo de Claude: #127/#128 ya publicados por orden del dueño, complemento de cobertura encendido y Clase B pendiente del límite semanal de seis; nada de eso se modifica.
