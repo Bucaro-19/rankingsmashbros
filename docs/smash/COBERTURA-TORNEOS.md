@@ -21,7 +21,7 @@ Conclusión: ninguna búsqueda ni lista probada los devuelve; sí lo hacen la co
 
 Corre en `smash-publish.yml` justo después de `discover.py`, antes del contexto pequeño y de la búsqueda extranjera. **Apagado por defecto**: variable `SMASH_COVERAGE_COMPLEMENT_ENABLED=true`. No corre al reanudar una captura.
 
-1. **Candidatos:** los torneos de `recoveredTournamentIds` en `curation.json` (lista verificada, con motivo) más los que aparezcan en los historiales de una muestra de jugadores: los 4 con actividad más reciente y 4 rotando por semana, solo perfiles de Guatemala de la captura, 2 páginas de 50 sets cada uno. La consulta del historial pide solo IDs de evento y torneo y el país.
+1. **Candidatos:** los torneos de `recoveredTournamentIds` en `curation.json` (lista verificada, con motivo) más los que aparezcan en los historiales de una muestra de jugadores: los 4 con actividad más reciente y 4 rotando por semana, solo perfiles de Guatemala de la captura, 2 páginas de 50 sets cada uno. La consulta del historial pide solo IDs de evento, juego y torneo y el país; desde #128 se descartan los eventos que no son Ultimate antes de validar.
 2. **Validación por ID** (`tournaments(filter:{ids})`, sin filtro de país ni juego): metadatos reales, organizador y ciudad. Cada evento pasa por **las mismas reglas de `discover.py`** (presencial, terminado, singles, Ultimate, temporada, 20 inscritos para descargar).
 3. **Separación:**
    - Evento con 20 o más inscritos → se descarga completo con `fetch_event` y entra a la captura nacional. **`rank.py` decide** con los 20 activos: el de 20 inscritos y 18 activos queda fuera, como cualquier otro.
@@ -77,6 +77,8 @@ Para pinguis, en la cuenta se verán: 1697423 (cuenta, 0–2), 1719115 Clase A (
 
 Variable encendida y corte extraordinario [41404971594](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/41404971594) por orden del dueño: 210 clasificados, 52 eventos, los cuatro eventos admisibles recuperados dentro del cálculo y 1699110 fuera. pinguis sigue sin puesto. Evidencia en EN-CURSO.md.
 
+Ajuste posterior ([PR #128](https://github.com/Bucaro-19/rankingsmashbros/pull/128), squash 47feb76): ese corte marcó 7 torneos en `unlistedTournaments` que eran de otros juegos y no aportaban nada. Ahora el historial se filtra a Ultimate y solo se marcan torneos que aportaron un evento. No cambió el corte publicado.
+
 ## Límites
 
 - La muestra de historiales es acotada y el orden en que start.gg pagina `player.sets` no está documentado: un torneo oculto al que no asistió ningún jugador muestreado puede seguir faltando. No se promete cobertura completa.
@@ -86,4 +88,4 @@ Variable encendida y corte extraordinario [41404971594](https://github.com/Bucar
 
 ## Pruebas
 
-`scripts/smash/test_coverage.py` (16, datos inventados): la búsqueda omite y el complemento recupera y valida; el mismo evento por búsqueda, historial y lista no se duplica; 20 inscritos/18 activos no cuenta; Clase B de 13 queda como contexto excluido; DQ solo no da actividad; pinguis sigue sin puesto; fallo, error de validación y presupuesto agotado no bloquean el corte; sin eventos adicionales el cálculo es idéntico; el contexto excluido no altera ningún puntaje; prioridad de los listados; entidades SQL con activos e inscritos; simulación; auditoría; paso semanal opcional, omitido al reanudar y no bloqueante. `scripts/database/test_accounts_http.py`: participación de 20/18 con sus sets y DQ, DQ en evento que cuenta, historial de análisis que no aparece y cifras del corte intactas, en MariaDB local desechable y CI con MySQL 8.0 y MariaDB 10.11. El importador y su paridad Python/PHP no cambian: un evento recuperado entra al paquete como cualquier evento nacional.
+`scripts/smash/test_coverage.py` (17, datos inventados): la búsqueda omite y el complemento recupera y valida; el mismo evento por búsqueda, historial y lista no se duplica; 20 inscritos/18 activos no cuenta; Clase B de 13 queda como contexto excluido; DQ solo no da actividad; pinguis sigue sin puesto; fallo, error de validación y presupuesto agotado no bloquean el corte; sin eventos adicionales el cálculo es idéntico; el contexto excluido no altera ningún puntaje; prioridad de los listados; entidades SQL con activos e inscritos; simulación; auditoría; eventos de otros juegos en el historial ni se validan ni se marcan; paso semanal opcional, omitido al reanudar y no bloqueante. `scripts/database/test_accounts_http.py`: participación de 20/18 con sus sets y DQ, DQ en evento que cuenta, historial de análisis que no aparece y cifras del corte intactas, en MariaDB local desechable y CI con MySQL 8.0 y MariaDB 10.11. El importador y su paridad Python/PHP no cambian: un evento recuperado entra al paquete como cualquier evento nacional.
