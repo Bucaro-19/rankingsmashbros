@@ -220,6 +220,164 @@ def quiet_run(*args,**kwargs):
     return result,out.getvalue()
 
 
+class Metrics(unittest.TestCase):
+    class Clock:
+        value=0.0
+        def __call__(self):return self.value
+        def advance(self,seconds):self.value+=seconds
+
+    class Host:
+        """Confirmation model; real signed queue/SQL assertions remain in SqlTests."""
+        def __init__(self,*,clock=None,fail_delivery=None):
+            self.clock=clock;self.fail_delivery=fail_delivery;self.checkpoint=None
+            self.known=set();self.envelopes=[];self.last=dict(newRosterPlayers=0);self.wait_seconds=0.0
+        def inventory(self,roster):
+            if self.clock:self.clock.advance(3)
+            return dict(knownIds=sorted(self.known),checkpoint=copy.deepcopy(self.checkpoint),
+                        revision='a'*64 if self.checkpoint else None,lastResult=self.last)
+        def deliver(self,envelope):
+            self.envelopes.append(copy.deepcopy(envelope))
+            if self.clock:self.clock.advance(15);self.wait_seconds+=10
+            if len(self.envelopes)==self.fail_delivery:raise sender.SyncStopped('analysis_unrelated_set')
+            roots=set(envelope['package']['content']['rootPlayerIds'])
+            self.last=dict(newRosterPlayers=len(roots-self.known));self.known.update(roots)
+            self.checkpoint=copy.deepcopy(envelope['checkpoint'])
+
+    def test_page_metrics_distinguish_filtered_empty_pages_and_duplicate_sets_without_changing_package(self):
+        roster=auto.event_roster(Source([9]),1687524);state=auto.merge_state(roster,None,[]);before=copy.deepcopy(state)
+        class Mixed(Source):
+            def query(self,q,v):
+                data=super().query(q,v);valid=history(9)
+                old=copy.deepcopy(valid);old['event']['startAt']=1
+                other=copy.deepcopy(valid);other['event']['videogame']['id']=1
+                rows={1:[valid,copy.deepcopy(valid),old,other,history(20)],2:[],3:[valid]}
+                data['player']['sets']['nodes']=rows[v['page']];return data
+        client=Mixed(pages=3);data,saved=auto.capture_batch(client,state)
+        self.assertEqual(data['captureMetrics'],dict(pagesFetched=3,sourceSetsSeen=6,pagesWithoutSeasonSets=1))
+        self.assertEqual(len(data['sets']),1);self.assertEqual(data['audit']['unlinkedSetsSkipped'],1)
+        self.assertEqual(state,before);self.assertNotIn('captureMetrics',saved)
+        full=package(data);without=copy.deepcopy(data);without.pop('captureMetrics')
+        self.assertEqual(full,package(without));self.assertNotIn('captureMetrics',canonical(full))
+
+    def test_confirmed_metrics_timings_and_distinct_players_are_local_observations(self):
+        clock=self.Clock()
+        class TimedSource(Source):
+            def query(self,q,v):
+                data=super().query(q,v);clock.advance(1 if q==auto.EVENT_ROSTER else 2);return data
+        host=self.Host(clock=clock);client=TimedSource([9])
+        report,log=quiet_run(client,host,1687524,now=NOW,clock=clock)
+        m=report['metrics']
+        self.assertEqual((m['batchesConfirmed'],m['playersAdvanced'],m['historiesCompleted'],m['pagesConfirmed']),(1,1,1,1))
+        self.assertEqual((m['sourceSetsSeen'],m['seasonSetsInConfirmedBatches'],m['captureAttempts']),(1,1,1))
+        self.assertEqual((m['competitiveSetsInConfirmedBatches'],m['gamesInConfirmedBatches']),(1,2))
+        self.assertEqual([m[k] for k in auto.TIMINGS],[1,6,2,0,15,0,10])
+        self.assertEqual(report['seconds'],24);self.assertEqual(report['queries'],2)
+        self.assertNotIn('Inventado',log)
+        envelope=host.envelopes[0]
+        self.assertNotIn('metrics',envelope);self.assertNotIn('captureMetrics',canonical(envelope))
+
+    def test_pages_are_not_attempts_and_sets_are_not_new_sql_rows(self):
+        class Retries(Source):
+            def query(self,q,v):
+                if q!=auto.EVENT_ROSTER:self.calls+=2
+                return super().query(q,v)
+        report,_=quiet_run(Retries([9],pages=2),self.Host(),1687524,now=NOW)
+        m=report['metrics']
+        self.assertEqual(m['captureAttempts'],6);self.assertEqual(m['pagesConfirmed'],2)
+        self.assertEqual(m['sourceSetsSeen'],2);self.assertEqual(m['seasonSetsInConfirmedBatches'],1)
+
+    def test_two_batches_count_each_player_once_and_no_work_needs_no_capture(self):
+        report,_=quiet_run(PagedSource(range(9,44)),self.Host(),1687524,now=NOW)
+        self.assertEqual(report['metrics']['batchesConfirmed'],2)
+        self.assertEqual(report['metrics']['pagesConfirmed'],56)
+        self.assertEqual(report['metrics']['playersAdvanced'],35)
+        self.assertEqual(report['metrics']['historiesCompleted'],0)
+        host=self.Host();source=Source([9])
+        quiet_run(source,host,1687524,now=NOW)
+        repeated,_=quiet_run(Source([9]),host,1687524,now=NOW)
+        self.assertEqual(repeated['status'],'already_imported')
+        self.assertTrue(all(repeated['metrics'][k]==0 for k in auto.COUNTERS))
+        for kwargs in (dict(now=auto.UNTIL),dict(now=NOW)):
+            hidden,_=quiet_run(Source(),mock.Mock(),1687524,**kwargs)
+            self.assertTrue(all(hidden['metrics'][k]==0 for k in auto.COUNTERS))
+
+    def test_unconfirmed_batch_never_credits_progress_and_confirmed_first_batch_survives_failure(self):
+        for failing in (1,2):
+            host=self.Host(fail_delivery=failing);c=PagedSource([9],page_counts={'9':60})
+            with contextlib.redirect_stdout(io.StringIO()) as output,self.assertRaises(sender.SyncStopped):
+                auto.run(c,host,1687524,now=NOW)
+            m=json.loads(output.getvalue())['metrics']
+            self.assertEqual(m['batchesConfirmed'],failing-1);self.assertEqual(m['pagesConfirmed'],28*(failing-1))
+            self.assertEqual(m['historiesCompleted'],0);self.assertEqual(m['playersAdvanced'],failing-1)
+            self.assertEqual(m['captureAttempts'],28*failing)
+            if failing==2:
+                self.assertEqual(host.checkpoint['coverage']['9']['nextPage'],29)
+                host.fail_delivery=None;resumed=PagedSource([9],page_counts={'9':60})
+                result,_=quiet_run(resumed,host,1687524,now=NOW)
+                self.assertEqual(resumed.history_pages[0],('9',29))
+                self.assertEqual(result['metrics']['pagesConfirmed'],32)
+                self.assertEqual(result['metrics']['playersAdvanced'],1)
+                self.assertEqual(result['metrics']['historiesCompleted'],1)
+
+    def test_failed_capture_exposes_only_attempt_time_without_partial_progress_or_source_error(self):
+        class Broken(Source):
+            def query(self,q,v):
+                if self.history_ids:self.calls+=1;raise auto.APIError('PRIVATE PROVIDER BODY')
+                return super().query(q,v)
+        host=self.Host()
+        with contextlib.redirect_stdout(io.StringIO()) as output,self.assertRaises(auto.APIError):
+            auto.run(Broken([9],pages=60),host,1687524,now=NOW)
+        report=json.loads(output.getvalue());self.assertEqual(report['status'],'failed')
+        self.assertEqual(report['metrics']['captureAttempts'],2)
+        self.assertEqual(report['metrics']['pagesConfirmed'],0);self.assertEqual(host.envelopes,[])
+        self.assertNotIn('PRIVATE',output.getvalue())
+
+    def test_lost_confirming_inventory_does_not_claim_progress_or_repeat_a_committed_page(self):
+        class LostInventory(self.Host):
+            inventories=0
+            def inventory(self,roster):
+                self.inventories+=1
+                if self.inventories==2:raise sender.SyncStopped('inventory_unavailable')
+                return super().inventory(roster)
+        host=LostInventory()
+        with contextlib.redirect_stdout(io.StringIO()) as out,self.assertRaises(sender.SyncStopped):
+            auto.run(Source([9]),host,1687524,now=NOW)
+        report=json.loads(out.getvalue())
+        self.assertEqual(report['metrics']['pagesConfirmed'],0)
+        self.assertTrue(host.checkpoint['coverage']['9']['complete'])
+        client=Source([9]);resumed,_=quiet_run(client,host,1687524,now=NOW)
+        self.assertEqual(resumed['status'],'already_imported');self.assertEqual(client.history_ids,[])
+
+    def test_wait_seconds_include_polling_and_preserve_timeout_and_failure_behavior(self):
+        clock=self.Clock();host=auto.Hosting('private-test-key',clock=clock,pause=clock.advance)
+        with mock.patch.object(auto,'request',side_effect=[dict(status='running'),dict(status='succeeded')]) as request:
+            host.wait(1687524,'a'*64,dict(status='queued'))
+        self.assertEqual(host.wait_seconds,30);self.assertEqual(request.call_count,2)
+        with mock.patch.object(auto,'request',return_value=dict(status='failed',reason='analysis_unrelated_set')):
+            with self.assertRaisesRegex(sender.SyncStopped,'analysis_unrelated_set'):
+                host.wait(1687524,'a'*64,dict(status='queued'))
+        self.assertEqual(host.wait_seconds,45)
+        with mock.patch.object(auto,'request',return_value=dict(status='queued')) as request:
+            with self.assertRaisesRegex(sender.SyncStopped,'analysis_import_pending'):
+                host.wait(1687524,'a'*64,dict(status='queued'))
+        self.assertEqual(host.wait_seconds,645);self.assertEqual(request.call_count,40)
+
+    def test_summary_allowlist_private_values_and_markdown_meanings(self):
+        report,_=quiet_run(Source([9]),self.Host(),1687524,now=NOW)
+        report.update(checkpoint={'secret':'NEVER SHOW'},token='NEVER SHOW')
+        report['metrics'].update(playerIds=['NEVER SHOW'],raw='NEVER SHOW',captureSeconds=float('nan'))
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'summary.md'
+            with mock.patch.dict(os.environ,dict(GITHUB_STEP_SUMMARY=str(path))),contextlib.redirect_stdout(io.StringIO()) as out:
+                auto.emit_summary(report)
+            rendered=path.read_text();body=out.getvalue()
+        self.assertNotIn('NEVER SHOW',body+rendered);self.assertNotIn('Inventado',body+rendered)
+        self.assertNotIn('playerIds',body);self.assertNotIn('checkpoint',body)
+        self.assertIsNone(json.loads(body)['metrics']['captureSeconds'])
+        self.assertIn('pueden existir ya en SQL',rendered);self.assertIn('no mide el tiempo SQL',rendered)
+        self.assertIn('Sin estimación de fecha',rendered)
+
+
 def php(mode,p):
     run=subprocess.run(['php','-d','memory_limit=512M',str(ROOT/'scripts/database/php_rival_bridge.php')],input=json.dumps(dict(mode=mode,raw=canonical(p))),text=True,capture_output=True,timeout=90)
     if run.stderr:raise AssertionError('Unexpected PHP diagnostic')
@@ -513,15 +671,22 @@ class SqlTests(fixtures.SqlTests):
         self.assertEqual((result['known'],result['added'],result['pending'],c.calls),(1,0,0,1))
         self.assertEqual(sql(self.db,"SELECT COUNT(*) FROM sync_jobs WHERE kind='player_history'")[0][0],0)
     def test_two_bounded_batches_resume_next_run_without_restarting_pages(self):
+        protected=self.protected();public=(self.site/'data/public.json').read_bytes()
         with self.serving() as host:
             c=Source([9],pages=60);report,_=quiet_run(c,host,1687524,now=NOW)
             self.assertEqual((report['pending'],report['queries'],report['added']),(1,57,1))
+            self.assertEqual([report['metrics'][k] for k in ('batchesConfirmed','playersAdvanced','pagesConfirmed','historiesCompleted','seasonSetsInConfirmedBatches')],[2,1,56,0,2])
             inventory=host.inventory(auto.event_roster(Source([9]),1687524))
             self.assertEqual(inventory['checkpoint']['coverage']['9']['nextPage'],57)
             self.assertEqual(inventory['checkpoint']['pages'],[])
             c=Source([9],pages=60);report,_=quiet_run(c,host,1687524,now=NOW)
             self.assertEqual((report['pending'],report['queries'],report['added']),(0,5,0))
+            self.assertEqual([report['metrics'][k] for k in ('batchesConfirmed','playersAdvanced','pagesConfirmed','historiesCompleted')],[1,1,4,1])
             self.assertEqual(host.inventory(auto.event_roster(Source([9]),1687524))['checkpoint']['coverage']['9']['nextPage'],61)
+            repeated,_=quiet_run(Source([9],pages=60),host,1687524,now=NOW)
+            self.assertEqual(repeated['status'],'already_imported')
+            self.assertTrue(all(repeated['metrics'][k]==0 for k in auto.COUNTERS))
+        self.assertEqual(self.protected(),protected);self.assertEqual((self.site/'data/public.json').read_bytes(),public)
     def test_partial_large_roster_keeps_unqueried_roots_after_canonical_key_sort(self):
         # More roots than fit in one batch leaves real untouched default coverage.
         # The same strict receiver must still accept both touched/untouched roots

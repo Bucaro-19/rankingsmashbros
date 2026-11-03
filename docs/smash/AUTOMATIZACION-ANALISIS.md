@@ -1,5 +1,42 @@
 # Automatización del contexto de inscritos — Legends 7
 
+## Fase 2: medir avance útil — 2/nov/2026 GT
+
+Pedido del dueño: retomar el plan de eficiencia. Implementación en `feat/rival-efficiency-metrics`, pendiente de CI/orden de publicación. Solo Python en Actions: no requiere PHP, migración, FTP ni assets_only. Se mantienen consulta, orden 3:1, cinco sets por página, dos tandas, techos, seis horas, ámbito 1687524/2026, expiración y canal firmado. No hay consultas nuevas a start.gg ni al receptor para observar; se aprovechan las respuestas que ya se obtenían.
+
+El JSON del resumen conserva sus campos y añade `metrics.version=1`. Solo agregados de lista cerrada, nunca nombres, IDs de jugadores, fuente, credenciales, revisión o checkpoint. El nuevo `captureMetrics` que devuelve `capture_batch` es local: `package()` no lo transporta, no cambia `audit`, hashes, `stateVersion=1`, SQL ni el estado privado. El resumen Markdown explica las unidades.
+
+| Campo en metrics | Significado en esta ejecución |
+|---|---|
+| batchesConfirmed | Tandas con entrega e inventario posterior exitosos. |
+| playersAdvanced | Jugadores distintos con avance en esas tandas; no se cuenta dos veces al que aparece en ambas. |
+| historiesCompleted | Objetivos que pasaron de incompleto a completo en esas tandas; cero no implica cero páginas. |
+| pagesConfirmed | Suma del avance de nextPage confirmado. No incluye reintentos ni páginas de tandas fallidas. |
+| sourceSetsSeen | Apariciones de sets fuente revisadas en las páginas de tandas confirmadas, antes de filtrar juego/fecha/pertenencia. |
+| pagesWithoutSeasonSets | Páginas confirmadas sin sets admitidos por el filtro actual de temporada, juego, formato y vínculo. No demuestra inactividad. |
+| seasonSetsInConfirmedBatches | Sets distintos por paquete confirmado, incluidos DQ/unknown. No son inserciones nuevas: pueden existir ya en SQL o repetirse en otra tanda. |
+| competitiveSetsInConfirmedBatches | Subconjunto clasificado competitive por el normalizador vigente. Tampoco implica filas SQL nuevas ni resultados que cuenten en ranking. |
+| gamesInConfirmedBatches | Games que el paquete conserva según sus reglas existentes; no se inventan cuando faltan. |
+| captureAttempts | Intentos HTTP de captura incluidos reintentos y capturas fallidas; el queries exterior incluye también el roster. |
+
+Tiempos monotónicos separados: `rosterSeconds`, `inventorySeconds`, `captureSeconds`, `packageSeconds`, `deliveryAndWaitSeconds` y `priorJobWaitSeconds`. Incluyen latencia y los fallos de su etapa. `importWaitSeconds` mide las llamadas existentes a Hosting.wait, tanto para tandas nuevas como trabajos anteriores; **ya está incluido** en entrega/espera o espera anterior y no debe sumarse otra vez. Incluye pausas, sondeos y latencia: no es el tiempo SQL real ni separa cola de ejecución. Sin medición local disponible es null, no cero inventado. No se añade instrumentación al servidor para obtener ese desglose.
+
+Los conteos de avance solo se agregan después de la entrega y el inventario confirmatorio; una segunda tanda fallida conserva los de la primera. Si se pierde el inventario después de un commit, el resumen puede subcontar: no se presenta cero como prueba de que no hubo escritura. El siguiente run reanuda desde el checkpoint real y no repite páginas confirmadas. Los tiempos/intentos sí registran trabajo fallido. No se publica ETA ni se altera el porcentaje del panel.
+
+### Línea de base anterior a estas métricas (solo lectura)
+
+Logs normales revisados el 2/nov; todos `imported`, 343 inscritos/conocidos, cero identidades nuevas y omisiones sin vínculo cero:
+
+| Run | Pendientes | Intentos API totales | Duración total |
+|---|---:|---:|---:|
+| [41364020166](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/41364020166) | 165 | 63 | 594,475 s |
+| [41424301026](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/41424301026) | 165 | 63 | 405,739 s |
+| [41540882313](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/41540882313) | 165 | 63 | 453,468 s |
+
+Estos resúmenes no tienen páginas/sets útiles ni desglose de tiempos. No se reconstruyen como cifras medidas a partir de consultas o de 343−165, ni se concluye que la cola o la API sea el cuello de botella por esos totales. No se ejecutó una captura productiva adicional para medir.
+
+Después de autorizar la fusión, observar al menos tres ejecuciones normales con metrics.version=1. Comparar páginas confirmadas e historiales terminados, sets competitivos/games, páginas sin sets de temporada, intentos y captura frente a espera. Revisar fallos/429 y cola sin borrar estados. Solo entonces decidir fase 3 (más frecuencia) o estudiar fase 4 (lista ligera y detalle/cache por set+updatedAt, con orden/filtros de fuente comprobados). Sin aumentar por defecto el volumen, el evento, los permisos ni prometer todos los datos de start.gg. Revertir esta fase solo retira observaciones: el receptor y el checkpoint son iguales.
+
 ## Renovación del dueño — 27/oct/2026 GT
 
 El dueño pidió continuar los historiales de Legends 7 para conservar el contexto de 2026 y consultarlo el próximo año. Se interpreta como renovación del mismo circuito de análisis y sus altas base ya autorizadas, **solo evento 1687524 / temporada 2026**, sin reiniciar checkpoint ni introducir otros eventos/temporadas. Nuevo tope fijo **2027-01-01T06:00:00Z = fin del 31/dic/2026 GT/SV**, sin argumento/variable que lo amplíe. Se mantiene cada seis horas, máximo dos tandas, 30 intentos/120 s por tanda y una petición/s. Receptor, worker, capturador y fecha mostrada en panel comparten ese plazo y sus pruebas comprueban la paridad. No cambia «Mi torneo»: pools/horarios de un torneo ya terminado no se reactivan.

@@ -4,6 +4,7 @@ No SQL driver/credentials in Actions. No ranking publisher, FTP, artifacts or pu
 Only aggregates reach stdout/step summary. Private checkpoints live on BanaHosting.
 """
 import copy
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import json
 import hashlib
@@ -38,18 +39,64 @@ EVENT_ROSTER='''query($id:ID!,$page:Int!){
  }
 }'''
 
+COUNTERS=('batchesConfirmed','playersAdvanced','historiesCompleted','pagesConfirmed',
+    'sourceSetsSeen','pagesWithoutSeasonSets','seasonSetsInConfirmedBatches',
+    'competitiveSetsInConfirmedBatches','gamesInConfirmedBatches','captureAttempts')
+TIMINGS=('rosterSeconds','inventorySeconds','captureSeconds','packageSeconds',
+    'deliveryAndWaitSeconds','priorJobWaitSeconds','importWaitSeconds')
+
+
+def new_metrics():return dict(version=1,**dict.fromkeys(COUNTERS,0),**dict.fromkeys(TIMINGS,0.0))
+
+
+@contextmanager
+def measure(metrics,key,clock):
+    started=clock()
+    try:yield
+    finally:metrics[key]+=max(0,clock()-started)
+
+
+def public_summary(summary):
+    """Only allowlisted scalars. Never serialize a checkpoint/source/exception."""
+    out={k:summary.get(k) for k in ('status','eventId','registered','known','added','pending','queries','seconds','unlinkedSetsSkipped') if k in summary}
+    if 'metrics' in summary:
+        source=summary['metrics'];metrics=dict(version=1)
+        for key in COUNTERS:
+            value=source.get(key)
+            metrics[key]=value if type(value) is int and value>=0 else None
+        for key in TIMINGS:
+            value=source.get(key)
+            metrics[key]=round(value,3) if type(value) in (int,float) and math.isfinite(value) and value>=0 else None
+        out['metrics']=metrics
+    return out
+
 
 def active(now=None):return (now or datetime.now(timezone.utc))<UNTIL
 
 
 def emit_summary(summary):
     # Only allowlisted aggregates; never raw provider/driver/header/body/roster data.
+    summary=public_summary(summary)
     print(json.dumps(summary,ensure_ascii=False))
     target=os.environ.get('GITHUB_STEP_SUMMARY')
     if target:
         lines=['## Contexto de análisis',f"Estado: `{summary['status']}`",'','| Inscritos | Conocidos | Agregados | Pendientes | Consultas | Segundos |','|---:|---:|---:|---:|---:|---:|',
                '| '+' | '.join('desconocido' if summary[k] is None else str(summary[k]) for k in ('registered','known','added','pending','queries','seconds'))+' |',
                '', 'Sets sin vínculo con el inscrito omitidos en tandas confirmadas: '+str(summary.get('unlinkedSetsSkipped',0))]
+        if 'metrics' in summary:
+            m=summary['metrics']
+            lines+=['','### Avance confirmado en esta ejecución',
+                '| Tandas | Jugadores con avance | Historiales finalizados | Páginas | Sets de temporada en paquetes confirmados | Páginas sin sets de temporada | Sets fuente revisados |',
+                '|---:|---:|---:|---:|---:|---:|---:|',
+                '| '+' | '.join(str(m[k]) for k in ('batchesConfirmed','playersAdvanced','historiesCompleted','pagesConfirmed','seasonSetsInConfirmedBatches','pagesWithoutSeasonSets','sourceSetsSeen'))+' |',
+                '', 'Dentro de esos paquetes: '+str(m['competitiveSetsInConfirmedBatches'])+' sets competitivos y '+str(m['gamesInConfirmedBatches'])+' games.',
+                'Intentos HTTP de captura (incluidos reintentos/fallos): '+str(m['captureAttempts'])+'. Las consultas totales de arriba incluyen además la lista de inscritos.',
+                '', 'Los sets se cuentan una vez por paquete confirmado: pueden existir ya en SQL o repetirse en otra tanda. Páginas sin sets de temporada no significa jugadores sin actividad.',
+                '', '### Tiempo observado desde Actions (segundos)',
+                '| Lista | Inventarios | Captura | Preparación | Entrega y espera | Espera de trabajo anterior | Dentro de las esperas al worker |',
+                '|---:|---:|---:|---:|---:|---:|---:|',
+                '| '+' | '.join('no disponible' if m[k] is None else str(m[k]) for k in TIMINGS)+' |',
+                '', 'La última columna está incluida en las esperas anteriores; no se suma otra vez. Incluye sondeos y latencia, no mide el tiempo SQL del worker ni separa la cola. Sin estimación de fecha de finalización.']
         with open(target,'a') as out:out.write('\n'.join(lines)+'\n')
 
 
@@ -120,7 +167,7 @@ def merge_state(roster,checkpoint,known):
 
 
 class Hosting:
-    def __init__(self,key,*,pause=time.sleep,clock=time.monotonic):self.key=key;self.pause=pause;self.clock=clock
+    def __init__(self,key,*,pause=time.sleep,clock=time.monotonic):self.key=key;self.pause=pause;self.clock=clock;self.wait_seconds=0.0
     def call(self,value):return request(self.key,encode_transport(value),'application/vnd.smash.analysis+gzip',response_limit=2*1024*1024,safe_reasons=SAFE_REASONS)
     def inventory(self,roster):return self.call(dict(operation='analysis_inventory',roster=roster))
     def deliver(self,envelope):
@@ -135,47 +182,67 @@ class Hosting:
                 self.pause(5*(attempt+1))
         return self.wait(envelope['eventId'],digest,last)
     def wait(self,event_id,digest,last):
-        end=self.clock()+600
-        while last['status'] in ('queued','running'):
-            if self.clock()>=end:raise SyncStopped('analysis_import_pending')
-            self.pause(min(15,max(0,end-self.clock())))
-            last=request(self.key,json.dumps(dict(operation='analysis_status',eventId=event_id,sha256=digest)).encode(),'application/json',safe_reasons=SAFE_REASONS)
-        if last['status']!='succeeded':raise SyncStopped(last.get('reason') if last.get('reason') in SAFE_REASONS else 'analysis_import_failed')
-        return last
+        started=self.clock();end=started+600
+        try:
+            while last['status'] in ('queued','running'):
+                if self.clock()>=end:raise SyncStopped('analysis_import_pending')
+                self.pause(min(15,max(0,end-self.clock())))
+                last=request(self.key,json.dumps(dict(operation='analysis_status',eventId=event_id,sha256=digest)).encode(),'application/json',safe_reasons=SAFE_REASONS)
+            if last['status']!='succeeded':raise SyncStopped(last.get('reason') if last.get('reason') in SAFE_REASONS else 'analysis_import_failed')
+            return last
+        finally:self.wait_seconds+=max(0,self.clock()-started)
 
 
 def run(client,hosting,event_id,*,now=None,clock=time.monotonic):
-    start=clock();summary=dict(status='disabled',eventId=event_id,registered=None,known=None,added=0,pending=None,queries=0,seconds=0,unlinkedSetsSkipped=0)
+    start=clock();metrics=new_metrics();advanced=set()
+    wait_before=getattr(hosting,'wait_seconds',None)
+    summary=dict(status='disabled',eventId=event_id,registered=None,known=None,added=0,pending=None,queries=0,seconds=0,unlinkedSetsSkipped=0,metrics=metrics)
     try:
         if not active(now):summary['status']='authorization_expired';return summary
         if event_id!=1687524:raise SyncStopped('analysis_event_not_authorized')
-        roster=event_roster(client,event_id)
+        with measure(metrics,'rosterSeconds',clock):roster=event_roster(client,event_id)
         summary['queries']=client.calls
         if roster is None:summary['status']='registrations_unavailable';return summary
         summary.update(registered=roster['registrations'],pending=roster['registrations'])
         for batch in range(MAX_BATCHES):
             if not active(now):raise SyncStopped('authorization_expired')
-            inventory=hosting.inventory(roster) # Checks 007 before any history query or queue insert.
+            # Checks 007 before any history query or queue insert.
+            with measure(metrics,'inventorySeconds',clock):inventory=hosting.inventory(roster)
             if inventory.get('pendingJob'):
-                pending=inventory['pendingJob'];hosting.wait(event_id,pending['sha256'],pending)
-                inventory=hosting.inventory(roster)
+                pending=inventory['pendingJob']
+                with measure(metrics,'priorJobWaitSeconds',clock):hosting.wait(event_id,pending['sha256'],pending)
+                with measure(metrics,'inventorySeconds',clock):inventory=hosting.inventory(roster)
             known=inventory['knownIds'];checkpoint=inventory.get('checkpoint')
             if summary['known'] is None:summary['known']=len(known)
             state=merge_state(roster,checkpoint,known)
             pending=sum(not c['complete'] for c in state['coverage'].values());summary['pending']=pending
             if not pending:summary['status']='already_imported' if not summary['added'] else 'imported';break
             before=copy.deepcopy(state['coverage'])
-            data,state=capture_batch(client,state)
+            attempts_before=client.calls
+            try:
+                with measure(metrics,'captureSeconds',clock):data,state=capture_batch(client,state)
+            finally:metrics['captureAttempts']+=client.calls-attempts_before
             if pending and not data['audit']['requests']:raise APIError('capture_made_no_progress')
             # Integer transport matches PHP/Python canonical hashes; accurate fractional time stays in the summary.
             data['audit']['seconds']=math.ceil(data['audit']['seconds'])
             progressed={pid for pid,cov in state['coverage'].items() if cov!=before.get(pid)}
             data['roster']=copy.deepcopy(roster);data['roster']['players']={pid:roster['players'][pid] for pid in progressed}
             data['coverage']={pid:state['coverage'][pid] for pid in progressed}
-            pack=package(data);state['pages']={}
+            with measure(metrics,'packageSeconds',clock):pack=package(data)
+            state['pages']={}
             envelope=dict(operation='analysis_import',eventId=event_id,baseRevision=inventory['revision'],package=pack,checkpoint=state)
-            hosting.deliver(envelope)
-            after=hosting.inventory(roster)
+            with measure(metrics,'deliveryAndWaitSeconds',clock):hosting.deliver(envelope)
+            with measure(metrics,'inventorySeconds',clock):after=hosting.inventory(roster)
+            # No progress credited until delivery and the confirming inventory succeed.
+            advanced.update(progressed);metrics['playersAdvanced']=len(advanced)
+            metrics['batchesConfirmed']+=1
+            metrics['pagesConfirmed']+=sum(state['coverage'][pid]['nextPage']-before[pid]['nextPage'] for pid in progressed)
+            metrics['historiesCompleted']+=sum(state['coverage'][pid]['complete'] and not before[pid]['complete'] for pid in progressed)
+            metrics['sourceSetsSeen']+=data['captureMetrics']['sourceSetsSeen']
+            metrics['pagesWithoutSeasonSets']+=data['captureMetrics']['pagesWithoutSeasonSets']
+            metrics['seasonSetsInConfirmedBatches']+=len(pack['content']['entities']['sets'])
+            metrics['competitiveSetsInConfirmedBatches']+=sum(s['outcome_type']=='competitive' for s in pack['content']['entities']['sets'])
+            metrics['gamesInConfirmedBatches']+=len(pack['content']['entities']['games'])
             summary['added']+=after['lastResult']['newRosterPlayers']
             summary['unlinkedSetsSkipped']+=data['audit'].get('unlinkedSetsSkipped',0)
             summary.update(pending=sum(not c['complete'] for c in state['coverage'].values()),status='imported')
@@ -185,6 +252,8 @@ def run(client,hosting,event_id,*,now=None,clock=time.monotonic):
         summary['status']='failed';raise
     finally:
         summary['queries']=client.calls;summary['seconds']=round(clock()-start,3)
+        wait_after=getattr(hosting,'wait_seconds',None)
+        metrics['importWaitSeconds']=max(0,wait_after-wait_before) if type(wait_before) in (int,float) and type(wait_after) in (int,float) else None
         emit_summary(summary)
 
 
