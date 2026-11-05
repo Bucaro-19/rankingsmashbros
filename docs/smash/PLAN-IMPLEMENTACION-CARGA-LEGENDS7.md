@@ -4,7 +4,7 @@
 
 **20/oct:** fase 1 fusionada y activada por orden posterior del dueño, PR #114 y corrección #115. Política definitiva 3:1, pruebas y mediciones en AUTOMATIZACION-ANALISIS.md y MEJORAS-CARGA-LEGENDS7.md. La frecuencia sigue en seis horas; fases 2–4 pendientes.
 
-**2/nov:** el dueño pide retomar la eficiencia. Fase 2 implementada en rama `feat/rival-efficiency-metrics`, sin activar ni fusionar aún: métricas locales aditivas en stdout/Step Summary, fuera del paquete y checkpoint. Contrato y línea de base de tres ejecuciones en AUTOMATIZACION-ANALISIS.md. Las tres observaciones previas no sustituyen las tres ejecuciones con métricas que deben evaluarse después de autorizar la publicación. Fases 3 y 4 siguen pendientes; no se cambia el cron ni se captura todo start.gg.
+**2/nov:** el dueño pide retomar la eficiencia y después ordena fusionar #130. Fase 2 fusionada por rama `feat/rival-efficiency-metrics`, squash **1119acc**, **2/nov 21:08:11 GT**; CI main **41570362638** verde. Las métricas corren desde main en las próximas capturas sin FTP. Contrato y línea de base en AUTOMATIZACION-ANALISIS.md. Las observaciones anteriores a esa fusión no sustituyen las tres ejecuciones con métricas nuevas. Fases 3 y 4 siguen pendientes; no se cambia el cron ni se captura todo start.gg.
 
 ## Resultado que buscamos
 
@@ -49,6 +49,8 @@ Mantener finalizados/objetivos en la barra y páginas aparte. Si se muestra disp
 Observar al menos tres ejecuciones normales (aprox. 18 h con el cron actual, sujetas a retrasos de Actions). Si queda poco plazo antes de Legends 7, priorizar fase 1 y medir; no omitir validaciones para alcanzar las demás.
 
 ## Fase 3 — Frecuencia temporal de dos horas (solo tras evaluar fase 2)
+
+Preparación de solo lectura: `python3 scripts/database/rival_efficiency.py --from-actions` desde la raíz del repo. Lee hasta 12 metadatos de Actions y los logs de las tres cargas **programadas/main** más recientes posteriores a #130; no lanza cargas ni toca variables. Alternativa sin red: `--input /ruta/informes.json` con un objeto `runs`, para pruebas/informes locales. Contrato y señales en AUTOMATIZACION-ANALISIS.md. Primera revisión tras fusionar #130: **insufficient_observations, 0/3**. No se fabrican tres cargas manuales para pasar el requisito; si una de las últimas falla, no se sustituye por una anterior exitosa.
 
 Proponer cron 37 */2 * * *, con los mismos techos y expiración. Son como máximo doce disparos previstos y unas 672 páginas/día en lugar de 224; no son sets útiles garantizados. A 320 inscritos, el roster cuesta aproximadamente siete consultas por ejecución, más reintentos. GitHub puede retrasar o perder disparos programados; no prometer una revisión cada dos horas exactas.
 

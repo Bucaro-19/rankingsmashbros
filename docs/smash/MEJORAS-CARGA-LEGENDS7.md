@@ -2,7 +2,7 @@
 
 Plan solicitado después por el dueño: [PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md](PLAN-IMPLEMENTACION-CARGA-LEGENDS7.md). La barra se publicó el 19/oct; la fase 1 se publicó por orden posterior del dueño; las fases de métricas y frecuencia siguen pendientes.
 
-**Actualización 2/nov GT:** fase 2 de métricas implementada en rama propia, todavía sin publicar. Contrato y tres ejecuciones previas observadas en [AUTOMATIZACION-ANALISIS.md](AUTOMATIZACION-ANALISIS.md): 165 pendientes y 63 consultas en las tres, sin datos suficientes para concluir estancamiento. Medirá páginas/jugadores confirmados, sets competitivos/games y captura frente a espera, sin API adicional ni cambios de paquete/checkpoint. No se activa la fase de dos horas. El plazo original de la barra descrito abajo se renovó en #125 hasta fin del 31/dic/2026 GT; el documento conserva como antecedente las observaciones del 19/oct.
+**Actualización 2/nov GT:** fase 2 de métricas **fusionada por orden del dueño en #130**, squash 1119acc, 21:08:11 GT; CI main 41570362638 verde. Contrato y tres ejecuciones previas observadas en [AUTOMATIZACION-ANALISIS.md](AUTOMATIZACION-ANALISIS.md): 165 pendientes y 63 consultas en las tres, sin datos suficientes para concluir estancamiento. Las próximas cargas medirán páginas/jugadores confirmados, sets competitivos/games y captura frente a espera, sin API adicional ni cambios de paquete/checkpoint. Se prepara el evaluador de fase 3 `rival_efficiency.py`; primera revisión real **0/3** observaciones. No se activa la fase de dos horas. El plazo original de la barra descrito abajo se renovó en #125 hasta fin del 31/dic/2026 GT; el documento conserva como antecedente las observaciones del 19/oct.
 
 ## Barra del panel privado
 
