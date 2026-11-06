@@ -230,11 +230,13 @@ class AccountHttpTests(unittest.TestCase):
             league=events[str(base)]
             self.assertEqual((league['counts'],league['wins'],league['losses'],league['other']),(False,0,1,3))
             self.assertIn('18 jugadores activos (20 inscritos)',league['reason']); self.assertIn('20 o más',league['reason'])
+            self.assertEqual(league['reasonCode'],'under_minimum_active_players')
             self.assertEqual([s['outcome'] for s in league['sets']].count('dq'),3)
             self.assertEqual(league['sets'][0]['playerIds'][0],str(base+9))
             dq=events[counted]
             self.assertEqual((dq['counts'],dq['wins'],dq['losses'],dq['other']),(False,0,0,2))
             self.assertIn('DQ, W.O. o bye',dq['reason'])
+            self.assertEqual(dq['reasonCode'],'no_valid_set_in_counted_event')
             self.assertNotIn(str(base+50),events)
             # Ranking figures are exactly what the published cut says.
             self.assertEqual({k:v for k,v in view.items() if k!='events'},{k:v for k,v in old.items() if k!='events'})

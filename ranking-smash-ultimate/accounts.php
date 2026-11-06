@@ -386,7 +386,8 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
               e.registered_entrants, en.id AS entrant_id,
               COALESCE(SUM(s.outcome_type = 'competitive' AND s.winner_entrant_id = en.id), 0) AS wins,
               COALESCE(SUM(s.outcome_type = 'competitive' AND s.winner_entrant_id IS NOT NULL AND s.winner_entrant_id <> en.id), 0) AS losses,
-              COALESCE(SUM(s.id IS NOT NULL AND s.outcome_type <> 'competitive'), 0) AS other
+              COALESCE(SUM(s.id IS NOT NULL AND s.outcome_type <> 'competitive'), 0) AS other,
+              COALESCE(SUM(s.outcome_type IN ('dq', 'walkover', 'bye')), 0) AS non_played
             FROM events e JOIN tournaments t ON t.id = e.tournament_id
             LEFT JOIN organizer_event_context c ON c.event_id = e.id
             JOIN entrants en ON en.event_id = e.id JOIN entrant_players ep ON ep.entrant_id = en.id AND ep.player_id = ?
@@ -401,25 +402,33 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
             $id = (string)$row['id']; $wins = (int)$row['wins']; $losses = (int)$row['losses']; $other = (int)$row['other'];
             $active = $row['active_players'] === null ? null : (int)$row['active_players'];
             $registered = $row['registered_entrants'] === null ? null : (int)$row['registered_entrants'];
-            $minimum = $row['country_code'] === 'GT' ? $localMinimum : $foreignMinimum;
+            $minimum = $row['country_code'] === null ? null : ($row['country_code'] === 'GT' ? $localMinimum : $foreignMinimum);
+            $noValidSet = $other > 0 && $other === (int)$row['non_played']
+                ? 'aquí solo tienes resultados por DQ, W.O. o bye: no son sets válidos y no suman a tu actividad.'
+                : 'no hay un set válido registrado para tu participación.';
             if (isset($counted[$id])) {
                 // A counted event is already in the published profile when the player has valid sets there.
                 if ($wins + $losses > 0) continue;
-                $reason = 'aquí solo tienes resultados por DQ, W.O. o bye: no son sets válidos y no suman a tu actividad.';
+                $reasonCode = 'no_valid_set_in_counted_event';
+                $reason = $noValidSet;
             } elseif (isset($editorial[$id])) {
+                $reasonCode = 'excluded_by_cut';
                 $reason = 'el torneo está excluido del ranking: ' . $editorial[$id];
-            } elseif ($active !== null && $active < $minimum) {
+            } elseif ($active !== null && $minimum !== null && $active < $minimum) {
+                $reasonCode = 'under_minimum_active_players';
                 $reason = 'tuvo ' . $active . ($active === 1 ? ' jugador activo' : ' jugadores activos')
                     . ($registered !== null && $registered !== $active ? ' (' . $registered . ' inscritos)' : '')
                     . ' y el ranking pide ' . $minimum . ' o más con al menos un set válido. Tus resultados ahí no suman ni restan puntos.';
             } elseif ($wins + $losses === 0) {
-                $reason = 'aquí solo tienes resultados por DQ, W.O. o bye: no son sets válidos y no suman a tu actividad.';
+                $reasonCode = 'no_valid_set';
+                $reason = $noValidSet;
             } else {
+                $reasonCode = 'not_in_published_cut';
                 $reason = 'no está entre los torneos del corte publicado.';
             }
             $events[$id] = ['id' => $id, 'name' => $row['name'], 'eventName' => $row['event_name'], 'date' => $row['day'],
                 'country' => $row['country_code'], 'url' => $row['url'], 'wins' => $wins, 'losses' => $losses, 'other' => $other,
-                'counts' => false, 'reason' => $reason, 'sets' => []];
+                'counts' => false, 'reason' => $reason, 'reasonCode' => $reasonCode, 'sets' => []];
         }
         if ($events) {
             // The player's own sets in those events, winner first like the published results.
@@ -497,7 +506,8 @@ function smash_account_profile(array $public, ?string $playerId): array
             $events[] = ['id' => (string)$event['id'], 'name' => $event['name'], 'eventName' => $event['eventName'],
                 'date' => $event['date'], 'country' => $event['country'], 'url' => $event['url'],
                 'wins' => $record['wins'], 'losses' => $record['losses'], 'counts' => $counts,
-                'reason' => $counts ? null : 'Torneo internacional: no entra en la vista Solo Guatemala.'];
+                'reason' => $counts ? null : 'Torneo internacional: no entra en la vista Solo Guatemala.',
+                'reasonCode' => $counts ? null : 'international_excluded_in_local_view'];
         }
         usort($events, static fn($a, $b) => strcmp($b['date'], $a['date']) ?: strcmp($a['id'], $b['id']));
         $wins = array_sum(array_column($ledger, 'wins')); $losses = array_sum(array_column($ledger, 'losses'));
