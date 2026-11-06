@@ -1,5 +1,13 @@
 # Automatización del contexto de inscritos — Legends 7
 
+## Fase 3: captura programada cada dos horas — propuesta del 6/nov/2026 GT
+
+El cron propuesto `37 */2 * * *` programa hasta 12 ejecuciones al día al minuto 37 UTC. Conserva `smash-gt-publication`, `cancel-in-progress: false`, el límite de 30 minutos por ejecución, las dos tandas y la fecha de expiración. Los retrasos de GitHub pueden reducir la frecuencia real.
+
+Con las 63 consultas y 56 páginas por ejecución observadas, cuatro disparos diarios equivalen a 252 consultas y 224 páginas. Doce equivaldrían a 756 consultas y 672 páginas si todos se ejecutan con esa carga. Estas cifras proyectan la muestra, no fijan el consumo real ni garantizan que las páginas contengan sets de temporada. Sigue vigente el límite de una solicitud por segundo.
+
+Después de publicar, revisar las primeras tres ejecuciones programadas y la cola. Si aparecen 429, esperas hasta el límite o acumulación de trabajos, volver a `37 2,8,14,20 * * *` y sincronizar el texto del panel. La reversión conserva el avance confirmado. Mantener el cron del hosting de cinco minutos. La frecuencia de seis horas descrita abajo corresponde a la instalación inicial y sigue vigente en producción hasta publicar esta fase.
+
 ## Fase 2: medir avance útil — 2/nov/2026 GT
 
 Pedido del dueño: retomar el plan de eficiencia. Implementación en `feat/rival-efficiency-metrics`, pendiente de CI/orden de publicación. Solo Python en Actions: no requiere PHP, migración, FTP ni assets_only. Se mantienen consulta, orden 3:1, cinco sets por página, dos tandas, techos, seis horas, ámbito 1687524/2026, expiración y canal firmado. No hay consultas nuevas a start.gg ni al receptor para observar; se aprovechan las respuestas que ya se obtenían.

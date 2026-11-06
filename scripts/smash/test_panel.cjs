@@ -139,11 +139,12 @@ test('access loss clears rows; expired report offers to refresh instead of loopi
   await h.api.open('all'); assert.match(h.panel.innerHTML,/Actualizar datos/); assert.doesNotMatch(h.panel.innerHTML,/data-registration-retry/);
 });
 
-const progressSample={status:'pending',registered:5,preexisting:1,targets:4,completed:1,partial:1,notStarted:2,pending:3,percentage:25,pagesConfirmed:5,rosterCapturedAt:'2026-10-19T17:54:00-06:00',checkpointSavedAt:'2026-10-19T18:00:00-06:00',stale:false};
+const progressSample={status:'pending',registered:5,preexisting:1,targets:4,completed:1,partial:1,notStarted:2,pending:3,percentage:25,pagesConfirmed:5,rosterCapturedAt:'2026-10-19T17:54:00-06:00',checkpointSavedAt:'2026-10-19T18:00:00-06:00',authorizationEndsAt:'2027-01-01T00:00:00-06:00',stale:false};
 test('Legends progress reflects completed target histories, not known players; ARIA uses the real value',()=>{
   const h=registrationController(async()=>{});const html=h.api.progress(progressSample);
   assert.match(html,/aria-valuenow="25"/);assert.match(html,/width:25%/);assert.match(html,/1 de 4 historiales programados finalizados; 3 pendientes/);
-  assert.match(html,/Con datos previos · no recapturados/);assert.match(html,/Historiales en carga parcial/);assert.match(html,/5 páginas confirmadas/);assert.match(html,/19\/10\/2026/);assert.match(html,/puede bajar|Puede bajar/);assert.ok(!html.includes('PRIVATE PERSON'));
+  assert.match(html,/Con datos previos · no recapturados/);assert.match(html,/Historiales en carga parcial/);assert.match(html,/5 páginas confirmadas/);
+  assert.match(html,/cada 2 horas/);assert.match(html,/01\/01\/2027 · 00:00/);assert.doesNotMatch(html,/25\/10\/2026/);assert.match(html,/19\/10\/2026/);assert.match(html,/puede bajar|Puede bajar/);assert.ok(!html.includes('PRIVATE PERSON'));
 });
 test('Legends unknown/corrupt progress has no false zero or fake running state',()=>{
   const h=registrationController(async()=>{});

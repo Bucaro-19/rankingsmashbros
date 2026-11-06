@@ -1,5 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Fase 3 lista para publicar — 6/nov/2026 GT (Codex)
+
+El dueño pidió continuar la fase de frecuencia. Rama `feat/rival-two-hour-schedule` desde `origin/main 1119acc`, con remoto, cambios locales y Actions comprobados. El informe del 4/nov y su evaluador siguen en el [PR #131](https://github.com/Bucaro-19/rankingsmashbros/pull/131). El [PR #132](https://github.com/Bucaro-19/rankingsmashbros/pull/132) conserva el estudio de captura ligera por separado.
+
+Revisión del 6/nov mediante el evaluador de #131 y SELECT de solo lectura. Las tres cargas programadas más recientes ([42005310380](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42005310380), [42110387177](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42110387177), [42197491021](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42197491021)) confirmaron 168 páginas y dos historiales, con 158 pendientes al final. Cada una usó 56 solicitudes de historial y siete de inscritos. Sin reintentos observados ni espera por un job anterior. La cola SQL tenía 116 trabajos `player_history` exitosos y ninguno pendiente, activo o fallido. Las ejecuciones recientes de agenda y bracket terminaron bien.
+
+El workflow propone `37 */2 * * *` en UTC, con el mismo grupo de concurrencia. Se mantienen dos tandas por ejecución, 30 intentos y 120 s por tanda, una solicitud por segundo, el checkpoint existente y la autorización hasta el cierre del 31/dic GT. El panel indica la frecuencia programada y toma el vencimiento de la API del dueño. Se corrigió la fecha obsoleta del 25/oct y se actualizó la versión del script.
+
+La publicación requiere la orden de fusión y despliegue de esta PR prevista en el plan. Con `SMASH_RIVAL_SYNC_ENABLED=true`, el cron nuevo entrará en vigor al fusionar a main. Publicar el panel por `assets_only=true`, comparar SHA-256 de public.json antes/después y revisar las tres primeras cargas programadas. No forzar ejecuciones para reunir la muestra. Ver criterios de reversión en AUTOMATIZACION-ANALISIS.md.
+
 ## Eficiencia de historiales: fase 2 de métricas — 2/nov GT (Codex)
 
 Pedido del dueño: ponerse al día y continuar el plan de eficiencia. Rama propia `feat/rival-efficiency-metrics` desde `origin/main b6a1d38`; remoto Bucaro-19/rankingsmashbros, tracked limpio, sin PR abiertos y Actions recientes verdes comprobados antes de editar (CI de #129 terminó verde durante la lectura). Leídos AGENTS/CONTEXTO/EN-CURSO/MIGRACION/BASE-DE-DATOS/SIGUIENTE-FASE y plan. Conservadas laminas/, marca-rsb/, social/ ajenas; no se usa ni fusiona la rama de sondas de pinguis. Se incorpora el relevo de Claude: #127/#128 ya publicados por orden del dueño, complemento de cobertura encendido y Clase B pendiente del límite semanal de seis; nada de eso se modifica.
