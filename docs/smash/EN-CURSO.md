@@ -6,6 +6,16 @@ El dueño pide mejorar los cruces de personajes y cubrir rivales con poco histor
 
 Medición SQL de solo lectura del corte 7. Hay 6.234 games válidos sin espejos y 1.316 cruces. Un filtro piloto por games, sets, eventos y parejas deja 37 cruces, 24 con tendencia de al menos 60/40. [MODO-PERSONAJE.md](MODO-PERSONAJE.md) incluye el alcance, los estados, el brief para Claude Design y la propuesta de datos para la segunda entrega. La guía de 20 fichas sigue en revisión. El selector por personaje y la integración de fuentes externas quedan pendientes. Se mantienen el acceso Premium del servidor, el snapshot de frames, el ranking y el contrato de recomendaciones por jugador.
 
+## Progreso para clasificar en Tu cuenta — 6/nov/2026 GT (Codex)
+
+Handoff local `design_handoff_smash_gt_tu_cuenta_sin_puesto/` incorporado como referencia. Se trasladó también `design_handoff_smash_gt_prepara_el_set/` desde el mismo paquete para la entrega de análisis. Ambas carpetas están ignoradas por Git. El recuadro usa el diseño de SinPuesto y los datos del corte autenticado.
+
+Un jugador vinculado sin puesto en Solo Guatemala abre su perfil en esa vista. El recuadro muestra por separado torneos admitidos y sets válidos, con mínimos del corte, conteo real aunque supere el mínimo y guiones cuando falta actividad registrada. La vista internacional y los perfiles con puesto usan sus paneles existentes. El aviso de actividad mínima cumplida pide revisión si el motivo de exclusión individual no está confirmado.
+
+El desplegable usa los eventos registrados de la cuenta. `reasonCode` añade una etiqueta estructurada al texto existente. Distingue el mínimo de activos, la falta de sets válidos, la exclusión editorial y el alcance internacional. El enlace internacional aparece solo cuando esa participación cuenta en la otra vista y lleva el foco al torneo. «Reportar un torneo faltante» abre el correo de contacto. No cambia las reglas de clasificación, las cifras de los perfiles ni la base.
+
+Chrome local con cuentas inventadas a 375 y 1440 px. Se verificaron progreso parcial, mínimos cumplidos, datos insuficientes, puesto 101, cuenta sin jugador y sesión anónima. También apertura por teclado, salto al torneo internacional y ausencia de desborde horizontal. Las pruebas unitarias y el contrato HTTP comprueban los mínimos y los motivos.
+
 ## Fase 3 lista para publicar — 6/nov/2026 GT (Codex)
 
 El dueño pidió continuar la fase de frecuencia. Rama `feat/rival-two-hour-schedule` desde `origin/main 1119acc`, con remoto, cambios locales y Actions comprobados. El informe del 4/nov y su evaluador siguen en el [PR #131](https://github.com/Bucaro-19/rankingsmashbros/pull/131). El [PR #132](https://github.com/Bucaro-19/rankingsmashbros/pull/132) conserva el estudio de captura ligera por separado.

@@ -14,6 +14,19 @@ const AccountModel = {
     return [['Torneos que cuentan',view.countedEvents,rules.playerMinimumEvents],['Sets válidos',view.wins+view.losses,rules.playerMinimumSets]]
       .map(([label,now,max])=>({label,now,max,shown:Math.min(now,max),done:now>=max,missing:Math.max(0,max-now)}));
   },
+  localProgress(view, rules, combined) {
+    if (view.rank != null) return null;
+    const requirements = this.requirements(view, rules);
+    const countedAbroad = new Set(combined.events.filter(event => event.counts).map(event => event.id));
+    return {
+      hasActivity: view.events.length > 0 || requirements.some(requirement => requirement.now > 0),
+      requirements,
+      exclusions: view.events.filter(event => !event.counts).map(event => ({
+        ...event,
+        countsIntl: event.reasonCode === 'international_excluded_in_local_view' && countedAbroad.has(event.id)
+      }))
+    };
+  },
   // A published set lists the winner first. Games come from start.gg's display text when it has
   // them; a walkover or an unreadable text gives no numbers, never an invented score.
   opponent(set, playerId) {
