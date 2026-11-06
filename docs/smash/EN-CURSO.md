@@ -1,5 +1,11 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Archivo de Mi torneo — 6/nov/2026 GT (Codex)
+
+El dueño pidió dejar de abrir Legends 7 por defecto y poder revisar el próximo rival durante una competencia. La rama `feat/my-tournament-archive` desde `origin/main c1014c1` convierte el snapshot finalizado en una opción explícita para su inscrito. Solo el titular de la sesión puede abrir sus pools. La vista de archivo muestra la fecha guardada y retira el próximo set y la predicción de avance. Las capturas activas mantienen el flujo existente.
+
+[MI-TORNEO-EN-VIVO.md](MI-TORNEO-EN-VIVO.md) reúne el brief de Claude Design y el plan para descubrir inscripciones y consultar sets durante el torneo. El refresco directo a start.gg requiere una sonda de visibilidad y límites, configuración privada y validación con un evento de prueba.
+
 ## Análisis Premium con datos parciales — 6/nov/2026 GT (Codex)
 
 El dueño pide mejorar los cruces de personajes y cubrir rivales con poco historial. Desde `origin/main 5a67bd0`, se conserva la ficha técnica existente y se muestran las opciones fuera del escudo que ya estaban guardadas para siete personajes sin golpe más rápido verificable. Las ventanas de castigo del rival se muestran aunque falten las opciones propias, con un aviso explícito de que no se pueden comparar. El texto de la muestra pasa a «torneos del corte» porque el análisis usa el corte combinado.

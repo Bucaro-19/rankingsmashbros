@@ -107,11 +107,25 @@ function mt_bracket(array $g,string $me,array $members,?string $zone): array {
     }
     return ['firstSet'=>$first,'probablePath'=>$path,'bracket'=>$g['setsAvailable']&&$graph?['sets'=>$graph]:null];
 }
-function mt_response(?array $p,?string $playerId,array $public,int $now,array $chosen=[]): array {
-    $out=['ok'=>true,'status'=>'snapshot_unavailable','capturedAt'=>null,'event'=>null,'upcoming'=>false,'pools'=>[]];if($p===null)return $out;
-    mt_validate($p);$e=$p['event'];$out['capturedAt']=$p['capturedAt'];$out['event']=['name'=>$e['tournamentName'],'discipline'=>$e['name'],'country'=>$e['country'],'timezone'=>$e['timezone'],'url'=>'https://www.start.gg/'.$e['slug'],'start'=>mt_time($e['startAt'],$e['timezone'],'event'),'endAt'=>$e['endAt']];
-    if($p['registrationState']!=='published'){$out['status']='registrations_unavailable';return $out;}
+function mt_response(?array $p,?string $playerId,array $public,int $now,array $chosen=[],bool $includeArchived=false): array {
+    $out=['ok'=>true,'status'=>'snapshot_unavailable','capturedAt'=>null,'event'=>null,'upcoming'=>false,'pools'=>[],'pastEvents'=>[],'archived'=>false];
+    if($p===null)return $out;
+    mt_validate($p);$e=$p['event'];
+    $event=['name'=>$e['tournamentName'],'discipline'=>$e['name'],'country'=>$e['country'],'timezone'=>$e['timezone'],'url'=>'https://www.start.gg/'.$e['slug'],'start'=>mt_time($e['startAt'],$e['timezone'],'event'),'endAt'=>$e['endAt']];
+    $archived=$now>=($e['endAt']??MT_END);
     $entrant=null;foreach($p['entrants'] as $v)if($playerId!==null&&$v['playerId']===$playerId){$entrant=$v;break;}
+    if($archived){
+        if($entrant!==null&&$p['registrationState']==='published') {
+            $out['pastEvents'][]=['id'=>$e['id'],'name'=>$event['name'],'discipline'=>$event['discipline'],'start'=>$event['start']];
+        }
+        if(!$includeArchived||!$out['pastEvents']){
+            $out['status']=$includeArchived?'not_registered':'no_active_tournament';
+            return $out;
+        }
+        $out['archived']=true;
+    }
+    $out['capturedAt']=$p['capturedAt'];$out['event']=$event;
+    if($p['registrationState']!=='published'){$out['status']='registrations_unavailable';return $out;}
     if($entrant===null){$out['status']='not_registered';return $out;}
     $out['upcoming']=$e['startAt']!==null&&$e['startAt']-$now<=7*86400&&$now<min($e['endAt']??MT_END,MT_END);
     $ranks=[];foreach($public['players']??[] as $r)if(isset($r['id'])&&is_int($r['rank']??null))$ranks[(string)$r['id']]=$r;
@@ -121,7 +135,14 @@ function mt_response(?array $p,?string $playerId,array $public,int $now,array $c
         $ranked=array_values(array_filter($rivals,static fn($m)=>$m['rank']!==null));$eligible=$ranked?:array_values(array_filter($rivals,static fn($m)=>$m['seed']!==null));$basis=$ranked?'rank':'seed';
         usort($eligible,static fn($a,$b)=>[$a[$basis],$a['tag']]<=>[$b[$basis],$b['tag']]);$strongest=$eligible[0]??null;
         $list=array_values($members);usort($list,static fn($a,$b)=>[$a['seed']??PHP_INT_MAX,$a['tag']]<=>[$b['seed']??PHP_INT_MAX,$b['tag']]);
-        $out['pools'][]=['phase'=>$g['phaseName'],'phaseOrder'=>$g['phaseOrder'],'group'=>$g['identifier'],'start'=>mt_time($g['startAt'],$e['timezone'],$g['timeSource']),'members'=>$list,'strongest'=>$strongest,'strongestBasis'=>$strongest===null?null:$basis]+mt_bracket($g,$entrant['id'],$members,$e['timezone']);
+        $bracket=mt_bracket($g,$entrant['id'],$members,$e['timezone']);
+        if($out['archived']){
+            $bracket['firstSet']=null;
+            $bracket['probablePath']=[];
+            if($bracket['bracket']!==null)foreach($bracket['bracket']['sets'] as &$set){$set['isMine']=false;$set['onProbablePath']=false;}
+            unset($set);
+        }
+        $out['pools'][]=['phase'=>$g['phaseName'],'phaseOrder'=>$g['phaseOrder'],'group'=>$g['identifier'],'start'=>mt_time($g['startAt'],$e['timezone'],$g['timeSource']),'members'=>$list,'strongest'=>$strongest,'strongestBasis'=>$strongest===null?null:$basis]+$bracket;
     }
     usort($out['pools'],static fn($a,$b)=>($a['phaseOrder']??PHP_INT_MAX)<=>($b['phaseOrder']??PHP_INT_MAX));$out['status']=$out['pools']?'ready':'pools_unpublished';return $out;
 }
