@@ -518,7 +518,16 @@ class Contracts(unittest.TestCase):
         summary=json.loads(out.getvalue().splitlines()[0]);self.assertEqual(summary['status'],'configuration_invalid');self.assertEqual(summary['queries'],0)
     def test_workflow_off_main_only_no_artifacts_sql_ftp_or_unbounded_batches(self):
         text=(ROOT/'.github/workflows/smash-rival-context.yml').read_text()
-        for needed in ('37 2,8,14,20 * * *','SMASH_RIVAL_SYNC_ENABLED','refs/heads/main','smash-gt-publication','SMASH_RIVAL_EVENT_ID'):self.assertIn(needed,text)
+        for needed in (
+            "cron: '37 */2 * * *'",
+            'cancel-in-progress: false',
+            'timeout-minutes: 30',
+            'SMASH_RIVAL_SYNC_ENABLED',
+            'refs/heads/main',
+            'smash-gt-publication',
+            'SMASH_RIVAL_EVENT_ID',
+        ):
+            self.assertIn(needed, text)
         for blocked in ('secrets.FTP','MYSQL','upload-artifact','actions/cache','--apply','workflow_run'):self.assertNotIn(blocked,text)
         self.assertEqual(auto.MAX_BATCHES,2)
     def test_php_python_same_context_contract_and_hash(self):

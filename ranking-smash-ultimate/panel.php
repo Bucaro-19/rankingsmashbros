@@ -39,7 +39,7 @@ $csrf = htmlspecialchars($_SESSION['smash_account_csrf'], ENT_QUOTES, 'UTF-8');
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Big+Shoulders+Display:wght@800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./panel.css?v=20261019-2">
 <?php if ($state === 'owner'): ?>
-  <script src="./panel-model.js?v=20261010-1" defer></script><script src="./panel.js?v=20261019-2" defer></script>
+  <script src="./panel-model.js?v=20261010-1" defer></script><script src="./panel.js?v=20261106-1" defer></script>
 <?php endif; ?>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
