@@ -63,6 +63,7 @@
       $('tab-organizer').hidden=data.organizerReady!==true;
       if(!data.authenticated&&wantsOrganizer){SmashOrganizador.setContext({csrf:data.csrf,authenticated:false});setScreen('organizer',true);return;}
       if(!data.authenticated){renderLogin();return;}
+      if(data.user.playerId && data.profile.views.guatemala.rank == null) scope='guatemala';
       // Signed in again from the private panel: go back there. Only this fixed destination exists.
       try{if(sessionStorage.getItem('smashgt.volver')==='panel'){sessionStorage.removeItem('smashgt.volver');location.replace('./panel.php');return;}}catch{}
       // Signed in from the Premium plans: continue there.
@@ -115,12 +116,16 @@
     all('[data-scope]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.scope===scope)));
     $('scope-status').innerHTML=`Mostrando <strong>${name}</strong> · ${scope==='combined'?'incluye torneos fuera del país.':'solo torneos en Guatemala.'} Tu puesto básico siempre es gratis.`;
     const panel=$('account-ranking');
+    panel.removeAttribute('aria-labelledby');
+    panel.classList.toggle('rank-panel-local-progress',scope==='guatemala'&&v.rank==null);
     if(v.rank!=null) {
       const mv=AccountModel.movement(v), gap=v.top100Points==null?null:Math.max(0,v.top100Points-v.points);
       panel.setAttribute('aria-label','Puesto nacional');
       panel.innerHTML=`<div class="rank-heading"><div class="rank-main"><p class="kicker muted">Puesto nacional · ${name}</p><div class="rank-number"><small>#</small>${String(v.rank).padStart(2,'0')}</div><span class="movement ${mv.kind}">${escape(mv.text)}</span>${v.previousCutAt?`<p class="note">Comparado con el corte del ${date(v.previousCutAt)}</p>`:''}</div><div><div class="rank-points">${number(v.points)}</div><p class="kicker muted">puntos · ${name}</p></div></div>`
         +(v.rank<=100?`<p class="top-line"><span class="top-badge">Top 100</span>De ${v.total} clasificados en esta vista.</p>`
           :`<div class="gap"><div><strong>Fuera del top 100 · de ${v.total} clasificados</strong>${gap!==null?`<span>Faltan ${number(gap)} pts para el #100</span>`:''}</div>${gap!==null&&v.top100Points>0?`<div class="progress"><span style="width:${Math.min(100,Math.round(v.points/v.top100Points*100))}%"></span></div>`:''}</div>`);
+    } else if(scope==='guatemala') {
+      renderLocalProgress(panel,v);
     } else {
       const reqs=AccountModel.requirements(v,data.profile.eligibilityRules), none=!v.events.length, onlyExcluded=!none&&!v.events.some(e=>e.counts), missing=reqs.filter(r=>!r.done), other=scope==='guatemala'?data.profile.views.combined:data.profile.views.guatemala;
       // No data is not proof of not playing: coverage depends on what start.gg publishes and what we capture.
@@ -137,6 +142,73 @@
     $('history-legend').innerHTML=`<strong>Cuenta en ranking</strong>: suma en ${name}. <strong>Solo actividad</strong>: jugaste, pero no entra al cálculo de esta vista; te decimos por qué.`;
     $('history-coverage').textContent=data.profile.historyCoverage;renderHistory();
   }
+  function renderLocalProgress(panel,v) {
+    const combined=data.profile.views.combined;
+    const {hasActivity,requirements,exclusions}=AccountModel.localProgress(v,data.profile.eligibilityRules,combined);
+    const [events,sets]=requirements;
+    const missing=[];
+    if(events.missing) missing.push(`${events.missing} ${events.missing===1?'torneo que cuente':'torneos que cuenten'}`);
+    if(sets.missing) missing.push(`${sets.missing} ${sets.missing===1?'set válido':'sets válidos'}`);
+    const met=hasActivity&&!missing.length;
+    const eventCount=events.now>events.max?`${events.now} torneos que cuentan (mínimo ${events.max})`:`${events.now} de ${events.max} torneos que cuentan`;
+    const setCount=sets.now>sets.max?`${sets.now} sets válidos (mínimo ${sets.max})`:`${sets.now} de ${sets.max} sets válidos`;
+    const summary=hasActivity
+      ? `Llevás ${eventCount} y ${setCount}.${missing.length?` Te falta completar ${missing.join(' y ')}.`:''}`
+      : 'No encontramos participaciones tuyas en los datos de este corte.';
+    const help=['Uno por torneo admitido en el que jugaste al menos un set válido.',
+      'Ganar o perder cuenta igual. Los DQ, W.O. y pases automáticos no suman.'];
+    const bars=requirements.map((r,i)=>{
+      const count=!hasActivity?`— / ${r.max}`:r.now>r.max?`${r.now} (mín. ${r.max})`:`${r.now} / ${r.max}`;
+      const status=!hasActivity?'— Sin datos en este corte':r.done?'✓ Cumplido':r.missing===1?'○ Te falta 1':`○ Te faltan ${r.missing}`;
+      return `<div class="sp-bar"><div class="sp-bar-head"><span id="sp-bar-${i}">${r.label}</span><strong>${count}</strong></div>
+        <div class="sp-segments" role="progressbar" aria-labelledby="sp-bar-${i}" aria-valuemin="0" aria-valuemax="${r.max}"${hasActivity?` aria-valuenow="${r.shown}"`:''} aria-valuetext="${count}. ${status}">
+          ${Array.from({length:r.max},(_,j)=>{const filled=hasActivity&&j<r.shown;return `<span aria-hidden="true"${filled?' class="on"':''}>${filled?'✓ ':''}${hasActivity?j+1:'—'}</span>`;}).join('')}
+        </div><strong class="sp-status ${!hasActivity?'unknown':r.done?'done':'pending'}">${status}</strong><small>${help[i]}</small></div>`;
+    }).join('');
+    const labels={
+      under_minimum_active_players:['minimum','↓','No alcanzó el mínimo'],
+      no_valid_set_in_counted_event:['invalid','×','El torneo contó · tu participación no sumó'],
+      no_valid_set:['invalid','×','Sin set válido registrado'],
+      international_excluded_in_local_view:['intl','◎','Torneo internacional']
+    };
+    const rows=exclusions.map(event=>{
+      const [kind,mark,label]=Object.hasOwn(labels,event.reasonCode)?labels[event.reasonCode]:['minimum','—','Fuera del corte'];
+      const url=safeLink(event.url);
+      const title=escape(event.name);
+      const reason=event.countsIntl?'No suma en Solo Guatemala. Sí cuenta en «+ Internacional».':event.reason||'Esta participación no figura entre las que cuentan en este corte.';
+      return `<li class="sp-event ${kind}"><div class="sp-event-head">${url?`<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${title} ↗</a>`:`<strong>${title}</strong>`}<span>${date(event.date)}</span></div>
+        <span class="sp-badge"><span aria-hidden="true">${mark}</span> ${label}</span><p>${escape(reason)}</p>
+        ${event.countsIntl?`<button type="button" class="text-button" data-sp-intl="${escape(event.id)}">Ver en «+ Internacional» →</button>`:''}</li>`;
+    }).join('');
+    const report='mailto:contacto@rankingsmashbros.com?subject=Torneo%20faltante%20en%20el%20ranking';
+    panel.removeAttribute('aria-label');
+    panel.setAttribute('aria-labelledby','sp-title');
+    panel.innerHTML=`<div class="sp-content"><div class="sp-head"><p class="kicker yellow">Sin puesto · Solo Guatemala</p>
+      <h2 id="sp-title">¿Por qué no apareces en el ranking nacional?</h2>
+      <p class="sp-cut"><span>Temporada <strong>${escape(data.profile.seasonYear)}</strong></span><span>Corte del <strong>${date(data.profile.generatedAt)}</strong></span></p>
+      <p class="sp-summary">${summary}</p></div><div class="sp-bars">${bars}</div>
+      ${met?`<div class="sp-met"><span aria-hidden="true">✓</span><div><strong>Cumplís la actividad mínima registrada</strong><p>Además de la actividad, también se revisan la pertenencia al ranking y la participación local.</p><p class="note">Con los datos de este corte no podemos confirmar un motivo específico. Si creés que es un error, reportalo y lo revisamos.</p></div></div>`:''}
+      ${!hasActivity?`<div class="sp-no-data"><p>Puede que el torneo todavía no esté en el corte, que te hayas inscrito con otra cuenta o que los resultados sigan pendientes.</p><a class="primary" href="${report}"><span>Reportar un torneo faltante</span></a></div>`:''}
+      ${rows?`<div class="sp-exclusions"><h3><button type="button" id="sp-toggle" aria-expanded="false" aria-controls="sp-events"><span>Torneos que no te sumaron en este corte <b>${exclusions.length}</b></span><span class="sp-chevron" aria-hidden="true">▾</span></button></h3><div id="sp-events" role="region" aria-labelledby="sp-toggle" hidden><ul>${rows}</ul></div></div>`:''}
+      <div class="sp-links"><a href="./metodologia.html">Cómo se calcula: metodología ↗</a>${hasActivity?`<a href="${report}">Reportar un torneo faltante</a>`:''}
+      ${combined.rank!=null?`<button type="button" class="text-button" data-sp-intl="">Tu puesto en «+ Internacional»: #${combined.rank} →</button>`:''}</div></div>`;
+    const toggle=$('sp-toggle');
+    toggle?.addEventListener('click',()=>{
+      const open=toggle.getAttribute('aria-expanded')==='true';
+      toggle.setAttribute('aria-expanded',String(!open));
+      $('sp-events').hidden=open;
+      toggle.querySelector('.sp-chevron').textContent=open?'▾':'▴';
+    });
+    panel.querySelectorAll('[data-sp-intl]').forEach(button=>button.addEventListener('click',()=>{
+      const eventId=button.dataset.spIntl;
+      changeScope('combined');
+      const event=eventId&&$('account-history').querySelector(`[data-history-id="${CSS.escape(eventId)}"]`);
+      if(event){
+        event.tabIndex=-1;
+        event.focus();
+      }else document.querySelector('[data-scope="combined"]').focus();
+    }));
+  }
   function changeScope(next){scope=next;historyFilter='all';renderProfile();}
   // Sets of one tournament as this player lived them. Events outside the view keep their sets from the combined cut.
   function eventSets(event){return Array.isArray(event.sets)?event.sets:(event.counts?view():data.profile.views.combined).results.filter(set=>String(set.eventId)===event.id);}
@@ -150,7 +222,7 @@
       const url=safeLink(e.url), sets=eventSets(e), open=openEvents.has(e.id);
       const rows=open?sets.filter(set=>AccountModel.opponent(set,me)).map(set=>{const rival=AccountModel.opponent(set,me), valid=!set.outcome||set.outcome==='competitive', score=valid?AccountModel.setScore(set,me):{won:rival.won,text:'DQ / W.O.'}, known=rivalOf(rival.id), place=known?.[scope]?.rank;
         return `<li${valid?'':' class="not-valid"'}><span class="result ${valid?(score.won?'won':'lost'):'void'}" aria-label="${valid?(score.won?'Ganado':'Perdido'):'No válido: DQ, W.O. o bye'}">${valid?(score.won?'G':'P'):'—'}</span><span class="versus">vs</span>${known?`<button class="rival-open" data-rival="${escape(rival.id)}" aria-label="Ver detalle de ${escape(known.tag||rival.tag)}">${known.main&&char(known.main)?art(known.main):''}<span>${escape(known.tag||rival.tag)}</span><small>${place!=null?'#'+place:'sin puesto'}</small></button>`:`<span class="rival-name">${escape(rival.tag)}</span>`}<b>${escape(score.text)}</b></li>`;}).join(''):'';
-      return `<article class="history-row ${e.counts?'':'excluded'}"><div class="history-top"><div><p class="note">${date(e.date)}${e.country?' · '+escape(e.country):''}</p>${url?`<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(e.name)} ↗</a>`:`<strong>${escape(e.name)}</strong>`}<p class="place">${escape(e.eventName)}</p></div><div class="history-record"><b>${e.wins}–${e.losses}</b><small>sets G–P${e.other?` · ${e.other} DQ/W.O.`:''}</small></div><span class="event-badge">${e.counts?'Cuenta en ranking':'Solo actividad'}</span></div>${e.reason?`<p class="why">No cuenta: ${escape(e.reason)}</p>`:''}${sets.length?`<button class="sets-toggle" data-event="${escape(e.id)}" aria-expanded="${open}">${open?'Ocultar sets ▴':`Ver ${sets.length} ${sets.length===1?'set':'sets'} ▾`}</button>`:''}${open?`<ul class="set-list">${rows}</ul>`:''}</article>`;}).join('')
+      return `<article data-history-id="${escape(e.id)}" class="history-row ${e.counts?'':'excluded'}"><div class="history-top"><div><p class="note">${date(e.date)}${e.country?' · '+escape(e.country):''}</p>${url?`<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(e.name)} ↗</a>`:`<strong>${escape(e.name)}</strong>`}<p class="place">${escape(e.eventName)}</p></div><div class="history-record"><b>${e.wins}–${e.losses}</b><small>sets G–P${e.other?` · ${e.other} DQ/W.O.`:''}</small></div><span class="event-badge">${e.counts?'Cuenta en ranking':'Solo actividad'}</span></div>${e.reason?`<p class="why">No cuenta: ${escape(e.reason)}</p>`:''}${sets.length?`<button class="sets-toggle" data-event="${escape(e.id)}" aria-expanded="${open}">${open?'Ocultar sets ▴':`Ver ${sets.length} ${sets.length===1?'set':'sets'} ▾`}</button>`:''}${open?`<ul class="set-list">${rows}</ul>`:''}</article>`;}).join('')
       :`<p class="empty">${v.events.length?'No hay torneos en este filtro.':`No encontramos torneos tuyos de la temporada ${escape(data.profile.seasonYear)} en los datos que capturamos. Si jugaste uno y no aparece, puede faltar en nuestra cobertura de start.gg.`}</p>`;
     all('[data-event]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.event;if(openEvents.has(id))openEvents.delete(id);else openEvents.add(id);renderHistory();$('account-history').querySelector(`[data-event="${CSS.escape(id)}"]`)?.focus();}));
     all('[data-rival]').forEach(button=>button.addEventListener('click',()=>openRival(button.dataset.rival,button)));

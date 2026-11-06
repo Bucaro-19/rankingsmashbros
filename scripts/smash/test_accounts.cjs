@@ -1,6 +1,23 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const m=require('../../ranking-smash-ultimate/account-model.js');
+test('local progress distinguishes missing activity, counted sets and international exclusions',()=>{
+  const rules={playerMinimumEvents:2,playerMinimumSets:4};
+  const empty={rank:null,countedEvents:0,wins:0,losses:0,events:[]};
+  assert.equal(m.localProgress(empty,rules,{events:[]}).hasActivity,false);
+  assert.equal(m.localProgress({...empty,rank:101},rules,{events:[]}),null);
+  const excluded=[
+    {id:'small',counts:false,reasonCode:'under_minimum_active_players',wins:4,losses:0},
+    {id:'abroad',counts:false,reasonCode:'international_excluded_in_local_view'},
+    {id:'abroad-unknown',counts:false,reasonCode:'international_excluded_in_local_view'}
+  ];
+  const progress=m.localProgress({...empty,countedEvents:1,losses:2,events:[{id:'local',counts:true},...excluded]},rules,
+    {events:[{id:'abroad',counts:true},{id:'abroad-unknown',counts:false}]});
+  assert.equal(progress.hasActivity,true);
+  assert.deepEqual(progress.requirements.map(r=>[r.now,r.missing]),[[1,1],[2,2]]);
+  assert.deepEqual(progress.exclusions.map(e=>[e.id,e.countsIntl]),[['small',false],['abroad',true],['abroad-unknown',false]]);
+  assert.equal(m.localProgress({...empty,events:[excluded[0]]},rules,{events:[]}).hasActivity,true);
+});
 test('movement needs a real previous cut, preserves new/up/down/tie',()=>{
   assert.equal(m.movement({rank:12,previousRank:1}).text,'Sin comparación previa');
   assert.equal(m.movement({rank:null,previousCutAt:'2026-10-01'}).kind,'none');
