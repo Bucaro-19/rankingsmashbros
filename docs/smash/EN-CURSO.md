@@ -1,5 +1,9 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Lectura de inscripciones y sets propios — 6/nov/2026 GT (Codex)
+
+El dueño aprobó avanzar con Mi torneo en vivo. Rama `feat/my-tournament-live-core` apilada sobre `feat/my-tournament-archive` (#136). Las sondas de solo lectura confirmaron `event.userEntrant` y sets filtrados por entrant. `User.events` omitió el evento de prueba pese a que la inscripción se confirmó por evento. Se prepara el lector PHP con identidad validada, páginas acotadas y estados de avance que no dependen de seeds. Contrato, mediciones, pruebas y handoff en [MI-TORNEO-EN-VIVO.md](MI-TORNEO-EN-VIVO.md). El endpoint, el token privado en hosting, la caché y el selector quedan para la integración del piloto.
+
 ## Archivo de Mi torneo — 6/nov/2026 GT (Codex)
 
 El dueño pidió dejar de abrir Legends 7 por defecto y poder revisar el próximo rival durante una competencia. La rama `feat/my-tournament-archive` desde `origin/main c1014c1` convierte el snapshot finalizado en una opción explícita para su inscrito. Solo el titular de la sesión puede abrir sus pools. La vista de archivo muestra la fecha guardada y retira el próximo set y la predicción de avance. Las capturas activas mantienen el flujo existente.

@@ -6,6 +6,19 @@ Legends 7 pasa al desplegable «Torneos finalizados». Solo se ofrece si el juga
 
 La política de captura actual autoriza únicamente Legends 7 y ya venció. El archivo conserva su formato. Esta entrega prepara la selección histórica dentro de la pantalla existente.
 
+## Validación del proveedor — 6/nov/2026 GT
+
+- Una sonda acotada sobre un inscrito público de Legends 7 confirmó el mismo entrant y player en `event.userEntrant` y en la lista del evento. El filtro de sets devolvió 4 sets propios en una página, los 4 con ganador y hora de cierre. La sonda usó 3 consultas en 2,88 s. [Ejecución](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42304352416)
+- `User.events` acepta filtros de juego, tipo, búsqueda, lugar y cantidad de inscritos. El esquema consultado carece de un filtro `upcoming`. Para ese mismo participante la conexión devolvió un solo evento y omitió Legends 7, pese a que el evento confirmó la inscripción. El piloto parte de eventos de la agenda y de eventos internacionales configurados, con verificación individual. [Ejecución](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42304490030)
+- El lector PHP pasó también con los datos reales del mismo evento. En 3 consultas, incluida la búsqueda del inscrito de prueba, encontró el último resultado y cero sets pendientes. Las sondas hicieron 8 solicitudes en total y solo registraron agregados. [Ejecución](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42304953539)
+- La prueba corresponde a un torneo finalizado con lista pública. La visibilidad de listas ocultas y la latencia de resultados en un torneo activo se medirán aparte.
+
+## Lector preparado para el backend
+
+`scripts/database/my_tournament_live.php` comprueba la inscripción por user ID y player ID y pide hasta dos páginas de 12 sets por entrant. Verifica que cada set devuelto incluya al inscrito. El resultado separa el último set con ganador y hora confirmados, el próximo set asignado y los estados sin rival, con varias asignaciones o con cobertura incompleta. La ausencia de set pendiente no confirma eliminación. Una inscripción nula se trata como no verificable.
+
+La biblioteca recibe el transporte como argumento. El futuro endpoint deberá obtener los IDs desde la sesión, confirmar el evento permitido y su periodo activo, usar un token privado del hosting y aplicar caché y límites compartidos antes de llamar al lector. Las pruebas inventadas cubren victoria, nuevo rival, rival por confirmar, derrota, bye, ajenos y tope de paginación. El lector todavía corre como herramienta de desarrollo y no se publica en el sitio.
+
 ## Siguiente entrega
 
 1. **Inscripciones y selector.** Mostrar en curso primero, luego próximos y finalizados en su propio desplegable. Para el primer piloto usar eventos de Ultimate Singles de la agenda y eventos internacionales configurados de forma explícita. Validar la inscripción por ID vinculado. El esquema de start.gg documenta `event.userEntrant(userId: …)`. Comprobar su visibilidad con la cuenta y el token de prueba antes de asumir que devuelve registros privados o listas ocultas. Inscripción no verificable, inscripción inexistente y pools sin publicar son estados distintos. [Referencia de Event](https://developer.start.gg/reference/event.doc.html)

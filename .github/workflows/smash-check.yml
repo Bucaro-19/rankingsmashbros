@@ -25,6 +25,7 @@ jobs:
           python scripts/database/test_organizer_context.py
           python scripts/database/test_rival_context.py
           python scripts/database/test_rival_automation.py
+          php scripts/database/test_my_tournament_live.php
           python scripts/database/test_my_tournament.py
           python scripts/database/test_small_events_backfill.py
           python scripts/database/test_game_context.py
