@@ -1,5 +1,11 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Archivo de Mi torneo — 6/nov/2026 GT (Codex)
+
+El dueño pidió dejar de abrir Legends 7 por defecto y poder revisar el próximo rival durante una competencia. La rama `feat/my-tournament-archive` desde `origin/main c1014c1` convierte el snapshot finalizado en una opción explícita para su inscrito. Solo el titular de la sesión puede abrir sus pools. La vista de archivo muestra la fecha guardada y retira el próximo set y la predicción de avance. Las capturas activas mantienen el flujo existente.
+
+[MI-TORNEO-EN-VIVO.md](MI-TORNEO-EN-VIVO.md) reúne el brief de Claude Design y el plan para descubrir inscripciones y consultar sets durante el torneo. El refresco directo a start.gg requiere una sonda de visibilidad y límites, configuración privada y validación con un evento de prueba.
+
 ## Historial de jugadores sin puesto — 6/nov/2026 GT (Codex)
 
 El dueño autorizó fusionar y desplegar el [PR #138](https://github.com/Bucaro-19/rankingsmashbros/pull/138). El commit funcional `00987eb` pasó las matrices completas de [push](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42342236130) y [PR](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42342244005), incluyendo MySQL 8.0 y MariaDB 10.11. Publicación autorizada mediante `smash-deploy-snapshot.yml`, `assets_only=true`. Hash previo comprobado: `8463d7c49c878cfe20cbc49af8a0ad103748277f45913088fa2c83c07d1f7128` (corte del 2/nov). La evidencia final del despliegue y la comparación posterior se registran en el PR.

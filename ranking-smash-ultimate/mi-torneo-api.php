@@ -12,11 +12,12 @@ if(($_SERVER['REQUEST_METHOD']??'')!=='GET'){header('Allow: GET');mt_http(405,['
 try{
     if(!smash_account_resume('mt_pdo',time()))mt_http(401,['ok'=>false,'reason'=>'login_required']);
     $user=smash_account_current(mt_pdo());
-    if($_GET)mt_http(400,['ok'=>false,'reason'=>'parameters_not_allowed']);
+    if($_GET&&(array_keys($_GET)!==['eventId']||$_GET['eventId']!==MT_EVENT))mt_http(400,['ok'=>false,'reason'=>'parameters_not_allowed']);
+    $includeArchived=isset($_GET['eventId']);
     $snapshot=mt_read(__DIR__);$public=smash_account_public(__DIR__);$now=time();
-    $response=mt_response($snapshot,$user['playerId'],$public,$now);
+    $response=mt_response($snapshot,$user['playerId'],$public,$now,[],$includeArchived);
     $chosen=mt_profile_characters(mt_pdo(),$response);
-    if($chosen)$response=mt_response($snapshot,$user['playerId'],$public,$now,$chosen);
+    if($chosen)$response=mt_response($snapshot,$user['playerId'],$public,$now,$chosen,$includeArchived);
     mt_http(200,$response);
 }catch(SmashAccountError $e){if($e->reason==='login_required'){unset($_SESSION['smash_account']);mt_http(401,['ok'=>false,'reason'=>'login_required']);}mt_http(503,['ok'=>false,'reason'=>'tournament_unavailable']);}
 catch(Throwable $e){mt_http(503,['ok'=>false,'reason'=>'tournament_unavailable']);}
