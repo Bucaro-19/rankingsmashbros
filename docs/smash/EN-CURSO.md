@@ -1,5 +1,11 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Análisis Premium con datos parciales — 6/nov/2026 GT (Codex)
+
+El dueño pide mejorar los cruces de personajes y cubrir rivales con poco historial. Desde `origin/main 5a67bd0`, se conserva la ficha técnica existente y se muestran las opciones fuera del escudo que ya estaban guardadas para siete personajes sin golpe más rápido verificable. Las ventanas de castigo del rival se muestran aunque falten las opciones propias, con un aviso explícito de que no se pueden comparar. El texto de la muestra pasa a «torneos del corte» porque el análisis usa el corte combinado.
+
+Medición SQL de solo lectura del corte 7. Hay 6.234 games válidos sin espejos y 1.316 cruces. Un filtro piloto por games, sets, eventos y parejas deja 37 cruces, 24 con tendencia de al menos 60/40. [MODO-PERSONAJE.md](MODO-PERSONAJE.md) incluye el alcance, los estados, el brief para Claude Design y la propuesta de datos para la segunda entrega. La guía de 20 fichas sigue en revisión. El selector por personaje y la integración de fuentes externas quedan pendientes. Se mantienen el acceso Premium del servidor, el snapshot de frames, el ranking y el contrato de recomendaciones por jugador.
+
 ## Progreso para clasificar en Tu cuenta — 6/nov/2026 GT (Codex)
 
 Handoff local `design_handoff_smash_gt_tu_cuenta_sin_puesto/` incorporado como referencia. Se trasladó también `design_handoff_smash_gt_prepara_el_set/` desde el mismo paquete para la entrega de análisis. Ambas carpetas están ignoradas por Git. El recuadro usa el diseño de SinPuesto y los datos del corte autenticado.

@@ -14,3 +14,13 @@ test('actual sheets, omitted character, no main, short options and escaped names
 test('credit only when provided by server; no guessed game version',()=>{
  assert.equal(f.credit(null),'');assert.match(f.credit({gameVersion:null}),/versión no declarada por la fuente/);assert.match(f.credit({gameVersion:'13.0.1'}),/versión 13.0.1 del juego/);
 });
+test('partial sheets show recorded shield options and separate unknown timing from a failed punish',()=>{
+ const moves=[{name:'Golpe de prueba',onShield:-6}];
+ const partial=f.sheet({title:'Yo',main:'link',mainName:'Link',facts:{fastest:null,oos:[{name:'Neutral',frame:6}]},moves});
+ assert.match(partial,/Sin un golpe en tierra/);
+ assert.match(partial,/✓ Te entran: Neutral \(frame 6\)/);
+ const onlyRival=f.sheet({title:'Yo',main:'link',mainName:'Link',facts:null,moves});
+ assert.match(onlyRival,/Golpe de prueba/);
+ assert.match(onlyRival,/Faltan opciones verificadas/);
+ assert.doesNotMatch(onlyRival,/Ninguna de tus opciones/);
+});

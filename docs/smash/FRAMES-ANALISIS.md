@@ -48,7 +48,7 @@ Campos dentro de **deep**, sin alterar el resto de sus métricas:
 }
 ```
 
-Ejemplo parcial con datos comprobados, no toda la lista. `toolkit` solo contiene hasta tres slugs elegidos en la cuenta (nunca detectados supuestos); null si no hay elegidos o no hay documento. Cada valor puede ser null si no hay ficha completa. `punishable` solo tiene la clave del main utilizable del rival y hasta tres filas; null sin main/ficha/movimientos. Sin main **los golpes propios siguen disponibles**. `onShield` siempre negativo; `frame` entero positivo; `damage` numérico base, no texto ni cálculo de daño en combate.
+Ejemplo parcial con datos comprobados. `toolkit` contiene hasta tres slugs elegidos en la cuenta. Es null si no hay elegidos o no hay documento. Cada ficha puede traer `fastest: null` con opciones `oos` verificadas. El valor del slug es null si faltan ambas partes. `punishable` contiene hasta tres filas para el main utilizable del rival. Sin datos de ese personaje, el valor es null. Si solo hay ventanas del rival, se muestran con un aviso de que faltan opciones propias para comparar. `onShield` es un entero negativo, `frame` un entero positivo y `damage` un número de daño base.
 
 `frame-tools.js` es un modelo/renderizador local pequeño, cargado antes de preparar.js; no hace red. Dibuja las fichas del handoff en la pantalla existente y escapa nombres. Las fuentes, colores y layout se conservan; se ajustó el margen de las anclas para que la cabecera no tape el título. Crédito visible solo cuando la API envía frameDataSource, enlace externo seguro y aviso fijo de que son datos del juego. Falta de documento/JSON inválido produce tres null sin romper el resto del análisis.
 

@@ -36,7 +36,9 @@ function smash_frame_facts(array $chosen, ?string $main, bool $authorized): arra
     $toolkit=[];
     foreach (array_slice(array_unique($chosen),0,3) as $slug) {
         $sheet=$data['characters'][$slug] ?? null;
-        $toolkit[$slug]=$sheet!==null && $sheet['fastest']!==null ? ['fastest'=>$sheet['fastest'],'oos'=>$sheet['oos']] : null;
+        $toolkit[$slug] = $sheet !== null && ($sheet['fastest'] !== null || $sheet['oos'])
+            ? ['fastest' => $sheet['fastest'], 'oos' => $sheet['oos']]
+            : null;
     }
     $moves=$main===null ? [] : ($data['characters'][$main]['punishable'] ?? []);
     return ['toolkit'=>$toolkit ?: null, 'punishable'=>$moves ? [$main=>$moves] : null,

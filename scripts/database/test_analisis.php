@@ -74,6 +74,11 @@ analysis_check($deep['common']===[['alias'=>'Pika','me'=>[1,0],'him'=>[0,2]]] &&
 analysis_check($deep['byTier']===['top10'=>[0,2],'t11_30'=>[0,1],'rest'=>[2,0]],'Sets by rank band; unranked opponents left out');
 analysis_check($deep['toolkit']['mario']['fastest']['frame']===2 && $deep['punishable']['link'][0]['onShield']===-28,'Reviewed numeric snapshot feeds paid deep analysis');
 analysis_check(smash_frame_facts(['mario'],'link',false)===['toolkit'=>null,'punishable'=>null,'frameDataSource'=>null],'No frame facts loaded/projected for the free teaser');
+$partial = smash_frame_facts(['joker', 'steve', 'pokemon_trainer'], 'link', true);
+analysis_check($partial['toolkit']['joker']['fastest'] === null && count($partial['toolkit']['joker']['oos']) === 3,
+    'A missing fastest move does not hide verified shield options');
+analysis_check($partial['toolkit']['steve'] === null && $partial['toolkit']['pokemon_trainer'] === null,
+    'Characters without verified own tools retain the empty value');
 $none=smash_analisis_deep($lite,['results'=>[]],['results'=>[],'players'=>[]],['games'=>[]],$deepCatalog,[],'1','2',['mario'],null);
 analysis_check($none['counters']===[] && $none['avoid']===[] && $none['vsChars']===['hard'=>[],'good'=>[]] && $none['setPattern']===null && $none['common']===[] && $none['byTier']===null && $none['rival']['mainShare']===null,'No data: empty lists and nulls, never zeros presented as records');
 $tied=smash_analisis_deep($lite,$deepPublic,$deepView,['games'=>[$dg('S4',1,$R,$F,'2'),$dg('S4',2,$R,$F,'4')]],$deepCatalog,[],'1','2',[],'link');
