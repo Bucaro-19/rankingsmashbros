@@ -34,7 +34,7 @@
     const row=(label,value,sample)=>`<div class="pr-src"><span>${label}</span><span><b>${value}</b>${sample?`<small>${sample}</small>`:''}</span></div>`;
     const mine=c.mySets?row(`Tus sets con ${escape(P)} contra él`,rec(c.mySets),plural(sum(c.mySets),'set','sets')):row(`Tus sets con ${escape(P)} contra él`,'—',c.mine?'Nunca lo usaste contra él':'Sin sets con él todavía');
     const his=sum(c.hisGames)?row(`Su ${escape(M)} contra ${escape(P)} (sus games)`,rec(c.hisGames),plural(sum(c.hisGames),'game','games')):row(`Su ${escape(M)} contra ${escape(P)} (sus games)`,'—','Sin games registrados');
-    const scene=sum(c.sceneGames)?row(`${escape(P)} contra ${escape(M)} en Guatemala`,rec(c.sceneGames),plural(sum(c.sceneGames),'game','games')):row(`${escape(P)} contra ${escape(M)} en Guatemala`,'—','Sin games registrados');
+    const scene=sum(c.sceneGames)?row(`${escape(P)} contra ${escape(M)} en torneos del corte`,rec(c.sceneGames),plural(sum(c.sceneGames),'game','games')):row(`${escape(P)} contra ${escape(M)} en torneos del corte`,'—','Sin games registrados');
     return `<article class="pr-card ${good?'good':'avoid'}"><div class="pr-card-head"><span class="pr-icon big">${icon(c.slug,46)}</span><div><p class="pr-tags"><span>${good?'✓ Conviene':'× Mejor evita'}</span>${c.mine?'<span class="mine">★ Tu elegido</span>':''}</p><h3>${escape(P)}</h3></div>
         <span class="pr-conf ${conf[1]}"><span aria-hidden="true">${conf[0]}</span> ${c.confidence}</span></div>
       <p class="pr-cols" aria-hidden="true"><span>De quién es el récord</span><span>Ganados–Perdidos</span></p>${mine}${his}${scene}
@@ -126,7 +126,7 @@
   function also(rv) {
     const l=data.teaser?.locked; if(!l)return '';
     const M=data.teaser.main?escape(name(data.teaser.main)):'main';
-    const cards=[l.counters>0&&[`${plural(l.counters,'personaje evaluado','personajes evaluados')} contra su ${M}`,'Cuáles te convienen y cuáles evitar, con tus sets contra él, sus games contra cada personaje y lo que pasa en la escena de Guatemala, cada uno con su muestra y su nivel de confianza.'],
+    const cards=[l.counters>0&&[`${plural(l.counters,'personaje evaluado','personajes evaluados')} contra su ${M}`,'Cuáles te convienen y cuáles evitar, con tus sets contra él, sus games contra cada personaje y los resultados de la muestra combinada del corte, cada uno con su muestra y su nivel de confianza.'],
       l.common>0&&[`${plural(l.common,'rival','rivales')} en común contigo`,`Tu récord y el de ${rv} contra cada jugador que ambos enfrentaron, lado a lado, y quién salió mejor.`],
       l.sets>0&&[`Cómo jugó ${plural(l.sets,'set','sets')}`,'Primer game, game decisivo, sets cerrados 2–1 y 3–2, y si mantiene o cambia de personaje después de perder un game.'],
       l.characters>0&&[`${plural(l.characters,'personaje más','personajes más')} en su récord`,'Contra cuáles le va peor y contra cuáles mejor, en games ganados y perdidos.']].filter(Boolean).slice(0,2);
