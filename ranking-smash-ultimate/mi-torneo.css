@@ -27,3 +27,11 @@
 .mt-banner{margin:20px auto;padding:18px 22px;max-width:1120px;border:1px solid var(--yellow);border-left-width:4px;background:#1A2236;overflow-wrap:anywhere;font-size:14px}.mt-banner a{display:inline-flex;align-items:center;min-height:44px;font-weight:800}.my-tournament :focus-visible,.mt-banner :focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
 @media(max-width:759px){.mt-screen{padding:24px 16px 56px}.my-tournament,#my-tournament-body{gap:28px}.mt-next-heading{padding:18px 16px 0}.mt-big-time{padding:18px 16px}.mt-fighter-info{padding:14px 12px 18px}.mt-next-footer{padding:18px 16px 22px}.mt-next-heading .mt-chip{font-size:11px}.mt-roster li{flex-wrap:wrap;gap:8px 12px}.mt-roster-chips{margin-left:56px;max-width:calc(100% - 56px);justify-content:flex-start}.mt-roster .mt-chip{min-height:26px}.mt-schedule{padding:20px 16px}.mt-reference{padding:20px 16px}.mt-banner{margin:16px}.mt-big-time>div{flex-basis:100%}.mt-characters{font-size:12px}.mt-origin{font-size:9px}.mt-actions .mt-button{flex-basis:100%}.mt-schedule li>div:last-child{flex-basis:100px}.mt-notice{padding:22px 18px}}
 @media(prefers-reduced-motion:reduce){.my-tournament *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.mt-archive summary {
+  min-height: 44px;
+  padding-block: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.mt-archive[open] .mt-actions { margin-top: 8px; }

@@ -3,7 +3,7 @@
   const $=id=>document.getElementById(id);
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const catalog=typeof CHARACTER_CATALOG==='undefined'?[]:CHARACTER_CATALOG;
-  let active=false,visible=false,controller=null,generation=0,data=null,poolIndex=0,view=null,loading=false,failed=false;
+  let active=false,visible=false,controller=null,generation=0,data=null,poolIndex=0,view=null,loading=false,failed=false,selectedEvent=null;
   const external=value=>{try{const u=new URL(value);return u.protocol==='https:'&&['start.gg','www.start.gg'].includes(u.hostname)&&!u.username&&!u.password?u.href:null;}catch{return null;}};
   const analysisLink=value=>/^\.\/(analisis|preparar)\.html\?rival=\d+$/.test(value||'')?value:null;
   const country=e=>e?.country==='SV'?'El Salvador':e?.country||'Zona local del torneo';
@@ -37,17 +37,24 @@
     $('my-tournament-title').textContent=e?name(e):'Mi torneo';
     $('my-tournament-event').innerHTML=e?`${e.discipline?`<span>${esc(e.discipline)}</span>`:''}${date(e.start)?`<span>${esc(date(e.start))}</span>`:''}${e.country?`<span>${esc(country(e))}</span>`:''}${external(e.url)?`<a href="${esc(external(e.url))}" target="_blank" rel="noopener noreferrer">Ver en start.gg ↗</a>`:''}`:'';
     const at=data?.capturedAt?new Date(data.capturedAt):null;
-    $('my-tournament-updated').textContent=at&&!Number.isNaN(at.getTime())?`Actualizado el ${new Intl.DateTimeFormat('es-GT',{timeZone:'America/Guatemala',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(at)} (Guatemala) · los horarios los define el organizador`:'';
+    $('my-tournament-updated').textContent=at&&!Number.isNaN(at.getTime())?`${data.archived?'Captura guardada el':'Actualizado el'} ${new Intl.DateTimeFormat('es-GT',{timeZone:'America/Guatemala',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(at)} (Guatemala) · los horarios los define el organizador`:'';
   }
   function notice(status){
     const e=data?.event,states={
       snapshot_unavailable:['◷','Todavía no hay una captura disponible','Mi torneo se mostrará cuando tengamos los datos publicados por el organizador.'],
+      no_active_tournament:['◷','Sin torneo activo en nuestras capturas','Aquí aparecerá tu torneo cuando tengamos una captura vigente con tu inscripción.'],
       registrations_unavailable:['◷','Los inscritos aún están ocultos','El organizador aún no publica la lista de inscritos. No podemos confirmar tu inscripción.'],
       not_registered:['?','No apareces inscrito',`No apareces inscrito en ${name(e)} con esta cuenta de start.gg. Buscamos la cuenta vinculada, no coincidencias por alias.`],
       pools_unpublished:['✓','Estás inscrito · pools sin publicar','El organizador aún no publica los pools. Vuelve a revisar más adelante.']
     };
     const s=states[status]||states.snapshot_unavailable;
     return `<section class="mt-notice"><span class="mt-notice-icon" aria-hidden="true">${s[0]}</span><h2>${esc(s[1])}</h2><p>${esc(s[2])}</p><div class="mt-actions">${external(e?.url)?`<a class="mt-button" href="${esc(external(e.url))}" target="_blank" rel="noopener noreferrer">Revisar en start.gg ↗</a>`:''}${status==='not_registered'?'<button class="mt-button" data-mt-profile type="button">Ver mi cuenta vinculada</button>':''}</div></section>`;
+  }
+  function archiveMenu(){
+    if(data.archived)return '<div class="mt-actions"><button type="button" class="mt-button" data-mt-current>← Volver a Mi torneo</button><span class="mt-chip">Torneo finalizado</span></div><p class="mt-muted">Esta es la última captura guardada. Puede faltar parte del bracket o de los resultados finales.</p>';
+    const past=(data.pastEvents||[]).filter(event=>/^[1-9]\d{0,19}$/.test(event.id));
+    if(!past.length)return '';
+    return `<details class="mt-notice mt-archive"><summary>Torneos finalizados · ${past.length}</summary><div class="mt-actions">${past.map(event=>`<button type="button" class="mt-button" data-mt-event="${esc(event.id)}">${esc(name(event))}${date(event.start)?' · '+esc(date(event.start)):''}</button>`).join('')}</div></details>`;
   }
   function schedule(pool){
     const first=pool.firstSet,t=first?.time,programmed=t?.source==='set_or_round'&&clock(t);
@@ -110,10 +117,16 @@
       return `<section class="mt-bracket-side"><h3>${title}</h3><p class="mt-muted">Desliza para explorar → · usa Lista para leer los nombres completos.</p><div class="mt-bracket-scroll" role="region" tabindex="0" aria-label="Bracket ${title} de tu pool"><div class="mt-canvas" style="width:${width}px;height:${height}px"><svg aria-hidden="true" width="${width}" height="${height}">${lines}</svg>${cards}</div></div></section>`;
     }).join('');
   }
+  function bracketViews(pool){
+    const hasGraph=!!pool.bracket?.sets?.length;
+    if(data.archived)return hasGraph?[['graph','Bracket'],['list','Lista']]:[];
+    return hasGraph?[['path','Mi camino'],['graph','Bracket'],['list','Lista']]:[['path','Mi camino']];
+  }
   function bracket(pool){
     const hasGraph=!!pool.bracket?.sets?.length;
-    if(!view||(!hasGraph&&view!=='path'))view=hasGraph&&window.matchMedia?.('(min-width:760px)').matches?'graph':'path';
-    const views=hasGraph?[['path','Mi camino'],['graph','Bracket'],['list','Lista']]:[['path','Mi camino']];
+    const views=bracketViews(pool);
+    if(!views.length)return '<p class="mt-dashed">La última captura no contiene el bracket de este pool.</p>';
+    if(!views.some(([key])=>key===view))view=data.archived||hasGraph&&window.matchMedia?.('(min-width:760px)').matches?'graph':'path';
     return `<section class="mt-bracket"><div class="mt-section-heading"><div><p class="mt-eyebrow">${esc(pool.phase)} · ${esc(pool.group||'')}</p><h2>Mi bracket</h2></div><div role="tablist" aria-label="Vista del bracket">${views.map(([key,label])=>`<button id="mt-view-${key}" role="tab" type="button" aria-selected="${key===view}" aria-controls="mt-bracket-panel" tabindex="${key===view?0:-1}" data-mt-view="${key}">${label}</button>`).join('')}</div></div><ul class="mt-legend" aria-label="Leyenda"><li><i class="mt-solid"></i>Confirmado: resultado o cruce ya publicado</li><li><i class="mt-square"></i>Tu set</li><li><i class="mt-dash"></i>Probable según seeds o posible rival: aún no confirmado</li></ul><div id="mt-bracket-panel" role="tabpanel" aria-labelledby="mt-view-${view}">${!hasGraph?'<p class="mt-dashed">El bracket completo de este pool todavía no está disponible. Mostramos tu primer rival y el camino probable cuando estén publicados.</p>':''}${view==='path'?path(pool):graph(pool,view==='list')}</div><p class="mt-muted">Marcadores aún no disponibles en esta vista. Las conexiones entre Winners y Losers se identifican en cada casilla.</p></section>`;
   }
   function poolList(pool){
@@ -129,16 +142,19 @@
     if(loading){$('my-tournament-body').innerHTML='<div class="mt-loading" role="status"><p>Cargando tu torneo…</p><div></div><div></div></div>';return;}
     if(failed){$('my-tournament-body').innerHTML='<div class="mt-notice mt-error" role="alert"><h2>No pudimos cargar tu torneo.</h2><p>No pudimos leer la última captura. Intenta de nuevo; tus datos no cambiaron.</p></div>';return;}
     if(!data)return;
-    if(data.status!=='ready'||!data.pools?.length){$('my-tournament-body').innerHTML=notice(data.status);return;}
+    const archive=archiveMenu();
+    if(data.status!=='ready'||!data.pools?.length){$('my-tournament-body').innerHTML=archive+notice(data.status);return;}
     const pool=data.pools[poolIndex]||data.pools[0];
     const phases=data.pools.length>1?`<div class="mt-phases" role="group" aria-label="Tus fases y grupos publicados">${data.pools.map((p,i)=>`<button type="button" data-mt-pool="${i}" aria-pressed="${i===poolIndex}"><b>${esc(p.phase)} · ${esc(p.group||'')}</b><small>${i===poolIndex?'Estás viendo':'Ver grupo publicado'}</small></button>`).join('')}</div>`:`<p class="mt-phase-chip">${esc(pool.phase)} · ${esc(pool.group||'Grupo sin nombre')}</p>`;
-    $('my-tournament-body').innerHTML=`${phases}<div class="mt-hero">${nextSet(pool)}${schedule(pool)}</div>${bracket(pool)}${poolList(pool)}${reference(pool)}<p class="mt-foot">Pool y horarios son gratis. Datos tomados de start.gg; Ranking Smash Bros no organiza este torneo.</p>`;
+    const hero=data.archived?'':`<div class="mt-hero">${nextSet(pool)}${schedule(pool)}</div>`;
+    $('my-tournament-body').innerHTML=`${archive}${phases}${hero}${bracket(pool)}${poolList(pool)}${reference(pool)}<p class="mt-foot">Pool y horarios son gratis. Datos tomados de start.gg; Ranking Smash Bros no organiza este torneo.</p>`;
   }
   async function load(restoreFocus=false){
     if(!active)return;controller?.abort();const id=++generation;controller=new AbortController();loading=true;failed=false;render();
     const pending=controller,timer=setTimeout(()=>pending.abort(),20000);
     try{
-      const r=await fetch('./mi-torneo-api.php',{credentials:'same-origin',cache:'no-store',signal:pending.signal,headers:{Accept:'application/json'}}),value=await r.json();
+      const url='./mi-torneo-api.php'+(selectedEvent===null?'':'?eventId='+encodeURIComponent(selectedEvent));
+      const r=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:pending.signal,headers:{Accept:'application/json'}}),value=await r.json();
       if(id!==generation||!active)return;if(!r.ok||value.ok!==true)throw new Error();
       data=value;poolIndex=0;view=null;
       $('my-tournament-banner').hidden=!value.upcoming||visible;
@@ -148,7 +164,7 @@
   }
   const showView=next=>{view=next;render();$(`mt-view-${next}`)?.focus();};
   window.SmashMyTournament={
-    setContext({authenticated}){active=authenticated===true;generation++;controller?.abort();data=null;loading=false;failed=false;poolIndex=0;view=null;$('my-tournament-banner').hidden=true;$('my-tournament-body').textContent='';$('my-tournament-updated').textContent='';$('my-tournament-event').textContent='';$('my-tournament-retry').hidden=true;if(!active){visible=false;$('my-tournament').hidden=true;}if(active)load();},
+    setContext({authenticated}){active=authenticated===true;generation++;controller?.abort();data=null;loading=false;failed=false;poolIndex=0;view=null;selectedEvent=null;$('my-tournament-banner').hidden=true;$('my-tournament-body').textContent='';$('my-tournament-updated').textContent='';$('my-tournament-event').textContent='';$('my-tournament-retry').hidden=true;if(!active){visible=false;$('my-tournament').hidden=true;}if(active)load();},
     show(value=true){visible=value;$('my-tournament').hidden=!visible||!active;$('my-tournament-banner').hidden=!data?.upcoming||visible;render();},
     refresh(){if(active)load();}
   };
@@ -156,13 +172,15 @@
   $('my-tournament-banner-link').addEventListener('click',()=>{$('tab-tournament').click();$('my-tournament').focus();});
   $('my-tournament-body').addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;
+    if((data?.pastEvents||[]).some(tournament=>tournament.id===button.dataset.mtEvent)){selectedEvent=button.dataset.mtEvent;load(true);return;}
+    if(button.hasAttribute('data-mt-current')){selectedEvent=null;data=null;load(true);return;}
     if(button.dataset.mtView)showView(button.dataset.mtView);
     if(button.dataset.mtPool!==undefined){poolIndex=Number(button.dataset.mtPool);view=null;render();$('my-tournament-body').querySelector(`[data-mt-pool="${poolIndex}"]`)?.focus();}
     if(button.hasAttribute('data-mt-profile'))$('tab-profile').click();
   });
   $('my-tournament-body').addEventListener('keydown',event=>{
     const button=event.target.closest('[data-mt-view]');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
-    event.preventDefault();event.stopPropagation();const keys=['path',...(data?.pools?.[poolIndex]?.bracket?.sets?.length?['graph','list']:[])],at=keys.indexOf(view);
+    event.preventDefault();event.stopPropagation();const keys=bracketViews(data.pools[poolIndex]).map(([key])=>key),at=keys.indexOf(view);
     showView(event.key==='Home'?keys[0]:event.key==='End'?keys[keys.length-1]:keys[(at+(event.key==='ArrowRight'?1:keys.length-1))%keys.length]);
   });
   $('my-tournament-body').addEventListener('error',event=>{
