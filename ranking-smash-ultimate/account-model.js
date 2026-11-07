@@ -10,8 +10,12 @@ const AccountModel = {
     return {text:`${delta>0?'▲ Subiste':'▼ Bajaste'} ${Math.abs(delta)} ${places} · antes #${view.previousRank}`, kind:delta>0?'up':'down'};
   },
   // Activity still missing for a place in this view. The minimums come from the published rules.
+  activity(view) {
+    return view.rank == null && view.recordedActivity ? view.recordedActivity : view;
+  },
   requirements(view, rules) {
-    return [['Torneos que cuentan',view.countedEvents,rules.playerMinimumEvents],['Sets válidos',view.wins+view.losses,rules.playerMinimumSets]]
+    const activity=this.activity(view);
+    return [['Torneos que cuentan',activity.countedEvents,rules.playerMinimumEvents],['Sets válidos',activity.wins+activity.losses,rules.playerMinimumSets]]
       .map(([label,now,max])=>({label,now,max,shown:Math.min(now,max),done:now>=max,missing:Math.max(0,max-now)}));
   },
   localProgress(view, rules, combined) {

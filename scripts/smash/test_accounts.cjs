@@ -18,6 +18,13 @@ test('local progress distinguishes missing activity, counted sets and internatio
   assert.deepEqual(progress.exclusions.map(e=>[e.id,e.countsIntl]),[['small',false],['abroad',true],['abroad-unknown',false]]);
   assert.equal(m.localProgress({...empty,events:[excluded[0]]},rules,{events:[]}).hasActivity,true);
 });
+test('unranked progress uses recorded attendance and classified figures keep the cut values',()=>{
+  const rules={playerMinimumEvents:2,playerMinimumSets:4};
+  const view={rank:null,countedEvents:0,wins:0,losses:0,
+    recordedActivity:{countedEvents:1,wins:0,losses:2}};
+  assert.deepEqual(m.requirements(view,rules).map(r=>[r.now,r.missing]),[[1,1],[2,2]]);
+  assert.equal(m.activity({...view,rank:10}).losses,0);
+});
 test('movement needs a real previous cut, preserves new/up/down/tie',()=>{
   assert.equal(m.movement({rank:12,previousRank:1}).text,'Sin comparación previa');
   assert.equal(m.movement({rank:null,previousCutAt:'2026-10-01'}).kind,'none');

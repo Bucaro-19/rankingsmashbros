@@ -48,6 +48,22 @@ Corre en `smash-publish.yml` justo después de `discover.py`, antes del contexto
 
 No cambia fórmula, puntos, mínimos, elegibilidad, puestos, `public.json` ni contratos de importación.
 
+### 4. Participaciones de jugadores sin puesto (6/nov/2026)
+
+El resumen público conserva solo sets con algún jugador clasificado. Por eso puede omitir todos los sets de una persona que sí jugó un evento admitido: sucedió con Isai88 en Legends 7. La fila antigua del evento tenía `active_players` nulo, aunque el corte publicado confirma su admisión.
+
+La cuenta recupera también las participaciones propias en los IDs de `public.events`, aunque falte esa columna de contexto. Para los demás eventos conserva la exigencia de captura completa anterior. No incorpora eventos de análisis que todavía no tienen evidencia de admisión o captura completa.
+
+Contrato autenticado del complemento:
+
+- `source: "recorded_activity"`: evento admitido con algún set competitivo del jugador. `counts: true` en la vista combinada; en Solo Guatemala un evento extranjero tiene `counts: false` y `reasonCode: "international_excluded_in_local_view"`.
+- `source: "excluded_activity"`: participación que no cuenta, con el motivo existente. DQ, W.O. y bye siguen fuera de los sets válidos.
+- Una vista sin puesto puede añadir `recordedActivity: {countedEvents, wins, losses}`. La pantalla usa esas cifras para actividad y requisitos, identificadas como actividad registrada. `rank`, `points` y las estadísticas originales del corte permanecen intactos. Tener actividad no concede un puesto ni acredita nacionalidad.
+- Se combina por ID de evento, sin duplicarlo al releer. Una lectura SQL parcial no reemplaza una participación publicada con más victorias o derrotas. Los perfiles con puesto conservan sus cifras publicadas.
+- El historial personal puede traer los sets recuperados. La lista pública de rivales y resultados sigue siendo la publicada; no se amplía el grafo del análisis desde esta consulta.
+
+Regresión con datos inventados: jugador y rival sin puesto, evento extranjero admitido con `active_players` nulo, dos derrotas y un DQ. La cuenta devuelve un torneo y dos sets válidos en combinado, la exclusión por país en local y la misma participación al repetir. No requiere consultas nuevas a start.gg, migraciones ni escrituras productivas.
+
 ## Simulación de recuperación (solo lectura)
 
 `scripts/smash/simulate_coverage.py` toma las capturas privadas de un run publicado, ejecuta el complemento sobre una copia, combina y calcula ambas versiones con la misma curación y tabla TTS, e imprime qué cambiaría el siguiente corte normal. No publica, no escribe SQL ni FTP y no reemplaza capturas.

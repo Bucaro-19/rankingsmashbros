@@ -66,6 +66,21 @@ foreach ($public['players'] as $player) {
 }
 check_account(smash_account_profile($public,null)['views']['combined']['rank'] === null, 'Unlinked account has no fabricated rank');
 check_account((array)smash_account_profile($public,null)['rivals'] === [], 'Unlinked account has no rivals');
+$recorded=['id'=>'qa-foreign','name'=>'Major QA','date'=>'2026-09-01','country'=>'SV','counts'=>true,
+    'wins'=>0,'losses'=>2,'source'=>'recorded_activity','reason'=>null,'reasonCode'=>null,'sets'=>[]];
+$empty=['rank'=>null,'wins'=>0,'losses'=>0,'countedEvents'=>0,'events'=>[]];
+$attendance=smash_account_with_small_events(['views'=>['combined'=>$empty,'guatemala'=>$empty]],[$recorded]);
+check_account($attendance['views']['combined']['recordedActivity']===['countedEvents'=>1,'wins'=>0,'losses'=>2], 'Recorded attendance contributes to unranked activity');
+check_account($attendance['views']['guatemala']['events'][0]['counts']===false, 'Foreign attendance stays outside the local view');
+$partial=$empty;
+$partial['events']=[array_merge($recorded,['losses'=>1])];
+$completed=smash_account_with_small_events(['views'=>['combined'=>$partial]],[$recorded]);
+check_account(count($completed['views']['combined']['events'])===1 && $completed['views']['combined']['recordedActivity']['losses']===2, 'Complete recorded attendance replaces a partial unranked event');
+$partial['events']=[array_merge($recorded,['losses'=>3])];
+$preserved=smash_account_with_small_events(['views'=>['combined'=>$partial]],[$recorded]);
+check_account($preserved['views']['combined']['events'][0]['losses']===3, 'A partial database read cannot reduce the published attendance');
+$ranked=array_merge($partial,['rank'=>12,'points'=>1500]);
+check_account(smash_account_with_small_events(['views'=>['combined'=>$ranked]],[$recorded])['views']['combined']===$ranked, 'Recorded context preserves the classified profile');
 $top=$public['players'][0]; $rivals=(array)smash_account_profile($public,$top['id'])['rivals']; $met=[];
 foreach ($public['results'] as $set) if (in_array($top['id'],$set['playerIds'],true)) foreach ($set['playerIds'] as $other) if ($other!==$top['id']) $met[$other]=true;
 check_account(count($rivals)>0 && array_keys($rivals)==array_keys($met) && !isset($rivals[$top['id']]), 'Rivals are exactly the opponents in the published sets');
