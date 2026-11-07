@@ -242,6 +242,59 @@ class AccountHttpTests(unittest.TestCase):
             self.assertEqual({k:v for k,v in view.items() if k!='events'},{k:v for k,v in old.items() if k!='events'})
         self.assertIn('No es tu historial completo',data['profile']['historyCoverage'])
 
+    def test_unranked_attendance_in_admitted_event_survives_compact_public_results(self):
+        original=(self.site/'data/public.json').read_bytes()
+        self.addCleanup((self.site/'data/public.json').write_bytes,original)
+        public=json.loads(original)
+        base=8999700
+        year=public['seasonYear']
+        def wipe():
+            with self.db.cursor() as q:
+                q.execute('DELETE FROM set_slots WHERE event_id=%s',(base,))
+                q.execute('DELETE FROM sets WHERE event_id=%s',(base,))
+                q.execute('DELETE FROM entrant_players WHERE entrant_id IN (%s,%s)',(base+1,base+2))
+                q.execute('DELETE FROM entrants WHERE event_id=%s',(base,))
+                q.execute('DELETE FROM events WHERE id=%s',(base,))
+                q.execute('DELETE FROM tournaments WHERE id=%s',(base,))
+                q.execute('DELETE FROM players WHERE id=%s',(base+9,))
+        wipe()
+        self.addCleanup(wipe)
+        for view in (public,public['localRanking']):
+            view['players']=[p for p in view['players'] if p['id']!='184005']
+            view['results']=[s for s in view['results'] if '184005' not in s['playerIds']]
+        public['events'].append(dict(id=str(base),name='Major extranjero QA',eventName='Ultimate Singles',
+            country='SV',date=f'{year}-09-01',url='https://www.start.gg/tournament/major-qa',activePlayers=273))
+        (self.site/'data/public.json').write_text(json.dumps(public))
+        with self.db.cursor() as q:
+            q.execute("INSERT INTO players(id,tag) VALUES(%s,'Otro sin puesto QA')",(base+9,))
+            q.execute("INSERT INTO tournaments(id,name,country_code,starts_at) VALUES(%s,'Major extranjero QA','SV',%s)",(base,f'{year}-09-01 17:00:00'))
+            q.execute("INSERT INTO events(id,tournament_id,name,videogame_id,entrant_size,active_players,starts_at) VALUES(%s,%s,'Ultimate Singles',1386,1,NULL,%s)",(base,base,f'{year}-09-01 17:00:00'))
+            q.execute("INSERT INTO entrants(id,event_id,name) VALUES(%s,%s,'Jugador QA'),(%s,%s,'Otro sin puesto QA')",(base+1,base,base+2,base))
+            q.execute("INSERT INTO entrant_players(entrant_id,player_id) VALUES(%s,184005),(%s,%s)",(base+1,base+2,base+9))
+            for n,kind in enumerate(('competitive','dq','competitive')):
+                winner=base+1 if kind=='dq' else base+2
+                q.execute("INSERT INTO sets(id,event_id,status,outcome_type,winner_entrant_id,display_score) VALUES(%s,%s,'completed',%s,%s,%s)",
+                    (base+10+n,base,kind,winner,'DQ' if kind=='dq' else 'Otro QA 3 - Jugador QA 0'))
+                q.execute("INSERT INTO set_slots(set_id,event_id,slot_index,entrant_id) VALUES(%s,%s,0,%s),(%s,%s,1,%s)",
+                    (base+10+n,base,base+1,base+10+n,base,base+2))
+        profile=self.login()['profile']
+        combined=profile['views']['combined']
+        event=next(e for e in combined['events'] if e['id']==str(base))
+        self.assertEqual((event['counts'],event['wins'],event['losses'],event['other']),(True,0,2,1))
+        self.assertEqual((event['name'],len(event['sets']),event['source']),('Major extranjero QA',3,'recorded_activity'))
+        self.assertEqual(combined['recordedActivity'],dict(countedEvents=1,wins=0,losses=2))
+        self.assertIsNone(combined['rank'])
+        self.assertIsNone(combined['points'])
+        self.assertEqual(combined['results'],[])
+        local=profile['views']['guatemala']
+        excluded=next(e for e in local['events'] if e['id']==str(base))
+        self.assertFalse(excluded['counts'])
+        self.assertEqual(excluded['reasonCode'],'international_excluded_in_local_view')
+        self.assertEqual(local['recordedActivity'],dict(countedEvents=0,wins=0,losses=0))
+        again=self.request()[2]['profile']['views']['combined']
+        self.assertEqual(sum(e['id']==str(base) for e in again['events']),1)
+        self.assertEqual(again['recordedActivity'],combined['recordedActivity'])
+
     def test_preferences_identity_is_server_bound(self):
         data=self.login(); csrf=data['csrf']
         self.assertEqual(self.request(body={'action':'roles','roles':['player','organizer'],'userId':'999'},csrf=csrf)[0],200)

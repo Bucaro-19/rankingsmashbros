@@ -363,17 +363,17 @@ function smash_account_public(string $siteRoot): array
     return $data;
 }
 
-// Verified participations of this player that the published cut does not count for them, with the
-// concrete reason. Only events whose complete bracket was captured qualify: events.active_players is
-// written by the national and small-event circuits, never by analysis histories, and the small-event
-// marker covers rows imported before that column. They never count: the list only explains why.
-// Without SQL or on any error it is empty, and an empty list never means that the player did not play.
+// Personal attendance in admitted events and completely captured excluded events.
+// Admitted events may contain this player's sets even when neither opponent is classified,
+// so the compact public results omit them. Unreviewed analysis-only events stay out.
+// Existing callers retain the historical small-events function name.
 function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear, array $public = []): array
 {
     if ($playerId === null) return [];
     $rules = $public['eligibilityRules'] ?? [];
     $localMinimum = (int)($rules['localMinimumActive'] ?? 20); $foreignMinimum = (int)($rules['foreignMinimumActive'] ?? 64);
     $counted = []; foreach ($public['events'] ?? [] as $event) $counted[(string)$event['id']] = true;
+    $admitted = []; foreach ($public['events'] ?? [] as $event) $admitted[(string)$event['id']] = $event;
     $editorial = []; foreach ($public['excludedEvents'] ?? [] as $event) if (is_string($event['reason'] ?? null)) $editorial[(string)$event['id']] = $event['reason'];
     try {
         if (!isset($public['events'])) {
@@ -381,6 +381,9 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
             $q = $pdo->query("SELECT DISTINCT event_id FROM cut_events WHERE cut_id = (SELECT MAX(id) FROM cuts WHERE status = 'published')");
             foreach ($q->fetchAll(PDO::FETCH_COLUMN) as $event) $counted[(string)$event] = true;
         }
+        // Older imports may have active_players only in the published event ledger.
+        $admittedIds = array_keys($admitted);
+        $admittedFilter = $admittedIds ? ' OR e.id IN (' . implode(',', array_fill(0, count($admittedIds), '?')) . ')' : '';
         $q = $pdo->prepare("SELECT e.id, t.name, e.name AS event_name, DATE(COALESCE(e.starts_at, t.starts_at)) AS day,
               t.country_code, COALESCE(e.url, t.url) AS url, COALESCE(e.active_players, c.active_players) AS active_players,
               e.registered_entrants, en.id AS entrant_id,
@@ -392,11 +395,11 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
             LEFT JOIN organizer_event_context c ON c.event_id = e.id
             JOIN entrants en ON en.event_id = e.id JOIN entrant_players ep ON ep.entrant_id = en.id AND ep.player_id = ?
             LEFT JOIN set_slots sl ON sl.entrant_id = en.id AND sl.event_id = e.id LEFT JOIN sets s ON s.id = sl.set_id AND s.event_id = e.id
-            WHERE (e.active_players IS NOT NULL OR c.event_id IS NOT NULL) AND (e.videogame_id IS NULL OR e.videogame_id = 1386)
+            WHERE (e.active_players IS NOT NULL OR c.event_id IS NOT NULL $admittedFilter) AND (e.videogame_id IS NULL OR e.videogame_id = 1386)
               AND (e.entrant_size IS NULL OR e.entrant_size = 1) AND YEAR(COALESCE(e.starts_at, t.starts_at)) = ?
             GROUP BY e.id, en.id, t.name, e.name, day, t.country_code, url, active_players, e.registered_entrants
             ORDER BY day DESC, e.id LIMIT 80");
-        $q->execute([$playerId, $seasonYear]);
+        $q->execute(array_merge([$playerId], $admittedIds, [$seasonYear]));
         $events = [];
         foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $id = (string)$row['id']; $wins = (int)$row['wins']; $losses = (int)$row['losses']; $other = (int)$row['other'];
@@ -406,8 +409,11 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
             $noValidSet = $other > 0 && $other === (int)$row['non_played']
                 ? 'aquí solo tienes resultados por DQ, W.O. o bye: no son sets válidos y no suman a tu actividad.'
                 : 'no hay un set válido registrado para tu participación.';
-            if (isset($counted[$id])) {
-                // A counted event is already in the published profile when the player has valid sets there.
+            $participationCounts = isset($admitted[$id]) && $wins + $losses > 0;
+            if ($participationCounts) {
+                $reasonCode = null;
+                $reason = null;
+            } elseif (isset($counted[$id])) {
                 if ($wins + $losses > 0) continue;
                 $reasonCode = 'no_valid_set_in_counted_event';
                 $reason = $noValidSet;
@@ -426,9 +432,13 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
                 $reasonCode = 'not_in_published_cut';
                 $reason = 'no está entre los torneos del corte publicado.';
             }
-            $events[$id] = ['id' => $id, 'name' => $row['name'], 'eventName' => $row['event_name'], 'date' => $row['day'],
-                'country' => $row['country_code'], 'url' => $row['url'], 'wins' => $wins, 'losses' => $losses, 'other' => $other,
-                'counts' => false, 'reason' => $reason, 'reasonCode' => $reasonCode, 'sets' => []];
+            $publishedEvent = $admitted[$id] ?? [];
+            $events[$id] = ['id' => $id, 'name' => $publishedEvent['name'] ?? $row['name'],
+                'eventName' => $publishedEvent['eventName'] ?? $row['event_name'], 'date' => $publishedEvent['date'] ?? $row['day'],
+                'country' => $publishedEvent['country'] ?? $row['country_code'], 'url' => $publishedEvent['url'] ?? $row['url'],
+                'wins' => $wins, 'losses' => $losses, 'other' => $other,
+                'counts' => $participationCounts, 'reason' => $reason, 'reasonCode' => $reasonCode, 'sets' => [],
+                'source' => $participationCounts ? 'recorded_activity' : 'excluded_activity'];
         }
         if ($events) {
             // The player's own sets in those events, winner first like the published results.
@@ -460,14 +470,37 @@ function smash_account_small_events(PDO $pdo, ?string $playerId, int $seasonYear
     }
 }
 
-// Adds those small tournaments to the activity of both views, never over an event the cut already lists.
+// Merge personal attendance while retaining the published place and statistics.
 function smash_account_with_small_events(array $profile, array $small): array
 {
     foreach ($profile['views'] as $scope => $view) {
-        $known = array_column($view['events'], 'id'); $events = $view['events'];
-        foreach ($small as $event) if (!in_array($event['id'], $known, true)) $events[] = $event;
+        $events = [];
+        foreach ($view['events'] as $event) $events[$event['id']] = $event;
+        $recorded = false;
+        foreach ($small as $event) {
+            $isRecorded = ($event['source'] ?? null) === 'recorded_activity';
+            if (isset($events[$event['id']]) && ($view['rank'] !== null || !$isRecorded)) continue;
+            $published = $events[$event['id']] ?? null;
+            if ($published !== null && ($event['wins'] < $published['wins'] || $event['losses'] < $published['losses'])) continue;
+            if ($scope === 'guatemala' && $event['counts'] && $event['country'] !== 'GT') {
+                $event['counts'] = false;
+                $event['reason'] = 'Torneo internacional: no entra en la vista Solo Guatemala.';
+                $event['reasonCode'] = 'international_excluded_in_local_view';
+            }
+            $events[$event['id']] = $event;
+            $recorded = $recorded || $isRecorded;
+        }
+        $events = array_values($events);
         usort($events, static fn($a, $b) => strcmp((string)$b['date'], (string)$a['date']) ?: strcmp($a['id'], $b['id']));
         $profile['views'][$scope]['events'] = $events;
+        if ($view['rank'] === null && $recorded) {
+            $included = array_filter($events, static fn($event) => $event['counts']);
+            $profile['views'][$scope]['recordedActivity'] = [
+                'countedEvents' => count($included),
+                'wins' => array_sum(array_column($included, 'wins')),
+                'losses' => array_sum(array_column($included, 'losses')),
+            ];
+        }
     }
     return $profile;
 }
@@ -547,5 +580,5 @@ function smash_account_profile(array $public, ?string $playerId): array
     }
     return ['rivals' => (object)$rivals, 'generatedAt' => $public['generatedAt'], 'seasonYear' => $public['seasonYear'],
         'methodVersion' => $public['methodVersion'], 'eligibilityRules' => $public['eligibilityRules'],
-        'historyCoverage' => 'Torneos del corte publicado y participaciones registradas que no cuentan. No es tu historial completo de start.gg: si jugaste un torneo que no aparece, puede faltar en nuestra cobertura.', 'views' => $profiles];
+        'historyCoverage' => 'Torneos del corte publicado y participaciones registradas de tu cuenta. No es tu historial completo de start.gg: si jugaste un torneo que no aparece, puede faltar en nuestra cobertura.', 'views' => $profiles];
 }

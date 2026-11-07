@@ -1,5 +1,15 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Historial de jugadores sin puesto — 6/nov/2026 GT (Codex)
+
+El dueño autorizó fusionar y desplegar el [PR #138](https://github.com/Bucaro-19/rankingsmashbros/pull/138). El commit funcional `00987eb` pasó las matrices completas de [push](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42342236130) y [PR](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42342244005), incluyendo MySQL 8.0 y MariaDB 10.11. Publicación autorizada mediante `smash-deploy-snapshot.yml`, `assets_only=true`. Hash previo comprobado: `8463d7c49c878cfe20cbc49af8a0ad103748277f45913088fa2c83c07d1f7128` (corte del 2/nov). La evidencia final del despliegue y la comparación posterior se registran en el PR.
+
+Caso reportado por el dueño. Isai88, player 4847261, tiene en SQL dos sets competitivos de Legends 7 y un DQ. El evento 1687524 figura admitido en el corte 7 con 273 activos. Ninguno de los dos sets competitivos aparece en el resumen público porque los dos rivales también están fuera de la lista de clasificados. El exportador solo incluye sets con algún clasificado. Además, el evento tiene active_players NULL en la fila base antigua, por lo que la consulta de actividad omitía su participación pese al ledger publicado.
+
+Rama `fix/account-unranked-participation` desde `origin/main c1014c1`. La consulta de cuenta acepta como evidencia de admisión los eventos del public vigente y recupera los sets personales guardados. Conserva el filtro de juegos, singles, temporada y la separación de participaciones en eventos no revisados. El historial combinado muestra la participación admitida. La vista local muestra el motivo internacional. Los jugadores sin puesto reciben `recordedActivity` para sus contadores y requisitos. Se identifica como actividad registrada y se mantienen los valores publicados del puesto y puntos. Las participaciones existentes se deduplican y un contexto parcial no reduce lo publicado.
+
+Pruebas locales en MariaDB desechable 13.0.2. Instalación repetida, nueve pruebas del esquema y once HTTP de cuenta correctas. Nueve pruebas Node y contratos PHP correctos. Chrome a 375 y 1440 px verifica el torneo, récord 0–2, DQ separado, progreso, cambio de alcance y ancho. La matriz de CI valida MySQL 8.0 y MariaDB 10.11. Las lecturas productivas fueron SELECT. El cambio no publica otro corte ni modifica la fórmula o el JSON público.
+
 ## Análisis Premium con datos parciales — 6/nov/2026 GT (Codex)
 
 El dueño pide mejorar los cruces de personajes y cubrir rivales con poco historial. Desde `origin/main 5a67bd0`, se conserva la ficha técnica existente y se muestran las opciones fuera del escudo que ya estaban guardadas para siete personajes sin golpe más rápido verificable. Las ventanas de castigo del rival se muestran aunque falten las opciones propias, con un aviso explícito de que no se pueden comparar. El texto de la muestra pasa a «torneos del corte» porque el análisis usa el corte combinado.
