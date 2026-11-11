@@ -111,7 +111,9 @@ function smash_analisis_games(PDO $db, array $public, string $scope = 'combined'
             $completed[(string)$r['set_id']]=$r['completed_at'];
         }
     }
-    $captured=(new DateTimeImmutable($public['characterCapturedAt']))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+    $captureAt = $public['characterCapturedAt'] ?? null;
+    if (!is_string($captureAt) || $captureAt === '') return ['status'=>'empty','games'=>[],'completed'=>$completed,'rowCount'=>0];
+    $captured=(new DateTimeImmutable($captureAt))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
     $targetFilter = $targetId === null ? '' : ' AND EXISTS (SELECT 1 FROM game_selections target WHERE target.game_id=g.id AND target.character_id=?)';
     $q=$db->prepare("SELECT g.id,g.set_id,g.game_number,g.winner_entrant_id,s.event_id,ss.entrant_id,ep.player_id,gs.character_id
         FROM cut_events ce JOIN sets s ON s.event_id=ce.event_id AND s.outcome_type='competitive'

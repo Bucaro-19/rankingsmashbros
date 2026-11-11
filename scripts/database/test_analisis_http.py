@@ -298,6 +298,9 @@ class AnalysisHttpTests(unittest.TestCase):
         reverse=self.call('mode=character&target=mario&scope=intl')[2]['crosses'][0]
         self.assertEqual((reverse['slug'],reverse['gamesWon'],reverse['gamesLost'],reverse['trend']),('link',6,16,'unfavorable'))
         self.assertEqual(self.call('mode=character&target=steve')[2]['sample']['status'],'empty')
+        legacy=copy.deepcopy(self.public);del legacy['characterCapturedAt'];self.publish(legacy)
+        before_capture=self.call(combined)[2]
+        self.assertEqual((before_capture['sample']['status'],before_capture['crosses']),('empty',[]))
         self.sql("UPDATE cuts SET public_snapshot='{}' WHERE id=%s",(self.cut,))
         mismatch=self.call(combined)[2]
         self.assertEqual((mismatch['sample']['status'],mismatch['crosses']),('cut_not_synced',[]))
