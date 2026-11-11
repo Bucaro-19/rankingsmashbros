@@ -21,6 +21,11 @@
     ['nivel','Contra qué nivel rinde','Su récord contra el top 10, el top 11–30 y el resto del ranking.']];
   const back=document.getElementById('pr-back');
   if(rivalId)back.href=`./analisis.html?rival=${rivalId}${scope==='gt'?'&scope=gt':''}`;
+  const playerMode = document.getElementById('pr-mode-player');
+  const characterMode = document.getElementById('pr-mode-character');
+  let studyingCharacter = params.get('mode') === 'character';
+  let target = null, targetOrigin = 'manual', characterScope = params.get('scope') === 'intl' ? 'intl' : 'gt';
+  let characterRequest = null;
   let data=null;
 
   const head=(n,kicker,title,lead)=>`<header class="pr-head"><p class="pr-kicker">${n} · ${kicker}</p><h2>${title}</h2>${lead?`<p>${lead}</p>`:''}</header>`;
@@ -142,6 +147,178 @@
       <h2 class="pr-locked-title">Lo que incluye</h2><ol class="pr-locked">${SECTIONS.map((s,i)=>`<li id="${s[0]}"><span class="pr-num" aria-hidden="true">${i+1}</span><div><h2>${s[1]}</h2><p>${s[2]}</p></div><span class="pr-star">★ Premium</span></li>`).join('')}</ol>${foot()}`;
   }
   const foot=()=>`<p class="pr-principle">Pagar no da puntos ni cambia tu puesto.</p><p class="pr-note center">Datos de resultados: start.gg · Ranking Smash Bros, ranking experimental.</p>`;
+  const selectable = slug => slug !== 'random' && !!bySlug(slug);
+  const normalize = value => value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  const dateGT = value => new Intl.DateTimeFormat('es-GT', {timeZone:'America/Guatemala', dateStyle:'short'}).format(new Date(value));
+  const localIcon = slug => selectable(slug)
+    ? `<img src="./assets/characters/${escape(slug)}-icon.png" alt="" width="36" height="36" loading="lazy" decoding="async">` : '';
+
+  function modeLinks() {
+    const playerQuery = new URLSearchParams();
+    if (rivalId) playerQuery.set('rival', rivalId);
+    if (params.has('scope')) playerQuery.set('scope', scope);
+    if (playerMode) playerMode.href = `./preparar.html${playerQuery.toString() ? '?'+playerQuery : ''}`;
+    const characterQuery = new URLSearchParams(playerQuery);
+    characterQuery.set('mode','character');
+    if (characterMode) characterMode.href = `./preparar.html?${characterQuery}`;
+    const selected = studyingCharacter ? characterMode : playerMode;
+    const other = studyingCharacter ? playerMode : characterMode;
+    selected?.setAttribute('aria-current','page');
+    other?.removeAttribute('aria-current');
+  }
+
+  function characterUrl(push = false) {
+    const query = new URLSearchParams({mode:'character', scope:characterScope});
+    if (rivalId) query.set('rival',rivalId);
+    if (target) query.set('target',target);
+    history[push ? 'pushState' : 'replaceState'](null,'',`?${query}`);
+  }
+
+  function paintPicker() {
+    const picker = document.getElementById('pr-picker');
+    const grid = document.getElementById('pr-character-grid');
+    if (!picker.open) { grid.textContent = ''; return; }
+    const query = normalize(document.getElementById('pr-character-search').value.trim());
+    const choices = CHARACTER_CATALOG.filter(c => selectable(c.slug) && normalize(c.name).includes(query));
+    grid.innerHTML = choices.map(c => `<button type="button" data-character="${escape(c.slug)}" aria-pressed="${target === c.slug}">${localIcon(c.slug)}<span>${escape(c.name)}</span></button>`).join('');
+    document.getElementById('pr-character-count').textContent = choices.length ? plural(choices.length,'luchador','luchadores') : 'No encontramos un luchador con ese nombre.';
+  }
+
+  function paintCharacterTarget() {
+    document.getElementById('pr-character-title').innerHTML = `Prepara el set${target ? `<br><span>contra ${escape(name(target))}</span>` : ''}`;
+    document.getElementById('pr-character-target').innerHTML = target
+      ? `<span class="pr-icon">${localIcon(target)}</span><div><p class="pr-kicker">Luchador a estudiar</p><h2>${escape(name(target))}</h2><p class="pr-origin ${targetOrigin}">${targetOrigin === 'detected' ? '◆ Sugerido desde el análisis del rival' : '✎ Elegido para esta consulta'}</p></div>`
+      : '<p>Elige el luchador que quieres estudiar.</p>';
+    document.getElementById('pr-picker-label').textContent = target ? 'Cambiar luchador' : 'Elegir luchador';
+    document.title = target ? `Prepara el set contra ${name(target)} — Ranking Smash Bros` : 'Prepara el set por personaje — Ranking Smash Bros';
+    document.querySelectorAll('[data-character-scope]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.characterScope === characterScope)));
+  }
+
+  function openCharacter(slug, origin = 'manual') {
+    studyingCharacter = true;
+    target = selectable(slug) ? slug : null;
+    targetOrigin = origin;
+    modeLinks();
+    root.innerHTML = `<div class="pr-intro"><p class="pr-kicker yellow">Prepara el set · Premium</p><h1 id="pr-character-title"></h1></div>
+      <section class="pr-target-panel" aria-label="Luchador a estudiar">
+        <div id="pr-character-target" class="pr-target"></div>
+        <details class="pr-picker" id="pr-picker"${target ? '' : ' open'}>
+          <summary id="pr-picker-label"></summary>
+          <label for="pr-character-search" class="pr-kicker">Buscar luchador</label>
+          <input id="pr-character-search" type="search" placeholder="Ej. Pikachu, Min Min…" autocomplete="off" maxlength="80">
+          <p id="pr-character-count" class="pr-note" role="status"></p>
+          <div id="pr-character-grid" class="pr-picker-grid"></div>
+        </details>
+      </section>
+      <div class="pr-modes" role="group" aria-label="Torneos de la muestra">
+        <button type="button" data-character-scope="gt">Solo Guatemala</button><button type="button" data-character-scope="intl">+ Internacional</button>
+      </div>
+      <div id="pr-character-results" class="pr-character-results"></div>`;
+    const picker = document.getElementById('pr-picker');
+    picker.addEventListener('toggle',paintPicker);
+    document.getElementById('pr-character-search').addEventListener('input',paintPicker);
+    document.getElementById('pr-character-grid').addEventListener('click',event => {
+      const choice = event.target.closest('button[data-character]');
+      if (!choice || !selectable(choice.dataset.character)) return;
+      target = choice.dataset.character;
+      targetOrigin = 'manual';
+      picker.open = false;
+      paintCharacterTarget();
+      document.getElementById('pr-picker-label').focus();
+      characterUrl();
+      loadCharacter();
+    });
+    document.querySelectorAll('[data-character-scope]').forEach(button => button.addEventListener('click',() => {
+      if (characterScope === button.dataset.characterScope) return;
+      characterScope = button.dataset.characterScope;
+      paintCharacterTarget();
+      characterUrl();
+      loadCharacter();
+    }));
+    paintCharacterTarget();
+    paintPicker();
+    loadCharacter();
+  }
+
+  const trendLabel = {favorable:'▲ Tendencia favorable',unfavorable:'▼ Tendencia desfavorable',balanced:'= Sin dirección clara',small:'≈ Muestra pequeña',none:'— Sin selecciones',mirror:'— Mismo personaje'};
+  function crossRow(row, role = null) {
+    const total = row.gamesWon + row.gamesLost;
+    return `<li${role ? ' class="pr-mine-cross"' : ''}><span class="pr-icon">${localIcon(row.slug)}</span>
+      <span class="pr-row-main"><b>${escape(name(row.slug))}</b>${role ? `<small>★ ${role === 'main' ? 'Tu principal' : 'Tu secundario'}</small>` : ''}<small class="pr-trend ${row.trend}">${trendLabel[row.trend]}</small>
+      ${total ? `<small>${plural(total,'game','games')} · ${plural(row.sets,'set','sets')} · ${plural(row.events,'torneo','torneos')}</small>` : ''}</span>
+      <span class="pr-rec">${total ? `<b aria-label="${row.gamesWon} games ganados y ${row.gamesLost} perdidos">${row.gamesWon}–${row.gamesLost}</b><small>G–P</small>` : '—'}</span></li>`;
+  }
+
+  function crossResults(value) {
+    const targetName = escape(name(value.target));
+    const scopeLabel = SCOPES[value.scope];
+    const explanation = `Games ganados–perdidos del personaje de cada fila contra ${targetName}. ${scopeLabel} · corte del ${dateGT(value.generatedAt)}.`;
+    const heading = head(1,'Torneos del corte','Cruces observados',explanation);
+    if (!value.access.full) {
+      const preview = value.preview ? `<p class="pr-kicker">Adelanto gratis</p><ul class="pr-rows">${crossRow(value.preview)}</ul>`
+        : empty(value.sample.status === 'cut_not_synced' ? 'La muestra de personajes aún se está sincronizando con este corte.' : 'Todavía no hay un cruce con muestra suficiente para el adelanto.');
+      const count = value.sample.availableCrosses;
+      return `<section class="pr-section">${heading}${preview}<div class="pr-invite"><h2>${value.state === 'vencido' ? 'Renueva para volver a verlo' : 'Disponible con Premium'}</h2>
+        ${count > 1 ? `<p>Hay ${count} cruces con muestra suficiente para ${targetName}.</p>` : ''}<p>Consulta los cruces completos y las herramientas técnicas de tus personajes.</p><a class="pr-cta" href="./cuenta.html#premium"><span>Ver Premium</span></a></div></section>${foot()}`;
+    }
+    const rows = new Map(value.crosses.map(row => [row.slug,row]));
+    const mine = value.mine.map(({slug,role}) => {
+      const row = rows.get(slug) || {slug, gamesWon:0, gamesLost:0, trend:slug === value.target ? 'mirror' : 'none'};
+      return {...row,role};
+    });
+    const others = value.crosses.filter(row => !value.mine.some(chosen => chosen.slug === row.slug));
+    const group = trend => {
+      const list = others.filter(row => row.trend === trend);
+      if (!list.length) return '';
+      const content = `<ul class="pr-rows">${list.map(row => crossRow(row)).join('')}</ul>`;
+      return trend === 'small' ? `<details class="pr-fold pr-small-crosses"><summary>Muestras pequeñas · ${list.length}</summary>${content}</details>`
+        : `<h3 class="pr-sub pr-trend ${trend}">${trendLabel[trend]}</h3>${content}`;
+    };
+    const minimum = value.sample.minimum;
+    const evidence = value.sample.status === 'cut_not_synced' ? empty('La muestra de personajes aún se está sincronizando con este corte.')
+      : `${mine.length ? `<h3 class="pr-sub">Tus personajes</h3><ul class="pr-rows">${mine.map(row => crossRow(row,row.role)).join('')}</ul>` : empty('Elige tus personajes en <a href="./cuenta.html">tu cuenta</a> para ver sus cruces primero.')}
+      ${['favorable','unfavorable','balanced','small'].map(group).join('')}
+      ${value.sample.status === 'empty' ? empty(`Todavía no hay selecciones registradas para cruces de ${targetName} en esta muestra.`) : ''}
+      <p class="pr-note">La tendencia requiere ${minimum.games} games, ${minimum.sets} sets, ${minimum.events} torneos y ${minimum.pairs} parejas distintas. Favorable o desfavorable desde ${minimum.directionPercent}% de victorias o derrotas observadas.</p>`;
+    const moves = value.punishable?.[value.target];
+    const sheets = value.mine.length ? value.mine.map(({slug}) => `<article class="pr-sheet"><div class="pr-sheet-head"><span class="pr-icon">${localIcon(slug)}</span><h3>${escape(name(slug))}<small>contra ${targetName}</small></h3></div>
+      ${SmashFrameTools.sheet({title:name(slug),main:value.target,mainName:name(value.target),facts:value.toolkit?.[slug],moves})}</article>`).join('')
+      : empty('Elige tus personajes en <a href="./cuenta.html">tu cuenta</a> para comparar qué castigos puedes hacer.');
+    return `<nav class="pr-index" aria-label="Secciones"><a href="#cruces-observados">Cruces observados</a><a href="#guia-cruce">Cómo jugar el cruce</a><a href="#herramientas-personaje">Herramientas técnicas</a></nav>
+      <div class="pr-columns"><div><section id="cruces-observados" class="pr-section">${heading}${evidence}</section></div><div>
+      <section id="guia-cruce" class="pr-section">${head(2,'Consejos revisados','Cómo jugar el cruce','')}${empty('Todavía no hay consejos revisados para estos cruces.')}</section>
+      <section id="herramientas-personaje" class="pr-section">${head(3,'Ficha técnica','Herramientas técnicas','Compara tus opciones fuera del escudo con la ventana de castigo.')}${sheets}${SmashFrameTools.credit(value.frameDataSource)}</section>
+      </div></div>${foot()}`;
+  }
+
+  async function loadCharacter() {
+    characterRequest?.abort();
+    characterRequest = null;
+    const output = document.getElementById('pr-character-results');
+    document.getElementById('pr-cut').textContent = SCOPES[characterScope];
+    if (!target) { output.textContent = ''; return; }
+    const request = new AbortController();
+    characterRequest = request;
+    const timeout = setTimeout(() => request.abort(),20000);
+    output.innerHTML = '<p class="pr-empty" role="status">Consultando cruces…</p>';
+    try {
+      const query = new URLSearchParams({mode:'character',target,scope:characterScope});
+      const response = await fetch(`./analisis-api.php?${query}`,{credentials:'same-origin',cache:'no-store',signal:request.signal,headers:{Accept:'application/json'}});
+      const value = await response.json();
+      if (characterRequest !== request) return;
+      if (!response.ok || value.ok !== true) {
+        const error = new Error(); error.status = response.status; throw error;
+      }
+      document.getElementById('pr-cut').textContent = `${SCOPES[value.scope]} · ${dateGT(value.generatedAt)}`;
+      output.innerHTML = crossResults(value);
+    } catch (error) {
+      if (characterRequest !== request) return;
+      output.innerHTML = error.status === 401
+        ? '<section class="pr-invite"><h2>Inicia sesión para ver los cruces</h2><a class="pr-cta blue" href="./cuenta.html"><span>Entrar a tu cuenta</span></a></section>'
+        : `<section class="pr-invite"><h2>No pudimos consultar el cruce</h2><p>${error.status === 429 ? 'Espera un momento antes de hacer otra consulta.' : 'Intenta de nuevo en un momento.'}</p><button type="button" class="pr-cta blue" id="pr-character-retry"><span>Reintentar</span></button></section>`;
+      document.getElementById('pr-character-retry')?.addEventListener('click',loadCharacter);
+    } finally { clearTimeout(timeout); }
+  }
   function render() {
     const cut=Date.parse(data.generatedAt), day=Number.isNaN(cut)?'':new Date(cut-21600000).toISOString().slice(0,10).split('-').reverse().join('/');
     document.getElementById('pr-cut').textContent=`${SCOPES[scope]}${day?` · ${day}`:''}`;
@@ -158,12 +335,25 @@
       const response=await fetch(`./analisis-api.php?${new URLSearchParams({rival:rivalId,scope})}`,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}});
       const json=await response.json();
       if(!response.ok||json.ok!==true){const error=new Error(json.reason||'unavailable');error.status=response.status;throw error;}
-      data=json;render();
+      data=json;if(!studyingCharacter)render();
     } catch(error) {
+      if(studyingCharacter)return;
       root.innerHTML=error.status===401?`<section class="pr-sober"><h1>Primero, <span>tu cuenta.</span></h1><p>Preparar el set usa tu jugador vinculado. Entra con start.gg y vuelve aquí.</p><a class="pr-cta blue" href="./cuenta.html"><span>Entrar a tu cuenta</span></a></section>`
         :`<section class="pr-sober"><h1>No pudimos <span>cargarlo.</span></h1><p>${error.status===404?'No encontramos a ese jugador en los datos conocidos.':error.status===429?'Demasiadas consultas seguidas. Espera un momento.':'Vuelve a intentarlo en un momento.'}</p><button type="button" class="pr-cta blue" id="pr-retry"><span>Reintentar</span></button></section>`;
       document.getElementById('pr-retry')?.addEventListener('click',()=>{root.innerHTML='<div class="pr-loading" role="status"><div class="pr-bar"><span></span></div><p>Preparando el set…</p></div>';load();});
     } finally {clearTimeout(stop);}
   }
-  load();
+  modeLinks();
+  characterMode?.addEventListener('click', event => {
+    if (studyingCharacter || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const detected = data?.deep?.rival?.main || data?.teaser?.main;
+    openCharacter(detected, selectable(detected) ? 'detected' : 'manual');
+    characterUrl(true);
+  });
+  window.addEventListener('popstate',() => {
+    if ((new URLSearchParams(location.search).get('mode') === 'character') !== studyingCharacter) location.reload();
+  });
+  if (studyingCharacter) openCharacter(params.get('target'));
+  else load();
 })();

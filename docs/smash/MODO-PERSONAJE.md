@@ -1,5 +1,26 @@
 # Prepara el set por personaje
 
+## Selector y consulta — 11/nov/2026 GT
+
+La pestaña «Por personaje» de `preparar.html` incorpora el handoff `design_handoff_smash_gt_prepara_el_set`. Busca por nombre sin distinguir acentos y usa los íconos locales. Desde «Por jugador» puede sugerir el main que llegó en el análisis. La selección de la consulta queda en el URL. Se puede abrir directamente `preparar.html?mode=character&target=link&scope=gt`. La vista arranca en Solo Guatemala cuando falta el alcance y permite ver también + Internacional.
+
+`GET analisis-api.php?mode=character&target=link&scope=gt` usa el acceso de análisis existente. Devuelve `mode`, `target`, `scope`, `generatedAt`, `state`, `access`, `premium` y `sample`. `sample.status` vale `available`, `empty` o `cut_not_synced`. `sample.minimum` describe los umbrales y `sample.availableCrosses` es el número de cruces que los alcanzan.
+
+- Con acceso completo, `mine` lista las elecciones del perfil en orden y con su rol. `crosses` contiene `{slug, gamesWon, gamesLost, sets, events, pairs, trend}`. Cada game cuenta una vez desde el personaje de la fila. Sets, eventos y parejas de jugadores se cuentan sin duplicados. La tendencia es `favorable`, `unfavorable`, `balanced` o `small`.
+- En acceso gratis o vencido, `preview` contiene como máximo un cruce con muestra suficiente, seleccionado por cantidad de games, sets y slug. `mine`, `crosses` y las fichas quedan reservados al acceso completo.
+- Las fichas reutilizan `toolkit`, `punishable` y `frameDataSource`. «Cómo jugar el cruce» muestra el vacío hasta que existan consejos con revisión y atribución.
+
+La consulta lee games de eventos admitidos en el alcance solicitado. Busca el mismo snapshot público en SQL y usa `synced_at <= characterCapturedAt`. Aplica los filtros de games verificables de análisis, excluye espejos y consulta solo los games donde hay una selección del personaje solicitado. La tendencia exige 20 games, 5 sets, 2 eventos y 3 parejas distintas, con dirección a partir de 60% de victorias o derrotas. Los personajes propios aparecen primero y distinguen muestra pequeña, sin selecciones y espejo. Los demás cruces pequeños se agrupan en un desplegable.
+
+Medición de solo lectura en el corte 8 del **8/nov/2026**:
+
+| Alcance | Games válidos | Cruces distintos | Muestra suficiente | Tendencia favorable para un lado |
+| --- | ---: | ---: | ---: | ---: |
+| Solo Guatemala | 5.598 | 1.238 | 32 | 21 |
+| + Internacional | 6.234 | 1.316 | 37 | 24 |
+
+Validación de cuenta gratis, vencida, Premium, perspectiva inversa, alcance, ausencia de selecciones, corte desincronizado y picks ambiguos o posteriores. Pruebas locales con MariaDB desechable. Chrome a 375 y 1440 px verificó búsqueda, teclado, enlace desde el rival, cambio de alcance, reintento, fichas y adelanto.
+
 ## Cobertura medida el 6 de noviembre de 2026
 
 Lectura agregada en una transacción SQL de solo lectura. Corte 7, generado el 2 de noviembre de 2026 a las 07:31:56 UTC. La muestra combina torneos de Guatemala y del extranjero admitidos en ese corte. Se incluyen games competitivos con ganador, dos jugadores distintos, un pick inequívoco por lado y captura hasta la fecha de personajes del corte. Se excluyen Random y espejos para esta medición.
@@ -32,4 +53,4 @@ Usar los picks de cada game y los torneos del corte para la primera versión. Ag
 
 El [estudio de LG SchuStats](https://www.luminosity.gg/news/smash-ultimate-results-based-matchup-charts) sirve como referencia metodológica y enlace de consulta. Analiza sets offline en los que ambos jugadores usaron un solo personaje y declara los cruces de muestra insuficiente. Su unidad y filtros difieren de los nuestros. Antes de incorporar tablas ajenas, comprobar condiciones de reutilización. Para explicaciones de debilidades, aprovechar el borrador existente de 20 fichas como lista de revisión. Sus textos derivados de [SmashWiki](https://www.ssbwiki.com/SmashWiki:Copyrights) necesitan atribución y licencia compatible. Los ejemplos de counters del borrador corresponden a un corte anterior y requieren actualización o quedar identificados como históricos.
 
-El selector y las guías quedan para una segunda entrega con el diseño y la revisión de contenido. La primera mejora modifica solo la ficha técnica y la etiqueta de la muestra que ya existen.
+Las guías de contenido quedan pendientes de revisión editorial. La agregación del piloto consulta el corte vigente cuando se elige un luchador.
