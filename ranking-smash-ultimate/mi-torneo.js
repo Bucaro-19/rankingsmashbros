@@ -1,9 +1,11 @@
 /* Session-scoped view. Identity and own-pool projection are decided by the server. */
 (() => {
   const $=id=>document.getElementById(id);
+  const livePanel = $('my-tournament-live');
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const catalog=typeof CHARACTER_CATALOG==='undefined'?[]:CHARACTER_CATALOG;
   let active=false,visible=false,controller=null,generation=0,data=null,poolIndex=0,view=null,loading=false,failed=false,selectedEvent=null;
+  const live = {csrf: null, request: null, events: null, selected: null, result: null, message: ''};
   const external=value=>{try{const u=new URL(value);return u.protocol==='https:'&&['start.gg','www.start.gg'].includes(u.hostname)&&!u.username&&!u.password?u.href:null;}catch{return null;}};
   const analysisLink=value=>/^\.\/(analisis|preparar)\.html\?rival=\d+$/.test(value||'')?value:null;
   const country=e=>e?.country==='SV'?'El Salvador':e?.country||'Zona local del torneo';
@@ -136,14 +138,110 @@
     const m=pool.strongest;
     return `<section class="mt-reference"><p class="mt-eyebrow">◆ Rival de referencia del pool · puede ser distinto del que te toca ahora</p>${m?`<h2>${esc(m.tag)}</h2><p>${pool.strongestBasis==='rank'?'Mejor puesto en nuestro ranking dentro de este pool. Los jugadores sin puesto no se consideran más débiles.':'No hay rivales con puesto conocido: usamos el seed más alto (el número menor) como referencia.'}</p><p>${esc(rank(m))}${m.seed!=null?` · Seed ${m.seed}`:''}</p>${actions(m)}`:'<p>Sin puesto ni seeds suficientes para elegir un rival de referencia.</p>'}</section>`;
   }
+  const liveDate = value => new Intl.DateTimeFormat('es-GT', {
+    timeZone: 'America/Guatemala', dateStyle: 'short', timeStyle: 'short', hourCycle: 'h23'
+  }).format(new Date(value));
+  function liveResult() {
+    const result = live.result;
+    if (!result) return '';
+    const states = {
+      registration_unverified: 'start.gg todavía no permite confirmar tu inscripción.',
+      coverage_incomplete: 'La lectura no cubrió todos tus sets. Consulta el bracket en start.gg.',
+      opponent_pending: 'Rival por confirmar.',
+      awaiting_assignment: 'start.gg aún no muestra un set pendiente para ti.',
+      several_assigned: 'Hay varios sets pendientes. Revisa su orden en start.gg.',
+      opponent_confirmed: 'Rival asignado en start.gg.'
+    };
+    const last = result.lastResult;
+    const next = result.status === 'opponent_confirmed' ? result.nextSet : null;
+    const opponent = next?.opponent;
+    const rival = opponent && /^[1-9]\d{0,19}$/.test(opponent.playerId || '') ? {
+      tag: opponent.tag || 'tu rival',
+      analysisUrl: `./analisis.html?rival=${opponent.playerId}`,
+      prepareUrl: `./preparar.html?rival=${opponent.playerId}`
+    } : null;
+    return `<p class="mt-muted">Última lectura: ${esc(liveDate(result.checkedAt))} · Guatemala</p>
+      ${last ? `<p><b>Último resultado</b> · ${last.won ? 'Ganaste' : 'Perdiste'}${last.opponent?.tag ? ' contra ' + esc(last.opponent.tag) : ''}${last.score ? ' · ' + esc(last.score) : ''}</p>` : ''}
+      ${next ? `<div><p class="mt-eyebrow">Mi próximo set</p><h2>${esc(opponent?.tag || 'Rival sin alias')}</h2>${next.round ? `<p>${esc(next.round)}</p>` : ''}</div>` : ''}
+      <p>${esc(states[result.status] || '')}</p>${actions(rival, true)}`;
+  }
+  function renderLive() {
+    const panel = livePanel;
+    if (!panel) return;
+    panel.hidden = !data?.liveAvailable || data.archived || !live.csrf;
+    if (panel.hidden) { panel.textContent = ''; return; }
+    const focus = panel.contains?.(document.activeElement) ? document.activeElement.id : '';
+    const now = Date.now() / 1000;
+    const events = (live.events || []).filter(event => event.endAt > now);
+    const selected = events.find(event => event.id === live.selected);
+    const options = (group, items) => items.length ? `<optgroup label="${group}">${items.map(event =>
+      `<option value="${esc(event.id)}"${event.id === live.selected ? ' selected' : ''}>${esc(event.name)}</option>`).join('')}</optgroup>` : '';
+    panel.innerHTML = `<section class="mt-notice">
+      <h2>Mis inscripciones</h2>
+      ${events.length ? `<label for="mt-live-event">Elige tu torneo</label><select class="mt-button" id="mt-live-event"${live.request ? ' disabled' : ''}>${options('En curso', events.filter(event => event.startAt <= now))}${options('Próximos', events.filter(event => event.startAt > now))}</select>` : ''}
+      ${selected ? `<p>${esc(liveDate(selected.startAt * 1000))} · Guatemala</p>` : ''}
+      ${selected && selected.startAt > now ? '<p>Podrás actualizar tus sets cuando empiece el evento.</p>' : ''}
+      ${selected && live.result?.eventId === selected.id ? liveResult() : ''}
+      ${live.events !== null && !events.length ? '<p>No pudimos confirmar una inscripción tuya en los eventos disponibles para la prueba.</p>' : ''}
+      <p role="status">${esc(live.message)}</p>
+      <div class="mt-actions">
+        ${selected && selected.startAt <= now ? `<button id="mt-live-refresh" type="button" class="mt-button mt-primary" aria-disabled="${!!live.request}">Actualizar mi set</button>` : ''}
+        <button id="mt-live-discover" type="button" class="mt-button" aria-disabled="${!!live.request}">Buscar mis torneos</button>
+        ${selected ? link(external(selected.url), 'Ver bracket en start.gg ↗', 'mt-button') : ''}
+      </div></section>`;
+    if (focus) $(focus)?.focus();
+  }
+  async function requestLive(action) {
+    if (!active || !visible || !data?.liveAvailable || data.archived || !live.csrf || live.request) return;
+    const eventId = live.selected;
+    const request = new AbortController();
+    live.request = request;
+    live.message = action === 'discover' ? 'Comprobando tus inscripciones…' : 'Consultando tus sets en start.gg…';
+    renderLive();
+    const timer = setTimeout(() => request.abort(), 55000);
+    try {
+      const body = action === 'discover' ? {action} : {action, eventId};
+      const response = await fetch('./mi-torneo-api.php', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: request.signal,
+        headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': live.csrf},
+        body: JSON.stringify(body)
+      });
+      const value = await response.json();
+      if (live.request !== request) return;
+      if (response.status === 429) { live.message = 'La consulta está ocupada. Vuelve a intentar en unos segundos.'; return; }
+      if (value.reason === 'event_outside_window' || value.status === 'event_finished') {
+        live.events = (live.events || []).filter(event => event.id !== eventId);
+        live.selected = live.events[0]?.id || null;
+        live.result = null;
+        live.message = 'La actualización de este evento ya cerró.';
+        return;
+      }
+      if (!response.ok || value.ok !== true) throw new Error();
+      if (action === 'discover') {
+        live.events = value.events;
+        if (!live.events.some(event => event.id === live.selected)) {
+          live.selected = live.events[0]?.id || null;
+          live.result = null;
+        }
+      } else {
+        live.result = value;
+      }
+      live.message = '';
+    } catch {
+      if (live.request === request) live.message = live.result ? 'No se pudo actualizar. Se conserva la última lectura.' : 'No se pudo consultar start.gg. Intenta de nuevo.';
+    } finally {
+      clearTimeout(timer);
+      if (live.request === request) { live.request = null; renderLive(); }
+    }
+  }
   function render(){
     if(!active||!visible)return;
-    header();$('my-tournament-retry').hidden=!failed;
+    header();renderLive();$('my-tournament-retry').hidden=!failed;
     if(loading){$('my-tournament-body').innerHTML='<div class="mt-loading" role="status"><p>Cargando tu torneo…</p><div></div><div></div></div>';return;}
     if(failed){$('my-tournament-body').innerHTML='<div class="mt-notice mt-error" role="alert"><h2>No pudimos cargar tu torneo.</h2><p>No pudimos leer la última captura. Intenta de nuevo; tus datos no cambiaron.</p></div>';return;}
     if(!data)return;
     const archive=archiveMenu();
-    if(data.status!=='ready'||!data.pools?.length){$('my-tournament-body').innerHTML=archive+notice(data.status);return;}
+    if(data.status!=='ready'||!data.pools?.length){$('my-tournament-body').innerHTML=archive+(livePanel&&!livePanel.hidden&&!data.event?'':notice(data.status));return;}
     const pool=data.pools[poolIndex]||data.pools[0];
     const phases=data.pools.length>1?`<div class="mt-phases" role="group" aria-label="Tus fases y grupos publicados">${data.pools.map((p,i)=>`<button type="button" data-mt-pool="${i}" aria-pressed="${i===poolIndex}"><b>${esc(p.phase)} · ${esc(p.group||'')}</b><small>${i===poolIndex?'Estás viendo':'Ver grupo publicado'}</small></button>`).join('')}</div>`:`<p class="mt-phase-chip">${esc(pool.phase)} · ${esc(pool.group||'Grupo sin nombre')}</p>`;
     const hero=data.archived?'':`<div class="mt-hero">${nextSet(pool)}${schedule(pool)}</div>`;
@@ -164,11 +262,43 @@
   }
   const showView=next=>{view=next;render();$(`mt-view-${next}`)?.focus();};
   window.SmashMyTournament={
-    setContext({authenticated}){active=authenticated===true;generation++;controller?.abort();data=null;loading=false;failed=false;poolIndex=0;view=null;selectedEvent=null;$('my-tournament-banner').hidden=true;$('my-tournament-body').textContent='';$('my-tournament-updated').textContent='';$('my-tournament-event').textContent='';$('my-tournament-retry').hidden=true;if(!active){visible=false;$('my-tournament').hidden=true;}if(active)load();},
+    setContext({authenticated, csrf}) {
+      active = authenticated === true;
+      generation++;
+      controller?.abort();
+      live.request?.abort();
+      Object.assign(live, {csrf: active ? csrf : null, request: null, events: null, selected: null, result: null, message: ''});
+      if (livePanel) { livePanel.hidden = true; livePanel.textContent = ''; }
+      data = null;
+      loading = false;
+      failed = false;
+      poolIndex = 0;
+      view = null;
+      selectedEvent = null;
+      $('my-tournament-banner').hidden = true;
+      $('my-tournament-body').textContent = '';
+      $('my-tournament-updated').textContent = '';
+      $('my-tournament-event').textContent = '';
+      $('my-tournament-retry').hidden = true;
+      if (active) load();
+      else { visible = false; $('my-tournament').hidden = true; }
+    },
     show(value=true){visible=value;$('my-tournament').hidden=!visible||!active;$('my-tournament-banner').hidden=!data?.upcoming||visible;render();},
     refresh(){if(active)load();}
   };
   $('my-tournament-retry').addEventListener('click',()=>load(true));
+  livePanel?.addEventListener('click', event => {
+    const id = event.target.closest('button')?.id;
+    if (id === 'mt-live-discover') requestLive('discover');
+    if (id === 'mt-live-refresh') requestLive('refresh');
+  });
+  livePanel?.addEventListener('change', event => {
+    if (event.target.id !== 'mt-live-event' || live.request) return;
+    live.selected = event.target.value;
+    live.result = null;
+    live.message = '';
+    renderLive();
+  });
   $('my-tournament-banner-link').addEventListener('click',()=>{$('tab-tournament').click();$('my-tournament').focus();});
   $('my-tournament-body').addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;

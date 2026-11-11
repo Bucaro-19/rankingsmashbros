@@ -1,5 +1,12 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Mi torneo con archivo y actualización de sets — 11/nov/2026 GT (Codex)
+
+Rama `feat/my-tournament-pilot` desde `origin/main 9adc975`, con remoto, cambios locales, PR y Actions comprobados. Reúne el archivo de Legends 7 de #136, la lectura de #137 y su conexión a Tu cuenta. «Buscar mis torneos» verifica inscripciones en los eventos configurados. «Actualizar mi set» muestra el último resultado y enlaza al próximo rival publicado. Usa la sesión vinculada, CSRF, caché privada y un presupuesto compartido de 12 intentos por minuto. Se reutilizan los componentes de Mi torneo. [MI-TORNEO-EN-VIVO.md](MI-TORNEO-EN-VIVO.md) describe la configuración privada y la prueba del primer evento activo.
+
+Pruebas locales con datos inventados: 19 de captura y HTTP de Mi torneo sobre MariaDB desechable, 9 del esquema, 12 del publicador, contratos PHP y 16 pruebas Node. Chrome a 375 y 1440 px verificó selector, foco, cambio del enlace, recuperación de error y ancho. El piloto queda preparado para activar con un evento real y su llave privada. El archivo funciona independientemente de esa configuración.
+
+
 ## Lectura de inscripciones y sets propios — 6/nov/2026 GT (Codex)
 
 El dueño aprobó avanzar con Mi torneo en vivo. Rama `feat/my-tournament-live-core` apilada sobre `feat/my-tournament-archive` (#136). Las sondas de solo lectura confirmaron `event.userEntrant` y sets filtrados por entrant. `User.events` omitió el evento de prueba pese a que la inscripción se confirmó por evento. Se prepara el lector PHP con identidad validada, páginas acotadas y estados de avance que no dependen de seeds. Contrato, mediciones, pruebas y handoff en [MI-TORNEO-EN-VIVO.md](MI-TORNEO-EN-VIVO.md). El endpoint, el token privado en hosting, la caché y el selector quedan para la integración del piloto.

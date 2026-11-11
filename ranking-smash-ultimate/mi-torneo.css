@@ -35,3 +35,10 @@
   font-weight: 700;
 }
 .mt-archive[open] .mt-actions { margin-top: 8px; }
+
+#my-tournament-live .mt-notice h2,
+#my-tournament-live .mt-notice p { overflow-wrap: anywhere; }
+#my-tournament-live .mt-notice .mt-actions { width: 100%; }
+#my-tournament-live select.mt-button { background: var(--mt-panel); width: min(100%, 420px); }
+#my-tournament-live [aria-disabled="true"] { opacity: .65; cursor: wait; }
+#my-tournament-live [role="status"]:empty { display: none; }

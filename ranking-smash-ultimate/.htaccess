@@ -89,6 +89,9 @@ Options -Indexes
 <Files "mi-torneo.php">
   Require all denied
 </Files>
+<Files "mi-torneo-live.php">
+  Require all denied
+</Files>
 
 # Own Instagram cron/library: CLI inclusion only, no browser endpoint.
 <Files "instagram.php">

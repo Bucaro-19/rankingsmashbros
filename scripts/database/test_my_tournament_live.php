@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
-require __DIR__.'/my_tournament_live.php';
+require __DIR__.'/../../ranking-smash-ultimate/bracket-store.php';
+require __DIR__.'/../../ranking-smash-ultimate/mi-torneo-live.php';
 
 function live_assert(bool $value, string $label): void {
     if (!$value) throw new RuntimeException($label);

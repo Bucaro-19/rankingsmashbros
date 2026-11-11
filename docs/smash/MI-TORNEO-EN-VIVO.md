@@ -9,24 +9,43 @@ La política de captura actual autoriza únicamente Legends 7 y ya venció. El a
 ## Validación del proveedor — 6/nov/2026 GT
 
 - Una sonda acotada sobre un inscrito público de Legends 7 confirmó el mismo entrant y player en `event.userEntrant` y en la lista del evento. El filtro de sets devolvió 4 sets propios en una página, los 4 con ganador y hora de cierre. La sonda usó 3 consultas en 2,88 s. [Ejecución](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42304352416)
-- `User.events` acepta filtros de juego, tipo, búsqueda, lugar y cantidad de inscritos. El esquema consultado carece de un filtro `upcoming`. Para ese mismo participante la conexión devolvió un solo evento y omitió Legends 7, pese a que el evento confirmó la inscripción. El piloto parte de eventos de la agenda y de eventos internacionales configurados, con verificación individual. [Ejecución](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42304490030)
+- `User.events` acepta filtros de juego, tipo, búsqueda, lugar y cantidad de inscritos. El esquema consultado carece de un filtro `upcoming`. Para ese mismo participante la conexión devolvió un solo evento y omitió Legends 7, pese a que el evento confirmó la inscripción. Para el piloto se eligen eventos de la agenda o internacionales y se configuran sus IDs. La ventana configurada mantiene el evento disponible mientras se juega, aunque la agenda deje de listarlo al comenzar. [Ejecución](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42304490030)
 - El lector PHP pasó también con los datos reales del mismo evento. En 3 consultas, incluida la búsqueda del inscrito de prueba, encontró el último resultado y cero sets pendientes. Las sondas hicieron 8 solicitudes en total y solo registraron agregados. [Ejecución](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/42304953539)
 - La prueba corresponde a un torneo finalizado con lista pública. La visibilidad de listas ocultas y la latencia de resultados en un torneo activo se medirán aparte.
 
-## Lector preparado para el backend
+## Piloto integrado — 11/nov/2026 GT
 
-`scripts/database/my_tournament_live.php` comprueba la inscripción por user ID y player ID y pide hasta dos páginas de 12 sets por entrant. Verifica que cada set devuelto incluya al inscrito. El resultado separa el último set con ganador y hora confirmados, el próximo set asignado y los estados sin rival, con varias asignaciones o con cobertura incompleta. La ausencia de set pendiente no confirma eliminación. Una inscripción nula se trata como no verificable.
+En Tu cuenta → Mi torneo, «Buscar mis torneos» comprueba la inscripción en los eventos configurados. El selector agrupa los confirmados por horario en «En curso» y «Próximos». «Actualizar mi set» consulta start.gg durante la ventana del evento y muestra el último resultado reportado y el nuevo rival asignado, cuando existe. Los enlaces usan el ID de ese rival. Si la lista está oculta, la paginación no se puede completar o no hay una asignación inequívoca, la pantalla indica el estado y ofrece el enlace al bracket oficial. Si la consulta falla, conserva la última lectura con su hora. El archivo de Legends 7 sigue en «Torneos finalizados» y usa su última captura guardada.
 
-La biblioteca recibe el transporte como argumento. El futuro endpoint deberá obtener los IDs desde la sesión, confirmar el evento permitido y su periodo activo, usar un token privado del hosting y aplicar caché y límites compartidos antes de llamar al lector. Las pruebas inventadas cubren victoria, nuevo rival, rival por confirmar, derrota, bye, ajenos y tope de paginación. El lector todavía corre como herramienta de desarrollo y no se publica en el sitio.
+`mi-torneo-api.php` conserva el GET de la captura privada. Las dos operaciones nuevas son POST con sesión, CSRF y vínculo vigente en SQL. `discover` comprueba una inscripción por evento. `refresh` vuelve a verificar el evento de Ultimate Singles, el usuario y el jugador vinculados antes de leer hasta dos páginas de 12 sets de su entrant. El lector comprueba que cada set devuelto le pertenezca. `event.state = COMPLETED` cierra la lectura aunque el horario configurado todavía no haya vencido. La ausencia de una asignación se muestra como pendiente. El organizador define cuándo registra el resultado. [Esquema de Event](https://developer.start.gg/reference/event.doc.html) · [Límites de start.gg](https://developer.start.gg/docs/rate-limits/)
 
-## Siguiente entrega
+El piloto consulta bajo demanda. El hosting reutiliza descubrimientos durante 120 s y lecturas de sets durante 30 s por cuenta, vínculo y evento. Usa un bloqueo privado compartido y un máximo de 12 intentos por 60 s, espaciados al menos un segundo. El archivo `mi-torneo-live-state.json` contiene resúmenes recientes y conteos de intentos, con permisos 600. Ante saturación responde 429 y el usuario puede volver a intentar. El GET de cuenta, el archivo y la agenda usan sus fuentes existentes.
 
-1. **Inscripciones y selector.** Mostrar en curso primero, luego próximos y finalizados en su propio desplegable. Para el primer piloto usar eventos de Ultimate Singles de la agenda y eventos internacionales configurados de forma explícita. Validar la inscripción por ID vinculado. El esquema de start.gg documenta `event.userEntrant(userId: …)`. Comprobar su visibilidad con la cuenta y el token de prueba antes de asumir que devuelve registros privados o listas ocultas. Inscripción no verificable, inscripción inexistente y pools sin publicar son estados distintos. [Referencia de Event](https://developer.start.gg/reference/event.doc.html)
-2. **Estado en vivo.** Durante el torneo, «Actualizar ahora» llama al backend autenticado. Este consulta sets del evento filtrados por el entrant comprobado en el servidor. Pedir solo ID, estado, ganador, ronda, slots y sus prerequisitos, con paginación y topes. Mantener la captura completa para horarios, pools y grafo cuando esté disponible. Confirmar primero con una sonda acotada cómo responde el filtro a slots sin asignar, fase nueva, winners, losers y DQ. [Sets de un evento](https://developer.start.gg/docs/examples/queries/sets-in-event/) · [SetFilters](https://developer.start.gg/reference/setfilters.doc.html)
-3. **Cuota y datos viejos.** Propuesta de caché privada de 30 segundos por evento e inscripción, con una sola consulta en curso por clave y presupuesto global para el token. El servidor puede reutilizar una respuesta reciente. Refrescar al volver a la pestaña y permitir actualización manual. Cualquier refresco periódico debe limitarse a la pantalla visible y al periodo activo. Si start.gg tarda o limita la consulta, mostrar la fecha de la última lectura exitosa y ofrecer el enlace al bracket oficial. Medir la carga antes de activar. El token va en configuración privada del servidor. [Límites de start.gg](https://developer.start.gg/docs/rate-limits/)
-4. **Próximo rival.** Avanzar solo tras un ganador o slot confirmado en start.gg. Mostrar el último set reportado, la ronda y «Rival por confirmar» cuando falte el otro resultado. Distinguir fase pendiente, entrada a losers, eliminado y torneo finalizado con evidencia explícita. Si se conoce el rival, enlazar a su análisis con los controles existentes. Si no tiene historial suficiente, señalar ese estado y ofrecer el modo por personaje cuando esté disponible.
+## Preparar el primer torneo
 
-La velocidad real depende del reporte del resultado y de cuándo start.gg publique el cruce. Medir con un evento de prueba antes de fijar una expectativa.
+1. Después de publicar el cambio, elige un evento real de Ultimate Singles con inscritos visibles. Anota el **ID del evento**, el enlace del evento en start.gg y el horario aproximado de inicio y cierre. Usa los datos de la agenda o el enlace del organizador.
+2. En cPanel, crea `/home/ivcjgjlk/private-smash/mi-torneo-live.local.php` con permisos 600. Configura una llave de lectura de start.gg para este piloto. Guárdala directamente en el archivo privado.
+3. Completa los datos del ejemplo y cambia `enabled` a `true` cuando vayas a probar. Se aceptan hasta tres eventos, con inicio hasta 14 días adelante y ventana de hasta siete días. Cada evento sale del selector cuando pasa su hora de cierre.
+
+```php
+<?php
+return [
+    'enabled' => false,
+    'token' => '',
+    'events' => [
+        // Completa un evento real con esta estructura:
+        // ['id' => 'ID_NUMERICO_DEL_EVENTO', 'name' => 'Nombre del torneo',
+        //  'url' => 'https://www.start.gg/tournament/slug/event/ultimate-singles',
+        //  'startAt' => strtotime('AAAA-MM-DD HH:MM:SS -06:00'),
+        //  'endAt' => strtotime('AAAA-MM-DD HH:MM:SS -06:00')],
+    ],
+];
+```
+
+4. Desde una cuenta inscrita, abre «Mi torneo», busca la inscripción y actualiza el set al comenzar. Verifica que el primer enlace corresponda al rival asignado. Cuando el organizador reporte un resultado, mide cuánto tarda en aparecer el nuevo cruce y confirma el enlace. La caché del botón dura 30 s. Prueba también una cuenta sin inscripción.
+5. Para cerrar el piloto anticipadamente, pon `enabled` en `false`. El archivo histórico sigue disponible.
+
+Las pruebas con datos inventados cubren sesión, CSRF, eventos ajenos y fuera de horario, caché, límite global y cambio del enlace después de reportar una victoria. Queda pendiente medir el primer torneo activo, incluidos los casos de inscripción oculta y la demora de publicación de un set.
 
 ## Brief para Claude Design
 
