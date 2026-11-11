@@ -25,6 +25,58 @@ test('hidden account tab requests no portrait markup; only displayed fighters us
   const h=harness(async()=>({ok:true,json:async()=>data}));h.api.setContext({authenticated:true});await tick();assert.equal(h.get('my-tournament-body').innerHTML,'');assert.equal(h.get('my-tournament-banner').hidden,false);
   h.api.show();assert.equal(h.get('my-tournament-banner').hidden,true);const html=h.get('my-tournament-body').innerHTML;assert.match(html,/assets\/characters\/mario-portrait.png/);assert.match(html,/Main detectado/);assert.match(html,/Elegido en tu perfil/);assert.ok(!html.includes('donkey_kong-portrait'));assert.ok(!html.includes('raw.githubusercontent'));assert.match(html,/no sabemos con cuál jugará/);
 });
+test('finished events open only after selection and never show an upcoming set',async()=>{
+  const pastEvents=[{id:'1687524',name:'LEGENDS7'}], requests=[];
+  const h=harness(async url=>{
+    requests.push(url);
+    const value=url.includes('?')?{...fixture(),archived:true,upcoming:false,pastEvents}:
+      {ok:true,status:'no_active_tournament',pastEvents,pools:[],event:null};
+    return {ok:true,json:async()=>value};
+  });
+  h.api.setContext({authenticated:true});h.api.show();await tick();
+  assert.equal(h.get('my-tournament-title').textContent,'Mi torneo');
+  assert.match(h.get('my-tournament-body').innerHTML,/Torneos finalizados/);
+  assert.doesNotMatch(h.get('my-tournament-body').innerHTML,/Trivi/);
+  h.get('my-tournament-body').listeners.click({target:button({mtEvent:'1687524'})});await tick();
+  assert.deepEqual(requests,['./mi-torneo-api.php','./mi-torneo-api.php?eventId=1687524']);
+  assert.match(h.get('my-tournament-body').innerHTML,/Torneo finalizado/);
+  assert.doesNotMatch(h.get('my-tournament-body').innerHTML,/Mi próximo set|Mi camino/);
+  assert.equal(h.get('my-tournament-banner').hidden,true);
+});
+test('manual lookup and refresh replace the analysis links with the newly assigned rival',async()=>{
+  const now=Math.floor(Date.now()/1000);
+  const calls=[];
+  const events=[{id:'90001',name:'Torneo QA',startAt:now-60,endAt:now+3600,url:'https://www.start.gg/tournament/qa/event/singles'}];
+  let next='4',fail=false;
+  const h=harness(async(url,opts)=>{
+    if(opts.method!=='POST')return {ok:true,json:async()=>({ok:true,status:'no_active_tournament',liveAvailable:true,pools:[]})};
+    assert.equal(opts.headers['X-CSRF-Token'],'test-csrf');
+    const body=JSON.parse(opts.body);calls.push(body);
+    if(fail)throw Error('temporary fixture error');
+    const value=body.action==='discover'?{events}:{eventId:'90001',status:'opponent_confirmed',checkedAt:new Date().toISOString(),
+      nextSet:{opponent:{playerId:next,tag:'Rival '+next}},lastResult:next==='6'?{won:true,score:'2–0'}:null};
+    return {ok:true,json:async()=>({ok:true,...value})};
+  });
+  h.api.setContext({authenticated:true,csrf:'test-csrf'});h.api.show();await tick();
+  const panel=h.get('my-tournament-live');
+  const press=id=>panel.listeners.click({target:{closest:()=>({id})}});
+  assert.deepEqual(calls,[]);
+  press('mt-live-discover');await tick();
+  assert.match(panel.innerHTML,/En curso/);
+  press('mt-live-refresh');await tick();
+  assert.match(panel.innerHTML,/analisis\.html\?rival=4/);
+  next='6';press('mt-live-refresh');await tick();
+  assert.match(panel.innerHTML,/Ganaste · 2–0/);
+  assert.match(panel.innerHTML,/preparar\.html\?rival=6/);
+  assert.doesNotMatch(panel.innerHTML,/rival=4/);
+  fail=true;press('mt-live-refresh');await tick();
+  assert.match(panel.innerHTML,/Se conserva la última lectura/);
+  assert.match(panel.innerHTML,/analisis\.html\?rival=6/);
+  assert.deepEqual(calls,[{action:'discover'},...Array.from({length:3},()=>({action:'refresh',eventId:'90001'}))]);
+  h.api.setContext({authenticated:false});
+  assert.equal(panel.hidden,true);
+  assert.equal(panel.textContent,'');
+});
 test('null schedules and missing characters are honest; tags and URLs cannot inject HTML',async()=>{
   const data=fixture();const m=data.pools[0].firstSet.opponent;m.tag='<script>mal</script>';m.analysisUrl='javascript:alert(1)';data.event.url='https://evil.example';
   const h=await ready(data),html=h.get('my-tournament-body').innerHTML;assert.match(html,/Horario aún no publicado/);assert.match(html,/seed más alto/);assert.match(html,/Sin personaje registrado/);assert.ok(!html.includes('<script>mal'));assert.match(html,/&lt;script&gt;/);assert.ok(!html.includes('javascript:'));assert.ok(!h.get('my-tournament-event').innerHTML.includes('evil.example'));assert.match(h.get('my-tournament-updated').textContent,/los horarios los define el organizador/);

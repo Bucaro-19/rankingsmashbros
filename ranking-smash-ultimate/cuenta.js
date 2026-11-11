@@ -52,7 +52,7 @@
     window.SmashMyTournament?.setContext({authenticated:false});
     try {
       data=await request();
-      window.SmashMyTournament?.setContext({authenticated:data.authenticated===true});
+      window.SmashMyTournament?.setContext({authenticated:data.authenticated===true,csrf:data.csrf});
       SmashPremium.setContext({csrf:data.csrf,authenticated:data.authenticated===true,admin:data.panel===true,organizerReady:data.organizerReady===true});
       // Display hint for the home page header only; never proof of a session.
       try{if(data.authenticated)localStorage.setItem('smashgt.cuenta',data.user.tag);else localStorage.removeItem('smashgt.cuenta');}catch{}

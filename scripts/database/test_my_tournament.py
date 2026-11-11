@@ -1,5 +1,5 @@
 """Invented pools only; no production credentials, network capture or writes."""
-import copy,gzip,json,os,subprocess,tempfile,unittest
+import copy,gzip,json,os,subprocess,tempfile,time,unittest
 from pathlib import Path
 from datetime import datetime,timezone
 from unittest import mock
@@ -20,7 +20,7 @@ def sample():
 
 
 def bridge(value):
-    code="require 'ranking-smash-ultimate/mi-torneo.php';$v=json_decode(stream_get_contents(STDIN),true);try{if($v['mode']==='validate'){mt_validate($v['p']);$r=['valid'=>true];}elseif($v['mode']==='response'){$r=mt_response($v['p'],$v['player'],$v['public'],"+str(NOW)+",$v['chosen']??[]);}else{$r=mt_receive($v['site'],base64_decode($v['body']),"+str(NOW)+");}echo json_encode(['ok'=>true,'result'=>$r]);}catch(Throwable $e){echo json_encode(['ok'=>false]);}"
+    code="require 'ranking-smash-ultimate/mi-torneo.php';$v=json_decode(stream_get_contents(STDIN),true);try{if($v['mode']==='validate'){mt_validate($v['p']);$r=['valid'=>true];}elseif($v['mode']==='response'){$r=mt_response($v['p'],$v['player'],$v['public'],$v['now']??"+str(NOW)+",$v['chosen']??[],$v['archive']??false);}else{$r=mt_receive($v['site'],base64_decode($v['body']),"+str(NOW)+");}echo json_encode(['ok'=>true,'result'=>$r]);}catch(Throwable $e){echo json_encode(['ok'=>false]);}"
     run=subprocess.run(['php','-d','memory_limit=512M','-r',code],input=json.dumps(value),capture_output=True,text=True,cwd=ROOT,timeout=15)
     if run.stderr:raise AssertionError(run.stderr)
     return json.loads(run.stdout)
@@ -114,6 +114,22 @@ class Contracts(unittest.TestCase):
         p=sample();r=bridge(dict(mode='response',p=p,player='184005',public=dict(players=[dict(id='8999003',rank=3),dict(id='8999002',rank=10)])))['result']
         self.assertEqual(r['status'],'ready');self.assertEqual(len(r['pools']),1);g=r['pools'][0];self.assertEqual(g['group'],'B4');self.assertEqual(g['firstSet']['opponent']['tag'],'Otro rival');self.assertEqual(g['probablePath'][0]['opponent']['tag'],'Rival fuerte');self.assertEqual(g['strongest']['tag'],'Rival seed');self.assertEqual(g['strongestBasis'],'rank');self.assertIsNone(g['start']['timestamp']);self.assertNotIn('PRIVADO',json.dumps(r))
         r=bridge(dict(mode='response',p=p,player='184005',public={}))['result'];self.assertEqual(r['pools'][0]['strongest']['tag'],'Rival fuerte');self.assertEqual(r['pools'][0]['strongestBasis'],'seed')
+    def test_finished_tournament_requires_selection_and_membership(self):
+        args = dict(mode='response', p=sample(), player='184005', public={}, now=1792987200)
+        default = bridge(args)['result']
+        self.assertEqual(default['status'], 'no_active_tournament')
+        self.assertIsNone(default['event'])
+        self.assertEqual(default['pools'], [])
+        self.assertEqual([event['id'] for event in default['pastEvents']], ['1687524'])
+        opened = bridge(dict(args, archive=True))['result']
+        self.assertTrue(opened['archived'])
+        self.assertEqual(opened['pools'][0]['group'], 'B4')
+        self.assertIsNone(opened['pools'][0]['firstSet'])
+        self.assertEqual(opened['pools'][0]['probablePath'], [])
+        self.assertNotIn('PRIVADO', json.dumps(opened))
+        outsider = bridge(dict(args, archive=True, player='999'))['result']
+        self.assertEqual((outsider['event'], outsider['pastEvents'], outsider['pools']), (None, [], []))
+
     def test_actual_graph_slots_results_and_characters_without_invented_data(self):
         p=sample();g=p['groups'][0]
         g['sets'][0].update(winnerId='101',state=3)
@@ -184,18 +200,93 @@ class HttpTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         account_tests.AccountHttpTests.setUpClass.__func__(cls)
-        for f in ('bracket-store.php','mi-torneo.php','mi-torneo-api.php'):__import__('shutil').copyfile(SITE/f,cls.site/f)
+        for f in ('bracket-store.php','mi-torneo.php','mi-torneo-api.php','mi-torneo-live.php'):__import__('shutil').copyfile(SITE/f,cls.site/f)
+        endpoint=cls.site/'mi-torneo-api.php'
+        source=endpoint.read_text()
+        assert source.count("smash_account_http('https://api.start.gg/gql/alpha',") == 1
+        endpoint.write_text(source.replace("smash_account_http('https://api.start.gg/gql/alpha',", 'fixture_tournament_query(') + '''
+function fixture_tournament_query(array $body, string $token): array {
+    if ($token !== 'qa-token-not-real') throw new RuntimeException('unexpected token');
+    $v = $body['variables'];
+    $id = $v['event'];
+    $dir = dirname(__DIR__).'/private-smash';
+    file_put_contents($dir.'/fixture-live-queries', $id."\\n", FILE_APPEND);
+    if ($body['query'] === MT_LIVE_ENTRY) {
+        if ($v['user'] !== '8999101') throw new RuntimeException('not linked account');
+        return ['data'=>['event'=>['id'=>$id, 'type'=>1, 'state'=>'ACTIVE', 'videogame'=>['id'=>1386],
+            'userEntrant'=>$id==='90002' ? null : ['id'=>'101','participants'=>[['player'=>['id'=>'184005']]]]]]];
+    }
+    if ($body['query'] !== MT_LIVE_SETS || $v['entrant'] !== '101' || $id !== '90001') throw new RuntimeException('unexpected request');
+    $nodes = json_decode(file_get_contents($dir.'/fixture-live-sets.json'),true);
+    return ['data'=>['event'=>['id'=>$id, 'sets'=>['pageInfo'=>['total'=>count($nodes), 'totalPages'=>1], 'nodes'=>$nodes]]]];
+}
+''')
         (cls.private/'brackets').mkdir();cls.path=cls.private/'brackets/1687524.json'
     @classmethod
     def tearDownClass(cls):account_tests.AccountHttpTests.tearDownClass.__func__(cls)
     def setUp(self):
         account_tests.AccountHttpTests.setUp(self);self.path.write_text(json.dumps(sample()))
-    def request(self,path='/mi-torneo-api.php',**kw):return account_tests.AccountHttpTests.request(self,path,**kw)
+        for name in ('mi-torneo-live.local.php','mi-torneo-live-state.json','fixture-live-queries','fixture-live-sets.json'):
+            (self.private/name).unlink(missing_ok=True)
+    def request(self,path='/mi-torneo-api.php?eventId=1687524',**kw):return account_tests.AccountHttpTests.request(self,path,**kw)
     def test_anonymous_and_methods_get_no_pool(self):
-        self.assertEqual(self.request()[0],401);self.assertEqual(self.request(method='POST')[0],405);self.assertNotIn('Pools',json.dumps(self.request()[2]))
+        self.assertEqual(self.request()[0],401);self.assertEqual(self.request(method='POST')[0],401);self.assertEqual(self.request(method='PUT')[0],405);self.assertNotIn('Pools',json.dumps(self.request()[2]))
+
+    def test_pilot_checks_linked_registration_and_updates_to_the_next_assigned_rival(self):
+        self.request('/fixture-login.php')
+        csrf=self.request('/account-api.php')[2]['csrf']
+        post=lambda body,token=csrf:self.request('/mi-torneo-api.php',body=body,csrf=token)
+        self.assertEqual(post({'action':'discover'})[2]['reason'],'live_disabled')
+        now=int(time.time())
+        events=[dict(id=id,name=f'Evento QA {id}',url=f'https://www.start.gg/tournament/qa-{id}/event/singles',startAt=start,endAt=end)
+                for id,start,end in [('90001',now-60,now+3600),('90002',now+3600,now+7200),('90003',now+1800,now+7200)]]
+        config=dict(enabled=True,token='qa-token-not-real',events=events)
+        (self.private/'mi-torneo-live.local.php').write_text('<?php return json_decode('+json.dumps(json.dumps(config))+', true);')
+        queries=self.private/'fixture-live-queries'
+        self.assertTrue(self.request('/mi-torneo-api.php')[2]['liveAvailable'])
+        self.assertEqual(post({'action':'discover'},None)[0],403)
+        self.assertEqual(post({'action':'refresh','eventId':'90003'})[2]['reason'],'event_outside_window')
+        self.assertEqual(post({'action':'refresh','eventId':'1687524'})[2]['reason'],'event_outside_window')
+        self.assertEqual(post({'action':'refresh','eventId':'90001','playerId':'99'})[0],400)
+        self.assertFalse(queries.exists())
+        status,_,listed=post({'action':'discover'})
+        self.assertEqual(status,200)
+        self.assertEqual([e['id'] for e in listed['events']],['90001','90003'])
+        self.assertNotIn('qa-token-not-real',json.dumps(listed))
+        self.assertEqual(post({'action':'discover'})[2],listed)
+        self.assertEqual(len(queries.read_text().splitlines()),3)
+
+        def match(id,rival,winner=None):
+            return dict(id=id,state=3 if winner else 1,winnerId=winner,completedAt=now if winner else None,
+                        fullRoundText='Ronda QA',displayScore='2–0' if winner else None,
+                        slots=[dict(entrant=dict(id='101')),dict(entrant=dict(id='102',name='Rival '+rival,participants=[dict(player=dict(id=rival))]))])
+        sets=self.private/'fixture-live-sets.json'
+        sets.write_text(json.dumps([match('201','8999002')]))
+        body={'action':'refresh','eventId':'90001'}
+        status,headers,first=post(body)
+        self.assertEqual(status,200)
+        self.assertIn('no-store',headers['Cache-Control'])
+        self.assertEqual(first['nextSet']['opponent']['playerId'],'8999002')
+        self.assertEqual(post(body)[2],first)
+        self.assertEqual(len(queries.read_text().splitlines()),5)
+        cache=self.private/'mi-torneo-live-state.json'
+        state=json.loads(cache.read_text());state['cache']={};cache.write_text(json.dumps(state))
+        sets.write_text(json.dumps([match('201','8999002','101'),match('202','8999003')]))
+        updated=post(body)[2]
+        self.assertTrue(updated['lastResult']['won'])
+        self.assertEqual(updated['nextSet']['opponent']['playerId'],'8999003')
+        self.assertEqual(len(queries.read_text().splitlines()),7)
+        state=json.loads(cache.read_text());state['cache']={};state['attempts']=[time.time()]*12;cache.write_text(json.dumps(state))
+        self.assertEqual(post(body)[0],429)
+        self.assertEqual(len(queries.read_text().splitlines()),7)
     def test_live_session_free_account_owns_pool_and_cannot_choose_another(self):
         self.request('/fixture-login.php');status,headers,r=self.request();self.assertEqual(status,200);self.assertEqual(r['status'],'ready');self.assertEqual(r['pools'][0]['group'],'B4');self.assertNotIn('PRIVADO',json.dumps(r));self.assertIn('no-store',headers['Cache-Control']);self.assertIn('private',headers['Cache-Control'])
-        for query in ('?playerId=8999005','?pool=302','?event=1687524'):self.assertEqual(self.request('/mi-torneo-api.php'+query)[0],400)
+        default=self.request('/mi-torneo-api.php')[2]
+        if r['archived']:
+            self.assertEqual(default['status'],'no_active_tournament')
+            self.assertEqual(default['pools'],[])
+            self.assertEqual(default['pastEvents'][0]['id'],'1687524')
+        for query in ('?playerId=8999005','?pool=302','?event=1687524','?eventId=999','?eventId[]=1687524','?eventId=1687524&playerId=8999005'):self.assertEqual(self.request('/mi-torneo-api.php'+query)[0],400)
         raw=json.dumps(r)
         for field in ('startggId','email','oauth','session','payment','cookie','entrantId','seedId','prereqId'):self.assertNotIn('"'+field+'"',raw)
         # Change real DB linkage: API must not keep trusting an old session identity.

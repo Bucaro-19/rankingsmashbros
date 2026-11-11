@@ -1,5 +1,11 @@
 # Mi torneo: bracket privado de Legends 7
 
+## Consulta de torneos finalizados — 6/nov
+
+Cuando termina el evento, la vista inicial devuelve `no_active_tournament` y una ficha en `pastEvents` solo si la sesión corresponde a un inscrito del snapshot. `GET mi-torneo-api.php?eventId=1687524` abre la última captura propia con `archived: true`. Sin inscripción se omiten ficha, pools y metadatos del archivo. El recuadro de próximo set y el camino previsto se reservan para capturas activas.
+
+El plan del selector de inscripciones y la actualización durante la competencia está en [MI-TORNEO-EN-VIVO.md](MI-TORNEO-EN-VIVO.md).
+
 ## Alcance
 
 Sección gratuita en Tu cuenta. El diseño provisional del 17/oct se reemplaza en la entrega del 18/oct por el handoff final `design_handoff_rsb_mi_torneo/`. No es la pestaña premium de tops «Mis torneos». Muestra fases/grupos propios, horarios GT/local, primer set pendiente y rival confirmado o probable, camino posible si ganas, rival con mejor puesto conocido en el ranking combinado o menor seed si nadie tiene puesto, y lista del pool. Sin puesto no equivale a débil. Los enlaces de análisis conservan los controles premium existentes.
