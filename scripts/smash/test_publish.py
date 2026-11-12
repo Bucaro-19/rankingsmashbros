@@ -4,9 +4,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 from publish_data import export
-from deploy import deploy, require_sql_survey, validate_public_data, validate_study_data, FILES
+from deploy import deploy, publish, require_sql_survey, validate_public_data, validate_study_data, FILES
 
 
 def snapshot():
@@ -76,6 +76,42 @@ class ExportTests(unittest.TestCase):
                         self.assertFalse(any('agenda.json' in name for name in call.args))
                     for call in ftp.delete.call_args_list:
                         self.assertNotIn('agenda.json', call.args[0])
+
+    def test_assets_only_reconnects_and_retries_only_unconfirmed_files(self):
+        from test_seo import fixture
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder)
+            fixture(source)
+            cut = (source / 'data/public.json').read_bytes()
+            agenda = b'{"generatedAt":"2026-11-08T12:00:00Z","tournaments":[]}'
+            files = {'data/public.json':cut, 'data/agenda.json':agenda, 'preparar.html':b'old'}
+            sessions = [MagicMock(), MagicMock()]
+            for ftp in sessions:
+                ftp.__enter__.return_value = ftp
+                ftp.retrbinary.side_effect = lambda cmd, recv: recv(files[cmd.removeprefix('RETR ')])
+                ftp.rename.side_effect = lambda tmp, dest: files.update({dest:files.pop(tmp)})
+                ftp.delete.side_effect = lambda tmp: files.pop(tmp,None)
+
+            def first_upload(command, stream):
+                name = command.removeprefix('STOR ')
+                files[name] = stream.read()
+                if name.startswith('preparar.html.'):
+                    self.assertEqual(files['preparar.html'],b'old')
+                    raise TimeoutError('QA timeout')
+
+            sessions[0].storbinary.side_effect = first_upload
+            sessions[1].storbinary.side_effect = lambda cmd, stream: files.update({cmd.removeprefix('STOR '):stream.read()})
+            allowlist = ('preparar.js','preparar.html','sitemap.xml','data/public.json')
+            with patch('deploy.FILES',allowlist), patch('deploy.ftplib.FTP',side_effect=sessions) as connect, \
+                    patch('deploy.time.sleep'), patch.dict('os.environ',{'SMASH_FTP_DIR':'.','FTP_SERVER':'qa','FTP_USERNAME':'qa','FTP_PASSWORD':'qa'}):
+                publish(source,assets_only=True,admin_hash=None)
+            self.assertEqual(connect.call_count,2)
+            self.assertEqual([call.args[1] for call in sessions[0].rename.call_args_list],['preparar.js'])
+            self.assertEqual([call.args[1] for call in sessions[1].rename.call_args_list],['preparar.html','sitemap.xml'])
+            self.assertEqual(files['data/public.json'],cut)
+            self.assertEqual(files['data/agenda.json'],agenda)
+            self.assertEqual(files['preparar.html'],(source / 'preparar.html').read_bytes())
+            self.assertFalse(any(name.endswith('.tmp') for name in files))
 
     def test_tournaments_page_counts_one_view_with_its_own_stored_page(self):
         import re

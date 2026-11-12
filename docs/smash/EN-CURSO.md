@@ -1,5 +1,12 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Reanudar el despliegue de archivos — 11/nov/2026 GT (Codex)
+
+El PR #140 se fusionó en `0ff8714` y CI de main pasó. Los dos intentos del [despliegue 43143912267](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/43143912267) expiraron durante FTP. La web ya servía JavaScript nuevo y todavía servía HTML anterior. El corte del 8/nov conservó SHA-256 `00d87035c014d825228900c91da90d388a7e608032c1d0096c7ac76de8f49c27`.
+
+`assets_only` permite hasta tres reconexiones ante fallos transitorios dentro de la misma ejecución. Cada conexión nueva omite los archivos cuyo renombrado ya confirmó el servidor. El sitemap se publica al final. Se informa el archivo no confirmado y cuántos se completaron. La prueba simula un timeout en el HTML tras subir el JavaScript y verifica que solo se reanude lo pendiente. Pasaron 128 pruebas locales del publicador y del pipeline. La evidencia del despliegue final se registra en el PR.
+
+
 ## Prepara el set por personaje — 11/nov/2026 GT (Codex)
 
 El dueño dejó Mi torneo pendiente y pidió avanzar. Rama `feat/prepara-set-por-personaje` desde `origin/main dfaf5e3`. Se implementó la variante de Claude Design en Prepara el set con selector, alcances Solo Guatemala y + Internacional, cruces observados, tamaños de muestra y fichas técnicas. El servidor entrega un adelanto por personaje y alcance para cuentas gratis. Los consejos de la carpeta de borrador siguen en revisión editorial.
