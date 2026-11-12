@@ -5,6 +5,7 @@ import io
 import json
 import os
 import re
+import time
 import uuid
 from pathlib import Path
 from collections import Counter, defaultdict
@@ -188,7 +189,9 @@ def read_live_agenda(ftp):
         return None
 
 
-def deploy(ftp, source, *, assets_only=False, admin_hash=None):
+def deploy(ftp, source, *, assets_only=False, admin_hash=None, completed=None):
+    if completed is None:
+        completed = set()
     # FTP credentials must have the same root as the existing portfolio workflow.
     # No deletion or recursive synchronization of the site's root.
     # SMASH_FTP_DIR selects the site folder below the FTP root; "." publishes at the root itself.
@@ -232,12 +235,13 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
             raise
         ftp.mkd("feedback-data")
         ftp.cwd("feedback-data")
-    if admin_hash:
+    if admin_hash and 'feedback-data/admin-auth.php' not in completed:
         temporary = "admin-auth.php." + uuid.uuid4().hex + ".tmp"
         try:
             config = ("<?php\nreturn '" + admin_hash + "';\n").encode()
             ftp.storbinary("STOR " + temporary, io.BytesIO(config))
             ftp.rename(temporary, "admin-auth.php")
+            completed.add('feedback-data/admin-auth.php')
         except Exception:
             try:
                 ftp.delete(temporary)
@@ -252,14 +256,16 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
             if not str(error).startswith("550"):
                 raise
     for name in FILES[:-1] if assets_only else FILES:
-        if name == 'sitemap.xml':
-            continue  # Publish metadata only after the public cut has landed successfully.
+        if name == 'sitemap.xml' or name in completed:
+            continue  # The sitemap goes last. Reconnects resume after confirmed renames.
         temporary = name + "." + uuid.uuid4().hex + ".tmp"
         try:
             with (source / name).open("rb") as file:
                 ftp.storbinary("STOR " + temporary, file)
             ftp.rename(temporary, name)
+            completed.add(name)
         except Exception:
+            print(f"FTP: no se confirmó {name}.", flush=True)
             try:
                 ftp.delete(temporary)
             except ftplib.all_errors:
@@ -275,6 +281,29 @@ def deploy(ftp, source, *, assets_only=False, admin_hash=None):
         except ftplib.all_errors:
             pass
         raise  # Do not silently report success with a stale sitemap.
+
+
+def publish(source, *, assets_only, admin_hash):
+    # Checkpoints live only for this execution and only after the server acknowledges a rename.
+    completed = set()
+    max_attempts = 4 if assets_only else 1
+    transient = (TimeoutError, ConnectionError, EOFError, ftplib.error_temp)
+    for attempt in range(1, max_attempts + 1):
+        phase = "conexión"
+        try:
+            with ftplib.FTP(timeout=45) as ftp:
+                ftp.connect(os.environ["FTP_SERVER"], 21)
+                phase = "autenticación"
+                ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
+                phase = "subida"
+                deploy(ftp, source, assets_only=assets_only, admin_hash=admin_hash, completed=completed)
+                ftp.quit()
+            return
+        except (ftplib.Error, OSError, EOFError, ValueError) as error:
+            if attempt == max_attempts or not isinstance(error, transient):
+                raise SystemExit(f"Publicación incompleta durante {phase}: {type(error).__name__}: {error}. No se eliminó el contenido anterior.") from None
+            print(f"FTP: {type(error).__name__} durante {phase}. Reconexión {attempt}/{max_attempts - 1}, {len(completed)} archivos confirmados.", flush=True)
+            time.sleep(attempt)
 
 
 def main():
@@ -306,18 +335,7 @@ def main():
     admin_hash = os.environ.get("SMASH_FEEDBACK_ADMIN_HASH", "")
     if not HASH_PATTERN.fullmatch(admin_hash):
         raise SystemExit("Falta el hash de acceso al panel de opiniones o tiene un formato inválido.")
-    phase = "conexión"
-    try:
-        # Match the FTP transport already used by the portfolio's working deploy.
-        with ftplib.FTP(timeout=45) as ftp:
-            ftp.connect(os.environ["FTP_SERVER"], 21)
-            phase = "autenticación"
-            ftp.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
-            phase = "subida"
-            deploy(ftp, source, assets_only=args.assets_only, admin_hash=admin_hash)
-            ftp.quit()
-    except (ftplib.Error, OSError, EOFError, ValueError) as error:
-        raise SystemExit(f"Publicación incompleta durante {phase}: {type(error).__name__}: {error}. No se eliminó el contenido anterior.") from None
+    publish(source, assets_only=args.assets_only, admin_hash=admin_hash)
     print("Smash GT publicado en su subcarpeta; " + ("corte de datos conservado." if args.assets_only else "datos reemplazados después de completar la subida."))
 
 
