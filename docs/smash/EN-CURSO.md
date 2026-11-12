@@ -1,5 +1,14 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Prepara el set por personaje — 11/nov/2026 GT (Codex)
+
+El dueño dejó Mi torneo pendiente y pidió avanzar. Rama `feat/prepara-set-por-personaje` desde `origin/main dfaf5e3`. Se implementó la variante de Claude Design en Prepara el set con selector, alcances Solo Guatemala y + Internacional, cruces observados, tamaños de muestra y fichas técnicas. El servidor entrega un adelanto por personaje y alcance para cuentas gratis. Los consejos de la carpeta de borrador siguen en revisión editorial.
+
+Medición de solo lectura en SQL del corte 8: **32 cruces con muestra suficiente en Solo Guatemala y 37 en + Internacional**. Se aplican mínimos de 20 games, 5 sets, 2 torneos y 3 parejas distintas. [MODO-PERSONAJE.md](MODO-PERSONAJE.md) documenta alcance, filtros, contrato y estado de la guía.
+
+Pruebas locales: 15 de análisis, incluyendo HTTP en MariaDB desechable, contratos PHP, 6 de frames y 9 Node. Chrome a 375 y 1440 px verificó búsqueda, foco, cambio de alcance, sugerencia desde un rival, muestra pequeña, ficha técnica, cuenta gratis y reintento. Mi torneo #139 ya figura fusionado y su publicación queda pendiente por indicación del dueño.
+
+
 ## Mi torneo con archivo y actualización de sets — 11/nov/2026 GT (Codex)
 
 Rama `feat/my-tournament-pilot` desde `origin/main 9adc975`, con remoto, cambios locales, PR y Actions comprobados. Reúne el archivo de Legends 7 de #136, la lectura de #137 y su conexión a Tu cuenta. «Buscar mis torneos» verifica inscripciones en los eventos configurados. «Actualizar mi set» muestra el último resultado y enlaza al próximo rival publicado. Usa la sesión vinculada, CSRF, caché privada y un presupuesto compartido de 12 intentos por minuto. Se reutilizan los componentes de Mi torneo. [MI-TORNEO-EN-VIVO.md](MI-TORNEO-EN-VIVO.md) describe la configuración privada y la prueba del primer evento activo.

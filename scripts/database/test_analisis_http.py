@@ -244,6 +244,73 @@ class AnalysisHttpTests(unittest.TestCase):
         data=self.call('rival=2')[2]; self.assertEqual(data['gameMatrix']['mario|link']['sceneGames'],8)
         self.assertEqual(data['meVsChar'],{'link':[1,3]})
 
+    def test_character_mode_scoped_sample_perspective_and_paid_projection(self):
+        local='mode=character&target=link&scope=gt'
+        combined='mode=character&target=link&scope=intl'
+        self.assertEqual(self.call(local)[0],401)
+        self.games()
+        for entrant,player in [(1023,3),(1024,4)]:
+            self.sql("INSERT INTO entrants(id,event_id,name) VALUES(%s,102,'QA')",(entrant,))
+            self.sql('INSERT INTO entrant_players(entrant_id,player_id) VALUES(%s,%s)',(entrant,player))
+
+        def add_game(set_id,number,slots,characters,at='2026-10-04 11:43:18.348499'):
+            gid=set_id*10+number
+            self.sql('INSERT INTO games(id,set_id,game_number,winner_entrant_id,synced_at) VALUES(%s,%s,%s,%s,%s)',
+                     (gid,set_id,number,slots[0],at))
+            for entrant,character in zip(slots,characters):
+                self.sql('INSERT INTO game_selections(game_id,set_id,entrant_id,character_id) VALUES(%s,%s,%s,%s)',
+                         (gid,set_id,entrant,character))
+            return gid
+
+        # More international games across two distinct pairs. The local sample stays below the threshold.
+        for sid,slots in [(600,(1021,1023)),(601,(1023,1021)),(602,(1022,1024)),(603,(1024,1022))]:
+            self.sql("INSERT INTO sets(id,event_id,status,outcome_type,winner_entrant_id) VALUES(%s,102,'completed','competitive',%s)",(sid,slots[0]))
+            for slot,entrant in enumerate(slots):
+                self.sql('INSERT INTO set_slots(set_id,slot_index,event_id,entrant_id) VALUES(%s,%s,102,%s)',(sid,slot,entrant))
+            for number in (1,2,3): add_game(sid,number,slots,(1302,1296))
+        add_game(500,3,(1001,1002),(1319,1296))  # Another row, too small for the preview.
+        add_game(500,4,(1001,1002),(1296,1296))  # Mirror.
+        ambiguous=add_game(500,5,(1001,1002),(1302,1296))
+        self.sql('INSERT INTO game_selections(game_id,set_id,entrant_id,character_id) VALUES(%s,500,1001,1319)',(ambiguous,))
+        add_game(500,6,(1001,1002),(1302,1296),'2026-10-05 00:00:00')  # After the character cut.
+
+        self.login()
+        self.assertIsNone(self.call(local)[2]['preview'])
+        status,headers,free=self.call(combined)
+        self.assertEqual(status,200)
+        self.assertIn('no-store',headers['Cache-Control'])
+        self.assertEqual(free['preview'],dict(slug='mario',gamesWon=16,gamesLost=6,sets=9,events=3,pairs=3,trend='favorable'))
+        self.assertEqual(free['sample']['availableCrosses'],1)
+        for key in ('mine','crosses','toolkit','punishable','frameDataSource','guides'):
+            self.assertNotIn(key,free)
+        self.assertNotIn('pikachu',json.dumps(free))
+        for invalid in ('mode=character&target=random','mode=character&target=missing','mode=character&target[]=link',combined+'&rival=1',combined+'&userId=2'):
+            self.assertEqual(self.call(invalid)[0],400,invalid)
+
+        uid=self.login('paid');self.premium(uid)
+        paid=self.call(combined)[2]
+        self.assertEqual(paid['mine'],[dict(slug='mario',role='main')])
+        self.assertEqual(paid['crosses'][0],free['preview'])
+        self.assertEqual(paid['crosses'][1]['trend'],'small')
+        self.assertEqual(paid['toolkit']['mario']['fastest']['frame'],2)
+        self.assertEqual(paid['punishable']['link'][0]['onShield'],-28)
+        self.assertEqual(self.call(local)[2]['crosses'][0],dict(slug='mario',gamesWon=4,gamesLost=4,sets=4,events=2,pairs=1,trend='small'))
+        reverse=self.call('mode=character&target=mario&scope=intl')[2]['crosses'][0]
+        self.assertEqual((reverse['slug'],reverse['gamesWon'],reverse['gamesLost'],reverse['trend']),('link',6,16,'unfavorable'))
+        self.assertEqual(self.call('mode=character&target=steve')[2]['sample']['status'],'empty')
+        legacy=copy.deepcopy(self.public);del legacy['characterCapturedAt'];self.publish(legacy)
+        before_capture=self.call(combined)[2]
+        self.assertEqual((before_capture['sample']['status'],before_capture['crosses']),('empty',[]))
+        self.sql("UPDATE cuts SET public_snapshot='{}' WHERE id=%s",(self.cut,))
+        mismatch=self.call(combined)[2]
+        self.assertEqual((mismatch['sample']['status'],mismatch['crosses']),('cut_not_synced',[]))
+        self.assertIn('mario',mismatch['toolkit'])
+        self.premium(uid,end='2026-01-01 00:00:00')
+        expired=self.call(combined)[2]
+        self.assertEqual(expired['state'],'vencido')
+        self.assertNotIn('crosses',expired)
+        self.assertNotIn('toolkit',expired)
+
     def test_no_rank_no_characters_no_h2h_and_unlinked(self):
         self.login('admin'); status,_,data=self.call('rival=4'); self.assertEqual(status,200)
         self.assertIsNone(data['rival']['rank']['intl']); self.assertIsNone(data['rival']['points']['gt'])

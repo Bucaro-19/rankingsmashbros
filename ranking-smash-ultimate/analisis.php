@@ -100,21 +100,31 @@ function smash_analisis_detection(array $public, string $id, array $catalog): ar
     }
     return ['detected'=>$detected,'coverage'=>$coverage ?? ['registered'=>null,'total'=>$total,'source'=>'unavailable']];
 }
-function smash_analisis_games(PDO $db, array $public): array {
+function smash_analisis_games(PDO $db, array $public, string $scope = 'combined', ?string $targetId = null): array {
     $at=(new DateTimeImmutable($public['generatedAt']))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
     $cuts=smash_analisis_query($db,"SELECT id,public_snapshot FROM cuts WHERE generated_at=? AND season_year=? AND method_version=? AND status='published'",[$at,$public['seasonYear'],$public['methodVersion']]);
     if (count($cuts)!==1 || json_decode($cuts[0]['public_snapshot'],true) != $public) return ['status'=>'cut_not_synced','games'=>[],'completed'=>[],'rowCount'=>0];
     $cut=$cuts[0]['id'];
-    $completed=[]; foreach (smash_analisis_query($db,"SELECT r.set_id,s.completed_at FROM cut_set_results r JOIN sets s ON s.id=r.set_id WHERE r.cut_id=? AND r.scope='combined'",[$cut]) as $r) $completed[(string)$r['set_id']]=$r['completed_at'];
-    $captured=(new DateTimeImmutable($public['characterCapturedAt']))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+    $completed=[];
+    if ($targetId === null) {
+        foreach (smash_analisis_query($db,'SELECT r.set_id,s.completed_at FROM cut_set_results r JOIN sets s ON s.id=r.set_id WHERE r.cut_id=? AND r.scope=?',[$cut,$scope]) as $r) {
+            $completed[(string)$r['set_id']]=$r['completed_at'];
+        }
+    }
+    $captureAt = $public['characterCapturedAt'] ?? null;
+    if (!is_string($captureAt) || $captureAt === '') return ['status'=>'empty','games'=>[],'completed'=>$completed,'rowCount'=>0];
+    $captured=(new DateTimeImmutable($captureAt))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+    $targetFilter = $targetId === null ? '' : ' AND EXISTS (SELECT 1 FROM game_selections target WHERE target.game_id=g.id AND target.character_id=?)';
     $q=$db->prepare("SELECT g.id,g.set_id,g.game_number,g.winner_entrant_id,s.event_id,ss.entrant_id,ep.player_id,gs.character_id
         FROM cut_events ce JOIN sets s ON s.event_id=ce.event_id AND s.outcome_type='competitive'
         JOIN games g ON g.set_id=s.id AND g.synced_at<=? AND g.winner_entrant_id IS NOT NULL
         JOIN set_slots ss ON ss.set_id=g.set_id AND ss.entrant_id IS NOT NULL
         JOIN entrant_players ep ON ep.entrant_id=ss.entrant_id
         LEFT JOIN game_selections gs ON gs.game_id=g.id AND gs.set_id=g.set_id AND gs.entrant_id=ss.entrant_id
-        WHERE ce.cut_id=? AND ce.scope='combined' LIMIT ".(SMASH_ANALISIS_GAME_ROWS+1));
-    $q->execute([$captured,$cut]); $games=[]; $rows=0;
+        WHERE ce.cut_id=? AND ce.scope=?".$targetFilter.' LIMIT '.(SMASH_ANALISIS_GAME_ROWS+1));
+    $params = [$captured,$cut,$scope];
+    if ($targetId !== null) $params[] = $targetId;
+    $q->execute($params); $games=[]; $rows=0;
     while ($r=$q->fetch(PDO::FETCH_ASSOC)) {
         if (++$rows>SMASH_ANALISIS_GAME_ROWS) throw new SmashAnalisisError('game_limit_exceeded');
         $gid=(string)$r['id']; $en=(string)$r['entrant_id'];
@@ -229,7 +239,7 @@ function smash_analisis_game_rows(array $games, array $catalog): array {
                 'won' => (string)$entrant === $g['winner']];
         }
         if ($sides[0]['player'] === $sides[1]['player']) continue;
-        $rows[] = ['setId' => $g['setId'], 'number' => $g['number'], 'sides' => $sides];
+        $rows[] = ['setId' => $g['setId'], 'eventId' => $g['eventId'] ?? null, 'number' => $g['number'], 'sides' => $sides];
     }
     return $rows;
 }
@@ -447,7 +457,79 @@ function smash_analisis_full(PDO $db, array $public, array $base, array $user, s
         'probability'=>['p'=>smash_analisis_probability($base['me']['points'][$scope],$base['rival']['points'][$scope],$public['methodVersion']),'scale'=>400,'methodVersion'=>$public['methodVersion']]];
     return $base;
 }
+const SMASH_CHARACTER_SAMPLE = ['games'=>20, 'sets'=>5, 'events'=>2, 'pairs'=>3, 'directionPercent'=>60];
+
+// Each game contributes once, from the perspective of the character facing the target.
+function smash_character_crosses(array $games, array $catalog, string $target): array
+{
+    $crosses = [];
+    foreach (smash_analisis_game_rows($games, $catalog) as $game) {
+        [$first, $second] = $game['sides'];
+        if ($first['slug'] === $target) [$first, $second] = [$second, $first];
+        $slug = $first['slug'];
+        if ($second['slug'] !== $target || $slug === null || $slug === $target || $game['eventId'] === null) continue;
+        if (!isset($crosses[$slug])) {
+            $crosses[$slug] = ['slug'=>$slug, 'gamesWon'=>0, 'gamesLost'=>0, 'sets'=>[], 'events'=>[], 'pairs'=>[]];
+        }
+        $row = &$crosses[$slug];
+        $row[$first['won'] ? 'gamesWon' : 'gamesLost']++;
+        $row['sets'][$game['setId']] = true;
+        $row['events'][$game['eventId']] = true;
+        $pair = [$first['player'], $second['player']];
+        sort($pair, SORT_STRING);
+        $row['pairs'][implode(':',$pair)] = true;
+        unset($row);
+    }
+    $minimum = SMASH_CHARACTER_SAMPLE;
+    foreach ($crosses as &$row) {
+        foreach (['sets','events','pairs'] as $key) $row[$key] = count($row[$key]);
+        $total = $row['gamesWon'] + $row['gamesLost'];
+        $enough = $total >= $minimum['games'] && $row['sets'] >= $minimum['sets']
+            && $row['events'] >= $minimum['events'] && $row['pairs'] >= $minimum['pairs'];
+        $threshold = $minimum['directionPercent'] * $total;
+        $row['trend'] = !$enough ? 'small' : ($row['gamesWon'] * 100 >= $threshold ? 'favorable'
+            : ($row['gamesLost'] * 100 >= $threshold ? 'unfavorable' : 'balanced'));
+    }
+    unset($row);
+    uasort($crosses, static fn($a,$b) => ($b['gamesWon'] + $b['gamesLost']) <=> ($a['gamesWon'] + $a['gamesLost'])
+        ?: $b['sets'] <=> $a['sets'] ?: strcmp($a['slug'],$b['slug']));
+    return $crosses;
+}
+
+function smash_analisis_character_response(PDO $db, array $public, array $user, array $input, ?array $config, int $now): array
+{
+    if (array_diff(array_keys($input), ['mode','target','scope'])) throw new SmashAnalisisError('invalid_parameters');
+    $target = $input['target'] ?? null;
+    if (!is_string($target) || !preg_match('/^[a-z_]{1,50}$/D',$target) || $target === 'random') {
+        throw new SmashAnalisisError('invalid_character');
+    }
+    $scope = smash_analisis_scope($input['scope'] ?? 'gt');
+    $catalog = smash_analisis_catalog($db);
+    $targetId = array_search($target, array_column($catalog,'slug','id'), true);
+    if ($targetId === false) throw new SmashAnalisisError('invalid_character');
+    $access = smash_analisis_access($db,$user,$config,$now);
+    $data = smash_analisis_games($db,$public,$scope === 'gt' ? 'guatemala' : 'combined',(string)$targetId);
+    $rows = smash_character_crosses($data['games'],$catalog,$target);
+    $enough = array_filter($rows, static fn($row) => $row['trend'] !== 'small');
+    $base = ['ok'=>true, 'mode'=>'character', 'scope'=>$scope, 'target'=>$target, 'generatedAt'=>$public['generatedAt'],
+        'sample'=>['status'=>$data['status'] === 'cut_not_synced' ? 'cut_not_synced' : ($rows ? 'available' : 'empty'),
+            'minimum'=>SMASH_CHARACTER_SAMPLE, 'availableCrosses'=>count($enough)]] + $access;
+    if (!$access['access']['full']) {
+        return $base + ['state'=>$access['premium']['expiredAt'] === null ? 'bloqueado' : 'vencido',
+            'preview'=>$enough ? reset($enough) : null];
+    }
+
+    $mine = [];
+    foreach (array_slice($user['chosen'],0,3,true) as $position=>$id) {
+        $slug = $catalog[$id]['slug'] ?? null;
+        if ($slug !== null && $slug !== 'random') $mine[] = ['slug'=>$slug, 'role'=>$position === 0 ? 'main' : 'secondary'];
+    }
+    return $base + ['state'=>'listo', 'mine'=>$mine, 'crosses'=>array_values($rows)]
+        + smash_frame_facts(array_column($mine,'slug'),$target,true);
+}
+
 function smash_analisis_response(PDO $db, array $public, array $user, array $input, ?array $config, int $now, ?string $avatar = null): array {
+    if (($input['mode'] ?? null) === 'character') return smash_analisis_character_response($db,$public,$user,$input,$config,$now);
     $allowed=['rival','buscar','scope']; if (array_diff(array_keys($input),$allowed)) throw new SmashAnalisisError('invalid_parameters');
     $scope=smash_analisis_scope($input['scope'] ?? 'intl'); $access=smash_analisis_access($db,$user,$config,$now);
     $base=['ok'=>true,'scope'=>$scope,'generatedAt'=>$public['generatedAt'],'seasonYear'=>$public['seasonYear']]+$access;
