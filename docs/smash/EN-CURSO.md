@@ -1,5 +1,24 @@
 # Cuentas, ranking e historial — 7 de octubre de 2026, Guatemala
 
+## Prueba real de captura ligera — 12/nov/2026 GT (Codex)
+
+El dueño pidió probar el método sobre datos reales. Se eligieron cuatro inscritos de Legends 7 entre 30 candidatos ordenados por hash fijo. La muestra incluye dos historiales cortos completos, la primera ventana de 50 de un historial largo y la última ventana completa de 50 de otro. Se compara el mismo conjunto de IDs y toda la proyección del capturador actual, incluidos ganador, marcador, games y selecciones. La sonda usó el secreto existente de Actions, una petición por segundo y hasta 30 intentos por ventana. [Ejecución 43312943911](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/43312943911).
+
+| Muestra | Sets de 2026 | Consultas actuales | Consultas ligeras | Tiempo actual | Tiempo ligero |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Historial completo de 6 sets | 6 | 2 | 3 | 1,69 s | 2,82 s |
+| Historial completo de 3 sets | 3 | 1 | 2 | 1,20 s | 1,85 s |
+| Primera ventana de un historial de 174 sets | 50 | 10 | 11 | 10,19 s | 10,95 s |
+| Ventana avanzada de un historial de 4.619 sets | 0 | 10 | 1 | 10,09 s | 0,94 s |
+| Total medido | 59 | 23 | 17 | 23,16 s | 16,55 s |
+
+Coincidieron las cuatro ventanas y todo el detalle disponible, incluidos 32 games y 63 selecciones. La sonda completa hizo 50 solicitudes en 49,42 s. Diez solicitudes sirvieron para seleccionar la muestra y las otras 40 para ejecutar ambos métodos. Solo salieron agregados en los registros. Los cuatro casos miden condiciones diferentes y no representan los historiales pendientes ni permiten estimar cuándo terminarán.
+
+La lectura ligera ahorra en tramos largos con pocos sets de 2026. En estos casos cortos y en el tramo denso añadió una consulta. El candidato para una siguiente prueba es un método híbrido que conserve la ruta actual para historiales cortos. Hace falta simular la transición de páginas de 5 a bloques de 50 sobre un checkpoint con avance. La prueba compara dos rutas de lectura. La automatización que importa a BanaHosting sigue en su versión actual.
+
+Reproducción local con datos inventados: `python3 -B scripts/database/test_probe_rival_light.py`. La rama temporal `probe/rival-light-real` usó el workflow de sondas existente. El workflow regular, su frecuencia y el checkpoint de producción no se modificaron.
+
+
 ## Reanudar el despliegue de archivos — 11/nov/2026 GT (Codex)
 
 El PR #140 se fusionó en `0ff8714` y CI de main pasó. Los dos intentos del [despliegue 43143912267](https://github.com/Bucaro-19/rankingsmashbros/actions/runs/43143912267) expiraron durante FTP. La web ya servía JavaScript nuevo y todavía servía HTML anterior. El corte del 8/nov conservó SHA-256 `00d87035c014d825228900c91da90d388a7e608032c1d0096c7ac76de8f49c27`.
